@@ -1,0 +1,35 @@
+{
+  "name": "el-jardin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=23.6"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json",
+    "fills": "node scripts/fills.mjs",
+    "assets": "node scripts/assets.ts",
+    "stills": "node scripts/stills.ts",
+    "compare": "node scripts/compare.ts",
+    "perf": "node scripts/perf.ts",
+    "e2e": "node scripts/e2e.ts",
+    "cvpdf": "node scripts/cvpdf.ts",
+    "budgets": "node scripts/budgets.ts",
+    "licence": "node scripts/licence-check.ts",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/node": "^24.19.2",
+    "lighthouse": "^13.6.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

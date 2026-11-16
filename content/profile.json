@@ -1,0 +1,33 @@
+{
+  "name": "David Guijarro Ventosa",
+  "alias": "Guija",
+  "location": "Vigo, Spain",
+  "headline": {
+    "en": "Developer, currently working [FILL: role and company, only what can be public]. Studying ML math, heading toward AI engineering. Music producer.",
+    "es": "Desarrollador, trabajando actualmente [FILL: role and company, only what can be public]. Estudiando matemáticas de ML, en camino hacia la ingeniería de IA. Productor musical."
+  },
+  "about": { "en": "[FILL]", "es": "[FILL]" },
+  "education": [
+    {
+      "title": {
+        "en": "Higher Vocational Degree in Multiplatform Application Development (DAM)",
+        "es": "Ciclo Formativo de Grado Superior en Desarrollo de Aplicaciones Multiplataforma (DAM)"
+      },
+      "place": "IES de Teis",
+      "status": { "en": "In progress [FILL: expected date]", "es": "En curso [FILL: expected date]" }
+    }
+  ],
+  "languages": [
+    { "name": { "en": "Spanish", "es": "Español" }, "level": "native" },
+    { "name": { "en": "English", "es": "Inglés" }, "level": "C1" },
+    { "name": { "en": "[FILL: others]", "es": "[FILL: others]" }, "level": "[FILL]" }
+  ],
+  "stack": ["Laravel", "Blade", "Ionic", "Capacitor", "PHP", "Python", "[FILL: owner confirms the final list]"],
+  "links": [
+    { "key": "github", "label": { "en": "GitHub [FILL: confirm]", "es": "GitHub [FILL: confirm]" }, "href": "https://github.com/AxxturelHyphen" },
+    { "key": "email", "label": { "en": "Email", "es": "Correo" }, "href": "[FILL]" },
+    { "key": "socials", "label": { "en": "[FILL: which ones and links]", "es": "[FILL: which ones and links]" }, "href": "[FILL]" }
+  ],
+  "portrait": { "src": "[FILL]", "alt": { "en": "[FILL]", "es": "[FILL]" } },
+  "cv": "cv.pdf"
+}

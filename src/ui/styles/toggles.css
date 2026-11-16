@@ -1,0 +1,150 @@
+/* Top-right controls, the same in every mode: view, Download CV, language. */
+
+#toggles {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: max(0px, (100vw - var(--page)) / 2);
+  padding: 1.125rem var(--gutter) 0;
+  pointer-events: none;
+}
+
+.tg {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  pointer-events: auto;
+}
+
+.tg-group {
+  position: relative;
+  display: flex;
+  padding: 2px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.tg-seg,
+.tg-lang-link,
+.tg-cv {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.125rem;
+  padding: 0 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.tg-seg[aria-pressed="true"],
+.tg-lang-link[aria-current="true"] {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+.tg-seg[aria-disabled="true"] {
+  color: var(--ink-3);
+  cursor: default;
+  text-decoration: underline dotted var(--rule-strong);
+  text-underline-offset: 0.3em;
+}
+
+.tg-seg:not([aria-pressed="true"], [aria-disabled="true"]):hover,
+.tg-lang-link:not([aria-current="true"]):hover {
+  color: var(--ink);
+  background: var(--mount);
+}
+
+.tg-cv {
+  border: 1px solid var(--rose);
+  background: var(--rose);
+  color: #fff;
+  min-height: 2.375rem;
+  padding: 0 0.9rem;
+  box-shadow: var(--shadow-sheet);
+}
+
+.tg-cv:hover {
+  background: var(--rose-ink);
+  border-color: var(--rose-ink);
+}
+
+.tg-note {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  width: 16rem;
+  padding: 0.625rem 0.75rem;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--ink-2);
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sheet);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-ui-exit) var(--ease-out),
+    visibility 0s linear var(--dur-ui-exit);
+}
+
+.tg-mode:has([data-mode="garden"]:is(:hover, :focus-visible)) .tg-note {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--dur-ui) var(--ease-out),
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tg-note {
+    transform: translate3d(0, -4px, 0);
+    transition:
+      opacity var(--dur-ui-exit) var(--ease-out),
+      transform var(--dur-ui-exit) var(--ease-out),
+      visibility 0s linear var(--dur-ui-exit);
+  }
+
+  .tg-mode:has([data-mode="garden"]:is(:hover, :focus-visible)) .tg-note {
+    transform: none;
+    transition:
+      opacity var(--dur-ui) var(--ease-out),
+      transform var(--dur-ui) var(--ease-out),
+      visibility 0s;
+  }
+}
+
+/* Phone: a full-width bar on paper, so the controls never sit on top of text. */
+@media (max-width: 44.99rem) {
+  #toggles {
+    left: 0;
+    right: 0;
+    padding: 0.625rem 1rem;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tg {
+    justify-content: space-between;
+    gap: 0.375rem;
+  }
+
+  .tg-seg,
+  .tg-lang-link {
+    padding: 0 0.55rem;
+    font-size: var(--text-xs);
+  }
+
+  .tg-cv {
+    padding: 0 0.7rem;
+    font-size: var(--text-xs);
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+archive/raw/
+archive/work/
+personal/
+refs/
+cook/
+.claude/
+REFERENCES.md
+COOK_PROMPT.md
+SETUP.md
+PORTFOLIO_SPEC.md
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+*.log

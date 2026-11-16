@@ -1,0 +1,143 @@
+/* One Herbario sheet: the mount awaiting its specimen, with photo corners, and the label below it. */
+
+.h-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0.875rem 0.875rem 1.25rem;
+  background: var(--sheet);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sheet);
+}
+
+[data-mode] .h-sheet {
+  cursor: pointer;
+}
+
+.h-sheet:has(.h-open:focus-visible) {
+  outline: 2px solid var(--rose);
+  outline-offset: 3px;
+}
+
+.h-mount {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 0.75rem;
+  aspect-ratio: 3 / 2;
+  background: var(--mount);
+  border-radius: var(--radius-sm);
+}
+
+/* The dashed outline is where the specimen goes; the four photo corners hold the mount. */
+.h-mount::before {
+  content: "";
+  position: absolute;
+  inset: 11% 37% 31%;
+  border: 1px dashed var(--rule-strong);
+  border-radius: 50% 50% 46% 46% / 40% 40% 60% 60%;
+}
+
+.h-corners {
+  position: absolute;
+  inset: 0.5rem;
+}
+
+.h-corners::before,
+.h-corners::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  background: var(--rule-strong);
+}
+
+.h-corners::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.h-corners::after {
+  right: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.h-corners-low {
+  transform: scaleY(-1);
+}
+
+.h-mount-note {
+  position: relative;
+  display: grid;
+  gap: 0.125rem;
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.h-mount-latin {
+  font-style: italic;
+}
+
+.h-label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.125rem 0.375rem 0;
+}
+
+.h-title {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: 1.625rem;
+  line-height: 1.15;
+}
+
+.h-open {
+  text-decoration: none;
+}
+
+.h-open:focus-visible {
+  outline: none;
+}
+
+.h-sheet:hover .h-open {
+  color: var(--rose);
+}
+
+.h-latin {
+  margin-top: -0.5rem;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+.h-oneliner {
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.h-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--rule);
+  font-size: var(--text-sm);
+}
+
+.h-meta dt {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.h-private {
+  font-size: var(--text-xs);
+  color: var(--rose-ink);
+}

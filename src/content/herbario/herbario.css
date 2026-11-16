@@ -1,0 +1,283 @@
+/*
+ * Herbario: the CV as a pressed-flower album, made modern. Each project is a herbarium sheet:
+ * a mount for its specimen (empty and labelled as such until the live flowers arrive) and a label.
+ * Flower names in the display serif, Latin names in italic, everything else in the UI sans.
+ */
+
+#herbario {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 4rem;
+}
+
+.h-skip {
+  position: absolute;
+  z-index: 20;
+  top: 0.75rem;
+  left: var(--gutter);
+  padding: 0.5rem 0.875rem;
+  font-size: var(--text-sm);
+  background: var(--ink);
+  color: var(--sheet);
+  border-radius: var(--radius);
+  transform: translate3d(0, -200%, 0);
+}
+
+.h-skip:focus-visible {
+  transform: none;
+}
+
+/* Header */
+
+.h-header {
+  padding-top: 1.125rem;
+}
+
+.h-site {
+  display: flex;
+  align-items: center;
+  min-height: 2.375rem;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--text-lg);
+  color: var(--ink-2);
+}
+
+.h-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 2rem 4rem;
+  align-items: end;
+  padding-block: clamp(3rem, 2rem + 4vw, 6.5rem) clamp(2.5rem, 2rem + 2vw, 4rem);
+}
+
+.h-name {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: var(--display-lg);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.h-alias {
+  margin-top: 0.75rem;
+  font-size: var(--text-lg);
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.h-intro {
+  display: grid;
+  gap: 1rem;
+  max-width: var(--measure);
+  padding-bottom: 0.5rem;
+}
+
+.h-role {
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.h-location {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.h-about {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* Facts: the CV at a glance */
+
+.h-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem 3rem;
+  padding-block: 1.75rem 0;
+  border-top: 1px solid var(--rule-strong);
+}
+
+.h-fact-title {
+  margin-bottom: 0.625rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.h-fact {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.h-edu > li,
+.h-langs > li {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.h-edu > li + li,
+.h-langs > li + li {
+  margin-top: 0.625rem;
+}
+
+.h-edu-title {
+  font-weight: 500;
+}
+
+.h-edu-place,
+.h-edu-status,
+.h-lang-level {
+  color: var(--ink-2);
+}
+
+.h-langs > li {
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  justify-content: start;
+}
+
+.h-contact-list > li + li {
+  margin-top: 0.375rem;
+}
+
+.h-contact-link {
+  font-weight: 500;
+}
+
+a.h-contact-link:hover {
+  color: var(--rose);
+}
+
+/* Projects */
+
+.h-projects {
+  margin-top: clamp(4rem, 3rem + 4vw, 7rem);
+}
+
+.h-section-title {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: var(--display-md);
+  line-height: 1.15;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.h-section-title:focus {
+  outline: none;
+}
+
+.h-bed {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 1.5rem 3rem;
+  padding-block: 2.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.h-bed + .h-bed {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 46rem;
+}
+
+.h-bed-head {
+  align-self: start;
+  position: sticky;
+  top: 4.5rem;
+}
+
+.h-bed-title {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: var(--display-sm);
+  line-height: 1.2;
+}
+
+.h-bed-gloss {
+  margin-top: 0.25rem;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+.h-sheets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 2rem;
+}
+
+/* The full case, for readers without JS. With JS the panel shows it instead. */
+.h-case {
+  margin-top: 1rem;
+  font-size: var(--text-sm);
+}
+
+.h-case > summary {
+  cursor: pointer;
+  color: var(--ink-2);
+}
+
+[data-mode] .h-case {
+  display: none;
+}
+
+.h-footer {
+  padding-top: 2rem;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+@media (max-width: 64rem) {
+  .h-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .h-bed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .h-bed-head {
+    position: static;
+  }
+}
+
+@media (max-width: 44.99rem) {
+  #herbario {
+    padding-top: 3.5rem;
+  }
+
+  .h-site {
+    display: none;
+  }
+
+  .h-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding-block: 2rem 2rem;
+  }
+
+  .h-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .h-projects {
+    margin-top: 3rem;
+  }
+
+  .h-bed {
+    padding-block: 2rem;
+  }
+
+  .h-sheets {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+}

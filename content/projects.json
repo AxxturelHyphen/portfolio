@@ -1,0 +1,120 @@
+[
+  {
+    "id": "garagic",
+    "title": "Garagic",
+    "bed": "rosaleda",
+    "flower": "rose",
+    "status": "wip",
+    "importance": 3,
+    "private": true,
+    "year": "[FILL]",
+    "oneLiner": {
+      "en": "Final degree project: Laravel web and API with an Ionic + Capacitor Android app.",
+      "es": "Proyecto de fin de ciclo: web y API en Laravel con una app Android en Ionic + Capacitor."
+    },
+    "problem": { "en": "[FILL]", "es": "[FILL]" },
+    "naiveFails": { "en": "[FILL]", "es": "[FILL]" },
+    "built": { "en": "[FILL]", "es": "[FILL]" },
+    "result": { "en": "[FILL]", "es": "[FILL]" },
+    "stack": ["Laravel", "Blade", "Ionic", "Capacitor"],
+    "role": { "en": "[FILL]", "es": "[FILL]" },
+    "links": { "video": "[FILL: short screen recording]" },
+    "media": [
+      { "type": "image", "src": "[FILL: screenshots]", "alt": { "en": "[FILL]", "es": "[FILL]" } },
+      { "type": "video", "src": "[FILL: short screen recording]", "alt": { "en": "[FILL]", "es": "[FILL]" } }
+    ],
+    "featured": false
+  },
+  {
+    "id": "php-playground",
+    "title": "PHP Playground",
+    "bed": "rosaleda",
+    "flower": "rose",
+    "status": "shipped",
+    "importance": 2,
+    "private": false,
+    "year": "[FILL]",
+    "oneLiner": {
+      "en": "Lessons site with theory and commented examples. Next version runs Python for DSA and ML.",
+      "es": "Web de lecciones con teoría y ejemplos comentados. La próxima versión ejecuta Python para DSA y ML."
+    },
+    "problem": { "en": "[FILL]", "es": "[FILL]" },
+    "naiveFails": { "en": "[FILL]", "es": "[FILL]" },
+    "built": { "en": "[FILL]", "es": "[FILL]" },
+    "result": { "en": "[FILL]", "es": "[FILL]" },
+    "stack": ["PHP"],
+    "role": { "en": "[FILL]", "es": "[FILL]" },
+    "links": { "repo": "[FILL]", "live": "[FILL]" },
+    "media": [{ "type": "image", "src": "[FILL]", "alt": { "en": "[FILL]", "es": "[FILL]" } }],
+    "featured": false
+  },
+  {
+    "id": "adhd-guija",
+    "title": "ADHD guija*",
+    "bed": "estanque",
+    "flower": "lily",
+    "status": "shipped",
+    "importance": 2,
+    "private": false,
+    "year": "[FILL]",
+    "oneLiner": {
+      "en": "Album with featured artists, released on Spotify. [FILL: owner confirms it goes in]",
+      "es": "Álbum con artistas invitados, publicado en Spotify. [FILL: owner confirms it goes in]"
+    },
+    "problem": { "en": "[FILL]", "es": "[FILL]" },
+    "naiveFails": { "en": "[FILL]", "es": "[FILL]" },
+    "built": { "en": "[FILL]", "es": "[FILL]" },
+    "result": { "en": "[FILL]", "es": "[FILL]" },
+    "stack": ["FL Studio", "DistroKid"],
+    "role": { "en": "[FILL]", "es": "[FILL]" },
+    "links": { "spotify": "[FILL]" },
+    "media": [{ "type": "image", "src": "[FILL]", "alt": { "en": "[FILL]", "es": "[FILL]" } }],
+    "featured": false
+  },
+  {
+    "id": "ml-math",
+    "title": "ML math",
+    "bed": "semillero",
+    "flower": "pod",
+    "status": "wip",
+    "importance": 1,
+    "private": false,
+    "year": "[FILL]",
+    "oneLiner": {
+      "en": "Studying the math behind machine learning: calculus, then [FILL].",
+      "es": "Estudiando las matemáticas detrás del aprendizaje automático: cálculo, después [FILL]."
+    },
+    "problem": { "en": "[FILL]", "es": "[FILL]" },
+    "naiveFails": { "en": "[FILL]", "es": "[FILL]" },
+    "built": { "en": "[FILL]", "es": "[FILL]" },
+    "result": { "en": "[FILL]", "es": "[FILL]" },
+    "stack": ["[FILL]"],
+    "role": { "en": "[FILL]", "es": "[FILL]" },
+    "links": { "repo": "[FILL]" },
+    "media": [{ "type": "image", "src": "[FILL]", "alt": { "en": "[FILL]", "es": "[FILL]" } }],
+    "featured": false
+  },
+  {
+    "id": "ai-engineering",
+    "title": "AI engineering",
+    "bed": "semillero",
+    "flower": "bud",
+    "status": "wip",
+    "importance": 1,
+    "private": false,
+    "year": "[FILL]",
+    "oneLiner": {
+      "en": "Where I am heading next. [FILL: owner phrases it]",
+      "es": "Hacia dónde voy ahora. [FILL: owner phrases it]"
+    },
+    "problem": { "en": "[FILL]", "es": "[FILL]" },
+    "naiveFails": { "en": "[FILL]", "es": "[FILL]" },
+    "built": { "en": "[FILL]", "es": "[FILL]" },
+    "result": { "en": "[FILL]", "es": "[FILL]" },
+    "stack": ["[FILL]"],
+    "role": { "en": "[FILL]", "es": "[FILL]" },
+    "links": { "repo": "[FILL]" },
+    "media": [{ "type": "image", "src": "[FILL]", "alt": { "en": "[FILL]", "es": "[FILL]" } }],
+    "featured": false
+  }
+]

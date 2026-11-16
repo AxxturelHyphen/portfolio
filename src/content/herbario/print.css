@@ -1,0 +1,238 @@
+/*
+ * Print: the Herbario becomes a one-page A4 CV. Projects on the left as compact sheets with their mount
+ * as a static thumbnail, the facts in a right-hand column. No controls, no panel, links printed as text.
+ * scripts/cvpdf.ts renders dist/cv.pdf from this sheet and fails unless it is exactly one page.
+ */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 15mm 13mm;
+  }
+
+  html,
+  body {
+    background: #fff;
+    font-size: 8.75pt;
+    line-height: 1.45;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #toggles,
+  .pn,
+  .h-skip,
+  .h-site,
+  .h-case,
+  .h-mount-note,
+  .h-section-title {
+    display: none !important;
+  }
+
+  #herbario {
+    max-width: none;
+    padding: 0;
+  }
+
+  .h-header {
+    padding: 0;
+  }
+
+  .h-hero {
+    grid-template-columns: minmax(0, 1fr) 62mm;
+    gap: 8mm;
+    align-items: end;
+    padding: 0 0 5mm;
+    border-bottom: 0.75pt solid var(--rule-strong);
+  }
+
+  .h-name {
+    font-size: 25pt;
+  }
+
+  .h-alias {
+    margin-top: 1mm;
+    font-size: 10pt;
+  }
+
+  .h-intro {
+    gap: 1.5mm;
+    padding: 0;
+  }
+
+  .h-role {
+    font-size: 9.5pt;
+  }
+
+  .h-location {
+    font-size: 8.5pt;
+  }
+
+  .h-about {
+    padding-top: 1.5mm;
+    gap: 0.5mm;
+  }
+
+  .h-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62mm;
+    gap: 8mm;
+    padding-top: 5mm;
+  }
+
+  .h-projects {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  .h-facts {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 4.5mm;
+    padding: 0;
+    border: 0;
+  }
+
+  .h-fact,
+  .h-fact-title {
+    font-size: 8.5pt;
+  }
+
+  .h-fact-title {
+    margin-bottom: 1.25mm;
+  }
+
+  .h-edu > li + li,
+  .h-langs > li + li {
+    margin-top: 1mm;
+  }
+
+  .h-bed,
+  .h-bed + .h-bed {
+    display: grid;
+    grid-template-columns: 22mm minmax(0, 1fr);
+    gap: 4mm;
+    padding: 0 0 3.5mm;
+    margin-bottom: 3.5mm;
+    content-visibility: visible;
+    break-inside: avoid;
+  }
+
+  .h-bed-head {
+    position: static;
+  }
+
+  .h-bed-title {
+    font-size: 11.5pt;
+  }
+
+  .h-bed-gloss {
+    margin: 0;
+    font-size: 7.5pt;
+  }
+
+  .h-sheets {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3mm;
+  }
+
+  .h-sheet {
+    flex-direction: row;
+    gap: 3.5mm;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .h-mount {
+    flex: none;
+    width: 15mm;
+    height: 15mm;
+    aspect-ratio: auto;
+  }
+
+  .h-mount::before {
+    inset: 22%;
+  }
+
+  .h-corners {
+    inset: 0.8mm;
+  }
+
+  .h-corners::before,
+  .h-corners::after {
+    width: 2.2mm;
+    height: 2.2mm;
+  }
+
+  .h-label {
+    gap: 0.75mm;
+    padding: 0;
+  }
+
+  .h-title {
+    font-size: 12pt;
+  }
+
+  .h-latin {
+    margin: 0;
+    font-size: 7.5pt;
+  }
+
+  .h-oneliner {
+    font-size: 8.75pt;
+  }
+
+  .h-tags {
+    gap: 1mm;
+  }
+
+  .h-tags > li {
+    padding: 0.2mm 1.2mm;
+    font-size: 7.5pt;
+  }
+
+  .h-meta {
+    gap: 1mm 4mm;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 7.5pt;
+  }
+
+  .h-meta > div {
+    display: flex;
+    gap: 1.25mm;
+  }
+
+  .h-meta dt {
+    font-size: 7.5pt;
+  }
+
+  .h-meta dt::after {
+    content: ":";
+  }
+
+  .h-private {
+    font-size: 7.5pt;
+  }
+
+  .h-footer {
+    display: none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a[data-print]::after {
+    content: " " attr(data-print);
+    font-weight: 400;
+    color: var(--ink-2);
+  }
+}
