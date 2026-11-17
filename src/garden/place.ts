@@ -1,0 +1,109 @@
+import type { GlGfx } from '../gl/renderer.ts';
+import type { GroundLayout } from '../gl/ground.ts';
+import { Vector3 } from 'three';
+import { linearHex } from '../gl/colour.ts';
+import { sharedUniforms, type PlaceLight } from '../gl/lights.ts';
+import type { BedId } from '../types.ts';
+import type { SignAnchor } from '../ui/signposts.ts';
+import type { BedScene3, WorldLayout } from '../world/layout.ts';
+
+/**
+ * What the world data hands to gl and ui at load: the ground layout from garden.json (path, puddles), the light of each
+ * place (cook/ART.md section 1 table), the firefly pockets and the signpost anchors from the beds' boards.
+ */
+
+/** Ground plane margins around the garden: wide enough that the edge never shows from the rail or the overview. */
+const GROUND_MARGIN = { x: 14, far: 40, near: 16 } as const;
+/** The board sprite and the share of its height where the sign label sits. */
+const BOARD = { sprite: 'sh/board', labelAt: 0.82 } as const;
+
+const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
+  puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#746583', shadow: '#2b2130', shadowLength: 0.6 },
+  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#3a3550', shadow: '#261e3d', shadowLength: 0.5 },
+  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#16163d', shadow: '#16163d', shadowLength: 0.9 },
+  semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1b1528', shadow: '#1b1528', shadowLength: 0.3 },
+  gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3 },
+  salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#361e3e', shadow: '#2a1c38', shadowLength: 1.1 },
+};
+
+export function groundLayoutOf(g: WorldLayout): GroundLayout {
+  const gr = g.ground;
+  return {
+    x0: -GROUND_MARGIN.x,
+    x1: gr.length + GROUND_MARGIN.x,
+    z0: gr.wall.z - GROUND_MARGIN.far,
+    z1: GROUND_MARGIN.near,
+    path: gr.path.points.flat(),
+    puddles: gr.puddles.flat(),
+  };
+}
+
+/** Seconds for the light to settle on a new place: about one walk, so the sky turns while the camera moves. */
+const LIGHT_TAU_S = 0.5;
+
+interface LinearLight { skyTop: Vector3; skyHorizon: Vector3; ambient: Vector3; shadow: Vector3; shadowLength: number }
+
+export interface PlaceLighting {
+  /** The place the camera is heading to; the overview keeps the Rosaleda night. */
+  set(bed: BedId | null): void;
+  /** Stage 'world': eases the shared light uniforms toward the place. No allocation. */
+  frame(dt: number): void;
+}
+
+/** Place lights parsed once at load, then eased per frame so a walk never pops the sky. */
+export function createPlaceLighting(): PlaceLighting {
+  const parsed = new Map<BedId, LinearLight>();
+  for (const [bed, p] of Object.entries(PLACE_LIGHT) as [BedId, PlaceLight][]) {
+    parsed.set(bed, {
+      skyTop: linearHex(p.skyTop, new Vector3()),
+      skyHorizon: linearHex(p.skyHorizon, new Vector3()),
+      ambient: linearHex(p.ambient, new Vector3()),
+      shadow: linearHex(p.shadow, new Vector3()),
+      shadowLength: p.shadowLength,
+    });
+  }
+  const u = sharedUniforms;
+  let goal = parsed.get('rosaleda') as LinearLight;
+  let snap = true;
+  return {
+    set(bed) {
+      goal = parsed.get(bed ?? 'rosaleda') ?? goal;
+    },
+    frame(dt) {
+      const k = snap ? 1 : 1 - Math.exp(-dt / LIGHT_TAU_S);
+      snap = false;
+      u.uSkyTop.value.lerp(goal.skyTop, k);
+      u.uSkyHorizon.value.lerp(goal.skyHorizon, k);
+      u.uAmbient.value.lerp(goal.ambient, k);
+      u.uShadowColor.value.lerp(goal.shadow, k);
+      u.uShadowDir.value.z += (goal.shadowLength - u.uShadowDir.value.z) * k;
+    },
+  };
+}
+
+/**
+ * One sign per board: a board left of its bed's rail stop points back to the previous place on the path, one right of
+ * it points on (past the last place, to the CV). The grotto is off the path and has no signs.
+ */
+export function signAnchorsOf(g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>): SignAnchor[] {
+  const path = g.order.filter((b) => b !== 'gruta');
+  const out: SignAnchor[] = [];
+  path.forEach((bed, i) => {
+    const stop = g.rail.keys.find((k) => k.bed === bed)?.x ?? g.anchors[bed];
+    for (const l of scenes[bed].layers) {
+      for (const it of l.items) {
+        if (it.sprite !== BOARD.sprite) continue;
+        const dir = it.x < stop ? -1 : 1;
+        const to = dir < 0 ? path[i - 1] : (path[i + 1] ?? 'cv');
+        if (to === undefined) continue;
+        out.push({ bed, to, dir, at: [it.x, it.y + (it.h ?? 1) * it.scale * BOARD.labelAt, it.z] });
+      }
+    }
+  });
+  return out;
+}
+
+/** Everything gl must have before warm() so no texture uploads on first draw. */
+export function prepareGl(gfx: GlGfx, g: WorldLayout): void {
+  gfx.ground.setLayout(groundLayoutOf(g));
+}

@@ -21,6 +21,8 @@ import { createLight } from '../world/light.ts';
 import { createMoth } from '../world/moth.ts';
 import { createFilmDrive } from './film.ts';
 import { createLabelDrive } from './label.ts';
+import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
+import type { WorldLayout } from '../world/layout.ts';
 
 /**
  * Garden chunk entry and composition root (cook/ARCH.md 2.12): the only place that wires core, gl, world and ui.
@@ -93,6 +95,10 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const film = createFilmDrive(machine, rig, content.garden);
   const labels = createLabelDrive(label, rig);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
+  const world = content.garden as WorldLayout;
+  prepareGl(gfx, world);
+  const placeLight = createPlaceLighting();
+  proxies.setSigns(signAnchorsOf(world, SCENES));
 
   const slotOwner = new Map<ProjectId, SlotId>();
   for (const bed of garden.beds.values()) for (const v of bed.slots) if (v.project !== undefined) slotOwner.set(v.project.id, v.id);
@@ -111,6 +117,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     light.setSlots(slots);
   };
   bindBed(machine.state.bed);
+  placeLight.set(machine.state.bed);
 
   /** Resize only bumps the Gfx counter; the 'input' stage applies it (cook/ARCH.md section 6, risk 6). */
   let seenResizes = -1;
@@ -156,6 +163,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
       entered = now;
       host.refresh();
     }
+    placeLight.frame(c.dt);
     sharedUniforms.uCursor.value.fromArray(light.cursor);
     sharedUniforms.uGather.value.fromArray(light.gather);
     sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
@@ -187,7 +195,10 @@ export function startGarden(host: GardenHost): GardenRuntime {
   }
 
   machine.subscribe((s, prev) => {
-    if (s.bed !== prev.bed) bindBed(s.bed);
+    if (s.bed !== prev.bed) {
+      bindBed(s.bed);
+      placeLight.set(s.bed);
+    }
     if (s.phase === 'focus' && prev.phase !== 'closing' && (s.slot !== prev.slot || prev.phase !== 'focus')) {
       const project = slots.find((v) => v.id === s.slot)?.project;
       if (project !== undefined) host.prepare(project.id, s.gen);
