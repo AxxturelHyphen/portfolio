@@ -180,6 +180,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
     placeLight.frame(c.dt);
     sharedUniforms.uCursor.value.fromArray(light.cursor);
     sharedUniforms.uGather.value.fromArray(light.gather);
+    sharedUniforms.uFocusBack.value.fromArray(light.back);
+    sharedUniforms.uHandThrow.value = light.handThrow;
     sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
     intro.frame(machine.ch.intro.value, machine.state.phase === 'intro' || machine.ch.intro.value < 1);
     const u = gfx.film.uniforms;

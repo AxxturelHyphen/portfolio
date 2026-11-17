@@ -26,8 +26,10 @@ const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
-const float POOL_SPREAD = 1.0;                        // the hand's pool on the ground, in cursor radii
-const float POOL = 0.8;
+const vec3 POOL_SHAPE = vec3(0.35, 1.5, 0.75);        // the hand's throw: shift into the scene, length, width (radii)
+const float POOL = 0.45;
+const float POOL_GREY = 0.8;
+uniform float uHandThrow;                             // 0 until a pointer arrives: a hand at rest throws no pool
 const vec3 STONE = vec3(0.060, 0.055, 0.052);
 const vec3 MOSS_SHADE = vec3(0.016, 0.054, 0.028);   // #21422f
 const vec3 MOSS_MID = vec3(0.044, 0.118, 0.073);     // #3b614c
@@ -144,13 +146,17 @@ void main() {
   // The ramp colours are the ground as seen under the place's ambient; the key adds relief, the hand its warm pool.
   float key = luma(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.3);
   vec3 hand = handLights(vWorld, n);
-  // The hand's pool: its light thrown down onto the ground below the paper plane, diffuse and warm.
-  vec2 dp = p - uCursor.xz;
-  float pr = uCursor.w * POOL_SPREAD;
-  float pool = sat(1.0 - dot(dp, dp) / (pr * pr));
-  hand += uCursorColor * (pool * pool * POOL);
+  // The hand's throw on the ground: off the light's foot, stretched along the line from the lens through the light and
+  // brightest on the side nearer it, with a gaussian edge so it reads as thrown light, not a round decal.
+  vec2 axis = normalize(uCursor.xz - uCamPos.xz + vec2(0.0, -1e-3));
+  vec2 dp = p - uCursor.xz - axis * (POOL_SHAPE.x * uCursor.w);
+  float along = dot(dp, axis) / (POOL_SHAPE.y * uCursor.w);
+  float across = (dp.x * axis.y - dp.y * axis.x) / (POOL_SHAPE.z * uCursor.w);
+  float pool = exp(-2.2 * (along * along + across * across)) * (1.0 - 0.45 * smoothstep(-0.6, 0.9, along));
+  hand += uCursorColor * (pool * POOL);
   vec3 albedo = base * GROUND_ALBEDO;
-  vec3 col = base * (0.5 + 1.6 * key) + keyLit(albedo, hand);
+  // Moss and earth under the hand go nearly grey first: the amber light, not the moss, sets the pool's hue.
+  vec3 col = base * (0.5 + 1.6 * key) + keyLit(mix(albedo, vec3(luma(albedo)), POOL_GREY), hand * uHandThrow);
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;
@@ -176,7 +182,7 @@ void main() {
   vec3 haze = neutralise(uHaze.rgb);
   col = mix(col, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
   float dist = length(vWorld - uCamPos);
-  float back = uGather.w * smoothstep(0.35, 1.6, dist - length(uGather.xyz - uCamPos));
+  float back = uFocusBack.w * smoothstep(0.35, 1.6, dist - length(uFocusBack.xyz - uCamPos));
   col = layerAir(col, dist - length(uCursor.xyz - uCamPos), back);
   // Past the wall: mist, not a slab. The far fields rise into the horizon sky, so a low wall never opens onto black.
   float past = smoothstep(uWallZ - 0.5, uWallZ - 6.0, z);

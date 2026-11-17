@@ -66,7 +66,7 @@ export interface CameraRig {
   update(c: Clock, s: State, ch: Machine['ch']): void; setShot(id: ShotId): void; resize(w: number, h: number): void;
 }
 export interface LightRig {
-  readonly cursor: Float32Array; readonly gather: Float32Array; readonly moonDir: Float32Array;
+  readonly cursor: Float32Array; readonly gather: Float32Array; readonly back: Float32Array; readonly moonDir: Float32Array; readonly handThrow: number;
   setPointer(xPx: number, yPx: number, kind: 'mouse' | 'touch' | 'key'): void; update(c: Clock, s: State, ch: Machine['ch'], rig: CameraRig): void;
 }
 

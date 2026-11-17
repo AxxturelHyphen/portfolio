@@ -1,7 +1,7 @@
 /**
  * LightRig (ARCH 2.5, spec §3.2 and §7): the cursor light follows the pointer on its own follower; on touch it stays at
  * the last touch and drifts on a slow figure of eight when idle. The gather light rises on the focused flower.
- * Output is world space, read by the cutout material (uCursor, uGather, uMoonDir).
+ * Output is world space, read by the cutout material (uCursor, uGather, uFocusBack, uMoonDir).
  */
 import type { CameraRig, Clock, LightRig, Machine, SlotId, SlotView, State } from '../types.ts';
 import { LIGHT, follow } from '../core/motion.ts';
@@ -18,6 +18,8 @@ const GEOM = {
   restX: 0.5,
   restY: 0.42,
   moon: [-0.35, 0.8, 0.5],
+  /** In a bed at rest the far layers fall back behind the flowers by this share of a focus (an 85 mm close shot). */
+  bedRestBack: 0.6,
 } as const;
 
 /** Idle touch drift: starts after this long without a touch and fades in on this follower. */
@@ -33,6 +35,7 @@ export interface GardenLight extends LightRig {
 export function createLight(): GardenLight {
   const cursor = new Float32Array(4);
   const gather = new Float32Array(4);
+  const back = new Float32Array(4);
   const moonDir = new Float32Array(3);
   const ml = Math.hypot(GEOM.moon[0], GEOM.moon[1], GEOM.moon[2]);
   moonDir[0] = GEOM.moon[0] / ml;
@@ -55,6 +58,8 @@ export function createLight(): GardenLight {
   let idleS = 0;
   let moved = false;
   let gatherAmount = 0;
+  let restBack = 0;
+  let handThrow = 0;
   let gatherSlot: SlotId | null = null;
   let slots: readonly SlotView[] = [];
 
@@ -99,12 +104,24 @@ export function createLight(): GardenLight {
     }
     gatherAmount = f.target >= 0.5 ? Math.max(gatherAmount, f.value) : follow(gatherAmount, 0, LIGHT.gatherOutTauS, dt);
     gather[3] = gatherAmount;
+    restBack = follow(restBack, slots.length > 0 ? GEOM.bedRestBack : 0, LIGHT.gatherOutTauS, dt);
+    /** A bed's rest light is part of its composed shot; on the overview the ground is lit only once a hand is there. */
+    handThrow = follow(handThrow, hasPointer || slots.length > 0 ? 1 : 0, LIGHT.gatherOutTauS, dt);
+    const toGather = Math.min(1, gatherAmount * 4);
+    back[0] = cursor[0]! + (gather[0]! - cursor[0]!) * toGather;
+    back[1] = cursor[1]! + (gather[1]! - cursor[1]!) * toGather;
+    back[2] = cursor[2]! - cursor[3]! * GEOM.liftOfRadius + (gather[2]! - cursor[2]! + cursor[3]! * GEOM.liftOfRadius) * toGather;
+    back[3] = Math.max(gatherAmount, restBack);
   }
 
   return {
     cursor,
     gather,
+    back,
     moonDir,
+    get handThrow() {
+      return handThrow;
+    },
     setPointer(xPx, yPx, kind) {
       hasPointer = true;
       touch = kind === 'touch';

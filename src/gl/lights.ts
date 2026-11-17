@@ -11,11 +11,14 @@ import { linearHex } from './colour.ts';
  * - uMoonBack: the real moon behind the garden; it gives the rim on the moon side, the halo in the sky and the glint in
  *   the puddles. Each place sets where it hangs for its key frame (garden/place.ts eases it, so a walk never jumps).
  * - uCursor: the warm hand light; uGather: the focus light; uFly: up to 4 fireflies that light nearby paper.
+ * - uFocusBack: the plane the far layers fall back behind (softer, darker), with its amount: the focused flower, or a
+ *   bed's flowers at a lower rest amount, so a bed shot keeps its wall behind the hero without a focus.
+ * - uHandThrow: how much of the hand light reaches the ground (0..1): a bed's composed rest light, or a real pointer.
  */
 export const FLY_LIGHTS = 4;
 
-/** Shadow decals fall toward (+0.34 x, +0.94 z), length per unit of height (Rosaleda 0.5), opacity 18 %. */
-const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.18 } as const;
+/** Shadow decals fall toward (+0.34 x, +0.94 z), length per unit of height (Rosaleda 0.5), opacity 30 %. */
+const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.3 } as const;
 
 /** Depth haze toward the wall: the place shadow, thickening past 3 m from the lens. */
 const HAZE = { colour: '#100f17', density: 0.06 } as const;
@@ -34,6 +37,8 @@ export const sharedUniforms = {
   uCursor: { value: new Vector4(0, 0, 1, 2.5) },
   uCursorColor: { value: linearHex('#f6dfc0', new Vector3(), 5.0) },
   uGather: { value: new Vector4(0, 0, 0, 0) },
+  uFocusBack: { value: new Vector4(0, 0, 0, 0) },
+  uHandThrow: { value: 0 },
   uMoonDir: { value: new Vector3(-0.35, 0.8, 0.5).normalize() },
   uMoonColor: { value: linearHex('#b3aacb', new Vector3(), 1.1) },
   uMoonBack: { value: new Vector3(0, 0.15, -1).normalize() },
