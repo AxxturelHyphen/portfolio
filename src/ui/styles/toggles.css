@@ -1,19 +1,33 @@
 /*
- * The fixed controls (cook/ART.md section 4): three plant tags hung on galvanised wire from the top edge, top right,
- * in every mode and above the open notebook. Garden: weathered zinc tags lettered in the display serif. Herbario:
- * paper tags, the same cut. Each tag has a punched hole the wire runs through, its own slight tilt around that hole
- * and a shadow cast on the scene. The stock is a masked layer behind the text (::before), so lettering is never
- * clipped and carries no texture; the wire (::after) sits behind the stock and shows through the hole.
- * They never move during a mode switch. The panel's dialog renders an identical row at the same spot (.pn-bar).
+ * The fixed controls (cook/ART.md section 4): three plant tags hung from one galvanised wire strung across the top
+ * right, in every mode and above the open notebook. Garden: dark weathered zinc tags, the words stamped in the display
+ * serif in pale ink. Herbario: paper tags, the same cut, dark ink. Each tag hangs on its own short drop of wire from
+ * the line, with its own tilt around its punched hole and a shadow cast on the scene. The stock is a masked layer
+ * behind the text (::before), so lettering is never clipped and carries no texture; the drop (::after) sits behind
+ * the stock and shows through the hole. They never move during a mode switch. The panel's dialog renders an
+ * identical row at the same spot (.pn-bar).
  */
 
 #toggles,
 .pn-bar {
   --tg-top: max(6px, env(safe-area-inset-top, 0px));
-  --tg-stock: var(--stock-zinc);
-  --tg-ink: var(--tag-ink);
-  --tg-ink-2: var(--tag-ink-2);
-  --tg-mark: var(--enamel-rose);
+  /*
+   * Garden zinc at about 40 percent lightness: --tg-ink on the lightest stop (#565c59) 6.0:1, --tg-ink-2 5.6:1.
+   * The grain and the patina only darken.
+   */
+  --tg-stock:
+    radial-gradient(90% 70% at 14% 8%, rgb(52 74 66 / 0.22), transparent 62%),
+    radial-gradient(70% 80% at 90% 96%, rgb(16 22 20 / 0.32), transparent 72%),
+    radial-gradient(40% 50% at 70% 30%, rgb(104 92 70 / 0.16), transparent 70%),
+    var(--zinc-grain) 0 0 / 120px 120px,
+    linear-gradient(171deg, #565c59 0%, #4f5552 52%, #444a47 100%);
+  --zinc-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='z'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .16 0 0 0 0 .14 2.2 0 0 0 -.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23z)'/%3E%3C/svg%3E");
+  --tg-slip: #444a47;
+  --tg-ink: #f4efe6;
+  --tg-ink-2: #ece7dc;
+  --tg-mark: var(--zinc-rose);
+  --tg-rim: rgb(196 204 198 / 0.3);
+  --tg-emboss: 0 -1px 0 rgb(0 0 0 / 0.55), 0 1px 0 rgb(255 255 255 / 0.08);
   --tg-shadow: var(--cast);
   --tg-hole: 9px;
   position: fixed;
@@ -25,19 +39,38 @@
 
 html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   --tg-stock: var(--stock-paper);
+  --tg-slip: var(--sheet);
   --tg-ink: var(--ink);
   --tg-ink-2: var(--ink-2);
   --tg-mark: var(--rose);
+  --tg-rim: rgb(20 18 16 / 0.45);
+  --tg-emboss: none;
   --tg-shadow: var(--cast-paper);
 }
 
 .tg {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   font-family: var(--font-display);
   font-synthesis: none;
   pointer-events: auto;
+}
+
+/* The line: one galvanised wire strung across from a nail on the left and off the right edge of the screen. */
+.tg::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: -26px;
+  right: calc(-1 * var(--edge) - 8px);
+  height: 2px;
+  background:
+    radial-gradient(circle at 3px 1px, #2a2c2b 2.5px, transparent 3px),
+    linear-gradient(180deg, #c3c8c5, #7d8380 55%, #3b3f3d);
+  box-shadow: 0 3px 3px rgb(4 6 10 / 0.5);
+  pointer-events: none;
 }
 
 /* One cut for all three, each a little different: chamfered top corners, edges a hair off true. */
@@ -45,13 +78,14 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
 .tg-cv,
 .tg-exit {
   --tilt: -1.5deg;
+  --drop: 6px;
   --cut: polygon(10px 0, calc(100% - 10px) 1px, 100% 11px, calc(100% - 1px) 100%, 1px calc(100% - 1px), 0 10px);
   position: relative;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
   min-height: 50px;
-  margin: 0;
+  margin: var(--drop) 0 0;
   padding: 19px 15px 9px;
   border: 0;
   background: none;
@@ -60,6 +94,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   font-size: 1.0625rem;
   line-height: 1.2;
   text-decoration: none;
+  text-shadow: var(--tg-emboss);
   white-space: nowrap;
   cursor: pointer;
   filter: var(--tg-shadow);
@@ -69,12 +104,14 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
 }
 
 .tg-cv {
-  --tilt: 1.2deg;
+  --tilt: 2.6deg;
+  --drop: 16px;
   --cut: polygon(9px 1px, calc(100% - 11px) 0, 100% 10px, 100% calc(100% - 1px), 0 100%, 1px 9px);
 }
 
 .tg-exit {
-  --tilt: -2.2deg;
+  --tilt: -3.4deg;
+  --drop: 9px;
   --cut: polygon(11px 0, calc(100% - 9px) 0, calc(100% - 1px) 9px, 100% 100%, 1px calc(100% - 1px), 0 11px);
 }
 
@@ -87,14 +124,14 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   z-index: -1;
   inset: 0;
   background:
-    radial-gradient(circle at 50% var(--tg-hole), rgb(20 18 16 / 0.45) 4px, transparent 6.5px),
+    radial-gradient(circle at 50% var(--tg-hole), var(--tg-rim) 4px, transparent 6.5px),
     var(--tg-stock);
   clip-path: var(--cut);
   -webkit-mask-image: radial-gradient(circle at 50% var(--tg-hole), transparent 3.5px, #000 4.2px);
   mask-image: radial-gradient(circle at 50% var(--tg-hole), transparent 3.5px, #000 4.2px);
 }
 
-/* The wire, from the top edge of the screen down through the hole, behind the stock. */
+/* The tag's own drop, from the line down through the hole, behind the stock. */
 .tg-plate::after,
 .tg-cv::after,
 .tg-exit::after {
@@ -104,12 +141,13 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   bottom: calc(100% - var(--tg-hole) - 2px);
   left: calc(50% - 1px);
   width: 2px;
-  height: calc(var(--tg-top) + var(--tg-hole) + 4px);
+  height: calc(var(--drop) + var(--tg-hole));
   background: var(--wire);
 }
 
 .tg-lang {
-  --tilt: -0.8deg;
+  --tilt: -1.8deg;
+  --drop: 4px;
   padding: 0 4px;
   cursor: auto;
 }
@@ -169,7 +207,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  background: var(--tg-stock);
+  background: var(--tg-slip);
   color: var(--tg-ink);
   font-family: var(--font-ui);
   font-weight: 400;
