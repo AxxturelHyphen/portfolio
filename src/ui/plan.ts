@@ -4,8 +4,8 @@ import './styles/plan.css';
 import type { BedSign } from './signposts.ts';
 
 /**
- * The garden plan (cook/ART.md section 4), bottom left. Folded: a zinc plant label that reads "Plan", text only.
- * Open (click, or M): a strip plan drawn in pale engraved line (hatched wall, winding path, pond, beds, tree) with
+ * The garden plan (cook/ART.md section 4), bottom left. Folded: the dog-eared corner of a paper map that reads "Plan".
+ * Open (click, or M): a strip plan drawn in pencil line on card (hatched wall, winding path, pond, beds, tree) with
  * one button per place, and a small moth in pale rose over the place where the visitor is. A place button travels
  * there (GOTO). Esc folds the plan first (the garden's own Esc then waits for the next press), and focus returns to
  * the label. No visited marks and no grotto.
