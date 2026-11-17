@@ -4,7 +4,7 @@ import type { AtlasManifest, BedId, SpriteRect } from '../../../src/types.ts';
 import { CLUMP_STRIDE, WALL_STRIDE, buildGround, shadowLengthAt, wallHeightAt } from '../../../src/world/ground.ts';
 import type { BedScene3, WorldLayout } from '../../../src/world/layout.ts';
 import { MEMORY_KEY, createMemory, type KeyValue } from '../../../src/world/memory.ts';
-import { placedSize, resolveSprite, standIns } from '../../../src/world/sprites.ts';
+import { placedSize, resolveSprite } from '../../../src/world/sprites.ts';
 
 // Ground kit, garden memory and sprite fallback: pure parts of the world, no GPU.
 
@@ -58,16 +58,12 @@ const rect = (page: number, w: number, h: number): SpriteRect => ({ page, uv: [0
 const bedM = { id: 'rosaleda', hash: '', pages: [], sprites: { 'ro/hero-a': rect(1, 1, 2), tall: rect(0, 1, 5), small: rect(0, 0.4, 0.5), band: rect(0, 9, 2), 'rose.f0': rect(1, 1, 1) }, blooms: { rose: { kind: 'rose', mode: 'frames', steps: 2, frames: ['rose.f0'], rest: { idea: 0, wip: 0, shipped: 1 } } } } as AtlasManifest;
 const sharedM = { id: 'shared', hash: '', pages: [], sprites: { 'sh/pot-a': rect(0, 1, 1) }, blooms: {} } as AtlasManifest;
 
-test('sprites resolve in the right atlas and fall back to a stand-in by size class, never a bloom frame', () => {
-  const stand = standIns(bedM);
-  expect(stand).not.toContain('rose.f0');
-  expect(stand, 'wide bands never stand in').not.toContain('band');
-  expect(resolveSprite('ro/hero-a', 'large', bedM, sharedM, stand)).toMatchObject({ from: 'bed', placeholder: false });
-  expect(resolveSprite('sh/pot-a', 'small', bedM, sharedM, stand)).toMatchObject({ from: 'shared', placeholder: false });
-  expect(resolveSprite('ro/missing', 'hero', bedM, sharedM, stand)?.rect.size[1]).toBe(5);
-  expect(resolveSprite('ro/missing', 'small', bedM, sharedM, stand)?.rect.size[1]).toBe(0.5);
+test('sprites resolve in the right atlas and a missing id draws nothing (no stand-in, no placeholder)', () => {
+  expect(resolveSprite('ro/hero-a', bedM, sharedM)).toMatchObject({ from: 'bed' });
+  expect(resolveSprite('sh/pot-a', bedM, sharedM)).toMatchObject({ from: 'shared' });
+  expect(resolveSprite('ro/missing', bedM, sharedM)).toBeNull();
   const withPlaceholder = { ...sharedM, sprites: { ...sharedM.sprites, placeholder: rect(0, 1, 1) } };
-  expect(resolveSprite('v/bench', 'medium', bedM, withPlaceholder, stand)).toMatchObject({ from: 'shared', placeholder: true });
+  expect(resolveSprite('v/bench', bedM, withPlaceholder)).toBeNull();
   expect(placedSize(rect(0, 2, 1), undefined, 1.3, 1, [0, 0])).toEqual([1.3, 0.65]);
   expect(placedSize(rect(0, 2, 1), 0.5, undefined, 2, [0, 0])).toEqual([2, 1]);
 });

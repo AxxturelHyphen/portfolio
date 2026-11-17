@@ -21,7 +21,8 @@ test('garden layout: beds in order, grotto under the Semillero, shots S01 to S12
   expect(Object.keys(garden.shots).sort()).toEqual(Array.from({ length: 12 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
   expect(garden.shots['S11']?.viewport).toEqual([390, 844]);
   expect(garden.film['S03']).toEqual({ x: 10.84, y: 1.01, z: 3.31, pitch: 4.5, yaw: 3.6, fov: 12.9 });
-  expect(garden.film['S04']).toEqual({ x: 24.43, y: 0.6, z: 5.5, pitch: 6.4, yaw: -19.7, fov: 27 });
+  // S04 moved in front of the near-ground dressing so the water and the moon's streak read under the fan (R03).
+  expect(garden.film['S04']).toEqual({ x: 23.0, y: 0.75, z: 1.0, pitch: 6, yaw: -22, fov: 46 });
   expect(garden.film['S05']).toEqual({ x: 30.06, y: 2.2, z: 7.64, pitch: -10, yaw: 0, fov: 13.7 });
   expect(garden.film['S06']).toEqual({ x: 1.2, y: 1.5, z: 3.0, pitch: 0, yaw: 0, fov: 33.4 });
   // S02 (cook/SHOTS.md C): camera at 2.2 m, tilted down 6 degrees, wide; the overview is that pose.
@@ -45,7 +46,8 @@ test('every project binds to a slot of its bed, at its world position', () => {
   expect(Object.fromEntries(bound)).toEqual({
     garagic: 'rosaleda/rose-a', 'php-playground': 'rosaleda/rose-b', 'adhd-guija': 'estanque/lily-a', 'ml-math': 'semillero/pod-a', 'ai-engineering': 'semillero/bud-a',
   });
-  expect(bind('rosaleda').find((v) => v.id === 'rosaleda/rose-a')?.world).toEqual([11.6, 1.42, -1.5]);
+  // The bloom's pedicel sits where the plate's flower was cut from the stem (R02 finding 1: no bloom in mid-air).
+  expect(bind('rosaleda').find((v) => v.id === 'rosaleda/rose-a')?.world).toEqual([11.88, 1.39, -1.63]);
   const cards = bind('salida').filter((v) => v.kind === 'link');
   expect(cards.map((v) => v.id)).toEqual(['salida/postcard-a', 'salida/postcard-b', 'salida/postcard-c']);
   expect(BED_IDS.flatMap((b) => bind(b).filter((v) => v.kind === 'prop').map((v) => v.id))).toEqual(['puerta/portrait', 'estanque/sundial', 'semillero/ivy', 'gruta/coupe']);
