@@ -286,8 +286,8 @@
      ],
      "treat": "INK",
      "ink": {
-      "line": "#8b663a",
-      "wash": "#8b663a",
+      "line": "#4a3a3c",
+      "wash": "#4a3a3c",
       "washAlpha": 0
      },
      "bevel": 1,
@@ -371,7 +371,9 @@
       "ro/b-tight",
       "ro/b-tight",
       "ro/b-colour",
-      "ro/b-colour"
+      "ro/b-colour",
+      "ro/b-bloom-7",
+      "ro/b-bloom-7"
      ],
      "prefix": "ro/b-bloom",
      "ring": 0.62,
@@ -685,11 +687,11 @@
        {
         "hue": "pink",
         "gm": [
-         "#5a0a12",
-         "#890b13",
-         "#c56966"
+         "#3a0510",
+         "#8a1028",
+         "#a83046"
         ],
-        "amount": 0.85,
+        "amount": 0.95,
         "value": 0.95,
         "sat": 0.75
        }

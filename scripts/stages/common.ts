@@ -11,7 +11,7 @@ export const CATALOG = `${WORK}/sprites.json`;
 export const PACK_DIR = `${WORK}/pack`;
 /** Pixels per world unit of the hi atlases; lo pages are half of this. */
 export const PX_PER_UNIT = 128;
-export const OVERVIEW_PX_PER_UNIT = 16;
+export const OVERVIEW_PX_PER_UNIT = 64;
 export const MAX_PAGE = 2048;
 export const GUTTER = 8;
 /** Sprite ids in the shared atlas (moth, P1 placeholder only). */
