@@ -105,7 +105,7 @@ export const CAMERA = {
   focusNudgeS: 0.6,
   viewEaseInS: 0.9,
   dollyS: 1.0,
-  travelS: 1.4,
+  travelS: 1.6,
   travelPerBedS: 0.1,
   travelMaxS: 1.6,
   leanS: 0.25,
@@ -116,7 +116,7 @@ export const CAMERA = {
   zoomTauS: 0.08,
 } as const;
 
-/** Travel over n beds: min(1.6, 1.4 + 0.1 (n - 1)) s. */
+/** Travel over n beds: min(1.6, 1.6 + 0.1 (n - 1)) s. ART section 1 asks 1.6 s per neighbour hop for the 10 m/s clamp (MOTION B12 said 1.4). */
 export const travelS = (beds: number): number =>
   Math.min(CAMERA.travelMaxS, CAMERA.travelS + CAMERA.travelPerBedS * Math.max(0, beds - 1));
 
@@ -172,13 +172,61 @@ export const pushOf = (open: number): number => {
 /** Panel progress 0..1 (transform and opacity): the panel appears only on the reopening half. */
 export const panelOf = (open: number): number => EASE_OUT(clamp01((open - OPEN_HALF) / OPEN_HALF));
 
-// Film strip during travel
+// Walk between neighbouring beds (ART section 1): the camera walks the rail on a shaped profile of ch.leg
 
-export const STRIP = { barWidth: 0.03, sprocket: 1 } as const;
+/**
+ * maxSpeed: m/s cap of a neighbour walk (longest hop 11.4 m). wingFadeFrom / wingFadeTo: near wings fade from 1 to 0
+ * between these speeds. rampIn / rampOut: fractions of travelS spent accelerating and settling (a long soft settle,
+ * as V03). carryS: time constant that hands the velocity of an interrupted walk to the new leg.
+ */
+export const WALK = { maxSpeed: 10, wingFadeFrom: 5, wingFadeTo: 6, rampIn: 0.15, rampOut: 0.35, carryS: 0.25 } as const;
+
+const WALK_PEAK = 1 / (1 - WALK.rampIn / 2 - WALK.rampOut / 2);
+
+/** Spring progress from rest p = 1 - (1 + u) exp(-u), inverted for u = omega t (bisection, no allocation). */
+export function springTimeOf(p: number): number {
+  if (p <= 0) return 0;
+  if (p >= 1) return 24;
+  let lo = 0, hi = 24;
+  for (let i = 0; i < 28; i++) {
+    const u = (lo + hi) / 2;
+    if (1 - (1 + u) * Math.exp(-u) < p) lo = u; else hi = u;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Walk progress 0..1 at normalised time tau (1 = travelS): cosine ramps around a constant-speed middle. */
+export function walkProfile(tau: number): number {
+  const t = clamp01(tau);
+  const a = WALK.rampIn, b = WALK.rampOut;
+  if (t < a) return WALK_PEAK * (t / 2 - (a / (2 * Math.PI)) * Math.sin((Math.PI * t) / a));
+  if (t <= 1 - b) return WALK_PEAK * (a / 2 + t - a);
+  const q = t - (1 - b);
+  return WALK_PEAK * (a / 2 + 1 - a - b + q / 2 + (b / (2 * Math.PI)) * Math.sin((Math.PI * q) / b));
+}
+
+/** Walk progress for a leg channel value: the walk ends when the leg reaches 99 percent, at travelS. */
+export const walkOf = (leg: number): number => walkProfile(springTimeOf(leg) / SPRING_99);
+
+/** Seconds since the leg started, read back from its value (exact for a leg from rest). */
+export const walkElapsedS = (leg: number): number => (springTimeOf(leg) / SPRING_99) * CAMERA.travelS;
+
+/** Peak camera speed in m/s of a walk over `metres`. */
+export const walkPeakSpeed = (metres: number): number => (Math.abs(metres) * WALK_PEAK) / CAMERA.travelS;
+
+/** Extra metres that carry the velocity v0 of an interrupted walk into the new one, fading out (v0 t exp(-t / k)). */
+export const walkCarry = (v0: number, elapsedS: number): number => v0 * elapsedS * Math.exp(-elapsedS / WALK.carryS);
+
+/** Near-wing opacity at a camera speed (m/s). */
+export const wingOpacityOf = (speed: number): number => 1 - clamp01((speed - WALK.wingFadeFrom) / (WALK.wingFadeTo - WALK.wingFadeFrom));
+
+// Film strip during travel: only jumps of more than one bed (a neighbour is a walk)
+
+export const STRIP = { barWidth: 0.03, sprocket: 1, minHops: 2 } as const;
 
 /** uStrip from ch.leg over `hops` beds: frame offset -1..1 at bed boundaries, bar width, sprocket amount, enabled. */
 export function stripOf(leg: number, hops: number, out: Vec4Out): Vec4Out {
-  const moving = leg > 0 && leg < 1 && hops > 0;
+  const moving = leg > 0 && leg < 1 && hops >= STRIP.minHops;
   const pos = leg * hops;
   out.x = moving ? (pos - Math.round(pos)) * 2 : 0;
   out.y = STRIP.barWidth;

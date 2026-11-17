@@ -1,11 +1,11 @@
-import type { BedId, BedScene, GardenLayout, I18n, Lang, Layer, Profile, Project, Slot, SlotView, Tier } from '../types.ts';
+import type { BedId, BedScene, I18n, Lang, Layer, Profile, Project, Slot, SlotView, Tier } from '../types.ts';
+import type { BedScene3, WorldLayout } from './layout.ts';
 
 /**
- * BedScene schema, tier filtering and slot binding (cook/ARCH.md 2.6).
- * Units: metres. Every x in a bed file (layers, slots, procedural, pose, bounds) is local to the bed's anchor in
- * content/garden.json; y is up from the ground; z ≤ 0 with the nearest layer at 0. Pose fov is vertical degrees,
- * pitch and Placement.rot are degrees. Layers are listed far to near.
- * Validation runs at build (tests/unit/world-stream); the browser only casts.
+ * BedScene schema, tier filtering and slot binding (cook/ARCH.md 2.6, cook/ART.md section 2).
+ * Units: metres, world coordinates (x along the garden, y up, z toward the camera, ground at y 0). Layers are atlas
+ * page groups listed far to near; each item stands at its own 3D position (layout.ts Placement3). Pose is the bed's
+ * rail key (degrees, fov vertical). Validation runs at build (tests/unit/world); the browser only casts.
  */
 
 export const BED_IDS: readonly BedId[] = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'];
@@ -14,12 +14,15 @@ const FLOWERS: readonly string[] = ['rose', 'lily', 'pod', 'bud'];
 const SLOT_KINDS: readonly string[] = ['project', 'link', 'prop'];
 const LABELS: readonly string[] = ['left', 'right', 'auto'];
 const PROCS: readonly string[] = ['pond', 'sigils', 'sundial', 'fireflies', 'stereoscope'];
+const SIZES: readonly string[] = ['hero', 'large', 'medium', 'small'];
+const GROUPS: readonly string[] = ['L', 'M', 'D'];
+const FEET: readonly string[] = ['sprays', 'pot', 'clump', 'none'];
 const EM_DASH = '\u2014';
 
 export const tierRank = (t: Tier): number => TIERS.indexOf(t);
 
 /** Layers drawn on `tier`: minTier filter, then at most `maxLayers`, dropping the farthest optional layers first. */
-export function keptLayers(scene: BedScene, tier: Tier, maxLayers: number): Layer[] {
+export function keptLayers<L extends Layer>(scene: { layers: L[] }, tier: Tier, maxLayers: number): L[] {
   const kept = scene.layers.filter((l) => tierRank(l.minTier) <= tierRank(tier));
   for (let i = 0; i < kept.length && kept.length > maxLayers;) {
     if (kept[i]?.minTier === 'low') i++;
@@ -40,7 +43,7 @@ export function slotLayer(layers: readonly Layer[], slot: Slot): number {
 const pick = (v: I18n, lang: Lang): string => v[lang];
 const isRealHref = (href: string): boolean => /^(https?:|mailto:)/.test(href) && !href.includes('[FILL');
 
-export interface BindInput { scene: BedScene; anchorX: number; projects: readonly Project[]; profile: Profile; lang: Lang }
+export interface BindInput { scene: BedScene; projects: readonly Project[]; profile: Profile; lang: Lang }
 
 /**
  * Binds slots to content. Project slots are positional templates: projects (already in projectsOf order) take the
@@ -48,7 +51,7 @@ export interface BindInput { scene: BedScene; anchorX: number; projects: readonl
  * finds no slot, so `npm run check` fails before the garden does.
  */
 export function bindSlots(b: BindInput): SlotView[] {
-  const { scene, anchorX, projects, profile, lang } = b;
+  const { scene, projects, profile, lang } = b;
   const views: SlotView[] = [];
   const free = scene.slots.filter((s) => s.kind === 'project').sort((a, c) => c.scale - a.scale);
   for (const p of projects) {
@@ -56,11 +59,11 @@ export function bindSlots(b: BindInput): SlotView[] {
     const slot = free[i];
     if (slot === undefined) throw new Error(`bed ${scene.id}: no free "${p.flower}" slot for project ${p.id}; add a slot to content/beds/${scene.id}.json`);
     free.splice(i, 1);
-    views.push({ id: `${scene.id}/${slot.id}`, kind: 'project', project: p, world: [anchorX + slot.x, slot.y, slot.z], hit: slot.hit, alt: p.title });
+    views.push({ id: `${scene.id}/${slot.id}`, kind: 'project', project: p, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: p.title });
   }
   for (const slot of scene.slots) {
     if (slot.kind === 'project') continue;
-    const view: SlotView = { id: `${scene.id}/${slot.id}`, kind: slot.kind, world: [anchorX + slot.x, slot.y, slot.z], hit: slot.hit, alt: '' };
+    const view: SlotView = { id: `${scene.id}/${slot.id}`, kind: slot.kind, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: '' };
     if (slot.kind === 'link') {
       const link = profile.links.find((l) => l.key === slot.ref);
       if (link === undefined) throw new Error(`bed ${scene.id}: link slot ${slot.id} names unknown profile link "${slot.ref ?? ''}"`);
@@ -108,6 +111,10 @@ class Errors {
     if (optional && v === undefined) return;
     if (typeof v !== 'number' || !Number.isFinite(v)) this.fail(path, 'expected a number');
   }
+  bool(v: unknown, path: string, optional = false): void {
+    if (optional && v === undefined) return;
+    if (typeof v !== 'boolean') this.fail(path, 'expected a boolean');
+  }
   str(v: unknown, path: string, optional = false): string {
     if (optional && v === undefined) return '';
     if (typeof v !== 'string' || v === '') { this.fail(path, 'expected a non-empty string'); return ''; }
@@ -136,24 +143,32 @@ class Errors {
   }
 }
 
+function checkItem(e: Errors, v: unknown, ip: string): void {
+  const p = e.obj(v, ip);
+  e.str(p.sprite, `${ip}.sprite`);
+  for (const k of ['x', 'y', 'z', 'scale', 'hinge', 'lean']) e.num(p[k], `${ip}.${k}`);
+  e.num(p.h, `${ip}.h`, true);
+  e.num(p.w, `${ip}.w`, true);
+  if (p.h === undefined && p.w === undefined) e.fail(ip, 'needs h or w (world size at scale 1)');
+  for (const k of ['rot', 'sway', 'lift', 'dz']) e.num(p[k], `${ip}.${k}`, true);
+  e.oneOf(p.size, SIZES, `${ip}.size`);
+  e.oneOf(p.group, GROUPS, `${ip}.group`);
+  e.oneOf(p.foot, FEET, `${ip}.foot`);
+  e.bool(p.shadow, `${ip}.shadow`);
+  e.bool(p.react, `${ip}.react`);
+  for (const k of ['flip', 'flat', 'wing']) e.bool(p[k], `${ip}.${k}`, true);
+  e.tuple(p.tint, 3, `${ip}.tint`, true);
+}
+
 function checkLayer(e: Errors, v: unknown, path: string, ids: Set<string>): number {
   const l = e.obj(v, path);
   const id = e.str(l.id, `${path}.id`);
   if (ids.has(id)) e.fail(`${path}.id`, `duplicate layer id ${id}`);
   ids.add(id);
   e.num(l.z, `${path}.z`);
-  if (typeof l.z === 'number' && l.z > 0) e.fail(`${path}.z`, 'layers sit at z <= 0');
   e.oneOf(l.minTier, TIERS, `${path}.minTier`);
   e.num(l.page, `${path}.page`);
-  e.arr(l.items, `${path}.items`).forEach((it, i) => {
-    const p = e.obj(it, `${path}.items[${i}]`);
-    const ip = `${path}.items[${i}]`;
-    e.str(p.sprite, `${ip}.sprite`);
-    for (const k of ['x', 'y', 'scale']) e.num(p[k], `${ip}.${k}`);
-    for (const k of ['rot', 'sway', 'lift', 'dz']) e.num(p[k], `${ip}.${k}`, true);
-    if (p.flip !== undefined && typeof p.flip !== 'boolean') e.fail(`${ip}.flip`, 'expected a boolean');
-    e.tuple(p.tint, 3, `${ip}.tint`, true);
-  });
+  e.arr(l.items, `${path}.items`).forEach((it, i) => checkItem(e, it, `${path}.items[${i}]`));
   return typeof l.z === 'number' ? l.z : 0;
 }
 
@@ -165,7 +180,7 @@ function checkSlot(e: Errors, v: unknown, path: string, ids: Set<string>): void 
   e.oneOf(s.kind, SLOT_KINDS, `${path}.kind`);
   if (s.kind === 'project') e.oneOf(s.accepts, FLOWERS, `${path}.accepts`);
   else e.str(s.ref, `${path}.ref`);
-  for (const k of ['x', 'y', 'z', 'scale']) e.num(s[k], `${path}.${k}`);
+  for (const k of ['x', 'y', 'z', 'scale', 'hinge']) e.num(s[k], `${path}.${k}`);
   e.str(s.bloom, `${path}.bloom`, true);
   e.tuple(s.hit, 2, `${path}.hit`);
   e.oneOf(s.label, LABELS, `${path}.label`);
@@ -173,17 +188,18 @@ function checkSlot(e: Errors, v: unknown, path: string, ids: Set<string>): void 
 }
 
 /** Throws with every schema error of one bed file listed. */
-export function validateBedScene(raw: unknown, id: BedId): BedScene {
+export function validateBedScene(raw: unknown, id: BedId): BedScene3 {
   const e = new Errors();
   const s = e.obj(raw, id);
   if (s.id !== id) e.fail(`${id}.id`, `expected "${id}"`);
   e.i18n(s.title, `${id}.title`);
   e.i18n(s.alt, `${id}.alt`);
   e.pose(s.pose, `${id}.pose`);
+  if (typeof s.shade !== 'string' || !/^#[0-9a-f]{6}$/.test(s.shade)) e.fail(`${id}.shade`, 'expected a #rrggbb place shadow colour');
   e.tuple(s.bounds, 2, `${id}.bounds`);
   const layerIds = new Set<string>();
   const zs = e.arr(s.layers, `${id}.layers`).map((l, i) => checkLayer(e, l, `${id}.layers[${i}]`, layerIds));
-  if (zs.length < 4 || zs.length > 7) e.fail(`${id}.layers`, 'expected 4 to 7 depth layers');
+  if (zs.length < 1 || zs.length > 12) e.fail(`${id}.layers`, 'expected 1 to 12 page groups');
   for (let i = 1; i < zs.length; i++) if ((zs[i] ?? 0) < (zs[i - 1] ?? 0)) e.fail(`${id}.layers[${i}].z`, 'layers go far to near');
   const slotIds = new Set<string>();
   e.arr(s.slots, `${id}.slots`).forEach((v, i) => checkSlot(e, v, `${id}.slots[${i}]`, slotIds));
@@ -194,11 +210,11 @@ export function validateBedScene(raw: unknown, id: BedId): BedScene {
   });
   e.str(s.behaviour, `${id}.behaviour`, true);
   if (e.list.length > 0) throw new Error(`bed scene ${id}: ${e.list.length} error(s)\n  ${e.list.join('\n  ')}`);
-  return raw as BedScene;
+  return raw as BedScene3;
 }
 
 /** Throws with every schema error of content/garden.json listed. */
-export function validateGarden(raw: unknown): GardenLayout {
+export function validateGarden(raw: unknown): WorldLayout {
   const e = new Errors();
   const g = e.obj(raw, 'garden');
   const order = e.arr(g.order, 'garden.order');
@@ -217,6 +233,52 @@ export function validateGarden(raw: unknown): GardenLayout {
     if (s.pose !== undefined) e.pose(s.pose, `garden.shots.${k}.pose`);
     e.tuple(s.viewport, 2, `garden.shots.${k}.viewport`, true);
   }
+  checkWorld(e, g);
   if (e.list.length > 0) throw new Error(`garden layout: ${e.list.length} error(s)\n  ${e.list.join('\n  ')}`);
-  return raw as GardenLayout;
+  return raw as WorldLayout;
+}
+
+function checkFilm(e: Errors, v: unknown, path: string): void {
+  const o = e.obj(v, path);
+  for (const k of ['x', 'y', 'z', 'pitch', 'yaw', 'fov']) e.num(o[k], `${path}.${k}`);
+}
+
+function checkWorld(e: Errors, g: Raw): void {
+  const rail = e.obj(g.rail, 'garden.rail');
+  const keys = e.arr(rail.keys, 'garden.rail.keys');
+  keys.forEach((k, i) => {
+    checkFilm(e, k, `garden.rail.keys[${i}]`);
+    const o = e.obj(k, `garden.rail.keys[${i}]`);
+    if (o.bed !== undefined) e.oneOf(o.bed, BED_IDS, `garden.rail.keys[${i}].bed`);
+    const prev = keys[i - 1] as Raw | undefined;
+    if (prev !== undefined && typeof prev.x === 'number' && typeof o.x === 'number' && o.x <= prev.x) e.fail(`garden.rail.keys[${i}].x`, 'keys go west to east');
+  });
+  const p = e.obj(rail.portrait, 'garden.rail.portrait');
+  for (const k of ['y', 'dz', 'pitch', 'fov']) e.num(p[k], `garden.rail.portrait.${k}`);
+  e.num(rail.yawLeadDeg, 'garden.rail.yawLeadDeg');
+  for (const [b, f] of Object.entries(e.obj(rail.off, 'garden.rail.off'))) {
+    e.oneOf(b, BED_IDS, `garden.rail.off.${b}`);
+    checkFilm(e, f, `garden.rail.off.${b}`);
+  }
+  for (const [k, f] of Object.entries(e.obj(g.film, 'garden.film'))) checkFilm(e, f, `garden.film.${k}`);
+  const gr = e.obj(g.ground, 'garden.ground');
+  const path = e.obj(gr.path, 'garden.ground.path');
+  e.arr(path.points, 'garden.ground.path.points').forEach((pt, i) => e.tuple(pt, 2, `garden.ground.path.points[${i}]`));
+  e.arr(path.spur, 'garden.ground.path.spur').forEach((pt, i) => e.tuple(pt, 2, `garden.ground.path.spur[${i}]`));
+  e.num(path.width, 'garden.ground.path.width');
+  e.arr(gr.puddles, 'garden.ground.puddles').forEach((pt, i) => e.tuple(pt, 2, `garden.ground.puddles[${i}]`));
+  const pond = e.obj(gr.pond, 'garden.ground.pond');
+  for (const k of ['x', 'z', 'rx', 'rz']) e.num(pond[k], `garden.ground.pond.${k}`);
+  e.num(gr.length, 'garden.ground.length');
+  const wall = e.obj(gr.wall, 'garden.ground.wall');
+  for (const k of ['z', 'h', 'flatW']) e.num(wall[k], `garden.ground.wall.${k}`);
+  e.tuple(wall.flatYaw, 2, 'garden.ground.wall.flatYaw');
+  e.arr(wall.piers, 'garden.ground.wall.piers').forEach((x, i) => e.num(x, `garden.ground.wall.piers[${i}]`));
+  e.arr(wall.low, 'garden.ground.wall.low').forEach((x, i) => e.tuple(x, 3, `garden.ground.wall.low[${i}]`));
+  const sl = e.obj(gr.shadowLength, 'garden.ground.shadowLength');
+  for (const b of BED_IDS) e.num(sl[b], `garden.ground.shadowLength.${b}`);
+  e.tuple(gr.shadowDir, 2, 'garden.ground.shadowDir');
+  const cl = e.obj(gr.clumps, 'garden.ground.clumps');
+  e.num(cl.high, 'garden.ground.clumps.high');
+  e.num(cl.low, 'garden.ground.clumps.low');
 }

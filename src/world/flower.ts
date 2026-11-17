@@ -2,7 +2,8 @@
  * Flower (ARCH 2.8, spec §3.3 and §7): a project flower that rests at the bloom stage of its status and opens in
  * stop-motion when focused. Bloom poses advance on the stepped 12 fps clock, one pose per tick opening (750 ms over
  * 10 poses) and two per tick closing (375 ms), starting one tick after focus. The turn toward the camera runs at
- * full rate. Frozen time (?t) and reduced motion show the target pose at once.
+ * full rate, from the slot's hinge to face the camera. A visited flower (garden memory) stays open instead of closing.
+ * Frozen time (?t) and reduced motion show the target pose at once.
  */
 import type { Clock, Flower, InstanceWriter, Project, QuadParams, SlotView, SpriteRect, BloomDef, SpriteId } from '../types.ts';
 import { BLOOM_POSES, EASE_OUT, STEP_FPS, UI, bloomAt, clamp01 } from '../core/motion.ts';
@@ -23,6 +24,8 @@ export interface FlowerOptions {
   scale: number;
   /** Read every frame; a Machine fits. */
   env: { readonly state: { readonly reduced: boolean } };
+  /** Slot yaw in radians, plus turns the right edge toward the camera; focus turns it to face the camera. */
+  hinge: number;
 }
 
 export interface GardenFlower extends Flower {
@@ -30,6 +33,8 @@ export interface GardenFlower extends Flower {
   readonly openness: number;
   /** True when update() changed what write() would output since the last write(). */
   readonly dirty: boolean;
+  /** Visited this or an earlier visit: rests open. */
+  setVisited(on: boolean): void;
 }
 
 /** Bloom stage at rest for a status, as the first pose at least that open. */
@@ -46,13 +51,14 @@ export function quantise(openness: number, steps: number): number {
 }
 
 export function createFlower(o: FlowerOptions): GardenFlower {
-  const { slot, bloom, sprites, scale, env } = o;
+  const { slot, bloom, sprites, scale, env, hinge } = o;
   const rest = restPose(bloom, slot.project?.status ?? 'idea');
   const petals = bloom.petals ?? [];
   const frames = bloom.frames ?? [];
   const quads = bloom.mode === 'petals' ? petals.length : 1;
   const phase = (slot.world[0] * 1.37) % (2 * Math.PI);
   let focused = false;
+  let visited = false;
   let pose = rest;
   let lastTick = -1;
   let turn = 0;
@@ -71,7 +77,7 @@ export function createFlower(o: FlowerOptions): GardenFlower {
     quad.py = rect === undefined ? 0 : rect.pivot[1];
     quad.uv = rect === undefined ? NO_UV : rect.uv;
     quad.phase = phase;
-    quad.facing = EASE_OUT(turn);
+    quad.facing = -hinge * (1 - EASE_OUT(turn));
   }
 
   return {
@@ -82,8 +88,11 @@ export function createFlower(o: FlowerOptions): GardenFlower {
     setFocused(on) {
       focused = on;
     },
+    setVisited(on) {
+      visited = on;
+    },
     update(c: Clock) {
-      const target = focused ? LAST_POSE : rest;
+      const target = focused || visited ? LAST_POSE : rest;
       const tick = Math.floor(c.t * STEP_FPS);
       if (c.frozen || env.state.reduced) {
         pose = target;

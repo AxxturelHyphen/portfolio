@@ -54,8 +54,8 @@ export default function gruta(ctx: StreamBedCtx): BedBehaviour {
   const say = (key: string): string => ctx.content.strings[machine.state.lang][key] ?? '[FILL]';
 
   const coupe = scene.slots.find((sl) => sl.id === 'coupe');
-  /** Slots are local to the bed; the bed sits at its garden anchor on X. */
-  const ox = ctx.content.garden.anchors[scene.id] + (coupe?.x ?? 0);
+  /** Slots are in world coordinates. */
+  const ox = coupe?.x ?? ctx.content.garden.anchors[scene.id];
   const oy = coupe?.y ?? 0;
   const oz = coupe?.z ?? 0;
   const unit = Math.abs(scene.bounds[1] - scene.bounds[0]) * GAME.unitOfBed;

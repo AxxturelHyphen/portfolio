@@ -1,42 +1,33 @@
 /**
- * CameraRig (ARCH 2.5): the pose is a pure function of state, channels, overview pan and zoom, so every move reverses
- * from where it is and closing a project lands on the exact stored pose. Pose units: world X along the garden, Y up,
- * the camera looks toward -Z; pitch in radians (negative looks down), fov in degrees (vertical, as three uses it).
+ * CameraRig (ARCH 2.5) on the raised rail of cook/ART.md section 1. pose = mix(overview(panX, zoom), walk, dolly),
+ * then the focus nudge and the "View" push toward the slot. The walk is a continuous move along the rail driven by
+ * ch.leg through the walk profile of core/motion.ts (10 m/s cap on a neighbour hop); a new leg starts from where the
+ * camera is and carries its velocity, so every move reverses from where it is. Jumps over more than one bed dip
+ * through the overview (the film strip covers them). Pitch and yaw are radians; positive yaw turns the view toward +x.
  */
 import { PerspectiveCamera, Vector3 } from 'three';
 import type { BedId, CameraRig, Clock, GardenLayout, Machine, Pose, ScreenPt, ShotId, SlotId, SlotView, State } from '../types.ts';
-import { CAMERA, follow, omegaFor, pushOf, springStep, type SpringState } from '../core/motion.ts';
+import { CAMERA, WALK, follow, omegaFor, pushOf, springStep, walkCarry, walkElapsedS, walkOf, type SpringState } from '../core/motion.ts';
+import { DEG, type WorldLayout } from './layout.ts';
+import { createRail, filmPose, type RigPose } from './rail.ts';
 
-/** Framing geometry (fractions and world units, no timings). */
-const FRAME = {
-  zoomMax: 2,
-  bedY: 0.55,
-  bedZ: 0.45,
-  bedPitch: 0.4,
-  nudge: 0.16,
-  nudgeY: 0.5,
-  push: 0.55,
-  hopDip: 0.35,
-  near: 0.05,
-  far: 400,
-} as const;
+const FRAME = { zoomMax: 2, nudge: 0.16, nudgeY: 0.5, push: 0.55, hopDip: 0.35, near: 0.05, far: 400, portraitAspect: 0.8, speedTauS: 0.08 } as const;
 
-/** The rig as the world and garden folders see it: the CameraRig contract plus the wiring the composition root needs. */
 export interface GardenRig extends CameraRig {
+  readonly pose: Readonly<RigPose>;
   readonly camera: PerspectiveCamera;
   readonly width: number;
   readonly height: number;
-  /** Overrides the default bed pose with the BedScene pose (x is the bed anchor). */
+  /** Camera speed along the rail, m/s (smoothed): near wings fade on it. */
+  readonly speed: number;
+  /** Replaces a bed's key (y, z, pitch in radians, fov); x stays the rail stop. Beds off the rail take the whole pose. */
   setBedPose(bed: BedId, pose: Pose): void;
-  /** The active bed's slots, for the focus nudge and the "View" push. */
   setSlots(slots: readonly SlotView[]): void;
-  /** World units visible vertically at plane z from the current pose. */
   viewHeightAt(planeZ: number): number;
   /** World X of the overview pan: where a leg from the overview starts. */
   readonly panX: number;
 }
 
-/** Writes the world position of slot `id` into out[0..2]; false when the slot is not in `slots`. */
 export function slotWorld(slots: readonly SlotView[], id: SlotId | null, out: Float32Array): boolean {
   if (id === null) return false;
   for (let i = 0; i < slots.length; i++) {
@@ -54,35 +45,33 @@ export function slotWorld(slots: readonly SlotView[], id: SlotId | null, out: Fl
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 const halfTan = (fovDeg: number): number => Math.tan((fovDeg * Math.PI) / 360);
 
-function copyPose(from: Readonly<Pose>, to: Pose): void {
-  to.x = from.x;
-  to.y = from.y;
-  to.z = from.z;
-  to.pitch = from.pitch;
-  to.fov = from.fov;
+function mixPose(a: Readonly<RigPose>, b: Readonly<RigPose>, k: number, out: RigPose): void {
+  out.x = mix(a.x, b.x, k);
+  out.y = mix(a.y, b.y, k);
+  out.z = mix(a.z, b.z, k);
+  out.pitch = mix(a.pitch, b.pitch, k);
+  out.yaw = mix(a.yaw, b.yaw, k);
+  out.fov = mix(a.fov, b.fov, k);
 }
 
-export function createRig(g: GardenLayout): GardenRig {
+const blank = (): RigPose => ({ x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 40 });
+
+export function createRig(layout: GardenLayout): GardenRig {
+  const g = layout as WorldLayout;
   const ov = g.overview;
+  const rail = createRail(g.rail);
   const camera = new PerspectiveCamera(ov.fov, 16 / 9, FRAME.near, FRAME.far);
-  const pose: Pose = { x: ov.x, y: ov.y, z: ov.z, pitch: ov.pitch, fov: ov.fov };
-  const last: Pose = { x: NaN, y: NaN, z: NaN, pitch: NaN, fov: NaN };
-  const bedPoses = new Map<BedId, Pose>();
-  for (const id of Object.keys(g.anchors) as BedId[]) {
-    bedPoses.set(id, { x: g.anchors[id], y: ov.y * FRAME.bedY, z: ov.z * FRAME.bedZ, pitch: ov.pitch * FRAME.bedPitch, fov: ov.fov });
-  }
-  let minA = Infinity;
-  let maxA = -Infinity;
-  for (const id of g.order) {
-    minA = Math.min(minA, g.anchors[id]);
-    maxA = Math.max(maxA, g.anchors[id]);
-  }
-  const spacing = g.order.length > 1 ? (maxA - minA) / (g.order.length - 1) : 1;
+  camera.rotation.order = 'YXZ';
+  const pose: RigPose = { x: ov.x, y: ov.y, z: ov.z, pitch: ov.pitch, yaw: 0, fov: ov.fov };
+  const last = blank();
+  const offPoses = new Map<BedId, RigPose>();
+  for (const [bed, f] of Object.entries(g.rail.off)) if (f !== undefined) offPoses.set(bed as BedId, filmPose(f, blank()));
 
   const omegaFling = omegaFor(CAMERA.flingS);
   const omegaRubber = omegaFor(CAMERA.rubberBandS);
   const omegaNudge = omegaFor(CAMERA.focusNudgeS);
   const [panLo, panHi] = g.pan;
+  const stops: number[] = g.order.map((b) => rail.stopX(b)).filter((x) => !Number.isNaN(x));
 
   let width = 1280;
   let height = 720;
@@ -95,19 +84,29 @@ export function createRig(g: GardenLayout): GardenRig {
   let zoomTarget = 1;
   let zoomAnchorPx = -1;
   let prevDollyTarget = 0;
-  /** Dolly value when the overview took the camera X mid move: below it the X holds, above it the X eases to the bed. */
-  let holdD = 1;
-  let lastBx = ov.x;
   let lastBed: BedId | null = null;
   let lastFromX = NaN;
+  /** The current leg: where the walk started (its own x, not the machine's estimate), off-rail share, carried speed. */
+  let fromX = ov.x;
+  let fromOff = 0;
+  /** The off-rail pose the current leg leaves (walking out of the grotto), if any. */
+  let fromOffPose: RigPose | null = null;
+  let carryV = 0;
+  let hops = 0;
+  let walkX = ov.x;
+  let walkV = 0;
+  let walkOff = 0;
+  let speed = 0;
+  let dollyNow = 0;
   let slots: readonly SlotView[] = [];
   let slotKnown = false;
   let snapNext = true;
-  let shotPose: Pose | null = null;
+  let shotPose: RigPose | null = null;
   let shotGen = -1;
   const slotPt = new Float32Array(3);
-  const bedSide: Pose = { x: ov.x, y: ov.y, z: ov.z, pitch: ov.pitch, fov: ov.fov };
-  const fromSide: Pose = { x: ov.x, y: ov.y, z: ov.z, pitch: ov.pitch, fov: ov.fov };
+  const over = blank();
+  const walk = blank();
+  const base = blank();
   const rubber: SpringState = { x: 0, v: 0 };
   const nx: SpringState = { x: 0, v: 0 };
   const ny: SpringState = { x: 0, v: 0 };
@@ -117,6 +116,14 @@ export function createRig(g: GardenLayout): GardenRig {
 
   const overviewActive = (): boolean => prevDollyTarget < 0.5;
   const viewWidthAtZoom = (z: number): number => 2 * (ov.z / z) * halfTan(ov.fov) * (width / height);
+
+  function stopsBetween(a: number, b: number): number {
+    const lo = Math.min(a, b) + 0.5;
+    const hi = Math.max(a, b) - 0.5;
+    let n = 0;
+    for (let i = 0; i < stops.length; i++) if (stops[i]! > lo && stops[i]! < hi) n++;
+    return n;
+  }
 
   function stepNudge(s: SpringState, target: number, snap: boolean, dt: number): number {
     if (snap) {
@@ -158,32 +165,50 @@ export function createRig(g: GardenLayout): GardenRig {
     zoom = z1;
   }
 
-  function stepBedSide(s: State, leg: number): Pose | undefined {
-    const target = s.bed === null ? undefined : bedPoses.get(s.bed);
-    if (s.bed !== lastBed || s.fromX !== lastFromX) {
-      copyPose(lastBed === null && target !== undefined ? target : bedSide, fromSide);
-      lastBed = s.bed;
+  /** The walk side of the pose; false when there is no bed to walk to. */
+  function stepWalk(s: State, leg: number, dt: number, snap: boolean): boolean {
+    const bed = s.bed;
+    if (bed !== lastBed || s.fromX !== lastFromX) {
+      const fromOverview = lastBed === null || dollyNow < 0.01;
+      fromX = fromOverview ? s.fromX : walkX;
+      fromOff = fromOverview ? 0 : walkOff;
+      carryV = fromOverview || snap ? 0 : walkV;
+      fromOffPose = lastBed === null ? null : (offPoses.get(lastBed) ?? fromOffPose);
+      lastBed = bed;
       lastFromX = s.fromX;
+      if (bed !== null) hops = stopsBetween(fromX, targetX(bed));
     }
-    if (target === undefined) return undefined;
-    bedSide.x = mix(s.fromX, target.x, leg);
-    bedSide.y = mix(fromSide.y, target.y, leg);
-    bedSide.z = mix(fromSide.z, target.z, leg);
-    bedSide.pitch = mix(fromSide.pitch, target.pitch, leg);
-    bedSide.fov = mix(fromSide.fov, target.fov, leg);
-    return target;
+    if (bed === null) return false;
+    const off = offPoses.get(bed);
+    const tx = targetX(bed);
+    const k = walkOf(leg);
+    const x = mix(fromX, tx, k) + walkCarry(carryV, walkElapsedS(leg));
+    if (dt > 0 && !snap) walkV = (x - walkX) / dt;
+    if (snap) walkV = 0;
+    walkX = x;
+    walkOff = mix(fromOff, off === undefined ? 0 : 1, k);
+    rail.sample(x, walk);
+    walk.yaw += Math.max(-1, Math.min(1, walkV / WALK.maxSpeed)) * g.rail.yawLeadDeg * DEG;
+    const offPose = off ?? fromOffPose;
+    if (walkOff > 0 && offPose !== null) mixPose(walk, offPose, walkOff, walk);
+    return true;
+  }
+
+  function targetX(bed: BedId): number {
+    const x = rail.stopX(bed);
+    return Number.isNaN(x) ? (offPoses.get(bed)?.x ?? g.anchors[bed]) : x;
   }
 
   function apply(): void {
     camera.position.set(pose.x, pose.y, pose.z);
-    camera.rotation.set(pose.pitch, 0, 0);
+    camera.rotation.set(pose.pitch, -pose.yaw, 0);
     if (camera.fov !== pose.fov) {
       camera.fov = pose.fov;
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    changed = dirty || pose.x !== last.x || pose.y !== last.y || pose.z !== last.z || pose.pitch !== last.pitch || pose.fov !== last.fov;
-    copyPose(pose, last);
+    changed = dirty || pose.x !== last.x || pose.y !== last.y || pose.z !== last.z || pose.pitch !== last.pitch || pose.yaw !== last.yaw || pose.fov !== last.fov;
+    mixPose(pose, pose, 0, last);
     dirty = false;
   }
 
@@ -193,50 +218,52 @@ export function createRig(g: GardenLayout): GardenRig {
     snapNext = false;
     if (slotWorld(slots, s.slot, slotPt)) slotKnown = true;
 
-    const leg = ch.leg.value;
-    const target = stepBedSide(s, leg);
-    let d = target === undefined ? 0 : ch.dolly.value;
-    if (target !== undefined && Math.abs(target.x - s.fromX) / spacing > 1.5) d *= 1 - FRAME.hopDip * Math.sin(Math.PI * leg);
+    const prevWalkX = walkX;
+    const hasBed = stepWalk(s, ch.leg.value, dt, snap);
+    let d = hasBed ? ch.dolly.value : 0;
+    if (hasBed && hops > 0) d *= 1 - FRAME.hopDip * Math.sin(Math.PI * ch.leg.value);
+    dollyNow = d;
 
-    /** ARCH 2.1: heading for the overview, the pan takes the camera X wherever the dolly is (cut mid move or not). */
     const dTarget = ch.dolly.target;
     if (prevDollyTarget >= 0.5 && dTarget < 0.5) {
-      panX = lastBx;
+      panX = walkX;
       panV = 0;
-      holdD = d;
     }
     prevDollyTarget = dTarget;
-    if (d <= 0 || d >= 0.999) holdD = 1;
     stepPan(dt, snap);
     stepZoom(dt, snap);
 
-    const w = holdD >= 1 ? d : Math.max(0, (d - holdD) / (1 - holdD));
-    const bx = mix(panX, bedSide.x, w);
-    lastBx = bx;
-    const by = mix(ov.y / zoom, bedSide.y, d);
-    const bz = mix(ov.z / zoom, bedSide.z, d);
+    over.x = panX;
+    over.y = ov.y / zoom;
+    over.z = ov.z / zoom;
+    over.pitch = ov.pitch;
+    over.yaw = 0;
+    over.fov = ov.fov;
+    if (hasBed) mixPose(over, walk, d, base);
+    else mixPose(over, over, 0, base);
+
+    const v = dt > 0 && hasBed ? Math.abs(walkX - prevWalkX) / dt : 0;
+    speed = snap ? 0 : follow(speed, v * d, FRAME.speedTauS, dt);
+
     const ft = slotKnown ? ch.focus.target : 0;
-    const ox = bx + stepNudge(nx, (slotPt[0]! - bx) * FRAME.nudge * ft, snap, dt);
-    const oy = by + stepNudge(ny, (slotPt[1]! - by) * FRAME.nudge * FRAME.nudgeY * ft, snap, dt);
-    const oz = bz + stepNudge(nz, (slotPt[2]! - bz) * FRAME.nudge * ft, snap, dt);
+    const ox = base.x + stepNudge(nx, (slotPt[0]! - base.x) * FRAME.nudge * ft, snap, dt);
+    const oy = base.y + stepNudge(ny, (slotPt[1]! - base.y) * FRAME.nudge * FRAME.nudgeY * ft, snap, dt);
+    const oz = base.z + stepNudge(nz, (slotPt[2]! - base.z) * FRAME.nudge * ft, snap, dt);
     const p = slotKnown ? pushOf(ch.open.value) * FRAME.push : 0;
 
     if (shotPose !== null && shotGen < 0) shotGen = s.gen;
     if (shotPose !== null && s.gen !== shotGen) shotPose = null;
     if (shotPose !== null) {
-      copyPose(shotPose, pose);
+      mixPose(shotPose, shotPose, 0, pose);
     } else {
       pose.x = mix(ox, slotPt[0]!, p);
       pose.y = mix(oy, slotPt[1]!, p * FRAME.nudgeY);
       pose.z = mix(oz, slotPt[2]!, p);
-      pose.pitch = mix(ov.pitch, bedSide.pitch, d);
-      pose.fov = mix(ov.fov, bedSide.fov, d);
+      pose.pitch = base.pitch;
+      pose.yaw = base.yaw;
+      pose.fov = base.fov;
     }
     apply();
-  }
-
-  function dropShot(): void {
-    shotPose = null;
   }
 
   return {
@@ -246,27 +273,28 @@ export function createRig(g: GardenLayout): GardenRig {
     get width() { return width; },
     get height() { return height; },
     get panX() { return panX; },
+    get speed() { return speed; },
 
     panBy(dxPx) {
       if (!overviewActive()) return;
-      dropShot();
+      shotPose = null;
       dragging = true;
       panV = 0;
       let dx = (-dxPx * viewWidthAtZoom(zoom)) / width;
-      const over = panX < panLo ? panLo - panX : panX > panHi ? panX - panHi : 0;
+      const out = panX < panLo ? panLo - panX : panX > panHi ? panX - panHi : 0;
       const outward = (panX < panLo && dx < 0) || (panX > panHi && dx > 0);
-      if (over > 0 && outward) dx *= Math.max(0, 1 - over / (CAMERA.rubberBandFraction * viewWidthAtZoom(zoom)));
+      if (out > 0 && outward) dx *= Math.max(0, 1 - out / (CAMERA.rubberBandFraction * viewWidthAtZoom(zoom)));
       panX += dx;
     },
     fling(vxPxPerS) {
       dragging = false;
       if (!overviewActive()) return;
-      dropShot();
+      shotPose = null;
       panV = (-vxPxPerS * viewWidthAtZoom(zoom)) / width;
     },
     zoomBy(k, atXPx) {
       if (!overviewActive()) return;
-      dropShot();
+      shotPose = null;
       zoomTarget = Math.min(FRAME.zoomMax, Math.max(1, zoomTarget * k));
       zoomAnchorPx = atXPx;
     },
@@ -291,10 +319,10 @@ export function createRig(g: GardenLayout): GardenRig {
     },
     update,
     setShot(id: ShotId) {
-      const shot = g.shots[id];
       snapNext = true;
-      if (shot?.pose === undefined) return;
-      shotPose = { x: shot.pose.x, y: shot.pose.y, z: shot.pose.z, pitch: shot.pose.pitch, fov: shot.pose.fov };
+      const f = g.film[id];
+      if (f === undefined) return;
+      shotPose = filmPose(f, blank());
       shotGen = -1;
     },
     resize(w, h) {
@@ -303,10 +331,20 @@ export function createRig(g: GardenLayout): GardenRig {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       camera.updateMatrixWorld();
+      rail.setPortrait(width / height < FRAME.portraitAspect);
       dirty = true;
     },
     setBedPose(bed, p) {
-      bedPoses.set(bed, { x: g.anchors[bed], y: p.y, z: p.z, pitch: p.pitch, fov: p.fov });
+      const off = offPoses.get(bed);
+      if (off === undefined) {
+        rail.setKey(bed, p);
+        return;
+      }
+      off.x = p.x;
+      off.y = p.y;
+      off.z = p.z;
+      off.pitch = p.pitch;
+      off.fov = p.fov;
     },
     setSlots(v) {
       slots = v;

@@ -1,13 +1,16 @@
 import type {
-  AtlasManifest, AtlasTextures, Bed, BedBehaviour, BedCtx, BedId, BedModule, BedScene, BedState, CameraRig, Channel, Clock, Content,
-  CreateCutoutBatch, CutoutBatch, Gfx, Lang, Layer, LightRig, LoadAtlas, Machine, Moth, Project, ProjectBed, QuadParams,
+  AtlasManifest, AtlasTextures, Bed, BedBehaviour, BedCtx, BedId, BedModule, BedState, Channel, Clock, Content,
+  CreateCutoutBatch, CutoutBatch, Gfx, Lang, LightRig, LoadAtlas, Machine, Moth, Project, ProjectBed,
   Quality, SlotView, State,
 } from '../types.ts';
 import type { Texture } from 'three';
 import { spring } from '../core/spring.ts';
-import { STREAM } from '../core/motion.ts';
-import { createFlower, type GardenFlower } from './flower.ts';
-import { bindSlots, keptLayers, relabel, slotLayer } from './scene.ts';
+import { STREAM, wingOpacityOf } from '../core/motion.ts';
+import { buildBed, type BuildAtlas, type FlowerRef, type WingRef } from './bed.build.ts';
+import type { GardenRig } from './camera.ts';
+import type { BedScene3 } from './layout.ts';
+import type { GardenMemory } from './memory.ts';
+import { bindSlots, relabel } from './scene.ts';
 
 /** What the composition root (src/garden/index.ts) hands the world from gl/ and content/, which world may not import. */
 export interface StreamKit {
@@ -33,8 +36,11 @@ export interface StreamBedCtx extends BedCtx {
   createMover: StreamKit['createMover'];
 }
 
-/** Shared world context of every bed. */
-export interface BedEnv { gfx: Gfx; machine: Machine; rig: CameraRig; light: LightRig; quality: Quality; content: Content; kit: StreamKit }
+/** Shared world context of every bed: the always-resident shared atlas (null until loaded) and the garden memory. */
+export interface BedEnv {
+  gfx: Gfx; machine: Machine; rig: GardenRig; light: LightRig; quality: Quality; content: Content; kit: StreamKit;
+  shared(): BuildAtlas | null; memory: GardenMemory;
+}
 
 /** Load work gate owned by the residency: one grant per frame, a time slice and an upload allowance. */
 export interface Slicer { frame(): Promise<void>; upload(): Promise<void>; spent(): boolean }
@@ -42,8 +48,6 @@ export interface Slicer { frame(): Promise<void>; upload(): Promise<void>; spent
 /** Paint order: the overview atlas under every bed, the grotto under its host so the ivy covers it. */
 export const RENDER_ORDER = { overview: -1, hidden: 0, bed: 100 } as const;
 const ACTOR_CAPACITY = 64;
-const DEG = Math.PI / 180;
-const NO_TINT: readonly [number, number, number] = [1, 1, 1];
 
 const behaviours = import.meta.glob<BedModule>('./behaviours/*.ts');
 
@@ -68,12 +72,6 @@ export async function uploadPages(env: BedEnv, tex: AtlasTextures, slicer: Slice
   return true;
 }
 
-const scratch: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: [0, 0, 0, 0], sway: 0, phase: 0, lift: 0, facing: 0, tint: [1, 1, 1, 1] };
-const tint = new Float32Array(4);
-scratch.tint = tint;
-
-interface FlowerRef { flower: GardenFlower; batch: CutoutBatch; at: number }
-
 export class StreamBed implements Bed {
   state: BedState = 'cold';
   gpuBytes = 0;
@@ -90,12 +88,15 @@ export class StreamBed implements Bed {
   private pageBytes: Map<string, ArrayBuffer> | null = null;
   private batches: CutoutBatch[] = [];
   private flowers: FlowerRef[] = [];
+  private wings: WingRef[] = [];
+  /** Placements drawn with a stand-in sprite because the atlas does not hold their id yet. */
+  placeholders = 0;
   private actors: CutoutBatch | null = null;
   private behaviour: BedBehaviour | null = null;
 
-  constructor(readonly id: BedId, readonly scene: BedScene, readonly anchorX: number, private readonly env: BedEnv, private readonly slicer: Slicer) {
+  constructor(readonly id: BedId, readonly scene: BedScene3, readonly anchorX: number, private readonly env: BedEnv, private readonly slicer: Slicer) {
     const projects = id === 'rosaleda' || id === 'estanque' || id === 'semillero' ? env.kit.projectsOf(id) : [];
-    this.slots = bindSlots({ scene, anchorX, projects, profile: env.content.profile, lang: env.machine.state.lang });
+    this.slots = bindSlots({ scene, projects, profile: env.content.profile, lang: env.machine.state.lang });
   }
 
   /** Bytes only: manifest, KTX2 files (kept for the load) and the behaviour chunk. No GPU work. */
@@ -164,51 +165,38 @@ export class StreamBed implements Bed {
     }
   }
 
+  /** Builds every batch in one slice (a bed is a few dozen quads), then the behaviour on the hero page. */
   private async build(m: AtlasManifest, tex: AtlasTextures, alive: () => boolean): Promise<boolean> {
     const env = this.env;
-    const layers = keptLayers(this.scene, env.quality.tier, env.quality.cfg.maxLayers);
-    const perLayer: GardenFlower[][] = layers.map(() => []);
-    for (const view of this.slots) {
-      const slot = this.scene.slots.find((s) => `${this.id}/${s.id}` === view.id);
-      if (view.kind !== 'project' || slot === undefined) continue;
-      const bloom = m.blooms[slot.bloom ?? slot.accepts ?? ''];
-      if (bloom === undefined) throw new Error(`bed ${this.id}: bloom "${slot.bloom ?? ''}" is missing from atlas/${this.id}.json`);
-      const flower = createFlower({ slot: view, bloom, sprites: m.sprites, scale: slot.scale, env: env.machine });
-      perLayer[slotLayer(layers, slot)]?.push(flower);
+    if (this.slicer.spent()) {
+      await this.slicer.frame();
+      if (!alive()) return false;
     }
-    const pages = [...new Set(layers.map((l) => l.page))].sort((a, b) => a - b);
+    const shared = env.shared();
     const order = this.id === 'gruta' ? RENDER_ORDER.hidden : RENDER_ORDER.bed;
-    const heroPage = layers[perLayer.findIndex((f) => f.length > 0)]?.page ?? pages[Math.floor(pages.length / 2)] ?? 0;
-    for (const page of pages) {
-      const color = tex.color[page];
-      const normal = tex.normal[page];
-      if (color === undefined || normal === undefined) throw new Error(`bed ${this.id}: atlas has no page ${page}`);
-      let quads = 0;
-      layers.forEach((l, i) => {
-        if (l.page === page) quads += l.items.length + (perLayer[i] ?? []).reduce((n, f) => n + f.quads, 0);
-      });
-      const batch = env.kit.createCutoutBatch(env.gfx, color, normal, Math.max(1, quads));
-      batch.mesh.renderOrder = order + page * 2;
-      batch.mesh.frustumCulled = false;
-      this.batches.push(batch);
-      let at = 0;
-      for (let i = 0; i < layers.length; i++) {
-        const layer = layers[i];
-        if (layer === undefined || layer.page !== page) continue;
-        at = await this.writeLayer(batch, layer, at, m, alive);
-        if (at < 0) return false;
-        for (const flower of perLayer[i] ?? []) {
-          this.flowers.push({ flower, batch, at });
-          at += flower.write(batch.writer, at);
-        }
-      }
-      batch.writer.count = at;
-      batch.writer.commit(0, at);
-      if (page === heroPage && this.module !== null) {
-        this.actors = env.kit.createCutoutBatch(env.gfx, color, normal, ACTOR_CAPACITY);
-        this.actors.mesh.renderOrder = order + page * 2 + 1;
-        this.actors.mesh.frustumCulled = false;
-      }
+    const out = buildBed({
+      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, bed: { manifest: m, tex }, shared,
+      slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine,
+      createBatch: (from, page, capacity) => {
+        const t = from === 'shared' && shared !== null ? shared.tex : tex;
+        const color = t.color[page];
+        const normal = t.normal[page];
+        if (color === undefined || normal === undefined) throw new Error(`bed ${this.id}: ${from} atlas has no page ${page}`);
+        const batch = env.kit.createCutoutBatch(env.gfx, color, normal, capacity);
+        batch.mesh.renderOrder = order + this.batches.length;
+        batch.mesh.frustumCulled = false;
+        this.batches.push(batch);
+        return batch;
+      },
+    });
+    this.flowers = out.flowers;
+    this.wings = out.wings;
+    this.placeholders = out.placeholders;
+    const hero = this.flowers[0]?.batch ?? this.batches[0];
+    if (this.module !== null && hero !== undefined) {
+      this.actors = env.kit.createCutoutBatch(env.gfx, hero.uniforms.uColor.value, hero.uniforms.uNormal.value, ACTOR_CAPACITY);
+      this.actors.mesh.renderOrder = order + this.batches.length;
+      this.actors.mesh.frustumCulled = false;
     }
     this.drawCalls = this.batches.length + (this.actors === null ? 0 : 1);
     if (this.module !== null && this.actors !== null) {
@@ -217,39 +205,6 @@ export class StreamBed implements Bed {
       this.behaviour = this.module.default(ctx);
     }
     return true;
-  }
-
-  /** Writes one layer's placements, yielding to the next frame whenever the slice is spent. Returns -1 when stale. */
-  private async writeLayer(batch: CutoutBatch, layer: Layer, from: number, m: AtlasManifest, alive: () => boolean): Promise<number> {
-    let at = from;
-    for (let k = 0; k < layer.items.length; k++) {
-      if (this.slicer.spent()) {
-        await this.slicer.frame();
-        if (!alive()) return -1;
-      }
-      const p = layer.items[k];
-      if (p === undefined) continue;
-      const rect = m.sprites[p.sprite];
-      if (rect === undefined) throw new Error(`bed ${this.id}: sprite ${p.sprite} is missing from atlas/${this.id}.json`);
-      const t = p.tint ?? NO_TINT;
-      scratch.x = this.anchorX + p.x;
-      scratch.y = p.y;
-      scratch.z = layer.z + (p.dz ?? 0);
-      scratch.rot = (p.rot ?? 0) * DEG;
-      scratch.w = rect.size[0] * p.scale * (p.flip === true ? -1 : 1);
-      scratch.h = rect.size[1] * p.scale;
-      scratch.px = rect.pivot[0];
-      scratch.py = rect.pivot[1];
-      scratch.uv = rect.uv;
-      scratch.sway = p.sway ?? 0;
-      scratch.phase = ((at * 0.618034) % 1) * Math.PI * 2;
-      scratch.lift = p.lift ?? 0;
-      scratch.facing = 0;
-      tint[0] = t[0]; tint[1] = t[1]; tint[2] = t[2]; tint[3] = 1;
-      batch.writer.set(at, scratch);
-      at++;
-    }
-    return at;
   }
 
   enter(): void {
@@ -279,6 +234,7 @@ export class StreamBed implements Bed {
   update(c: Clock, _s: State, _ch: Machine['ch']): void {
     this.reveal.tick(c.dt);
     this.setUniformReveal(this.reveal.value);
+    this.fadeWings(wingOpacityOf(this.env.rig.speed));
     if (this.state !== 'active') return;
     for (let i = 0; i < this.flowers.length; i++) {
       const f = this.flowers[i];
@@ -287,6 +243,26 @@ export class StreamBed implements Bed {
       if (f.flower.dirty) f.batch.writer.commit(f.at, f.at + f.flower.write(f.batch.writer, f.at));
     }
     this.behaviour?.update?.(c);
+  }
+
+  /** Visited flowers rest open; called when the memory learns a new one. */
+  remember(id: string): void {
+    for (let i = 0; i < this.flowers.length; i++) {
+      const f = this.flowers[i];
+      if (f !== undefined && f.flower.slot.project?.id === id) f.flower.setVisited(true);
+    }
+  }
+
+  /** Near wings fade out while the camera walks fast (cook/ART.md section 1). */
+  private fadeWings(alpha: number): void {
+    for (let i = 0; i < this.wings.length; i++) {
+      const w = this.wings[i];
+      if (w === undefined || w.alpha === alpha || (Math.abs(w.alpha - alpha) < 0.01 && alpha > 0 && alpha < 1)) continue;
+      w.alpha = alpha;
+      (w.quad.tint as number[])[3] = alpha;
+      w.batch.writer.set(w.at, w.quad);
+      w.batch.writer.commit(w.at, w.at + 1);
+    }
   }
 
   private setUniformReveal(v: number): void {
@@ -316,6 +292,7 @@ export class StreamBed implements Bed {
     this.batches = [];
     this.actors = null;
     this.flowers = [];
+    this.wings = [];
     if (this.tex !== null) for (const t of [...this.tex.color, ...this.tex.normal]) t.dispose();
     this.tex = null;
     this.gpuBytes = 0;

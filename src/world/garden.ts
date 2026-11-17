@@ -1,4 +1,4 @@
-import type { AtlasManifest, AtlasTextures, BedBehaviour, BedId, BedScene, Clock, CutoutBatch, GardenDeps, GardenHandle, Phase, QuadParams, SpriteRect, State } from '../types.ts';
+import type { AtlasManifest, AtlasTextures, BedBehaviour, BedId, Clock, CutoutBatch, GardenDeps, GardenHandle, Phase, QuadParams, SpriteRect, State } from '../types.ts';
 import puerta from '../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../content/beds/rosaleda.json' with { type: 'json' };
 import estanque from '../../content/beds/estanque.json' with { type: 'json' };
@@ -7,6 +7,13 @@ import gruta from '../../content/beds/gruta.json' with { type: 'json' };
 import salida from '../../content/beds/salida.json' with { type: 'json' };
 import { RENDER_ORDER, StreamBed, fetchManifest, uploadPages, type BedEnv, type StreamKit } from './bed.ts';
 import { createResidency, type StreamResidency } from './residency.ts';
+import type { BuildAtlas } from './bed.build.ts';
+import type { GardenRig } from './camera.ts';
+import { buildGround, type GroundBuild } from './ground.ts';
+import { writeClumps } from './clumps.ts';
+import { writeWall } from './wall.ts';
+import type { BedScene3, WorldLayout } from './layout.ts';
+import { createMemory, type GardenMemory } from './memory.ts';
 
 /**
  * The garden (cook/ARCH.md 2.6): six beds along X, the residency that streams them, and the always-resident overview
@@ -15,7 +22,7 @@ import { createResidency, type StreamResidency } from './residency.ts';
  */
 
 /** Every scene file, keyed by bed. Adding a project is JSON only: projects bind to the slots of their bed. */
-export const SCENES: Readonly<Record<BedId, BedScene>> = { puerta, rosaleda, estanque, semillero, gruta, salida } as unknown as Record<BedId, BedScene>;
+export const SCENES: Readonly<Record<BedId, BedScene3>> = { puerta, rosaleda, estanque, semillero, gruta, salida } as unknown as Record<BedId, BedScene3>;
 
 /** Depth of the overview stand-in cards: the beds' middle band. */
 const OVERVIEW_Z = -2;
@@ -28,6 +35,10 @@ export interface StreamGarden extends GardenHandle {
   readonly ready: Promise<void>;
   /** Pointer or focus over a bed in the overview: prefetch its bytes. */
   hover(bed: BedId | null): void;
+  /** The ground kit as flat instance arrays (path flags, puddles, wall, clumps) for gl's ground batches. */
+  readonly ground: GroundBuild;
+  /** Visited flowers, kept across visits. */
+  readonly memory: GardenMemory;
 }
 
 interface OverviewCard { bed: StreamBed; batch: CutoutBatch; index: number; rect: SpriteRect; alpha: number }
@@ -36,10 +47,13 @@ const quad: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, u
 const tint = new Float32Array(4);
 quad.tint = tint;
 
-export function createGarden(d: GardenDeps & { kit: StreamKit }): StreamGarden {
+export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig }): StreamGarden {
   const { gfx, machine, content, proxies } = d;
-  const layout = content.garden;
-  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit };
+  const layout = content.garden as WorldLayout;
+  const memory = createMemory();
+  let shared: BuildAtlas | null = null;
+  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit, shared: () => shared, memory };
+  const ground = buildGround(layout.ground, layout.order.map((b) => SCENES[b]), d.quality.tier);
   const beds = new Map<BedId, StreamBed>();
   const list: StreamBed[] = [];
   const slicer = { frame: () => residency.frame(), upload: () => residency.upload(), spent: () => residency.spent() };
@@ -106,6 +120,9 @@ export function createGarden(d: GardenDeps & { kit: StreamKit }): StreamGarden {
   };
 
   machine.subscribe((s, prev) => {
+    if (s.phase === 'inspect' && prev.phase !== 'inspect' && s.project !== null && memory.visit(s.project)) {
+      for (const bed of list) bed.remember(s.project);
+    }
     const wasActive = active;
     const wasHeading = heading;
     place(s);
@@ -120,7 +137,34 @@ export function createGarden(d: GardenDeps & { kit: StreamKit }): StreamGarden {
     slotEvents(s, prev, entered?.behaviourHooks ?? null);
   });
 
-  const ready = loadOverview();
+  const ready = loadOverview().then(loadShared);
+
+  /** The shared atlas (ground kit, lanterns, boards, vignettes): always resident; the grass clumps draw from it. */
+  async function loadShared(): Promise<void> {
+    const signal = new AbortController().signal;
+    const manifest = await fetchManifest('shared', signal);
+    const tex = await d.kit.loadAtlas(gfx, manifest, d.quality.cfg.atlas, signal);
+    await uploadPages(env, tex, slicer, () => true);
+    residency.addShared(tex.gpuBytes);
+    shared = { manifest, tex };
+    const batchOn = (page: number, capacity: number): CutoutBatch => {
+      const color = tex.color[page];
+      const normal = tex.normal[page];
+      if (color === undefined || normal === undefined) throw new Error(`shared atlas: no page ${page}`);
+      return d.kit.createCutoutBatch(gfx, color, normal, capacity);
+    };
+    const wall = writeWall(ground, layout.ground.wall.z, manifest, batchOn);
+    if (wall !== null) {
+      wall.mesh.renderOrder = RENDER_ORDER.overview - 1;
+      gfx.scene.add(wall.mesh);
+    }
+    const clumps = writeClumps(ground, manifest, batchOn);
+    if (clumps !== null) {
+      clumps.mesh.renderOrder = RENDER_ORDER.bed - 1;
+      gfx.scene.add(clumps.mesh);
+    }
+    await residency.frame();
+  }
 
   async function loadOverview(): Promise<void> {
     const signal = new AbortController().signal;
@@ -174,6 +218,8 @@ export function createGarden(d: GardenDeps & { kit: StreamKit }): StreamGarden {
     residency,
     beds,
     ready,
+    ground,
+    memory,
     hover(bed) {
       if (bed === hovered) return;
       hovered = bed;

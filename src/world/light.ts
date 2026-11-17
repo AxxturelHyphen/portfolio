@@ -10,7 +10,10 @@ import { slotWorld } from './camera.ts';
 /** Light geometry (world units and fractions of the view, no timings). */
 const GEOM = {
   radiusOfView: 0.22,
-  lift: 0.8,
+  /** The light floats in front of the plane by this share of its radius, so it always reaches the paper. */
+  liftOfRadius: 0.45,
+  /** Smallest radius in metres: close shots still get a hand-sized pool. */
+  minRadius: 0.75,
   planeZ: 0,
   restX: 0.5,
   restY: 0.42,
@@ -87,7 +90,7 @@ export function createLight(): GardenLight {
     if (slotWorld(slots, s.slot, hit)) {
       gather[0] = hit[0]!;
       gather[1] = hit[1]!;
-      gather[2] = hit[2]! + GEOM.lift;
+      gather[2] = hit[2]! + cursor[3]! * 0.8 * GEOM.liftOfRadius;
     }
     const f = ch.focus;
     if (s.slot !== gatherSlot) {
@@ -112,12 +115,15 @@ export function createLight(): GardenLight {
     update(c: Clock, s: State, ch: Machine['ch'], rig: CameraRig) {
       const dt = c.dt;
       stepScreen(c, dt);
-      rig.unproject(fx, fy, GEOM.planeZ, hit);
+      /** In a bed the light moves on the plane of its flowers; the overview keeps the garden's middle plane. */
+      const planeZ = slots.length > 0 ? slots[0]!.world[2] : GEOM.planeZ;
+      rig.unproject(fx, fy, planeZ, hit);
+      const viewH = Math.abs(rig.pose.z - planeZ) * 2 * Math.tan((rig.pose.fov * Math.PI) / 360);
+      const r = Math.max(GEOM.minRadius, viewH * GEOM.radiusOfView) * (1 + LIGHT.swell * swell);
       cursor[0] = hit[0]!;
       cursor[1] = hit[1]!;
-      cursor[2] = GEOM.planeZ + GEOM.lift;
-      const viewH = Math.abs(rig.pose.z - GEOM.planeZ) * 2 * Math.tan((rig.pose.fov * Math.PI) / 360);
-      cursor[3] = viewH * GEOM.radiusOfView * (1 + LIGHT.swell * swell);
+      cursor[2] = planeZ + r * GEOM.liftOfRadius;
+      cursor[3] = r;
       stepGather(s, ch, dt);
     },
     resize(w, h) {

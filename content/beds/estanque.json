@@ -1,42 +1,55 @@
 {
   "id": "estanque",
-  "title": { "en": "Estanque de la Luna", "es": "Estanque de la Luna" },
-  "alt": {
-    "en": "A moon pond with a white peacock, a water lily for the album and a mandala sundial.",
-    "es": "Un estanque de luna con un pavo real blanco, un nenúfar para el álbum y un reloj de sol mandala."
-  },
-  "pose": { "x": 0, "y": 1.2, "z": 7, "pitch": -3, "fov": 33.4 },
-  "bounds": [-4.5, 4.5],
+  "title": {"en": "Estanque de la Luna", "es": "Estanque de la Luna"},
+  "alt": {"en": "A moon pond with a white peacock, a water lily for the album and a mandala sundial.", "es": "Un estanque de luna con un pavo real blanco, un nenúfar para el álbum y un reloj de sol mandala."},
+  "pose": {"x": 20.8, "y": 2.8, "z": 5.4, "pitch": -18, "fov": 35},
+  "bounds": [17, 24.4],
+  "shade": "#16163d",
   "layers": [
-    { "id": "far-hedge", "z": -8, "minTier": "mid", "page": 0, "items": [
-      { "sprite": "estanque/hedge", "x": 0, "y": 0, "scale": 1 }
-    ] },
-    { "id": "sundial", "z": -4.5, "minTier": "low", "page": 0, "items": [
-      { "sprite": "estanque/sundial-plinth", "x": 0.8, "y": 0, "scale": 1 }
-    ] },
-    { "id": "peacock", "z": -3, "minTier": "low", "page": 1, "items": [
-      { "sprite": "estanque/peacock", "x": -1.2, "y": 0.2, "scale": 1, "lift": 0.1 }
-    ] },
-    { "id": "water", "z": -1.5, "minTier": "low", "page": 1, "items": [
-      { "sprite": "estanque/pond-rim", "x": 0.5, "y": 0, "scale": 1 },
-      { "sprite": "estanque/lily-pad", "x": 2.2, "y": 0.05, "scale": 1 },
-      { "sprite": "estanque/lily-pad", "x": 3.1, "y": 0.04, "scale": 0.7, "flip": true }
-    ] },
-    { "id": "reeds", "z": 0, "minTier": "low", "page": 2, "items": [
-      { "sprite": "estanque/iris-leaves", "x": -4.0, "y": 0, "scale": 1, "sway": 0.05 },
-      { "sprite": "estanque/iris-leaves", "x": 4.3, "y": 0, "scale": 0.9, "flip": true, "sway": 0.05 },
-      { "sprite": "estanque/trunk", "x": 5.0, "y": 0, "scale": 1 }
-    ] }
+    {
+      "id": "far",
+      "z": -4.22,
+      "minTier": "low",
+      "page": 0,
+      "items": [
+        {"sprite": "es/urn", "x": 17.6, "y": 1.2, "z": -5.4, "scale": 1, "h": 1.2, "hinge": 8, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/papyrus", "x": 24, "y": 0, "z": -4.5, "scale": 1, "h": 2.2, "hinge": -10, "lean": 8, "size": "large", "group": "D", "foot": "none", "shadow": true, "react": false, "sway": 0.02},
+        {"sprite": "sh/peacock-stroll-1", "x": 21, "y": 0, "z": -4.6, "scale": 1, "h": 0.75, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/lotus-leaf", "x": 22.6, "y": 0, "z": -3.6, "scale": 1, "h": 1, "hinge": -15, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/lotus-leaf", "x": 23, "y": 0, "z": -3.6, "scale": 1, "h": 1.3, "hinge": 0, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/lotus-leaf", "x": 23.4, "y": 0, "z": -3.6, "scale": 1, "h": 0.9, "hinge": 18, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false}
+      ]
+    },
+    {
+      "id": "hero",
+      "z": -1.47,
+      "minTier": "low",
+      "page": 0,
+      "items": [
+        {"sprite": "es/peacock", "x": 20, "y": 0.05, "z": -3.4, "scale": 1, "h": 2.4, "hinge": -6, "lean": 0, "size": "hero", "group": "L", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/frog", "x": 21.2, "y": 0.02, "z": -0.4, "scale": 1, "h": 0.26, "hinge": 20, "lean": 8, "size": "small", "group": "M", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/dragonfly", "x": 22.6, "y": 0.7, "z": -0.6, "scale": 1, "w": 0.15, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": false, "react": false}
+      ]
+    },
+    {
+      "id": "near",
+      "z": 0,
+      "minTier": "low",
+      "page": 1,
+      "items": [
+        {"sprite": "es/typha", "x": 23.9, "y": 0, "z": -1, "scale": 1, "h": 1.6, "hinge": 0, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": true, "sway": 0.03},
+        {"sprite": "es/drum-base", "x": 18.3, "y": 0, "z": 0.1, "scale": 1, "h": 0.9, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "es/armillary", "x": 18.3, "y": 0.9, "z": 0.1, "scale": 1, "h": 1, "hinge": -6, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "sh/board", "x": 17.9, "y": 0, "z": 0.6, "scale": 1, "h": 1.3, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "clump", "shadow": true, "react": false},
+        {"sprite": "sh/board", "x": 23.3, "y": 0, "z": 0.2, "scale": 1, "h": 1.3, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "clump", "shadow": true, "react": false}
+      ]
+    },
+    {"id": "wings", "z": 2.4, "minTier": "low", "page": 1, "items": [{"sprite": "es/iris-wing", "x": 19.2, "y": 0, "z": 2.4, "scale": 1, "h": 1.2, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": false, "react": false, "wing": true}]}
   ],
   "slots": [
-    { "id": "lily-a", "kind": "project", "accepts": "lily", "x": 2.2, "y": 0.15, "z": -1.5, "scale": 1, "bloom": "lily", "hit": [0.8, 0.5], "label": "left" },
-    { "id": "lily-b", "kind": "project", "accepts": "lily", "x": 3.1, "y": 0.12, "z": -1.5, "scale": 0.7, "bloom": "lily", "hit": [0.6, 0.4], "label": "left" },
-    { "id": "sundial", "kind": "prop", "ref": "sundial", "x": 0.8, "y": 1.1, "z": -4.4, "scale": 0.8, "hit": [0.9, 0.9], "label": "right",
-      "alt": { "en": "Mandala sundial", "es": "Reloj de sol mandala" } }
+    {"id": "lily-a", "kind": "project", "accepts": "lily", "x": 22.2, "y": 0.08, "z": -1.6, "scale": 1, "hinge": 0, "bloom": "lily", "hit": [0.8, 0.5], "label": "left"},
+    {"id": "lily-b", "kind": "project", "accepts": "lily", "x": 23, "y": 0.08, "z": -2.4, "scale": 0.7, "hinge": 0, "bloom": "lily", "hit": [0.6, 0.4], "label": "left"},
+    {"id": "sundial", "kind": "prop", "ref": "sundial", "x": 18.3, "y": 1.1, "z": 0.1, "scale": 0.8, "hinge": -6, "hit": [0.9, 0.9], "label": "right", "alt": {"en": "Mandala sundial", "es": "Reloj de sol mandala"}}
   ],
-  "procedural": [
-    { "type": "pond", "x": 0.5, "y": 0, "z": -1.55, "w": 7, "h": 2.5 },
-    { "type": "sundial", "x": 0.8, "y": 1.1, "z": -4.45, "w": 0.9, "h": 0.9 },
-    { "type": "fireflies", "x": -1.5, "y": 1.4, "z": -3.2, "w": 4, "h": 1.6, "params": { "count": 5 } }
-  ]
+  "procedural": [{"type": "pond", "x": 21, "y": 0, "z": -1.8, "w": 7.2, "h": 4.8},{"type": "sundial", "x": 18.3, "y": 1, "z": 0.12, "w": 0.8, "h": 0.8},{"type": "fireflies", "x": 19.5, "y": 1.4, "z": -3.2, "w": 4, "h": 1.6, "params": {"count": 5}}]
 }

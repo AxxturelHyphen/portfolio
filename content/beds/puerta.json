@@ -1,43 +1,53 @@
 {
   "id": "puerta",
-  "title": { "en": "La Puerta", "es": "La Puerta" },
-  "alt": {
-    "en": "An old garden gate with sigils in the stone and a stereoscope portrait hanging in the ivy.",
-    "es": "Una vieja puerta de jardín con sigilos en la piedra y un retrato de estereoscopio colgado en la hiedra."
-  },
-  "pose": { "x": 0, "y": 1.5, "z": 7, "pitch": -2, "fov": 33.4 },
-  "bounds": [-4.5, 4.5],
+  "title": {"en": "La Puerta", "es": "La Puerta"},
+  "alt": {"en": "An old garden gate with sigils in the stone and a stereoscope portrait hanging in the ivy.", "es": "Una vieja puerta de jardín con sigilos en la piedra y un retrato de estereoscopio colgado en la hiedra."},
+  "pose": {"x": 1, "y": 2.4, "z": 4.2, "pitch": -14, "fov": 36},
+  "bounds": [-3, 4],
+  "shade": "#2b2130",
   "layers": [
-    { "id": "far-cypress", "z": -9, "minTier": "mid", "page": 0, "items": [
-      { "sprite": "puerta/cypress", "x": -3.2, "y": 0, "scale": 1, "sway": 0.02 },
-      { "sprite": "puerta/cypress", "x": 2.6, "y": 0, "scale": 0.85, "flip": true, "sway": 0.02 }
-    ] },
-    { "id": "wall", "z": -5, "minTier": "low", "page": 0, "items": [
-      { "sprite": "puerta/wall", "x": 0, "y": 0, "scale": 1 },
-      { "sprite": "puerta/gate-arch", "x": -1.2, "y": 0, "scale": 1 }
-    ] },
-    { "id": "ivy", "z": -3, "minTier": "low", "page": 1, "items": [
-      { "sprite": "puerta/ivy", "x": 1.6, "y": 1.9, "scale": 1, "sway": 0.04 },
-      { "sprite": "puerta/portrait-frame", "x": 1.6, "y": 1.5, "scale": 1, "lift": 0.05 },
-      { "sprite": "puerta/ivy", "x": 3.3, "y": 2.4, "scale": 0.8, "flip": true, "sway": 0.05 }
-    ] },
-    { "id": "ground", "z": -1.6, "minTier": "mid", "page": 1, "items": [
-      { "sprite": "puerta/path", "x": -0.6, "y": 0, "scale": 1 },
-      { "sprite": "puerta/grass", "x": 2.2, "y": 0, "scale": 1, "sway": 0.06 }
-    ] },
-    { "id": "foreground", "z": 0, "minTier": "low", "page": 2, "items": [
-      { "sprite": "puerta/gate-post", "x": -4.3, "y": 0, "scale": 1 },
-      { "sprite": "puerta/ivy-corner", "x": 4.0, "y": 3.2, "scale": 1, "sway": 0.03 },
-      { "sprite": "puerta/trunk", "x": 5.0, "y": 0, "scale": 1 }
-    ] }
+    {
+      "id": "piers",
+      "z": -5.13,
+      "minTier": "low",
+      "page": 0,
+      "items": [
+        {"sprite": "pu/pier-l", "x": -2.2, "y": 0, "z": -5.2, "scale": 1, "h": 3.2, "hinge": 6, "lean": 0, "size": "large", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "pu/pier-r", "x": 1.8, "y": 0, "z": -5.2, "scale": 1, "h": 3.2, "hinge": -6, "lean": 0, "size": "large", "group": "D", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "pu/urn", "x": -2.2, "y": 3.2, "z": -5.2, "scale": 1, "h": 0.45, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": false, "react": false},
+        {"sprite": "pu/urn", "x": 1.8, "y": 3.2, "z": -5.2, "scale": 1, "h": 0.45, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": false, "react": false},
+        {"sprite": "pu/leaf-l", "x": -1.7, "y": 0, "z": -5, "scale": 1, "h": 2.6, "hinge": 28, "lean": 0, "size": "large", "group": "L", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "pu/leaf-r", "x": 1.3, "y": 0, "z": -5, "scale": 1, "h": 2.6, "hinge": -8, "lean": 0, "size": "large", "group": "L", "foot": "none", "shadow": true, "react": false}
+      ]
+    },
+    {
+      "id": "dressing",
+      "z": -4.7,
+      "minTier": "low",
+      "page": 1,
+      "items": [
+        {"sprite": "pu/plaster", "x": 2.55, "y": 0.4, "z": -5.95, "scale": 1, "h": 2, "hinge": 0, "lean": 0, "size": "medium", "group": "M", "foot": "none", "shadow": false, "react": false},
+        {"sprite": "pu/plate", "x": 1.8, "y": 1.5, "z": -5.1, "scale": 1, "w": 0.5, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": false, "react": false},
+        {"sprite": "pu/clematis", "x": 1.9, "y": 1.6, "z": -5.05, "scale": 1, "h": 1.3, "hinge": 10, "lean": 0, "size": "medium", "group": "M", "foot": "none", "shadow": false, "react": false, "sway": 0.02},
+        {"sprite": "pu/vine", "x": -1.6, "y": 0.2, "z": -4.94, "scale": 1, "h": 1.8, "hinge": 0, "lean": 0, "size": "medium", "group": "M", "foot": "none", "shadow": false, "react": false, "sway": 0.02},
+        {"sprite": "pu/martin", "x": 4.2, "y": 2.6, "z": -5.9, "scale": 1, "h": 0.3, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": false, "react": false},
+        {"sprite": "sh/ivy", "x": 2.2, "y": 1, "z": -5.1, "scale": 1, "h": 1.4, "hinge": 12, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": false, "react": false, "sway": 0.02},
+        {"sprite": "sh/ivy", "x": 2.9, "y": 0.2, "z": -4.9, "scale": 1, "h": 1.4, "hinge": -12, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": false, "react": false, "sway": 0.02},
+        {"sprite": "sh/lantern-cage", "x": 1, "y": 0, "z": -4.2, "scale": 1, "h": 0.45, "hinge": 15, "lean": 8, "size": "medium", "group": "L", "foot": "none", "shadow": true, "react": false},
+        {"sprite": "sh/board", "x": 3.2, "y": 0, "z": -1.2, "scale": 1, "h": 1.3, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "clump", "shadow": true, "react": false}
+      ]
+    },
+    {
+      "id": "wings",
+      "z": 1.2,
+      "minTier": "low",
+      "page": 1,
+      "items": [
+        {"sprite": "sh/wing-trunk", "x": -0.7, "y": 0, "z": 1.2, "scale": 1, "h": 2.2, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": false, "react": false, "wing": true},
+        {"sprite": "sh/ivy", "x": 2.8, "y": 0, "z": 1.2, "scale": 1, "h": 1.3, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": false, "react": false, "wing": true}
+      ]
+    }
   ],
-  "slots": [
-    { "id": "portrait", "kind": "prop", "ref": "portrait", "x": 1.6, "y": 1.5, "z": -2.9, "scale": 0.6, "hit": [0.7, 0.9], "label": "left",
-      "alt": { "en": "Stereoscope portrait", "es": "Retrato de estereoscopio" } }
-  ],
-  "procedural": [
-    { "type": "sigils", "x": -1.2, "y": 2.2, "z": -4.95, "w": 2.2, "h": 1.2 },
-    { "type": "stereoscope", "x": 1.6, "y": 1.5, "z": -2.95, "w": 0.5, "h": 0.6 },
-    { "type": "fireflies", "x": -1.2, "y": 1.2, "z": -3.5, "w": 2.5, "h": 1.5, "params": { "count": 6 } }
-  ]
+  "slots": [{"id": "portrait", "kind": "prop", "ref": "portrait", "x": 2.55, "y": 1.6, "z": -5.4, "scale": 0.6, "hinge": -8, "hit": [0.7, 0.9], "label": "left", "alt": {"en": "Stereoscope portrait", "es": "Retrato de estereoscopio"}}],
+  "procedural": [{"type": "sigils", "x": -0.2, "y": 1.6, "z": -5.15, "w": 4, "h": 1.2},{"type": "stereoscope", "x": 2.55, "y": 1.6, "z": -5.38, "w": 0.5, "h": 0.6},{"type": "fireflies", "x": 0.4, "y": 0.8, "z": -4, "w": 2.5, "h": 1.5, "params": {"count": 6}}]
 }
