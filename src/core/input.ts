@@ -192,10 +192,6 @@ export function createInput(d: InputDeps): Input {
         e.preventDefault();
         machine.send({ type: 'STEP_BED', dir: e.key === 'ArrowLeft' ? -1 : 1 });
         return;
-      case 'm':
-      case 'M':
-        if (p === 'bed' || p === 'focus' || p === 'travel') machine.send({ type: 'GOTO', place: { k: 'overview' } });
-        return;
       case 'Escape':
         machine.send({ type: 'BACK' });
         return;

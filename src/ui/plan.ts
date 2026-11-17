@@ -111,6 +111,7 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       e.preventDefault();
       setOpen(false, true);
     } else if (e.key === 'm' || e.key === 'M') {
+      e.preventDefault();
       setOpen(!isOpen(), true);
     }
   }, { capture: true });

@@ -1,4 +1,5 @@
 import type { BedId, ChannelName, Ev, Place, ProjectId, SlotId, State } from '../types.ts';
+import { hopsFrom, nearestBedAt } from './hops.ts';
 import { CAMERA, INTRO, travelS } from './motion.ts';
 import type { DriveChannel } from './spring.ts';
 
@@ -43,17 +44,7 @@ export const isShown = (s: State): boolean => s.phase === 'opening' || s.phase =
 export const camX = (s: State, ch: Channels, g: Geo): number =>
   s.bed === null ? (g.viewX() ?? s.fromX) : s.fromX + (g.anchor(s.bed) - s.fromX) * ch.leg.value;
 
-function nearestBed(x: number, g: Geo): BedId | null {
-  let best: BedId | null = null;
-  let d = Infinity;
-  for (let i = 0; i < g.order.length; i++) {
-    const b = g.order[i];
-    if (b === undefined) continue;
-    const e = Math.abs(g.anchor(b) - x);
-    if (e < d) { d = e; best = b; }
-  }
-  return best;
-}
+const nearestBed = (x: number, g: Geo): BedId | null => nearestBedAt(g.order, g.anchor, x);
 
 /** Camera channels snap while the canvas is not visible (Herbario), so a later switch lands on the place. */
 const hidden = (s: State, ch: Channels): boolean => s.mode === 'herbario' || ch.mode.value === 1;
@@ -161,8 +152,7 @@ function leg(s: State, c: BedId, ch: Channels, g: Geo): State {
   const x = camX(s, ch, g);
   const worldV = s.bed === null ? 0 : ch.leg.velocity * (g.anchor(s.bed) - s.fromX);
   const span = g.anchor(c) - x;
-  const from = nearestBed(x, g);
-  const hops = from === null ? 1 : Math.abs(g.order.indexOf(c) - g.order.indexOf(from));
+  const hops = Math.max(1, hopsFrom(g.order, g.anchor, x, c));
   ch.leg.retime(s.phase === 'overview' || ch.dolly.value < 0.5 ? CAMERA.dollyS : travelS(hops));
   if (hidden(s, ch)) {
     ch.leg.snap(1);

@@ -7,6 +7,7 @@
  */
 import { PerspectiveCamera, Vector3 } from 'three';
 import type { BedId, CameraRig, Clock, GardenLayout, Machine, Pose, ScreenPt, ShotId, SlotId, SlotView, State } from '../types.ts';
+import { hopsFrom } from '../core/hops.ts';
 import { CAMERA, WALK, follow, omegaFor, pushOf, springStep, walkCarry, walkElapsedS, walkOf, type SpringState } from '../core/motion.ts';
 import { DEG, type WorldLayout } from './layout.ts';
 import { createRail, filmPose, type RigPose } from './rail.ts';
@@ -71,7 +72,7 @@ export function createRig(layout: GardenLayout): GardenRig {
   const omegaRubber = omegaFor(CAMERA.rubberBandS);
   const omegaNudge = omegaFor(CAMERA.focusNudgeS);
   const [panLo, panHi] = g.pan;
-  const stops: number[] = g.order.map((b) => rail.stopX(b)).filter((x) => !Number.isNaN(x));
+  const anchorOf = (b: BedId): number => g.anchors[b];
 
   let width = 1280;
   let height = 720;
@@ -117,12 +118,9 @@ export function createRig(layout: GardenLayout): GardenRig {
   const overviewActive = (): boolean => prevDollyTarget < 0.5;
   const viewWidthAtZoom = (z: number): number => 2 * (ov.z / z) * halfTan(ov.fov) * (width / height);
 
-  function stopsBetween(a: number, b: number): number {
-    const lo = Math.min(a, b) + 0.5;
-    const hi = Math.max(a, b) - 0.5;
-    let n = 0;
-    for (let i = 0; i < stops.length; i++) if (stops[i]! > lo && stops[i]! < hi) n++;
-    return n;
+  /** Visible beds passed between the walk's start and its target bed (the grotto is never passed: core/hops.ts). */
+  function bedsPassed(x: number, bed: BedId): number {
+    return Math.max(0, hopsFrom(g.order, anchorOf, x, bed) - 1);
   }
 
   function stepNudge(s: SpringState, target: number, snap: boolean, dt: number): number {
@@ -176,7 +174,7 @@ export function createRig(layout: GardenLayout): GardenRig {
       fromOffPose = lastBed === null ? null : (offPoses.get(lastBed) ?? fromOffPose);
       lastBed = bed;
       lastFromX = s.fromX;
-      if (bed !== null) hops = stopsBetween(fromX, targetX(bed));
+      if (bed !== null) hops = bedsPassed(fromX, bed);
     }
     if (bed === null) return false;
     const off = offPoses.get(bed);

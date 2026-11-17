@@ -1,4 +1,5 @@
 import type { Vector4 } from 'three';
+import { hopsFrom } from '../core/hops.ts';
 import { INTRO, clamp01, irisOf, stripOf, travelDipOf, travelS } from '../core/motion.ts';
 import type { BedId, Clock, GardenLayout, Machine, ScreenPt, SlotView, State } from '../types.ts';
 import type { GardenRig } from '../world/camera.ts';
@@ -27,26 +28,12 @@ export function createFilmDrive(machine: Machine, rig: GardenRig, g: GardenLayou
   let moveS = 1;
   let elapsedS = 0;
 
-  /** Beds crossed from the nearest bed at x to bed b, on the garden order (the grotto counts as one). */
-  function hopsTo(x: number, b: BedId): number {
-    let from = 0;
-    let best = Infinity;
-    for (let i = 0; i < g.order.length; i++) {
-      const id = g.order[i];
-      if (id === undefined) continue;
-      const d = Math.abs(g.anchors[id] - x);
-      if (d < best) {
-        best = d;
-        from = i;
-      }
-    }
-    return Math.abs(g.order.indexOf(b) - from);
-  }
+  const anchorOf = (b: BedId): number => g.anchors[b];
 
   return {
     onState(s, prev) {
       if (s.phase !== 'travel' || s.bed === null || (s.bed === prev.bed && s.fromX === prev.fromX && prev.phase === 'travel')) return;
-      hops = machine.ch.dolly.value > 0.5 ? hopsTo(s.fromX, s.bed) : 0;
+      hops = machine.ch.dolly.value > 0.5 ? hopsFrom(g.order, anchorOf, s.fromX, s.bed) : 0;
       moveS = travelS(Math.max(1, hops));
       elapsedS = 0;
     },

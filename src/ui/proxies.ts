@@ -182,7 +182,11 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
         const hidden = !pt.visible;
         if (hidden !== off[i]) {
           off[i] = hidden;
-          nodes[i]?.toggleAttribute('data-off', hidden);
+          const n = nodes[i];
+          if (n !== undefined) {
+            n.toggleAttribute('data-off', hidden);
+            n.tabIndex = hidden ? -1 : 0;
+          }
         }
         if (!hidden) movers[i]?.move(pt.x, pt.y, pt.scale / PX_PER_UNIT);
       }
