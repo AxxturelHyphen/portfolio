@@ -9,11 +9,11 @@
     "es": "Un estanque de luna con un pavo real blanco, un nenúfar para el álbum y un reloj de sol mandala."
   },
   "pose": {
-    "x": 20.8,
-    "y": 2.8,
-    "z": 5.4,
-    "pitch": -18,
-    "fov": 35
+    "x": 20,
+    "y": 2.1,
+    "z": 7.2,
+    "pitch": -7,
+    "fov": 34
   },
   "bounds": [
     17,

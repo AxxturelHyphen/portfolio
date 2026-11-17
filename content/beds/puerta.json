@@ -9,11 +9,11 @@
     "es": "Una vieja puerta de jardín con sigilos en la piedra y un retrato de estereoscopio colgado en la hiedra."
   },
   "pose": {
-    "x": 1,
-    "y": 2.4,
-    "z": 4.2,
-    "pitch": -14,
-    "fov": 36
+    "x": 1.7,
+    "y": 1.7,
+    "z": 1.2,
+    "pitch": -6,
+    "fov": 44
   },
   "bounds": [
     -3,

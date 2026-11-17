@@ -9,11 +9,11 @@
     "es": "Rosales trepadores sobre un muro viejo bajo la luna, una rosa grande por cada proyecto."
   },
   "pose": {
-    "x": 10.6,
-    "y": 2.6,
-    "z": 4.6,
-    "pitch": -18,
-    "fov": 35
+    "x": 11.6,
+    "y": 2.4,
+    "z": 3.2,
+    "pitch": -15,
+    "fov": 34
   },
   "bounds": [
     6.3,
