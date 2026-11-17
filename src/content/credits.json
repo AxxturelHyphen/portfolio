@@ -1,0 +1,695 @@
+{
+ "generated": "npm run assets (credits stage) from archive/SOURCES.json; do not edit by hand",
+ "groups": [
+  {
+   "institution": "After Macrobius, Somnium Scipionis, I.xxi.3-7. Burgerbibliothek Bern, ms 347, fol. 9r (9th. century)",
+   "items": [
+    {
+     "id": "sigil-macrobian-planetary-wheel",
+     "title": "Macrobian Planetary Diagram",
+     "creator": "Macrobius",
+     "date": "9 th century date QS:P,+850-00-00T00:00:00Z/7",
+     "license": "PD",
+     "licenseUrl": "",
+     "attribution": "Macrobius (9 th century date QS:P,+850-00), Macrobian Planetary Diagram, via Wikimedia Commons, Public domain",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Macrobian_Planetary_Diagram.jpg",
+     "usedIn": [
+      "ro/sigil",
+      "rosaleda"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "ambientCG",
+   "items": [
+    {
+     "id": "acg-paper006",
+     "title": "Paper 006",
+     "creator": "Lennart Demes (ambientCG)",
+     "date": "2023-03-03",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://docs.ambientcg.com/license/",
+     "attribution": "Paper 006, ambientCG.com, CC0",
+     "sourceUrl": "https://ambientcg.com/view?id=Paper006",
+     "usedIn": [
+      "tile/paper"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "Bibliotheque nationale de France (via Wikimedia Commons)",
+   "items": [
+    {
+     "id": "enc-1-081-garden-tools-ladder",
+     "title": "Encyclopedie volume 1-081",
+     "creator": "Denis Diderot and Jean le Rond d'Alembert (eds.); engraved plate",
+     "date": "1762",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Diderot and d'Alembert (eds.), Encyclopedie, Recueil de planches, volume 1 (1762), plate scan Encyclopedie volume 1-081. Bibliotheque nationale de France via Wikimedia Commons. Public domain.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Encyclopedie_volume_1-081.png",
+     "usedIn": [
+      "rosaleda",
+      "v/trestle"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "National Gallery of Art, Washington, Index of American Design (via Wikimedia Commons)",
+   "items": [
+    {
+     "id": "nga-16209-moravian-bench",
+     "title": "Moravian Church Bench",
+     "creator": "Amos C. Brinton",
+     "date": "1935/1942",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "Amos C. Brinton, Moravian Church Bench, 1935/1942. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Amos_C._Brinton,_Moravian_Church_Bench,_1935-1942,_NGA_16209.jpg",
+     "usedIn": [
+      "rosaleda",
+      "v/bench"
+     ]
+    },
+    {
+     "id": "nga-18277-clay-flower-pot-red-rim",
+     "title": "Pottery Flower Pot",
+     "creator": "Annie B. Johnston",
+     "date": "1937/1938",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "Annie B. Johnston, Pottery Flower Pot, 1937/1938. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Annie_B._Johnston,_Pottery_Flower_Pot,_1937-1938,_NGA_18277.jpg",
+     "usedIn": [
+      "rosaleda",
+      "sh/pot-a"
+     ]
+    },
+    {
+     "id": "nga-19941-tavern-sign-brown",
+     "title": "Tavern Sign",
+     "creator": "Alfred Parys",
+     "date": "circa 1940",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "Alfred Parys, Tavern Sign, circa 1940. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Alfred_Parys,_Tavern_Sign,_c._1940,_NGA_19941.jpg",
+     "usedIn": [
+      "estanque",
+      "puerta",
+      "rosaleda",
+      "salida",
+      "semillero",
+      "sh/board"
+     ]
+    },
+    {
+     "id": "nga-24386-candle-lantern",
+     "title": "Candle Lantern",
+     "creator": "Max Fernekes",
+     "date": "1938",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "Max Fernekes, Candle Lantern, 1938. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Max_Fernekes,_Candle_Lantern,_1938,_NGA_24386.jpg",
+     "usedIn": [
+      "rosaleda",
+      "sh/lantern-candle"
+     ]
+    },
+    {
+     "id": "nga-25799-trimming-shears",
+     "title": "Trimming Shears",
+     "creator": "Harold Ballerd",
+     "date": "1935/1942",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "Harold Ballerd, Trimming Shears, 1935/1942. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Harold_Ballerd,_Trimming_Shears,_1935-1942,_NGA_25799.jpg",
+     "usedIn": [
+      "rosaleda",
+      "v/shears"
+     ]
+    },
+    {
+     "id": "nga-25899-wooden-spade",
+     "title": "Wooden Spade",
+     "creator": "Archie Thompson",
+     "date": "1938",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "Archie Thompson, Wooden Spade, 1938. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Archie_Thompson,_Wooden_Spade,_1938,_NGA_25899.jpg",
+     "usedIn": [
+      "rosaleda",
+      "v/spade"
+     ]
+    },
+    {
+     "id": "nga-27263-toleware-water-can",
+     "title": "Toleware Water Can",
+     "creator": "John H. Tercuzzi",
+     "date": "circa 1938",
+     "license": "CC0-1.0",
+     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+     "attribution": "John H. Tercuzzi, Toleware Water Can, circa 1938. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:John_H._Tercuzzi,_Toleware_Water_Can,_c._1938,_NGA_27263.jpg",
+     "usedIn": [
+      "rosaleda",
+      "v/can"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "Poly Haven",
+   "items": [
+    {
+     "id": "ph-cobblestone-01",
+     "title": "Cobblestone 01",
+     "creator": "Rob Tuytel",
+     "date": "2018-06-18",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Cobblestone 01 by Rob Tuytel, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/cobblestone_01",
+     "usedIn": [
+      "tile/kerb"
+     ]
+    },
+    {
+     "id": "ph-grey-stone-path",
+     "title": "Grey Stone Path",
+     "creator": "Amal Kumar",
+     "date": "2023-08-17",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Grey Stone Path by Amal Kumar, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/grey_stone_path",
+     "usedIn": [
+      "sh/flag-1",
+      "sh/flag-2",
+      "sh/flag-3",
+      "sh/flag-4",
+      "sh/flag-5",
+      "sh/flag-6",
+      "sh/flag-7",
+      "sh/flag-8"
+     ]
+    },
+    {
+     "id": "ph-mossy-cobblestone",
+     "title": "Mossy Cobblestone",
+     "creator": "Sơn Nguyễn",
+     "date": "2023-06-24",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Mossy Cobblestone by Sơn Nguyễn, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/mossy_cobblestone",
+     "usedIn": [
+      "tile/rim"
+     ]
+    },
+    {
+     "id": "ph-mossy-rock",
+     "title": "Mossy Rock",
+     "creator": "Rob Tuytel",
+     "date": "2020-10-28",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Mossy Rock by Rob Tuytel, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/mossy_rock",
+     "usedIn": [
+      "tile/moss"
+     ]
+    },
+    {
+     "id": "ph-mossy-stone-wall",
+     "title": "Mossy Stone Wall",
+     "creator": "Amal Kumar",
+     "date": "2023-10-12",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Mossy Stone Wall by Amal Kumar, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/mossy_stone_wall",
+     "usedIn": [
+      "tile/wall-base"
+     ]
+    },
+    {
+     "id": "ph-old-sandstone-02",
+     "title": "Old Sandstone 02",
+     "creator": "Dimitrios Savva",
+     "date": "2023-05-23",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Old Sandstone 02 by Dimitrios Savva, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/old_sandstone_02",
+     "usedIn": [
+      "tile/coping"
+     ]
+    },
+    {
+     "id": "ph-old-stone-wall",
+     "title": "Old Stone Wall",
+     "creator": "Charlotte Baglioni",
+     "date": "2026-01-06",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://polyhaven.com/license",
+     "attribution": "Old Stone Wall by Charlotte Baglioni, Poly Haven, CC0",
+     "sourceUrl": "https://polyhaven.com/a/old_stone_wall",
+     "usedIn": [
+      "tile/wall"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "Scan of Flora Batava via Wikimedia Commons",
+   "items": [
+    {
+     "id": "com-florabatava-typha",
+     "title": "Typha latifolia (bulrush), Flora Batava vol. 10",
+     "creator": "Jan Kops and others, Flora Batava",
+     "date": "1800-1934 (series)",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Jan Kops and others, Flora Batava, Typha latifolia (bulrush), Flora Batava vol. 10, 1800-1934 (series). Scan of Flora Batava via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Typha_latifolia_%E2%80%94_Flora_Batava_%E2%80%94_Volume_v10.jpg",
+     "usedIn": [
+      "sh/clump-2"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "The Cleveland Museum of Art",
+   "items": [
+    {
+     "id": "cma_1943_138",
+     "title": "The Roses: China or Bengal Rose",
+     "creator": "Henri Joseph Redouté (French, 1766–1853)",
+     "date": "1817–24",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Henri Joseph Redouté (French, 1766–1853), The Roses: China or Bengal Rose, 1817–24. The Cleveland Museum of Art, Gift of The Print Club of Cleveland, for the Donald Gray Memorial Collection (1943.138). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1943.138",
+     "usedIn": [
+      "ro/a-bloom-7",
+      "ro/a-bloom-8",
+      "ro/a-bloom-9",
+      "ro/a-colour",
+      "ro/a-cup",
+      "ro/a-half",
+      "ro/a-hip",
+      "ro/a-tight",
+      "ro/hero-a",
+      "ro/hero-a-foot",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma_1943_141",
+     "title": "Moss Rose",
+     "creator": "Henri Joseph Redouté (French, 1766–1853)",
+     "date": "1817–1824",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Henri Joseph Redouté (French, 1766–1853), Moss Rose, 1817–1824. The Cleveland Museum of Art, Gift of The Print Club of Cleveland, for the Donald Gray Memorial Collection (1943.141). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1943.141",
+     "usedIn": [
+      "ro/b-bloom-7",
+      "ro/b-bloom-8",
+      "ro/b-bloom-9",
+      "ro/b-colour",
+      "ro/b-tight",
+      "ro/rose-b",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma_1943_142",
+     "title": "Pompon Rose",
+     "creator": "Pierre-Joseph Redouté (French, 1759–1840)",
+     "date": "1817–24",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Pierre-Joseph Redouté (French, 1759–1840), Pompon Rose, 1817–24. The Cleveland Museum of Art, Gift of The Print Club of Cleveland, for the Donald Gray Memorial Collection (1943.142). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1943.142",
+     "usedIn": [
+      "ro/comp-pompon",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma_1955_469",
+     "title": "Les Roses: Rosa alpina pendulina",
+     "creator": "Henri Joseph Redouté (French, 1766–1853)",
+     "date": "1817–1824",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Henri Joseph Redouté (French, 1766–1853), Les Roses:  Rosa alpina pendulina, 1817–1824. The Cleveland Museum of Art, Gift of The Print Club of Cleveland in honor of Mrs. William G. Mather (1955.469). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1955.469",
+     "usedIn": [
+      "ro/climb-alpina",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma_1955_471",
+     "title": "Les Roses: Rosa Gallica",
+     "creator": "Pierre-Joseph Redouté (French, 1759–1840)",
+     "date": "1817–24",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Pierre-Joseph Redouté (French, 1759–1840), Les Roses:  Rosa Gallica, 1817–24. The Cleveland Museum of Art, Gift of The Print Club of Cleveland in honor of Mrs. William G. Mather (1955.471). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1955.471",
+     "usedIn": [
+      "rosaleda",
+      "w/gallica"
+     ]
+    },
+    {
+     "id": "cma_1965_291",
+     "title": "Les Roses: Rosa Damascena, subalba",
+     "creator": "Henri Joseph Redouté (French, 1766–1853)",
+     "date": "1817–1824",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Henri Joseph Redouté (French, 1766–1853), Les Roses:  Rosa Damascena, subalba, 1817–1824. The Cleveland Museum of Art, Mr. and Mrs. Charles G. Prasse Collection (1965.291). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1965.291",
+     "usedIn": [
+      "ro/comp-white",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma_1965_293",
+     "title": "The Roses: Rosa Gallica Purpurea Velutina Parva",
+     "creator": "Langlois (French)",
+     "date": "1817–24",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Langlois (French), The Roses:  Rosa Gallica Purpurea Velutina Parva, 1817–24. The Cleveland Museum of Art, Mr. and Mrs. Charles G. Prasse Collection (1965.293). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1965.293",
+     "usedIn": [
+      "ro/comp-dark",
+      "ro/comp-dark-foot",
+      "ro/leaf-wing",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma_1965_294",
+     "title": "Les Roses: Rosa Longifolia",
+     "creator": "Henri Joseph Redouté (French, 1766–1853)",
+     "date": "1817–1824",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Henri Joseph Redouté (French, 1766–1853), Les Roses:  Rosa Longifolia, 1817–1824. The Cleveland Museum of Art, Mr. and Mrs. Charles G. Prasse Collection (1965.294). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1965.294",
+     "usedIn": [
+      "rosaleda",
+      "w/cane"
+     ]
+    },
+    {
+     "id": "cma_1965_295",
+     "title": "Les Roses: Rosa Candolleana Elegans",
+     "creator": "Henri Joseph Redouté (French, 1766–1853)",
+     "date": "1817–1824",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "Henri Joseph Redouté (French, 1766–1853), Les Roses:  Rosa Candolleana Elegans, 1817–1824. The Cleveland Museum of Art, Mr. and Mrs. Charles G. Prasse Collection (1965.295). CC0 1.0.",
+     "sourceUrl": "https://clevelandart.org/art/1965.295",
+     "usedIn": [
+      "ro/climb-white",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "cma-111718",
+     "title": "Cypress Bower",
+     "creator": "Ernest Haskell (American, 1876–1925)",
+     "date": "1891–1925",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "The Cleveland Museum of Art, Dudley P. Allen Fund (Open Access, CC0)",
+     "sourceUrl": "https://clevelandart.org/art/1930.245",
+     "usedIn": [
+      "ov/trees-1"
+     ]
+    },
+    {
+     "id": "cma-142390",
+     "title": "The Cypress Grove",
+     "creator": "Samuel Palmer (British, 1805–1881)",
+     "date": "1883",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "The Cleveland Museum of Art, Gift of Mr. and Mrs. Lewis B. Williams, presented in honor of Henry Sayles Francis, Curator of Prints (Open Access, CC0)",
+     "sourceUrl": "https://clevelandart.org/art/1966.204",
+     "usedIn": [
+      "ov/trees-2"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "The Cleveland Museum of Art (Open Access)",
+   "items": [
+    {
+     "id": "cma-118176-japanese-iris",
+     "title": "Japanese Iris (Large Blue Iris)",
+     "creator": "John Edwards (British)",
+     "date": "1801",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "John Edwards (British), Japanese Iris (Large Blue Iris), 1801. The Cleveland Museum of Art, Open Access (CC0).",
+     "sourceUrl": "https://clevelandart.org/art/1939.281",
+     "usedIn": [
+      "sh/clump-3"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "The Metropolitan Museum of Art",
+   "items": [
+    {
+     "id": "met-287962",
+     "title": "Old Cypress Trees in Carthusian Convent, Rome",
+     "creator": "Jane Martha St. John",
+     "date": "1853–56",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "The Metropolitan Museum of Art, Gilman Collection, Gift of The Howard Gilman Foundation, 2005 (Open Access, CC0)",
+     "sourceUrl": "https://www.metmuseum.org/art/collection/search/287962",
+     "usedIn": [
+      "ov/trees-3"
+     ]
+    },
+    {
+     "id": "met-344561",
+     "title": "Labyrinte de Versailles",
+     "creator": "Isaac de Benserade",
+     "date": "1677",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1931 (Open Access, CC0)",
+     "sourceUrl": "https://www.metmuseum.org/art/collection/search/344561",
+     "usedIn": [
+      "rosaleda",
+      "v/hedge"
+     ]
+    },
+    {
+     "id": "met-671072",
+     "title": "Study of a Tree in the Luxembourg Gardens",
+     "creator": "Pierre Henri de Valenciennes",
+     "date": "1773",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "attribution": "The Metropolitan Museum of Art, Purchase, The Isaacson-Draper Foundation Gift, 2014 (Open Access, CC0)",
+     "sourceUrl": "https://www.metmuseum.org/art/collection/search/671072",
+     "usedIn": [
+      "puerta",
+      "sh/wing-trunk"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "Wellcome Collection",
+   "items": [
+    {
+     "id": "wel_etaatwun",
+     "title": "English ivy (Hedera helix): stem with flowers, fruit and leaves. Coloured lithograph by W. G. Smith, c. 1863, after himself.",
+     "creator": "Worthington George Smith",
+     "date": "[1863-1880]",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+     "attribution": "Worthington George Smith, English ivy (Hedera helix): stem with flowers, fruit and leaves. Coloured lithograph by W. G. Smith, c. 1863, after himself. [1863-1880]. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/vh47kgtb",
+     "usedIn": [
+      "puerta",
+      "rosaleda",
+      "sh/ivy",
+      "sh/ivy-2"
+     ]
+    },
+    {
+     "id": "wel_g4mzdzcp",
+     "title": "Six grasses: fescues (Festuca species), foxtail grass (Alopecurus pratensis), meadow grasses (Poa species) and sweet vernal grass (Anthoxanthum odoratum). Coloured etching by J. Pass, c. 1807.",
+     "creator": "Unknown",
+     "date": "15 August 1807",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+     "attribution": "Unknown, Six grasses: fescues (Festuca species), foxtail grass (Alopecurus pratensis), meadow grasses (Poa species) and sweet vernal grass (Anthoxanthum odoratum). Coloured etching by J. Pass, c. 1807. 15 August 1807. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/sfs642qj",
+     "usedIn": [
+      "sh/clump-1"
+     ]
+    },
+    {
+     "id": "wel_kbzakfgk",
+     "title": "Red poppy (Papaver rhoeas): entire flowering plant. Coloured etching by C. Pierre, c. 1865, after P. Naudin.",
+     "creator": "Naudin, Philibert, active 1870.",
+     "date": "[1865]",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+     "attribution": "Naudin, Philibert, active 1870., Red poppy (Papaver rhoeas): entire flowering plant. Coloured etching by C. Pierre, c. 1865, after P. Naudin. [1865]. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/mcxkfqjn",
+     "usedIn": [
+      "rosaleda",
+      "w/poppy"
+     ]
+    },
+    {
+     "id": "wel_kmsvg748",
+     "title": "A wild rose (Rosa dumetorum): flowering and fruiting stems. Coloured engraving, c. 1829, after J. Sowerby.",
+     "creator": "James Sowerby",
+     "date": "1 November 1829",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+     "attribution": "James Sowerby, A wild rose (Rosa dumetorum): flowering and fruiting stems. Coloured engraving, c. 1829, after J. Sowerby. 1 November 1829. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/hza8wsk5",
+     "usedIn": [
+      "ro/cane-wing",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "wel_r9zz3hu7",
+     "title": "Two types of buttercup (Ranunculus species): entire flowering plants. Coloured etching by C. Pierre, c. 1865, after P. Naudin.",
+     "creator": "Naudin, Philibert, active 1870.",
+     "date": "[1865]",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+     "attribution": "Naudin, Philibert, active 1870., Two types of buttercup (Ranunculus species): entire flowering plants. Coloured etching by C. Pierre, c. 1865, after P. Naudin. [1865]. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/wxu8e7gb",
+     "usedIn": [
+      "rosaleda",
+      "w/buttercup"
+     ]
+    },
+    {
+     "id": "wel_txep399t",
+     "title": "Eglantine rose (Rosa eglanteria): flowering stem, fruit and floral segments. Coloured engraving after J. Sowerby, 1802.",
+     "creator": "James Sowerby",
+     "date": "1 March 1802",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+     "attribution": "James Sowerby, Eglantine rose (Rosa eglanteria): flowering stem, fruit and floral segments. Coloured engraving after J. Sowerby, 1802. 1 March 1802. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/v6ynfkfa",
+     "usedIn": [
+      "sh/petal-1",
+      "sh/petal-2",
+      "sh/petal-3"
+     ]
+    },
+    {
+     "id": "wel-easdhj2q-edible-snail",
+     "title": "A large edible snail: five figures, including a cross-section of the shell. Chromolithograph, 1870.",
+     "creator": "Unknown",
+     "date": "[1870]",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Unknown, A large edible snail: five figures, including a cross-section of the shell. Chromolithograph, 1870. [1870]. Wellcome Collection, Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/easdhj2q",
+     "usedIn": [
+      "ro/snail",
+      "rosaleda"
+     ]
+    },
+    {
+     "id": "wel-gzgs6qm9-bracken-fiddleheads",
+     "title": "Bracken plants (Pteridium aquilinum): both young and old fronds. Watercolour.",
+     "creator": "Unknown",
+     "date": "n.d.",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Bracken plants (Pteridium aquilinum): both young and old fronds. Watercolour. Wellcome Collection (Public Domain Mark).",
+     "sourceUrl": "https://wellcomecollection.org/works/gzgs6qm9",
+     "usedIn": [
+      "rosaleda",
+      "w/fiddle"
+     ]
+    },
+    {
+     "id": "wel-r6ssyh25-sleeping-cat",
+     "title": "A sleeping cat. Gouache, 18--.",
+     "creator": "Unknown",
+     "date": "[between 1800 and 1899]",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Unknown, A sleeping cat. Gouache, 18--. [between 1800 and 1899]. Wellcome Collection, Public Domain Mark 1.0.",
+     "sourceUrl": "https://wellcomecollection.org/works/r6ssyh25",
+     "usedIn": [
+      "rosaleda",
+      "v/cat",
+      "v/cat-tail"
+     ]
+    },
+    {
+     "id": "wel-yb4y8cn4-eight-fungi",
+     "title": "Eight fungi, including the fly agaric, chanterelle, Boletus edulis, field mushroom, puff ball, morel, dry-rot and ergot. Chromolithograph.",
+     "creator": "Walther",
+     "date": "n.d.",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Eight fungi, including the fly agaric, chanterelle, Boletus edulis, field mushroom, puff ball, morel, dry-rot and ergot. Chromolithograph. Wellcome Collection (Public Domain Mark).",
+     "sourceUrl": "https://wellcomecollection.org/works/yb4y8cn4",
+     "usedIn": [
+      "rosaleda",
+      "w/fungi",
+      "w/fungi-2"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "Wikimedia Commons",
+   "items": [
+    {
+     "id": "nypl_rosa_multiflora_rambler",
+     "title": "Rosa multiflora - rosier multiflore (Rambler Rose, Multiflowered Rose)",
+     "creator": "Pierre-Joseph Redouté (figures), for Nouveau Duhamel (Veillard, Jaume Saint-Hilaire, Mirbel, Poiret, Loiseleur-Deslongchamps)",
+     "date": "1801",
+     "license": "PD",
+     "licenseUrl": "https://commons.wikimedia.org/wiki/File:Rosa_multiflora_-_rosier_multiflore._(Rambler_Rose,_Multiflowered_Rose)_(NYPL_b14485031-1110813).tiff",
+     "attribution": "Pierre-Joseph Redouté (figures), for Nouveau Duhamel (Veillard, Jaume Saint-Hilaire, Mirbel, Poiret, Loiseleur-Deslongchamps), Rosa multiflora - rosier multiflore (Rambler Rose, Multiflowered Rose), 1801. Wikimedia Commons, licensed Public domain (). Changes made: cut out and recoloured. https://commons.wikimedia.org/wiki/File:Rosa_multiflora_-_rosier_multiflore._(Rambler_Rose,_Multiflowered_Rose)_(NYPL_b14485031-1110813).tiff",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosa_multiflora_-_rosier_multiflore._(Rambler_Rose,_Multiflowered_Rose)_(NYPL_b14485031-1110813).tiff",
+     "usedIn": [
+      "ro/climb-multi",
+      "rosaleda"
+     ]
+    }
+   ]
+  }
+ ],
+ "own": []
+}

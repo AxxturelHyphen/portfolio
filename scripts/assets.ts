@@ -1,22 +1,29 @@
 /// <reference types="node" />
 // npm run assets [stage ...]: the incremental, cached asset pipeline (cook/ARCH.md section 3).
-// Stages in order: vendor (Basis transcoder into public/basis/), placeholder (P1 sprites), pack, encode, merge
-// (archive/SOURCES.json, after the atlases so usedIn is current). With no argument every stage runs; each one skips
+// Stages in order: vendor (Basis transcoder into public/basis/), placeholder (flat sprites for whatever a bed
+// places that no recipe makes yet), sprites (the real archive sprites of archive/recipes/*.json), pack, encode,
+// merge (archive/SOURCES.json, after the atlases so usedIn is current), credits. `sheets` (contact sheets of every
+// real sprite on the night ground) runs only when named. With no argument every default stage runs; each one skips
 // work whose inputs are unchanged (archive/work/cache.json). Ends with the per-bed payload and GPU memory report.
-import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import type { AtlasManifest } from '../src/types.ts';
 import { runPlaceholder } from './placeholder.ts';
 import { ATLAS_OUT, BED_DIR, CATALOG, Cache, PACK_DIR, bedFiles, hashInputs, readBeds, readJson, spritePng, type Catalog } from './stages/common.ts';
+import { runCredits } from './stages/credits.ts';
 import { encoderNote, runEncode } from './stages/encode.ts';
-import { runMerge } from './stages/merge.ts';
+import { SOURCES_DIR, runMerge } from './stages/merge.ts';
 import { pageFiles, runPack } from './stages/pack.ts';
+import { RECIPE_DIR } from './stages/recipe.ts';
+import { runSheets } from './stages/sheets.ts';
+import { REAL_CATALOG, realPng, runSprites, type RealCatalog } from './stages/sprites.ts';
 
-const STAGES = ['vendor', 'placeholder', 'pack', 'encode', 'merge'] as const;
+const STAGES = ['vendor', 'placeholder', 'sprites', 'pack', 'encode', 'merge', 'credits', 'sheets'] as const;
+const ON_DEMAND: readonly Stage[] = ['sheets'];
 type Stage = (typeof STAGES)[number];
 const BASIS_SRC = 'node_modules/three/examples/jsm/libs/basis';
 const BASIS_OUT = 'public/basis';
-const PACK_CODE = ['scripts/stages/pack.ts', 'scripts/stages/raster.ts', 'scripts/stages/normal.ts', 'scripts/stages/common.ts'];
+const PACK_CODE = ['scripts/stages/pack.ts', 'scripts/stages/raster.ts', 'scripts/stages/normal.ts', 'scripts/stages/common.ts', 'scripts/stages/recipe.ts'];
 const MB = 2 ** 20;
 const BED_BUDGET_MB = 2;
 const GPU_BUDGET = { high: 128, low: 48 };
@@ -31,8 +38,13 @@ function vendor(): string {
 
 function pack(cache: Cache): { line: string; ids: AtlasManifest['id'][] } {
   const cat = existsSync(CATALOG) ? readJson<Catalog>(CATALOG) : { sprites: {}, blooms: {} };
-  const sprites = Object.keys(cat.sprites).flatMap((id) => [spritePng(id, 'sprite'), spritePng(id, 'normal')]);
-  const hash = hashInputs([...bedFiles(), 'content/garden.json', CATALOG, ...sprites, ...PACK_CODE]);
+  const real = existsSync(REAL_CATALOG) ? readJson<RealCatalog>(REAL_CATALOG) : { sprites: {} };
+  const sprites = [
+    ...Object.keys(cat.sprites).flatMap((id) => [spritePng(id, 'sprite'), spritePng(id, 'normal')]),
+    ...Object.keys(real.sprites).flatMap((id) => [realPng(id, 'sprite'), realPng(id, 'normal')]),
+  ];
+  const recipes = existsSync(RECIPE_DIR) ? readdirSync(RECIPE_DIR).map((f) => join(RECIPE_DIR, f)) : [];
+  const hash = hashInputs([...bedFiles(), 'content/garden.json', CATALOG, REAL_CATALOG, ...recipes, ...sprites, ...PACK_CODE]);
   const prev = cache.get('pack:ids');
   const prevIds = prev === undefined ? [] : (JSON.parse(prev) as AtlasManifest['id'][]);
   const outputs = prevIds.flatMap((id) => [`${PACK_DIR}/${id}.json`, ...readJsonOr(`${PACK_DIR}/${id}.json`).pages.flatMap((_, p) => Object.values(pageFiles(id, p)))]);
@@ -43,6 +55,12 @@ function pack(cache: Cache): { line: string; ids: AtlasManifest['id'][] } {
   cache.set('pack', hash);
   cache.set('pack:ids', JSON.stringify(ids));
   return { line: `pack: ${ids.length} atlases (${ids.join(', ')})`, ids };
+}
+
+/** Every scouted source with its category (the folder its raw file lives in). */
+function archiveSources(): { id: string; file: string; category: string }[] {
+  if (!existsSync(SOURCES_DIR)) return [];
+  return readdirSync(SOURCES_DIR).filter((f) => f.endsWith('.json')).flatMap((f) => readJson<{ id: string; file: string }[]>(join(SOURCES_DIR, f)).map((e) => ({ id: e.id, file: e.file, category: basename(f, '.json') })));
 }
 
 const readJsonOr = (p: string): AtlasManifest => (existsSync(p) ? readJson<AtlasManifest>(p) : { id: 'shared', hash: '', pages: [], sprites: {}, blooms: {} });
@@ -79,13 +97,14 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const unknown = args.filter((a) => !STAGES.includes(a as Stage));
   if (unknown.length > 0) throw new Error(`unknown stage ${unknown.join(', ')}; stages: ${STAGES.join(', ')}`);
-  const run = (s: Stage): boolean => args.length === 0 || args.includes(s);
+  const run = (s: Stage): boolean => (args.length === 0 && !ON_DEMAND.includes(s)) || args.includes(s);
   const cache = new Cache();
   const t0 = performance.now();
   try {
     if (run('vendor')) console.log(vendor());
     if (bedFiles().length === 0) console.log(`assets: no ${BED_DIR}/*.json yet; only the shared atlas is built`);
     if (run('placeholder')) console.log(runPlaceholder(cache));
+    if (run('sprites')) for (const l of runSprites(cache, archiveSources())) console.log(l);
     let ids: AtlasManifest['id'][] = [];
     if (run('pack')) {
       const r = pack(cache);
@@ -99,6 +118,8 @@ async function main(): Promise<void> {
       for (const l of report(ids)) console.log(l);
     }
     if (run('merge')) console.log(runMerge(cache));
+    if (run('credits')) console.log(runCredits());
+    if (run('sheets')) console.log(runSheets());
   } finally {
     cache.save();
   }

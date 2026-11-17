@@ -8,6 +8,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import type { AtlasManifest } from '../../src/types.ts';
 import { ATLAS_OUT, readJson, sha256, writeJson, type Cache } from './common.ts';
+import { EDITS, type Edit } from './sprites.ts';
 
 export interface SourceEntry { id: string; title: string; creator: string; date: string; institution: string; sourceUrl: string; license: string; licenseUrl: string; attribution: string; file: string; need: string }
 export interface MergedSource extends SourceEntry { category: string; sha256: string; usedIn: string[]; edits: { stage: string; tool: string; note: string }[] }
@@ -61,6 +62,7 @@ export function runMerge(cache: Cache): string {
   const seen = new Set<string>();
   const sources: MergedSource[] = [];
   const use = shipUse();
+  const edits = existsSync(EDITS) ? readJson<Record<string, Edit[]>>(EDITS) : {};
   const files = existsSync(SOURCES_DIR) ? readdirSync(SOURCES_DIR).filter((f) => f.endsWith('.json')).sort() : [];
   for (const f of files) {
     const category = basename(f, '.json');
@@ -103,7 +105,7 @@ export function runMerge(cache: Cache): string {
         cache.set(key, stamp);
         cache.set(`${key}:v`, digest);
       }
-      sources.push({ ...e, license, file, category, sha256: digest, usedIn: [...(use.get(e.id) ?? [])].sort(), edits: [] });
+      sources.push({ ...e, license, file, category, sha256: digest, usedIn: [...(use.get(e.id) ?? [])].sort(), edits: use.has(e.id) ? (edits[e.id] ?? []) : [] });
     }
   }
   if (problems.length > 0) throw new Error(`merge: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`);

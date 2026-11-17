@@ -6,11 +6,15 @@
 // UV convention: v = 0 is the bottom row of the page (the encoder flips Y), pivot is a fraction with y up.
 import { readFileSync } from 'node:fs';
 import type { AtlasManifest, AtlasPage, BedScene, SpriteId, SpriteRect } from '../../src/types.ts';
+import { existsSync } from 'node:fs';
 import { CATALOG, GUTTER, MAX_PAGE, OVERVIEW_PX_PER_UNIT, PACK_DIR, SHARED_SPRITES, readJson, spritePng, writeFile, writeJson, type Catalog } from './common.ts';
 import { normalMap } from './normal.ts';
 import { blit, decodePng, dilate, drawScaled, encodePng, fill, halve, raster, type Raster } from './raster.ts';
+import { readRecipes, recipePageIds, type Recipe } from './recipe.ts';
+import { REAL_CATALOG, realPng, type RealCatalog } from './sprites.ts';
 
-export interface PackItem { id: SpriteId; color: Raster; normal: Raster; size: [number, number]; pivot: [number, number]; sources: string[] }
+/** A tile is a page of its own: one sprite over the whole page, no gutter, repeat-wrapped at runtime. */
+export interface PackItem { id: SpriteId; color: Raster; normal: Raster; size: [number, number]; pivot: [number, number]; sources: string[]; tile?: boolean }
 interface Placed { item: PackItem; x: number; y: number }
 
 const MIN_PAGE = 64;
@@ -20,41 +24,86 @@ const pots = (): number[] => {
   return out;
 };
 
-/** Shelf packing into the smallest power-of-two page that fits; null when 2048 x 2048 is not enough. */
+/** Skyline bottom-left packing of w x h boxes into one page; null when they do not fit. */
+function skyline(boxes: readonly { w: number; h: number }[], W: number, H: number): { x: number; y: number }[] | null {
+  let line: { x: number; y: number; w: number }[] = [{ x: 0, y: 0, w: W }];
+  const out: { x: number; y: number }[] = [];
+  for (const b of boxes) {
+    let best: { i: number; x: number; y: number } | null = null;
+    for (let i = 0; i < line.length; i++) {
+      const x = line[i]!.x;
+      if (x + b.w > W) break;
+      let y = 0;
+      let left = b.w;
+      for (let j = i; j < line.length && left > 0; j++) {
+        y = Math.max(y, line[j]!.y);
+        left -= line[j]!.w;
+      }
+      if (y + b.h > H) continue;
+      if (best === null || y < best.y || (y === best.y && x < best.x)) best = { i, x, y };
+    }
+    if (best === null) return null;
+    out.push({ x: best.x, y: best.y });
+    const top = { x: best.x, y: best.y + b.h, w: b.w };
+    const next: typeof line = [];
+    for (const seg of line) {
+      const s0 = seg.x;
+      const s1 = seg.x + seg.w;
+      if (s1 <= top.x || s0 >= top.x + top.w) next.push(seg);
+      else {
+        if (s0 < top.x) next.push({ x: s0, y: seg.y, w: top.x - s0 });
+        if (s1 > top.x + top.w) next.push({ x: top.x + top.w, y: seg.y, w: s1 - top.x - top.w });
+      }
+    }
+    next.push(top);
+    next.sort((a, c) => a.x - c.x);
+    line = next.reduce<typeof line>((acc, seg) => {
+      const last = acc[acc.length - 1];
+      if (last !== undefined && last.y === seg.y && last.x + last.w === seg.x) last.w += seg.w;
+      else acc.push({ ...seg });
+      return acc;
+    }, []);
+  }
+  return out;
+}
+
+const ORDERS: ((a: PackItem, b: PackItem) => number)[] = [
+  (a, b) => b.color.h - a.color.h || b.color.w - a.color.w,
+  (a, b) => b.color.w - a.color.w || b.color.h - a.color.h,
+  (a, b) => b.color.w * b.color.h - a.color.w * a.color.h,
+  (a, b) => Math.max(b.color.w, b.color.h) - Math.max(a.color.w, a.color.h),
+];
+
+/** Packs into the smallest power-of-two page that fits (skyline, several orders tried); null when 2048 x 2048 is not
+ * enough. */
 export function shelfPack(items: readonly PackItem[]): { w: number; h: number; placed: Placed[] } | null {
-  const sorted = [...items].sort((a, b) => b.color.h - a.color.h || b.color.w - a.color.w);
   const sizes = pots().flatMap((w) => pots().map((h) => ({ w, h }))).filter((s) => s.w >= s.h / 2 && s.h >= s.w / 2).sort((a, b) => a.w * a.h - b.w * b.h || a.h - b.h);
   for (const { w, h } of sizes) {
-    const placed: Placed[] = [];
-    let x = 0;
-    let y = 0;
-    let shelf = 0;
-    let ok = true;
-    for (const item of sorted) {
-      const cw = item.color.w + GUTTER * 2;
-      const ch = item.color.h + GUTTER * 2;
-      if (x + cw > w) {
-        x = 0;
-        y += shelf;
-        shelf = 0;
-      }
-      if (cw > w || y + ch > h) {
-        ok = false;
-        break;
-      }
-      placed.push({ item, x: x + GUTTER, y: y + GUTTER });
-      x += cw;
-      shelf = Math.max(shelf, ch);
+    for (const order of ORDERS) {
+      const sorted = [...items].sort(order);
+      const at = skyline(sorted.map((it) => ({ w: it.color.w + GUTTER * 2, h: it.color.h + GUTTER * 2 })), w, h);
+      if (at !== null) return { w, h, placed: sorted.map((item, k) => ({ item, x: at[k]!.x + GUTTER, y: at[k]!.y + GUTTER })) };
     }
-    if (ok) return { w, h, placed };
   }
   return null;
 }
 
-function loadItem(id: SpriteId, cat: Catalog): PackItem {
-  const meta = cat.sprites[id];
-  if (meta === undefined) throw new Error(`pack: sprite "${id}" is not in ${CATALOG}`);
-  return { id, color: decodePng(readFileSync(spritePng(id, 'sprite'))), normal: decodePng(readFileSync(spritePng(id, 'normal'))), size: meta.size, pivot: meta.pivot, sources: meta.sources };
+/** Placeholder catalog overlaid by the real one: a real sprite always wins over a placeholder of the same id. */
+export interface Sprites { cat: Catalog; real: RealCatalog | null }
+
+export function readSprites(): Sprites {
+  const placeholder = existsSync(CATALOG) ? readJson<Catalog>(CATALOG) : { sprites: {}, blooms: {} };
+  const real = existsSync(REAL_CATALOG) ? readJson<RealCatalog>(REAL_CATALOG) : null;
+  return { cat: { sprites: { ...placeholder.sprites, ...real?.sprites }, blooms: { ...placeholder.blooms, ...real?.blooms } }, real };
+}
+
+const fileOf = (id: SpriteId, kind: 'sprite' | 'normal', s: Sprites): string => (s.real?.sprites[id] !== undefined ? realPng(id, kind) : spritePng(id, kind));
+
+function loadItem(id: SpriteId, s: Sprites): PackItem {
+  const meta = s.cat.sprites[id];
+  if (meta === undefined) throw new Error(`pack: sprite "${id}" is in no catalog (${CATALOG}, ${REAL_CATALOG})`);
+  const tile = s.real?.tiles.includes(id) === true;
+  return { id, color: decodePng(readFileSync(fileOf(id, 'sprite', s))), normal: decodePng(readFileSync(fileOf(id, 'normal', s))), size: meta.size, pivot: meta.pivot, sources: meta.sources, tile };
 }
 
 export const pageFiles = (id: string, p: number): { c: string; n: string } => ({ c: `${PACK_DIR}/${id}.${p}.c.png`, n: `${PACK_DIR}/${id}.${p}.n.png` });
@@ -63,7 +112,8 @@ function writeAtlas(id: AtlasManifest['id'], pages: PackItem[][], blooms: AtlasM
   const sprites: Record<SpriteId, SpriteRect> = {};
   const outPages: AtlasPage[] = [];
   pages.forEach((items, p) => {
-    const packed = shelfPack(items);
+    const only = items[0];
+    const packed = only?.tile === true ? { w: only.color.w, h: only.color.h, placed: [{ item: only, x: 0, y: 0 }] } : shelfPack(items);
     if (packed === null) throw new Error(`pack: atlas ${id} page ${p} does not fit in ${MAX_PAGE}x${MAX_PAGE}`);
     const color = raster(packed.w, packed.h);
     const normal = raster(packed.w, packed.h);
@@ -74,10 +124,10 @@ function writeAtlas(id: AtlasManifest['id'], pages: PackItem[][], blooms: AtlasM
       sprites[item.id] = {
         page: p,
         uv: [x / packed.w, 1 - (y + item.color.h) / packed.h, (x + item.color.w) / packed.w, 1 - y / packed.h],
-        size: item.size, pivot: item.pivot, pad: GUTTER, sources: item.sources,
+        size: item.size, pivot: item.pivot, pad: item.tile === true ? 0 : GUTTER, sources: item.sources,
       };
     }
-    dilate(color, GUTTER);
+    if (only?.tile !== true) dilate(color, GUTTER);
     const f = pageFiles(id, p);
     writeFile(f.c, encodePng(color));
     writeFile(f.n, encodePng(halve(normal)));
@@ -89,14 +139,17 @@ function writeAtlas(id: AtlasManifest['id'], pages: PackItem[][], blooms: AtlasM
 }
 
 /** Sprite ids per page of one bed; slot bloom frames go on the page of the layer nearest in z to the slot. */
-export function bedPages(bed: BedScene, cat: Catalog, warnings: string[]): { pages: SpriteId[][]; blooms: AtlasManifest['blooms'] } {
-  const count = bed.layers.reduce((m, l) => Math.max(m, l.page + 1), 0);
-  const pages: Set<SpriteId>[] = Array.from({ length: count }, () => new Set());
+export function bedPages(bed: BedScene, cat: Catalog, warnings: string[], recipe?: Recipe, elsewhere: ReadonlySet<SpriteId> = new Set()): { pages: SpriteId[][]; blooms: AtlasManifest['blooms'] } {
+  const fromRecipe = recipe === undefined ? [] : recipePageIds(recipe);
+  const count = Math.max(fromRecipe.length, bed.layers.reduce((m, l) => Math.max(m, l.page + 1), 0));
+  const pages: Set<SpriteId>[] = Array.from({ length: count }, (_, p) => new Set(fromRecipe[p] ?? []));
   const pageOf = new Map<SpriteId, number>();
+  fromRecipe.forEach((ids, p) => ids.forEach((id) => pageOf.set(id, p)));
   const put = (id: SpriteId, p: number, where: string): void => {
+    if (elsewhere.has(id)) return;
     const was = pageOf.get(id);
     if (was !== undefined) {
-      if (was !== p) warnings.push(`pack WARN: ${bed.id} uses sprite "${id}" on pages ${was} and ${p} (${where}); a sprite lives on one page, kept on ${was}`);
+      if (was !== p && !fromRecipe.some((ids) => ids.includes(id))) warnings.push(`pack WARN: ${bed.id} uses sprite "${id}" on pages ${was} and ${p} (${where}); a sprite lives on one page, kept on ${was}`);
       return;
     }
     pageOf.set(id, p);
@@ -104,6 +157,7 @@ export function bedPages(bed: BedScene, cat: Catalog, warnings: string[]): { pag
   };
   for (const l of bed.layers) for (const it of l.items) put(it.sprite, l.page, `layer ${l.id}`);
   const blooms: AtlasManifest['blooms'] = {};
+  for (const r of recipe?.pages ?? []) for (const b of r.blooms ?? []) if (cat.blooms[b.id] !== undefined) blooms[b.id] = cat.blooms[b.id]!;
   for (const s of bed.slots) {
     if (s.bloom === undefined) continue;
     const def = cat.blooms[s.bloom];
@@ -117,12 +171,12 @@ export function bedPages(bed: BedScene, cat: Catalog, warnings: string[]): { pag
 }
 
 /** The whole bed flattened far to near at OVERVIEW_PX_PER_UNIT, as one sprite with the bed-local origin as pivot. */
-function overviewItem(bed: BedScene, items: Map<SpriteId, PackItem>): PackItem {
+function overviewItem(bed: BedScene, item: (id: SpriteId) => PackItem | undefined): PackItem {
   const [x0, x1] = bed.bounds;
   let y0 = 0;
   let y1 = 1;
   const boxes = bed.layers.flatMap((l) => l.items.map((it) => {
-    const s = items.get(it.sprite);
+    const s = item(it.sprite);
     if (s === undefined) throw new Error(`pack: overview of ${bed.id} misses sprite ${it.sprite}`);
     const w = s.size[0] * it.scale;
     const h = s.size[1] * it.scale;
@@ -143,23 +197,32 @@ function overviewItem(bed: BedScene, items: Map<SpriteId, PackItem>): PackItem {
 
 /** Writes every page PNG and manifest draft; returns the drafts in write order (beds, overview, shared). */
 export function runPack(beds: readonly BedScene[], warnings: string[]): AtlasManifest[] {
-  const cat = readJson<Catalog>(CATALOG);
+  const sprites = readSprites();
+  const { cat } = sprites;
+  const recipes = new Map(readRecipes().map((r) => [r.atlas, r]));
   const cache = new Map<SpriteId, PackItem>();
   const item = (id: SpriteId): PackItem => {
     const hit = cache.get(id);
     if (hit !== undefined) return hit;
-    const fresh = loadItem(id, cat);
+    const fresh = loadItem(id, sprites);
     cache.set(id, fresh);
     return fresh;
   };
   const atlases: AtlasManifest[] = [];
   const overview: PackItem[] = [];
+  // A sprite packed in the shared atlas is never copied into a bed atlas: the world resolves it there.
+  const inShared = new Set(recipes.get('shared') === undefined ? [] : recipePageIds(recipes.get('shared')!).flat());
   for (const bed of beds) {
-    const { pages, blooms } = bedPages(bed, cat, warnings);
+    const { pages, blooms } = bedPages(bed, cat, warnings, recipes.get(bed.id), inShared);
     atlases.push(writeAtlas(bed.id, pages.map((ids) => ids.map(item)), blooms));
-    overview.push(overviewItem(bed, cache));
+    overview.push(overviewItem(bed, item));
   }
   if (overview.length > 0) atlases.push(writeAtlas('overview', [overview], {}));
-  atlases.push(writeAtlas('shared', [SHARED_SPRITES.map(item)], {}));
+  const shared = recipes.get('shared');
+  const bands = shared === undefined ? [[]] : recipePageIds(shared);
+  const extra = SHARED_SPRITES.filter((id) => !bands.some((ids) => ids.includes(id)));
+  const sharedPages = bands.map((ids, p) => (p === 0 ? [...extra, ...ids] : ids).map(item));
+  for (const t of shared?.tiles ?? []) sharedPages.push([item(t.id)]);
+  atlases.push(writeAtlas('shared', sharedPages, {}));
   return atlases;
 }

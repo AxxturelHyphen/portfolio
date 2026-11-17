@@ -1,0 +1,904 @@
+{
+ "atlas": "shared",
+ "plates": {
+  "wel_txep399t": {
+   "drop": [
+    [
+     0,
+     0,
+     1,
+     0.76
+    ]
+   ]
+  },
+  "nga-24386-candle-lantern": {
+   "drop": [
+    [
+     0,
+     0.88,
+     1,
+     1
+    ]
+   ]
+  },
+  "nga-18277-clay-flower-pot-red-rim": {
+   "drop": [
+    [
+     0,
+     0.85,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel_g4mzdzcp": {
+   "drop": [
+    [
+     0,
+     0,
+     1,
+     0.08
+    ],
+    [
+     0,
+     0.88,
+     1,
+     1
+    ]
+   ]
+  },
+  "com-florabatava-typha": {
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma-118176-japanese-iris": {
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel_etaatwun": {
+   "drop": [
+    [
+     0,
+     0.82,
+     1,
+     1
+    ],
+    [
+     0.85,
+     0,
+     1,
+     0.08
+    ]
+   ]
+  },
+  "nga-27263-toleware-water-can": {
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ]
+  },
+  "nga-16209-moravian-bench": {
+   "drop": [
+    [
+     0.6,
+     0.78,
+     1,
+     1
+    ]
+   ],
+   "method": "ml",
+   "why": "classical left a ragged paper edge along the left leg (contact sheet, P2)"
+  },
+  "nga-25899-wooden-spade": {
+   "drop": [
+    [
+     0.58,
+     0.12,
+     0.72,
+     0.4
+    ]
+   ]
+  },
+  "enc-1-081-garden-tools-ladder": {
+   "drop": [
+    [
+     0.72,
+     0.62,
+     0.8,
+     0.655
+    ]
+   ]
+  },
+  "met-344561": {
+   "drop": []
+  },
+  "wel_kbzakfgk": {
+   "drop": [
+    [
+     0,
+     0.88,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel_r9zz3hu7": {
+   "drop": [
+    [
+     0,
+     0.88,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma_1955_471": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma_1965_294": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel-yb4y8cn4-eight-fungi": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel-gzgs6qm9-bracken-fiddleheads": {
+   "method": "classical",
+   "why": "the ML matte dropped most of the pale fronds (contact sheet, P2)"
+  },
+  "cma-111718": {
+   "method": "raw",
+   "why": "dark aquatint and photo masses off a light sky: keyed by luminance, not by paper"
+  },
+  "cma-142390": {
+   "method": "raw",
+   "why": "dark aquatint and photo masses off a light sky: keyed by luminance, not by paper"
+  },
+  "met-287962": {
+   "method": "raw",
+   "why": "dark aquatint and photo masses off a light sky: keyed by luminance, not by paper"
+  },
+  "nga-19941-tavern-sign-brown": {
+   "drop": []
+  },
+  "met-671072": {
+   "method": "raw",
+   "why": "red chalk hatching off the paper: keyed by luminance as a wing silhouette"
+  }
+ },
+ "pages": [
+  {
+   "band": "sh0: ground kit, lanterns, board, wings",
+   "jobs": [
+    {
+     "id": "sh/petal-1",
+     "source": "wel_txep399t",
+     "crop": [
+      0.16,
+      0.78,
+      0.42,
+      0.88
+     ],
+     "size": "small",
+     "w": 0.07,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#a83038",
+       "amount": 0.25
+      }
+     ]
+    },
+    {
+     "id": "sh/petal-2",
+     "source": "wel_txep399t",
+     "crop": [
+      0.16,
+      0.78,
+      0.42,
+      0.88
+     ],
+     "size": "small",
+     "w": 0.07,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "largest": true,
+     "rotate": 38,
+     "warp": [
+      0.18,
+      0.12
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#b38783",
+       "amount": 0.25
+      }
+     ]
+    },
+    {
+     "id": "sh/petal-3",
+     "source": "wel_txep399t",
+     "crop": [
+      0.16,
+      0.78,
+      0.42,
+      0.88
+     ],
+     "size": "small",
+     "w": 0.07,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "largest": true,
+     "rotate": -64,
+     "warp": [
+      -0.22,
+      0.25
+     ],
+     "flip": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#d3c9c4",
+       "amount": 0.3
+      }
+     ]
+    },
+    {
+     "id": "sh/pot-a",
+     "source": "nga-18277-clay-flower-pot-red-rim",
+     "crop": [
+      0.25,
+      0.28,
+      0.78,
+      0.75
+     ],
+     "size": "small",
+     "h": 0.45,
+     "tint": [
+      {
+       "hue": "warm",
+       "toward": "#b86f52",
+       "amount": 0.4
+      }
+     ]
+    },
+    {
+     "id": "sh/lantern-candle",
+     "source": "nga-24386-candle-lantern",
+     "crop": [
+      0.15,
+      0.08,
+      0.88,
+      0.8
+     ],
+     "size": "medium",
+     "h": 0.4
+    },
+    {
+     "id": "sh/board",
+     "source": "nga-19941-tavern-sign-brown",
+     "crop": [
+      0.19,
+      0.03,
+      0.79,
+      0.96
+     ],
+     "size": "medium",
+     "h": 1.3,
+     "remove": [
+      {
+       "box": [
+        0.3,
+        0.37,
+        0.66,
+        0.81
+       ],
+       "fill": "#2a211c"
+      },
+      {
+       "box": [
+        0.4,
+        0.85,
+        0.6,
+        0.92
+       ],
+       "clone": [
+        -0.17,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sh/clump-1",
+     "source": "wel_g4mzdzcp",
+     "crop": [
+      0.22,
+      0.48,
+      0.82,
+      0.8
+     ],
+     "size": "medium",
+     "h": 0.45
+    },
+    {
+     "id": "sh/clump-2",
+     "source": "com-florabatava-typha",
+     "crop": [
+      0.58,
+      0.06,
+      0.96,
+      0.9
+     ],
+     "size": "medium",
+     "h": 0.6,
+     "whole": 5
+    },
+    {
+     "id": "sh/clump-3",
+     "source": "cma-118176-japanese-iris",
+     "crop": [
+      0.18,
+      0.52,
+      0.82,
+      0.92
+     ],
+     "size": "medium",
+     "h": 0.5
+    },
+    {
+     "id": "sh/ivy",
+     "source": "wel_etaatwun",
+     "crop": [
+      0.03,
+      0.05,
+      0.97,
+      0.8
+     ],
+     "size": "medium",
+     "h": 0.9,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.55
+      }
+     ],
+     "largest": true
+    },
+    {
+     "id": "sh/ivy-2",
+     "source": "wel_etaatwun",
+     "crop": [
+      0.55,
+      0.42,
+      0.95,
+      0.78
+     ],
+     "size": "medium",
+     "h": 0.5,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.55
+      }
+     ],
+     "whole": 6
+    },
+    {
+     "id": "sh/wing-trunk",
+     "source": "met-671072",
+     "crop": [
+      0.3,
+      0.45,
+      0.62,
+      0.93
+     ],
+     "size": "medium",
+     "h": 2.2,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 4,
+      "luma": [
+       0.55,
+       0.78
+      ],
+      "close": 10
+     },
+     "largest": true
+    },
+    {
+     "id": "ov/trees-1",
+     "source": "cma-111718",
+     "crop": [
+      0.05,
+      0.1,
+      0.95,
+      0.6
+     ],
+     "size": "medium",
+     "h": 6,
+     "treat": "MASK",
+     "mask": {
+      "color": "#1b1a3a",
+      "blur": 1,
+      "luma": [
+       0.35,
+       0.62
+      ],
+      "close": 4
+     }
+    },
+    {
+     "id": "ov/trees-2",
+     "source": "cma-142390",
+     "crop": [
+      0,
+      0.1,
+      0.6,
+      0.6
+     ],
+     "size": "medium",
+     "h": 5,
+     "treat": "MASK",
+     "mask": {
+      "color": "#1b1a3a",
+      "blur": 1,
+      "luma": [
+       0.25,
+       0.45
+      ],
+      "close": 4
+     }
+    },
+    {
+     "id": "ov/trees-3",
+     "source": "met-287962",
+     "crop": [
+      0.3,
+      0.08,
+      0.75,
+      0.8
+     ],
+     "size": "medium",
+     "h": 7,
+     "treat": "MASK",
+     "mask": {
+      "color": "#1b1a3a",
+      "blur": 1,
+      "luma": [
+       0.45,
+       0.7
+      ],
+      "close": 8
+     }
+    }
+   ],
+   "flags": {
+    "prefix": "sh/flag",
+    "source": "ph-grey-stone-path",
+    "count": 8,
+    "size": 384,
+    "metres": 3,
+    "gm": [
+     "#1f2129",
+     "#4a4b5c",
+     "#8a8496"
+    ],
+    "pitchMm": 12
+   }
+  },
+  {
+   "band": "sh1: gap vignettes and blinds",
+   "jobs": [
+    {
+     "id": "v/bench",
+     "source": "nga-16209-moravian-bench",
+     "crop": [
+      0.08,
+      0.25,
+      0.95,
+      0.8
+     ],
+     "size": "medium",
+     "w": 1.3
+    },
+    {
+     "id": "v/cat",
+     "source": "wel-r6ssyh25-sleeping-cat",
+     "crop": [
+      0.1,
+      0.12,
+      0.95,
+      0.92
+     ],
+     "size": "medium",
+     "w": 0.6,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.12,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "v/cat-tail",
+     "source": "wel-r6ssyh25-sleeping-cat",
+     "crop": [
+      0.7,
+      0.58,
+      0.95,
+      0.85
+     ],
+     "size": "small",
+     "largest": true,
+     "pivot": [
+      0.05,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.12,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "v/can",
+     "source": "nga-27263-toleware-water-can",
+     "crop": [
+      0.15,
+      0.08,
+      0.95,
+      0.92
+     ],
+     "size": "small",
+     "h": 0.5
+    },
+    {
+     "id": "v/hedge",
+     "source": "met-344561",
+     "crop": [
+      0.145,
+      0.21,
+      0.805,
+      0.7
+     ],
+     "size": "large",
+     "h": 3.2,
+     "treat": "INK",
+     "ink": {
+      "line": "#1b1a3a",
+      "wash": "#21422f",
+      "washAlpha": 0.9
+     },
+     "remove": [
+      {
+       "box": [
+        0.155,
+        0.46,
+        0.305,
+        0.7
+       ],
+       "clone": [
+        0,
+        -0.22
+       ]
+      },
+      {
+       "box": [
+        0.64,
+        0.47,
+        0.8,
+        0.7
+       ],
+       "clone": [
+        0,
+        -0.22
+       ]
+      },
+      {
+       "box": [
+        0.375,
+        0.42,
+        0.585,
+        0.71
+       ],
+       "arch": true
+      }
+     ]
+    },
+    {
+     "id": "v/trestle",
+     "source": "enc-1-081-garden-tools-ladder",
+     "crop": [
+      0.67,
+      0.655,
+      0.84,
+      0.905
+     ],
+     "size": "large",
+     "h": 2.4,
+     "treat": "INK",
+     "ink": {
+      "line": "#1b1a3a",
+      "wash": "#7b6648",
+      "washAlpha": 0.55
+     },
+     "largest": true
+    },
+    {
+     "id": "v/shears",
+     "source": "nga-25799-trimming-shears",
+     "crop": [
+      0.32,
+      0.1,
+      0.7,
+      0.85
+     ],
+     "size": "small",
+     "h": 0.32,
+     "pivot": [
+      0.5,
+      0.5
+     ]
+    },
+    {
+     "id": "v/spade",
+     "source": "nga-25899-wooden-spade",
+     "crop": [
+      0.15,
+      0.08,
+      0.75,
+      0.85
+     ],
+     "size": "medium",
+     "h": 1.1
+    }
+   ]
+  },
+  {
+   "band": "sh2: seam specimens (high and mid tier)",
+   "jobs": [
+    {
+     "id": "w/poppy",
+     "source": "wel_kbzakfgk",
+     "crop": [
+      0.15,
+      0.02,
+      0.85,
+      0.76
+     ],
+     "size": "medium",
+     "h": 1.0
+    },
+    {
+     "id": "w/buttercup",
+     "source": "wel_r9zz3hu7",
+     "crop": [
+      0.05,
+      0.03,
+      0.5,
+      0.75
+     ],
+     "size": "medium",
+     "h": 0.8
+    },
+    {
+     "id": "w/fiddle",
+     "source": "wel-gzgs6qm9-bracken-fiddleheads",
+     "crop": [
+      0.02,
+      0.3,
+      0.4,
+      0.9
+     ],
+     "size": "medium",
+     "h": 0.5
+    },
+    {
+     "id": "w/gallica",
+     "source": "cma_1955_471",
+     "crop": [
+      0.1,
+      0.02,
+      0.88,
+      0.92
+     ],
+     "size": "medium",
+     "h": 1.5
+    },
+    {
+     "id": "w/cane",
+     "source": "cma_1965_294",
+     "crop": [
+      0.15,
+      0.05,
+      0.9,
+      0.92
+     ],
+     "size": "medium",
+     "h": 1.4
+    },
+    {
+     "id": "w/fungi",
+     "source": "wel-yb4y8cn4-eight-fungi",
+     "crop": [
+      0.02,
+      0.02,
+      0.2,
+      0.42
+     ],
+     "size": "small",
+     "h": 0.2
+    },
+    {
+     "id": "w/fungi-2",
+     "source": "wel-yb4y8cn4-eight-fungi",
+     "crop": [
+      0.2,
+      0.05,
+      0.45,
+      0.42
+     ],
+     "size": "small",
+     "h": 0.2
+    }
+   ]
+  }
+ ],
+ "tiles": [
+  {
+   "id": "tile/wall",
+   "source": "ph-old-stone-wall",
+   "normalFile": "archive/raw/textures/ph-old-stone-wall_nor_2k.jpg",
+   "size": 1024,
+   "metres": 2.5,
+   "gm": [
+    "#181634",
+    "#3a3550",
+    "#746583"
+   ],
+   "pitchMm": 20
+  },
+  {
+   "id": "tile/wall-base",
+   "source": "ph-mossy-stone-wall",
+   "normalFile": "archive/raw/textures/ph-mossy-stone-wall_nor_2k.jpg",
+   "size": 512,
+   "metres": 2.5,
+   "gm": [
+    "#181634",
+    "#2e3b3a",
+    "#5d6f66"
+   ],
+   "pitchMm": 20,
+   "soft": 2
+  },
+  {
+   "id": "tile/coping",
+   "source": "ph-old-sandstone-02",
+   "normalFile": "archive/raw/textures/ph-old-sandstone-02_nor_2k.jpg",
+   "size": 512,
+   "metres": 1.5,
+   "gm": [
+    "#2b2130",
+    "#5e506d",
+    "#a59174"
+   ],
+   "pitchMm": 12,
+   "soft": 5
+  },
+  {
+   "id": "tile/moss",
+   "source": "ph-mossy-rock",
+   "normalFile": "archive/raw/textures/ph-mossy-rock_nor_2k.jpg",
+   "size": 512,
+   "metres": 2,
+   "gm": [
+    "#21422f",
+    "#3b614c",
+    "#5d816d"
+   ],
+   "pitchMm": 12
+  },
+  {
+   "id": "tile/kerb",
+   "source": "ph-cobblestone-01",
+   "normalFile": "archive/raw/textures/ph-cobblestone-01_nor_2k.jpg",
+   "size": 512,
+   "metres": 1.5,
+   "gm": [
+    "#1c2a26",
+    "#3a4048",
+    "#6c6a78"
+   ],
+   "pitchMm": 12
+  },
+  {
+   "id": "tile/rim",
+   "source": "ph-mossy-cobblestone",
+   "normalFile": "archive/raw/textures/ph-mossy-cobblestone_nor_2k.jpg",
+   "size": 512,
+   "metres": 1.5,
+   "gm": [
+    "#16201d",
+    "#2f3d44",
+    "#5d6d66"
+   ],
+   "pitchMm": 12
+  },
+  {
+   "id": "tile/paper",
+   "source": "acg-paper006",
+   "normalFile": "archive/raw/textures/acg-paper006_nor_2k.jpg",
+   "size": 256,
+   "metres": 0.5,
+   "gm": [
+    "#3d3224",
+    "#7b6648",
+    "#a08a68"
+   ],
+   "pitchMm": 12,
+   "stock": true
+  }
+ ]
+}

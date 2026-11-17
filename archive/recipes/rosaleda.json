@@ -1,0 +1,726 @@
+{
+ "atlas": "rosaleda",
+ "plates": {
+  "cma_1943_138": {
+   "side": 3400,
+   "plateH": 2.2,
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ],
+   "method": "ml",
+   "why": "classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)"
+  },
+  "cma_1943_141": {
+   "plateH": 1.75,
+   "drop": [
+    [
+     0,
+     0.88,
+     1,
+     1
+    ]
+   ],
+   "method": "ml",
+   "why": "classical kept paper in the enclosed gaps between the mossy canes (contact sheet, P2)"
+  },
+  "cma_1943_142": {
+   "drop": [
+    [
+     0,
+     0.86,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma_1965_291": {
+   "drop": [
+    [
+     0,
+     0.92,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma_1965_293": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma_1965_295": {
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma_1955_469": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ],
+    [
+     0.42,
+     0.78,
+     0.68,
+     0.9
+    ]
+   ]
+  },
+  "nypl_rosa_multiflora_rambler": {
+   "drop": [
+    [
+     0,
+     0,
+     1,
+     0.14
+    ],
+    [
+     0,
+     0.73,
+     1,
+     1
+    ]
+   ]
+  }
+ },
+ "pages": [
+  {
+   "band": "wall band and companions",
+   "jobs": [
+    {
+     "id": "ro/climb-multi",
+     "source": "nypl_rosa_multiflora_rambler",
+     "crop": [
+      0.14,
+      0.14,
+      0.9,
+      0.72
+     ],
+     "size": 768,
+     "h": 2.2,
+     "pivot": [
+      0.5,
+      1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#b38783",
+       "amount": 0.55
+      }
+     ]
+    },
+    {
+     "id": "ro/climb-white",
+     "source": "cma_1965_295",
+     "crop": [
+      0.08,
+      0.06,
+      0.92,
+      0.96
+     ],
+     "size": 768,
+     "h": 2.4,
+     "tint": [
+      {
+       "hue": "pale",
+       "toward": "#d3c9c4",
+       "amount": 0.6
+      },
+      {
+       "hue": "all",
+       "sat": 0.32,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "ro/climb-alpina",
+     "source": "cma_1955_469",
+     "crop": [
+      0.1,
+      0.04,
+      0.92,
+      0.9
+     ],
+     "size": "medium",
+     "h": 1.6,
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#794747",
+       "amount": 0.7
+      }
+     ]
+    },
+    {
+     "id": "ro/comp-pompon",
+     "source": "cma_1943_142",
+     "crop": [
+      0.15,
+      0.12,
+      0.85,
+      0.86
+     ],
+     "size": "medium",
+     "h": 1.3,
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#794747",
+       "amount": 0.6
+      }
+     ]
+    },
+    {
+     "id": "ro/comp-white",
+     "source": "cma_1965_291",
+     "crop": [
+      0.12,
+      0.08,
+      0.9,
+      0.95
+     ],
+     "size": 768,
+     "h": 1.6,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.18,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "ro/comp-dark",
+     "source": "cma_1965_293",
+     "crop": [
+      0.08,
+      0.1,
+      0.92,
+      0.92
+     ],
+     "size": "medium",
+     "h": 1.5
+    },
+    {
+     "id": "ro/comp-dark-foot",
+     "source": "cma_1965_293",
+     "crop": [
+      0.08,
+      0.4,
+      0.98,
+      0.91
+     ],
+     "size": "medium",
+     "w": 0.6,
+     "whole": 10
+    },
+    {
+     "id": "ro/cane-wing",
+     "source": "wel_kmsvg748",
+     "crop": [
+      0.05,
+      0.05,
+      0.95,
+      0.75
+     ],
+     "size": "small",
+     "h": 1.5,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 4
+     }
+    },
+    {
+     "id": "ro/leaf-wing",
+     "source": "cma_1965_293",
+     "crop": [
+      0.5,
+      0.38,
+      1.0,
+      0.82
+     ],
+     "size": "small",
+     "h": 1.2,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 4
+     },
+     "whole": 6
+    },
+    {
+     "id": "ro/sigil",
+     "source": "sigil-macrobian-planetary-wheel",
+     "crop": [
+      0.03,
+      0.03,
+      0.97,
+      0.97
+     ],
+     "size": "medium",
+     "w": 1.3,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "treat": "INK",
+     "ink": {
+      "line": "#8b663a",
+      "wash": "#8b663a",
+      "washAlpha": 0
+     },
+     "bevel": 1,
+     "minExtent": 0.1
+    },
+    {
+     "id": "ro/rose-b",
+     "source": "cma_1943_141",
+     "crop": [
+      0.1,
+      0.1,
+      0.9,
+      0.88
+     ],
+     "size": 768,
+     "remove": [
+      {
+       "box": [
+        0.53,
+        0.08,
+        0.66,
+        0.19
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.14,
+        0.41,
+        0.28,
+        0.52
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.27,
+        0.27,
+        0.51,
+        0.46
+       ],
+       "keep": "green"
+      }
+     ]
+    },
+    {
+     "id": "ro/b-tight",
+     "source": "cma_1943_141",
+     "crop": [
+      0.56,
+      0.1,
+      0.63,
+      0.17
+     ],
+     "size": "small",
+     "largest": true
+    },
+    {
+     "id": "ro/b-colour",
+     "source": "cma_1943_141",
+     "crop": [
+      0.17,
+      0.43,
+      0.26,
+      0.51
+     ],
+     "size": "small",
+     "largest": true,
+     "pivot": [
+      0.85,
+      0.15
+     ]
+    }
+   ],
+   "blooms": [
+    {
+     "id": "rose-b",
+     "kind": "rose",
+     "stages": [
+      "ro/b-tight",
+      "ro/b-tight",
+      "ro/b-tight",
+      "ro/b-colour",
+      "ro/b-colour"
+     ],
+     "prefix": "ro/b-bloom",
+     "ring": 0.62,
+     "full": {
+      "id": "ro/b-bloom",
+      "source": "cma_1943_141",
+      "crop": [
+       0.28,
+       0.29,
+       0.5,
+       0.45
+      ],
+      "size": "medium",
+      "largest": true,
+      "pivot": [
+       0.75,
+       0.2
+      ],
+      "remove": [
+       {
+        "box": [
+         0.28,
+         0.29,
+         0.5,
+         0.45
+        ],
+        "keep": "nongreen"
+       }
+      ]
+     },
+     "rest": {
+      "idea": 0.1111,
+      "wip": 0.7778,
+      "shipped": 1
+     }
+    }
+   ]
+  },
+  {
+   "band": "the project roses and the kerb",
+   "jobs": [
+    {
+     "id": "ro/hero-a",
+     "source": "cma_1943_138",
+     "crop": [
+      0.08,
+      0.08,
+      0.9,
+      0.93
+     ],
+     "size": "large",
+     "remove": [
+      {
+       "box": [
+        0.12,
+        0.23,
+        0.26,
+        0.32
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.56,
+        0.19,
+        0.67,
+        0.31
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.26,
+        0.1,
+        0.39,
+        0.2
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.3,
+        0.18,
+        0.47,
+        0.31
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.17,
+        0.29,
+        0.53,
+        0.53
+       ],
+       "keep": "green"
+      },
+      {
+       "box": [
+        0.76,
+        0.74,
+        0.92,
+        0.92
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ro/hero-a-foot",
+     "source": "cma_1943_138",
+     "crop": [
+      0.05,
+      0.5,
+      0.95,
+      0.95
+     ],
+     "size": "medium",
+     "w": 0.6,
+     "whole": 14,
+     "remove": [
+      {
+       "box": [
+        0.76,
+        0.74,
+        0.92,
+        0.92
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ro/a-tight",
+     "source": "cma_1943_138",
+     "crop": [
+      0.13,
+      0.24,
+      0.25,
+      0.31
+     ],
+     "size": "native",
+     "largest": true,
+     "pivot": [
+      0.92,
+      0.35
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "gm": [
+        "#4a0a10",
+        "#890b13",
+        "#a83038"
+       ],
+       "amount": 0.8,
+       "value": 0.8
+      }
+     ]
+    },
+    {
+     "id": "ro/a-colour",
+     "source": "cma_1943_138",
+     "crop": [
+      0.57,
+      0.2,
+      0.66,
+      0.3
+     ],
+     "size": "native",
+     "largest": true,
+     "tint": [
+      {
+       "hue": "pink",
+       "gm": [
+        "#890b13",
+        "#a83038",
+        "#c56966"
+       ],
+       "amount": 0.8,
+       "value": 0.8
+      }
+     ]
+    },
+    {
+     "id": "ro/a-cup",
+     "source": "cma_1943_138",
+     "crop": [
+      0.25,
+      0.09,
+      0.41,
+      0.21
+     ],
+     "size": "native",
+     "largest": true,
+     "pivot": [
+      0.9,
+      0.2
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "gm": [
+        "#890b13",
+        "#a83038",
+        "#c56966"
+       ],
+       "amount": 0.8,
+       "value": 0.8
+      }
+     ],
+     "remove": [
+      {
+       "box": [
+        0.25,
+        0.09,
+        0.41,
+        0.21
+       ],
+       "keep": "nongreen"
+      }
+     ]
+    },
+    {
+     "id": "ro/a-half",
+     "source": "cma_1943_138",
+     "crop": [
+      0.31,
+      0.19,
+      0.46,
+      0.3
+     ],
+     "size": "native",
+     "largest": true,
+     "pivot": [
+      0.85,
+      0.3
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "gm": [
+        "#890b13",
+        "#a83038",
+        "#c56966"
+       ],
+       "amount": 0.8,
+       "value": 0.8
+      }
+     ]
+    },
+    {
+     "id": "ro/a-hip",
+     "source": "cma_1943_138",
+     "crop": [
+      0.78,
+      0.76,
+      0.9,
+      0.9
+     ],
+     "size": "small",
+     "largest": true
+    },
+    {
+     "id": "ro/snail",
+     "source": "wel-easdhj2q-edible-snail",
+     "crop": [
+      0,
+      0.06,
+      0.8,
+      0.34
+     ],
+     "size": "small",
+     "w": 0.22,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.05
+     ]
+    }
+   ],
+   "blooms": [
+    {
+     "id": "rose-a",
+     "kind": "rose",
+     "stages": [
+      "ro/a-tight",
+      "ro/a-tight",
+      "ro/a-colour",
+      "ro/a-colour",
+      "ro/a-cup",
+      "ro/a-half",
+      "ro/a-half"
+     ],
+     "prefix": "ro/a-bloom",
+     "ring": 0.64,
+     "full": {
+      "id": "ro/a-bloom",
+      "source": "cma_1943_138",
+      "crop": [
+       0.17,
+       0.29,
+       0.53,
+       0.53
+      ],
+      "size": "native",
+      "largest": true,
+      "pivot": [
+       0.86,
+       0.45
+      ],
+      "tint": [
+       {
+        "hue": "pink",
+        "gm": [
+         "#5a0a12",
+         "#890b13",
+         "#c56966"
+        ],
+        "amount": 0.85,
+        "value": 0.95,
+        "sat": 0.75
+       }
+      ],
+      "remove": [
+       {
+        "box": [
+         0.17,
+         0.29,
+         0.53,
+         0.53
+        ],
+        "keep": "nongreen"
+       },
+       {
+        "box": [
+         0.3,
+         0.283,
+         0.46,
+         0.302
+        ]
+       }
+      ]
+     },
+     "rest": {
+      "idea": 0.1111,
+      "wip": 0.7778,
+      "shipped": 1
+     }
+    }
+   ]
+  }
+ ]
+}

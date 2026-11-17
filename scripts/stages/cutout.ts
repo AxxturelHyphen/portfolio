@@ -25,6 +25,8 @@ export interface CutHints {
   keep?: Box[];
   /** Forces a method instead of letting the quality heuristic decide. */
   method?: 'classical' | 'ml';
+  /** Working long side instead of CUT_MAX_SIDE (for parts stored at the plate's native resolution). */
+  side?: number;
 }
 
 export type CutMethod = 'classical' | 'ml';
@@ -108,7 +110,7 @@ function selectComponents(m: Mask, keep: (x: number, y: number) => boolean): Mas
 interface Prepared { rgb: Raster; lin: Planes; lab: Planes; paperLin: Planes; key: Float32Array; lo: number; hi: number; seen: number; cleared: (i: number) => boolean; keep: (x: number, y: number) => boolean }
 
 function prepare(file: string, hints: CutHints): Prepared {
-  const full = readImage(file, CUT_MAX_SIDE);
+  const full = readImage(file, hints.side ?? CUT_MAX_SIDE);
   const c = hints.crop;
   const rgb = c ? crop(full, Math.round(c[0] * full.w), Math.round(c[1] * full.h), Math.round(c[2] * full.w), Math.round(c[3] * full.h)) : full;
   const { w } = rgb;

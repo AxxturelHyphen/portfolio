@@ -2395,8 +2395,22 @@
    "need": "sigils",
    "category": "celestial",
    "sha256": "4bc126c2d0467976796c639e1e145642cc3487856f2d6b2bf59d904e9d98e967",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/sigil",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/sigil: ml (pale 0.44), crop 0.03,0.03,0.97,0.97"
+    },
+    {
+     "stage": "sprite",
+     "tool": "INK",
+     "note": "ro/sigil: {\"line\":\"#8b663a\",\"wash\":\"#8b663a\",\"washAlpha\":0}"
+    }
+   ]
   },
   {
    "id": "armillary-eb1711-engraving",
@@ -2837,8 +2851,22 @@
    "need": "trees",
    "category": "garden",
    "sha256": "8e2e512684e8f0ac1eb53f28871fed256637536a414526e1cef16d22a89ab91e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "puerta",
+    "sh/wing-trunk"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "sh/wing-trunk: raw (forced: red chalk hatching off the paper: keyed by luminance as a wing silhouette), crop 0.3,0.45,0.62,0.93"
+    },
+    {
+     "stage": "sprite",
+     "tool": "MASK",
+     "note": "sh/wing-trunk: {\"color\":\"#141228\",\"blur\":4,\"luma\":[0.55,0.78],\"close\":10}"
+    }
+   ]
   },
   {
    "id": "met-849927",
@@ -3058,8 +3086,21 @@
    "need": "trees",
    "category": "garden",
    "sha256": "3f6ac0def3d8d99fa17e762a970d9fe26b67610ac07f7554ea4ba29f60086a6a",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ov/trees-2"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "ov/trees-2: raw (forced: dark aquatint and photo masses off a light sky: keyed by luminance, not by paper), crop 0,0.1,0.6,0.6"
+    },
+    {
+     "stage": "sprite",
+     "tool": "MASK",
+     "note": "ov/trees-2: {\"color\":\"#1b1a3a\",\"blur\":1,\"luma\":[0.25,0.45],\"close\":4}"
+    }
+   ]
   },
   {
    "id": "cma-106962",
@@ -3177,8 +3218,21 @@
    "need": "trees",
    "category": "garden",
    "sha256": "45283b4ef1e0c110b42b0ad3263a2f98ccccbf9dc7b73e506d17fb288dfda391",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ov/trees-3"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "ov/trees-3: raw (forced: dark aquatint and photo masses off a light sky: keyed by luminance, not by paper), crop 0.3,0.08,0.75,0.8"
+    },
+    {
+     "stage": "sprite",
+     "tool": "MASK",
+     "note": "ov/trees-3: {\"color\":\"#1b1a3a\",\"blur\":1,\"luma\":[0.45,0.7],\"close\":8}"
+    }
+   ]
   },
   {
    "id": "cma-111718",
@@ -3194,8 +3248,21 @@
    "need": "trees",
    "category": "garden",
    "sha256": "72a6f07cecd87e5d3089c83ecdca36f4860a36d02df4a3a6e171cdafea9c8df6",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ov/trees-1"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "ov/trees-1: raw (forced: dark aquatint and photo masses off a light sky: keyed by luminance, not by paper), crop 0.05,0.1,0.95,0.6"
+    },
+    {
+     "stage": "sprite",
+     "tool": "MASK",
+     "note": "ov/trees-1: {\"color\":\"#1b1a3a\",\"blur\":1,\"luma\":[0.35,0.62],\"close\":4}"
+    }
+   ]
   },
   {
    "id": "met-344561",
@@ -3211,8 +3278,27 @@
    "need": "trees",
    "category": "garden",
    "sha256": "bbb1b794c3ec4a794d465176d7c3b4c3410d80b33f0d34ea3d5773915394fd16",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/hedge"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "v/hedge: ml (ragged 1.94, leftover 0.20), crop 0.145,0.21,0.805,0.7"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "v/hedge: 0.155,0.46,0.305,0.7; 0.64,0.47,0.8,0.7; 0.375,0.42,0.585,0.71"
+    },
+    {
+     "stage": "sprite",
+     "tool": "INK",
+     "note": "v/hedge: {\"line\":\"#1b1a3a\",\"wash\":\"#21422f\",\"washAlpha\":0.9}"
+    }
+   ]
   },
   {
    "id": "met-735212",
@@ -4520,8 +4606,17 @@
    "need": "lanterns-lamps",
    "category": "props",
    "sha256": "4e8e1d674b79daba7fba435d35291b4b25f9885b007a8661caa7cfa628966046",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "sh/lantern-candle"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/lantern-candle: ml (pale 0.10), crop 0.15,0.08,0.88,0.8"
+    }
+   ]
   },
   {
    "id": "nga-29691-glass-street-lamp",
@@ -4639,8 +4734,17 @@
    "need": "tools-objects",
    "category": "props",
    "sha256": "d6ff4655dd93267c6fc2e5cb4c09fd3d2dadbe44a440d3aac6a8dda22130c549",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/can"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.023, hi 0.046), morphology, edge un-mix",
+     "note": "v/can: classical, crop 0.15,0.08,0.95,0.92"
+    }
+   ]
   },
   {
    "id": "nga-20836-straw-bee-skep",
@@ -4673,8 +4777,22 @@
    "need": "tools-objects",
    "category": "props",
    "sha256": "e06fba88252760f893305712b8010c67cb6ba202c4a15e1769ceb2bd5aaf5bf6",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "sh/pot-a"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/pot-a: ml (leftover 0.14), crop 0.25,0.28,0.78,0.75"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sh/pot-a: warm toward #b86f52, amount 0.4"
+    }
+   ]
   },
   {
    "id": "nga-18269-clay-flower-pot-plain",
@@ -4707,8 +4825,17 @@
    "need": "tools-objects",
    "category": "props",
    "sha256": "80d3006f0a07c7c75dc2af51f2690a9567f72ac9742ae50fde678f14c60e9790",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/spade"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.019, hi 0.039), morphology, edge un-mix",
+     "note": "v/spade: classical, crop 0.15,0.08,0.75,0.85"
+    }
+   ]
   },
   {
    "id": "nga-25799-trimming-shears",
@@ -4724,8 +4851,17 @@
    "need": "tools-objects",
    "category": "props",
    "sha256": "51a7392e9d67a0a9143582d289814d8a822c1ffe1107ab4b952e84f54582a9a6",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/shears"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.027, hi 0.054), morphology, edge un-mix",
+     "note": "v/shears: classical, crop 0.32,0.1,0.7,0.85"
+    }
+   ]
   },
   {
    "id": "nga-23639-wooden-rake",
@@ -4758,8 +4894,17 @@
    "need": "tools-objects",
    "category": "props",
    "sha256": "5d30f6d60934ab5a484ffe2be58f54a8dd32af6928401213800f0f95b819b28e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/bench"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "v/bench: ml (forced: classical left a ragged paper edge along the left leg (contact sheet, P2)), crop 0.08,0.25,0.95,0.8"
+    }
+   ]
   },
   {
    "id": "wel-zjhtrdjh-bull-frog",
@@ -4809,8 +4954,17 @@
    "need": "small-animals",
    "category": "props",
    "sha256": "25ba7fc98a5207c9d8aff2fb2694c218d603dcf0d18ef224fbfb413174c0fa4a",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/snail",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/snail: ml (pale 0.10), crop 0,0.06,0.8,0.34"
+    }
+   ]
   },
   {
    "id": "wel-vpnv3yqp-field-snails",
@@ -4962,8 +5116,33 @@
    "need": "small-animals",
    "category": "props",
    "sha256": "9ff66805691bf87c5ff8952e4389cbfa724747f253d48c61abf32ad3acd62e8f",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/cat",
+    "v/cat-tail"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "v/cat: ml (leftover 0.23), crop 0.1,0.12,0.95,0.92"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat: all  S under 0.12, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "v/cat-tail: ml (leftover 0.23), crop 0.7,0.58,0.95,0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat-tail: all  S under 0.12, amount 1"
+    }
+   ]
   },
   {
    "id": "enc-1-081-garden-tools-ladder",
@@ -4979,8 +5158,22 @@
    "need": "tools-objects",
    "category": "props",
    "sha256": "446960d7f263410e7e60a913fbd5417b01b1ea666ce196000248d2d70b401045",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "v/trestle"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "v/trestle: classical, crop 0.67,0.655,0.84,0.905"
+    },
+    {
+     "stage": "sprite",
+     "tool": "INK",
+     "note": "v/trestle: {\"line\":\"#1b1a3a\",\"wash\":\"#7b6648\",\"washAlpha\":0.55}"
+    }
+   ]
   },
   {
    "id": "enc-1-082-shears-cans-frames",
@@ -5200,8 +5393,26 @@
    "need": "signposts",
    "category": "props",
    "sha256": "8fa484084b65536c688c8420fb71f574ba0a5195684a3f2faf02ce600e396361",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "estanque",
+    "puerta",
+    "rosaleda",
+    "salida",
+    "semillero",
+    "sh/board"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sh/board: classical, crop 0.19,0.03,0.79,0.96"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "sh/board: 0.3,0.37,0.66,0.81; 0.4,0.85,0.6,0.92"
+    }
+   ]
   },
   {
    "id": "nga-24833-door-plate",
@@ -5948,8 +6159,22 @@
    "need": "hero-roses",
    "category": "roses",
    "sha256": "a099b6aa018f77bc87e9d6ceda54a36a14417ee86d8eede2eef576c32509e6ca",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/comp-white",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/comp-white: ml (pale 0.15), crop 0.12,0.08,0.9,0.95"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/comp-white: all  S under 0.18, amount 1"
+    }
+   ]
   },
   {
    "id": "cma_1965_293",
@@ -5965,8 +6190,34 @@
    "need": "hero-roses",
    "category": "roses",
    "sha256": "03b6c6111d034938b489cf84dea646ff1c3702827826d8ec6464a2d65d6639fd",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/comp-dark",
+    "ro/comp-dark-foot",
+    "ro/leaf-wing",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.022, hi 0.045), morphology, edge un-mix",
+     "note": "ro/comp-dark: classical, crop 0.08,0.1,0.92,0.92"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.022, hi 0.045), morphology, edge un-mix",
+     "note": "ro/comp-dark-foot: classical, crop 0.08,0.4,0.98,0.91"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.022, hi 0.045), morphology, edge un-mix",
+     "note": "ro/leaf-wing: classical, crop 0.5,0.38,1,0.82"
+    },
+    {
+     "stage": "sprite",
+     "tool": "MASK",
+     "note": "ro/leaf-wing: {\"color\":\"#141228\",\"blur\":4}"
+    }
+   ]
   },
   {
    "id": "cma_1955_471",
@@ -5982,8 +6233,17 @@
    "need": "hero-roses",
    "category": "roses",
    "sha256": "3e6fa6ed6de61af1cf658d8a50bdd6f8f90a7df896f42803651a4adcc7f9e1d0",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "w/gallica"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "w/gallica: ml (pale 0.07), crop 0.1,0.02,0.88,0.92"
+    }
+   ]
   },
   {
    "id": "cma_1943_138",
@@ -5999,8 +6259,96 @@
    "need": "hero-roses",
    "category": "roses",
    "sha256": "4e897fc2070c1b7ba2f1fee7a8c5ab4025915bea1ff6bf96a5c9713ed1ff6cc8",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/a-bloom-7",
+    "ro/a-bloom-8",
+    "ro/a-bloom-9",
+    "ro/a-colour",
+    "ro/a-cup",
+    "ro/a-half",
+    "ro/a-hip",
+    "ro/a-tight",
+    "ro/hero-a",
+    "ro/hero-a-foot",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/hero-a: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.08,0.08,0.9,0.93"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "ro/hero-a: 0.12,0.23,0.26,0.32 keeping green; 0.56,0.19,0.67,0.31 keeping green; 0.26,0.1,0.39,0.2 keeping green; 0.3,0.18,0.47,0.31 keeping green; 0.17,0.29,0.53,0.53 keeping green; 0.76,0.74,0.92,0.92"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/hero-a-foot: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.05,0.5,0.95,0.95"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "ro/hero-a-foot: 0.76,0.74,0.92,0.92"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/a-tight: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.13,0.24,0.25,0.31"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/a-tight: pink GM #4a0a10/#890b13/#a83038, amount 0.8"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/a-colour: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.57,0.2,0.66,0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/a-colour: pink GM #890b13/#a83038/#c56966, amount 0.8"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/a-cup: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.25,0.09,0.41,0.21"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "ro/a-cup: 0.25,0.09,0.41,0.21 keeping nongreen"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/a-cup: pink GM #890b13/#a83038/#c56966, amount 0.8"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/a-half: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.31,0.19,0.46,0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/a-half: pink GM #890b13/#a83038/#c56966, amount 0.8"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/a-hip: ml (forced: classical punched holes into the pale petals of the full bloom and the half-open drawing (contact sheet, P2)), crop 0.78,0.76,0.9,0.9"
+    },
+    {
+     "stage": "bloom",
+     "tool": "nested layers cut along petal edges (polar edge path)",
+     "note": "ro/a-bloom-7, ro/a-bloom-8, ro/a-bloom-9: heart and middle ring, guards tucked, the plate (ring 0.64)"
+    }
+   ]
   },
   {
    "id": "cma_1943_139",
@@ -6033,8 +6381,42 @@
    "need": "rose-bloom-stages",
    "category": "roses",
    "sha256": "b9672310efb807a86abbd3eac2ff78a0db1a7b582278ce871b2254840528c2dc",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/b-bloom-7",
+    "ro/b-bloom-8",
+    "ro/b-bloom-9",
+    "ro/b-colour",
+    "ro/b-tight",
+    "ro/rose-b",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/rose-b: ml (forced: classical kept paper in the enclosed gaps between the mossy canes (contact sheet, P2)), crop 0.1,0.1,0.9,0.88"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "ro/rose-b: 0.53,0.08,0.66,0.19 keeping green; 0.14,0.41,0.28,0.52 keeping green; 0.27,0.27,0.51,0.46 keeping green"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/b-tight: ml (forced: classical kept paper in the enclosed gaps between the mossy canes (contact sheet, P2)), crop 0.56,0.1,0.63,0.17"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/b-colour: ml (forced: classical kept paper in the enclosed gaps between the mossy canes (contact sheet, P2)), crop 0.17,0.43,0.26,0.51"
+    },
+    {
+     "stage": "bloom",
+     "tool": "nested layers cut along petal edges (polar edge path)",
+     "note": "ro/b-bloom-7, ro/b-bloom-8, ro/b-bloom-9: heart and middle ring, guards tucked, the plate (ring 0.62)"
+    }
+   ]
   },
   {
    "id": "cma_1943_142",
@@ -6050,8 +6432,22 @@
    "need": "rose-bloom-stages",
    "category": "roses",
    "sha256": "f5316e47e881ee47247fbbf2571dcd805b9dc2382ea2cdf615f7201e7f3193ef",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/comp-pompon",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/comp-pompon: ml (pale 0.07), crop 0.15,0.12,0.85,0.86"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/comp-pompon: pink toward #794747, amount 0.6"
+    }
+   ]
   },
   {
    "id": "wel_r2ghn5ms",
@@ -6084,8 +6480,43 @@
    "need": "rose-bloom-stages",
    "category": "roses",
    "sha256": "7b09080070aebc9b4c022f27b8e731cc66432298fae4641b3b11986c2d0c1ff9",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "sh/petal-1",
+    "sh/petal-2",
+    "sh/petal-3"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/petal-1: ml (leftover 0.22, pale 0.25), crop 0.16,0.78,0.42,0.88"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sh/petal-1: all toward #a83038, amount 0.25"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/petal-2: ml (leftover 0.22, pale 0.25), crop 0.16,0.78,0.42,0.88"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sh/petal-2: all toward #b38783, amount 0.25"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/petal-3: ml (leftover 0.22, pale 0.25), crop 0.16,0.78,0.42,0.88"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sh/petal-3: all toward #d3c9c4, amount 0.3"
+    }
+   ]
   },
   {
    "id": "wel_kmsvg748",
@@ -6101,8 +6532,22 @@
    "need": "climbing-roses",
    "category": "roses",
    "sha256": "9d897aa6454ead9c844a455d41af50c09538fd5e09dae1aa78a7cfde769ddc66",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/cane-wing",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/cane-wing: ml (ragged 2.42, leftover 0.30, pale 0.16), crop 0.05,0.05,0.95,0.75"
+    },
+    {
+     "stage": "sprite",
+     "tool": "MASK",
+     "note": "ro/cane-wing: {\"color\":\"#141228\",\"blur\":4}"
+    }
+   ]
   },
   {
    "id": "wel_etaatwun",
@@ -6118,8 +6563,34 @@
    "need": "ivy-climbers-ferns",
    "category": "roses",
    "sha256": "ab488eea0e40529d919eaad0f64df84af3994b8ae5c8522517e9f186b1a47c70",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "puerta",
+    "rosaleda",
+    "sh/ivy",
+    "sh/ivy-2"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.041, hi 0.082), morphology, edge un-mix",
+     "note": "sh/ivy: classical, crop 0.03,0.05,0.97,0.8"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sh/ivy: green GM #21422f/#3b614c/#5d816d, amount 0.55"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.041, hi 0.082), morphology, edge un-mix",
+     "note": "sh/ivy-2: classical, crop 0.55,0.42,0.95,0.78"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sh/ivy-2: green GM #21422f/#3b614c/#5d816d, amount 0.55"
+    }
+   ]
   },
   {
    "id": "wel_wm8trukn",
@@ -6220,8 +6691,16 @@
    "need": "daisies-meadow-grasses",
    "category": "roses",
    "sha256": "47f41709d7b44f1e2b96e1b971341a403af77c8afed0e05f68c6bc5d0164def1",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "sh/clump-1"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/clump-1: ml (ragged 2.50, leftover 0.32, pale 0.45), crop 0.22,0.48,0.82,0.8"
+    }
+   ]
   },
   {
    "id": "wel_qkbs7qjg",
@@ -6288,8 +6767,17 @@
    "need": "climbing-roses",
    "category": "roses",
    "sha256": "e60729014745d4dd2a7e728c4ae2824c3de22e38c240b40f5552b8bafe98a199",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "w/cane"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "w/cane: ml (pale 0.16), crop 0.15,0.05,0.9,0.92"
+    }
+   ]
   },
   {
    "id": "cma_1965_295",
@@ -6305,8 +6793,27 @@
    "need": "climbing-roses",
    "category": "roses",
    "sha256": "edc6b8c42858e646ac296ff2b64d97794418ed222b903cf400fcc0ab5c18ad8d",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/climb-white",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "ro/climb-white: ml (pale 0.13), crop 0.08,0.06,0.92,0.96"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/climb-white: pale toward #d3c9c4, amount 0.6"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/climb-white: all  S under 0.32, amount 1"
+    }
+   ]
   },
   {
    "id": "cma_1955_469",
@@ -6322,8 +6829,22 @@
    "need": "climbing-roses",
    "category": "roses",
    "sha256": "d1a115303357c7e277143b49698eec1d94c8bb0d299ad9ee727751f6c8958ad1",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/climb-alpina",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.034, hi 0.069), morphology, edge un-mix",
+     "note": "ro/climb-alpina: classical, crop 0.1,0.04,0.92,0.9"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/climb-alpina: pink toward #794747, amount 0.7"
+    }
+   ]
   },
   {
    "id": "met_285342",
@@ -6373,8 +6894,17 @@
    "need": "daisies-meadow-grasses",
    "category": "roses",
    "sha256": "1ab36c93e113f2947679bd68d65ec8fc829bcd762d01e803c29be480cee5cd1c",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "w/poppy"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "w/poppy: ml (pale 0.21), crop 0.15,0.02,0.85,0.76"
+    }
+   ]
   },
   {
    "id": "wel_r9zz3hu7",
@@ -6390,8 +6920,17 @@
    "need": "daisies-meadow-grasses",
    "category": "roses",
    "sha256": "39956e534be8e392dbb6d51918fd66fe99de5e06db9d92ca6732ef5194dfbf54",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "w/buttercup"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "w/buttercup: ml (leftover 0.16, pale 0.19), crop 0.05,0.03,0.5,0.75"
+    }
+   ]
   },
   {
    "id": "nypl_rosa_sempervirens_bracteata",
@@ -6475,8 +7014,22 @@
    "need": "climbing-roses",
    "category": "roses",
    "sha256": "4d1815e75cf0d484afa9de51dee2497a6c35b0d21535850522e9f82e7cf521c3",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "ro/climb-multi",
+    "rosaleda"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.023, hi 0.046), morphology, edge un-mix",
+     "note": "ro/climb-multi: classical, crop 0.14,0.14,0.9,0.72"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "ro/climb-multi: pink toward #b38783, amount 0.55"
+    }
+   ]
   },
   {
    "id": "commons_hattersdorf_dandelion_clock",
@@ -6509,8 +7062,16 @@
    "need": "stone-wall",
    "category": "textures",
    "sha256": "97b705f9f5acb69890e734cd60d52294d926623dff681572acb37cc52b385801",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/wall"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "plate pass: 5 tone steps, 3-angle line screen, gradient map, tint slipped 2 px",
+     "note": "tile/wall: 1024 px tile for 2.5 m, GM #181634/#3a3550/#746583"
+    }
+   ]
   },
   {
    "id": "ph-old-stone-wall-02",
@@ -6560,8 +7121,16 @@
    "need": "stone-wall",
    "category": "textures",
    "sha256": "6cb1d16af8cbcfccc72e1466e3f288f1e74a8befb1281460b8520ab754becb0a",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/coping"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "plate pass: 5 tone steps, 3-angle line screen, gradient map, tint slipped 2 px",
+     "note": "tile/coping: 512 px tile for 1.5 m, GM #2b2130/#5e506d/#a59174"
+    }
+   ]
   },
   {
    "id": "ph-mossy-stone-wall",
@@ -6577,8 +7146,16 @@
    "need": "mossy-stone",
    "category": "textures",
    "sha256": "4c41e62e3c6b0af73b89bd3c9c46c55f3723a36789475d3ff76fe112d89d45e2",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/wall-base"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "plate pass: 5 tone steps, 3-angle line screen, gradient map, tint slipped 2 px",
+     "note": "tile/wall-base: 512 px tile for 2.5 m, GM #181634/#2e3b3a/#5d6f66"
+    }
+   ]
   },
   {
    "id": "ph-mossy-sandstone",
@@ -6611,8 +7188,16 @@
    "need": "mossy-stone",
    "category": "textures",
    "sha256": "98ecbd1d19953433f5909b79958992b1da2b45addbee772d1d4c27287f368499",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/moss"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "plate pass: 5 tone steps, 3-angle line screen, gradient map, tint slipped 2 px",
+     "note": "tile/moss: 512 px tile for 2 m, GM #21422f/#3b614c/#5d816d"
+    }
+   ]
   },
   {
    "id": "ph-rock-wall-05",
@@ -6713,8 +7298,16 @@
    "need": "cobble-flagstone",
    "category": "textures",
    "sha256": "4acb993f218c8af7ca79b20a0709e1ac31818a5cad88fd5fc2ef4cadfb9cf89e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/rim"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "plate pass: 5 tone steps, 3-angle line screen, gradient map, tint slipped 2 px",
+     "note": "tile/rim: 512 px tile for 1.5 m, GM #16201d/#2f3d44/#5d6d66"
+    }
+   ]
   },
   {
    "id": "ph-cobblestone-01",
@@ -6730,8 +7323,16 @@
    "need": "cobble-flagstone",
    "category": "textures",
    "sha256": "c224786e89cae7e2835a8dfafa6473c47d4d6deac0cca1db358002b8b6c4877e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/kerb"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "plate pass: 5 tone steps, 3-angle line screen, gradient map, tint slipped 2 px",
+     "note": "tile/kerb: 512 px tile for 1.5 m, GM #1c2a26/#3a4048/#6c6a78"
+    }
+   ]
   },
   {
    "id": "ph-grey-stone-path",
@@ -6747,8 +7348,23 @@
    "need": "cobble-flagstone",
    "category": "textures",
    "sha256": "bf405e4e8a2d720976f710c4bb6de7734bc0bea613657e6c9362d3716418cc51",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "sh/flag-1",
+    "sh/flag-2",
+    "sh/flag-3",
+    "sh/flag-4",
+    "sh/flag-5",
+    "sh/flag-6",
+    "sh/flag-7",
+    "sh/flag-8"
+   ],
+   "edits": [
+    {
+     "stage": "flags",
+     "tool": "stones segmented along the dark joints, plate pass",
+     "note": "sh/flag-1, sh/flag-2, sh/flag-3, sh/flag-4, sh/flag-5, sh/flag-6, sh/flag-7, sh/flag-8"
+    }
+   ]
   },
   {
    "id": "ph-monastery-stone-floor",
@@ -6900,8 +7516,16 @@
    "need": "paper-cardboard",
    "category": "textures",
    "sha256": "ed6a01da6e497e336faf11af28c3157d546e9bcec9c79ccf9fa9ee8c02a11b6e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "tile/paper"
+   ],
+   "edits": [
+    {
+     "stage": "tile",
+     "tool": "resize and grade",
+     "note": "tile/paper: 256 px tile for 0.5 m, GM #3d3224/#7b6648/#a08a68"
+    }
+   ]
   },
   {
    "id": "acg-cardboard002",
@@ -7529,8 +8153,16 @@
    "need": "reeds",
    "category": "water",
    "sha256": "3d54de662c75400d5286743d0c4a45d7a87bb916b70f679bb3fa42d4b3a9fc69",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "sh/clump-3"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "sh/clump-3: ml (pale 0.07), crop 0.18,0.52,0.82,0.92"
+    }
+   ]
   },
   {
    "id": "cma-132868-ornithogalum",
@@ -7886,8 +8518,23 @@
    "need": "ferns",
    "category": "water",
    "sha256": "6072a6ba8c505d0f85ff4700d3d6894ce19ebad5bc571afdff75b25477537c1e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "w/fungi",
+    "w/fungi-2"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "w/fungi: ml (pale 0.16), crop 0.02,0.02,0.2,0.42"
+    },
+    {
+     "stage": "cutout",
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "w/fungi-2: ml (pale 0.16), crop 0.2,0.05,0.45,0.42"
+    }
+   ]
   },
   {
    "id": "wel-dvkfqxzf-edible-fungi-1827",
@@ -7920,8 +8567,17 @@
    "need": "ferns",
    "category": "water",
    "sha256": "f56b1945714870e16054ebca1a3c744c6b27cf26d33fc479498bff3c80350d21",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "rosaleda",
+    "w/fiddle"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.058, hi 0.117), morphology, edge un-mix",
+     "note": "w/fiddle: classical (forced: the ML matte dropped most of the pale fronds (contact sheet, P2)), crop 0.02,0.3,0.4,0.9"
+    }
+   ]
   },
   {
    "id": "wel-udu9s2d4-seven-rushes",
@@ -8277,8 +8933,16 @@
    "need": "reeds",
    "category": "water",
    "sha256": "f6d8bcbb4f6998c230e56949379377f184b7f393f690b9985463331363b6c9a3",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "sh/clump-2"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.025, hi 0.050), morphology, edge un-mix",
+     "note": "sh/clump-2: classical, crop 0.58,0.06,0.96,0.9"
+    }
+   ]
   },
   {
    "id": "com-florabatava-iris-pseudacorus",
