@@ -4,8 +4,8 @@ import './styles/label.css';
 import { createMover } from './xform.ts';
 
 /**
- * The plant tag of the focused flower (cook/ART.md section 4, S08): one enamel plate on a zinc stake, staked beside
- * the flower. Status with a line glyph of the bloom stage, the name in Kalnia, the Latin name in italic, the
+ * The plant tag of the focused flower (cook/ART.md section 4, S08): a hand-cut card tag tied with twine to a zinc
+ * rod, staked beside the flower. Status with a line glyph of the bloom stage, the name in Kalnia, the Latin name in italic, the
  * one-liner, the stack as stamped words, and "View" with a drawn hand.
  * The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
  * opacity through preallocated movers: no layout reads, no allocation. The tag's own size comes from a
@@ -39,6 +39,9 @@ const GLYPHS: Record<string, string> = {
   shipped: 'M6 11V8M6 8A1.6 1.6 0 1 0 6 4.8A1.6 1.6 0 1 0 6 8ZM6 4.8V1.4M7.6 6.4H10.8M4.4 6.4H1.2M7.2 5.2L9.6 2.8M4.8 5.2L2.4 2.8',
 };
 
+/** Twine in a 44x44 box: two strands from the punched hole at (22, 4), three turns round the rod at x 22, two tails. */
+const TIE = 'M22 4C18 8 16 13 17 17M22 4C26 8 28 13 27 17M16 17L28 21M16 22L28 26M16 27L28 31M28 31C31 34 32 38 29 42M28 26C32 28 35 32 34 37';
+
 const HAND = 'M1 9.5H12.5M12.5 9.5C14 9.5 14 7 12.5 7H8.5L10 5.2C10.6 4.4 9.6 3.4 8.8 4L4.8 7.4C4.2 7.9 3.6 8.2 3 8.2H1M12.5 9.5C14 9.5 14 12 12.5 12H11.5C12.9 12 12.9 14.3 11.5 14.3H10.5C11.8 14.3 11.8 16.4 10.5 16.4H5C3.8 16.4 3.2 15.8 1 15.8';
 
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent: HTMLElement): HTMLElementTagNameMap[K] {
@@ -46,6 +49,19 @@ function node<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent
   n.className = cls;
   parent.append(n);
   return n;
+}
+
+function tie(parent: Element): void {
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('class', 'lb-tie');
+  svg.setAttribute('viewBox', '0 0 44 44');
+  svg.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 2; i += 1) {
+    const path = document.createElementNS(SVG, 'path');
+    path.setAttribute('d', TIE);
+    svg.append(path);
+  }
+  parent.append(svg);
 }
 
 function glyph(parent: Element, cls: string, box: string): SVGPathElement {
@@ -73,6 +89,7 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   const view = node('p', 'lb-view', card);
   const viewText = node('span', 'lb-view-text', view);
   glyph(view, 'lb-hand', '0 0 15 17').setAttribute('d', HAND);
+  tie(card);
 
   const anchor = createMover(el);
   const rise = createMover(card);
