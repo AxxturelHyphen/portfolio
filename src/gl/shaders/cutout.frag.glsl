@@ -27,7 +27,7 @@ const vec3 PAPER_BACK = vec3(0.184, 0.133, 0.067);   // acg-paper006 at #7b6648,
 const float HAZE_START = 3.0;
 const float DECAL_SOFT_BIAS = 3.5;                    // alpha from about mip 3: 30 to 70 px soft
 const float DECAL_COVERAGE = 3.0;                     // sparse plants still cast a readable patch
-const float CONTACT = 0.32;                           // the darker line where the paper meets the ground
+const float CONTACT = 0.55;                           // the darker line where the paper meets the ground
 const float EDGE_LIGHT = 0.55;
 const float EDGE_DARK = 0.38;
 const vec3 PAPER_RIM = vec3(0.815, 0.716, 0.597);    // #e9dccb pale paper edge, linear
@@ -41,15 +41,15 @@ const float AMBIENT_GAIN = 1.6;                       // the moonlit dusk fill: 
 // lit crimson stays crimson instead of washing to coral and no paper passes about luma 215 after the grade.
 const float KNEE = 0.22;
 const float CEIL = 0.36;
-// Cool moon rim on the moon-facing edge: a band about RIM_PX wide from moon white at the edge into lilac shade, strongest
-// on dark forms (cook/SHOTS.md: rim band 10 to 20 px, here in moon white #ddd4cb and lilac #91809a).
-const float RIM_PX = 14.0;
-const float RIM_SOFT_BIAS = 1.5;
-const vec3 RIM_MOON = vec3(0.723, 0.658, 0.597);
-const vec3 RIM_LILAC = vec3(0.283, 0.216, 0.323);
-const float RIM_STRENGTH = 0.12;
+// Cool moon rim on the moon-facing edge: a band about RIM_PX wide from cool moon white at the edge into slate shade,
+// strongest on dark forms (cook/SHOTS.md: rim band 10 to 20 px; #d6dbe6 at the edge, #5c6478 inside).
+const float RIM_PX = 10.0;
+const float RIM_SOFT_BIAS = 1.0;
+const vec3 RIM_MOON = vec3(0.672, 0.708, 0.791);
+const vec3 RIM_SHADE = vec3(0.107, 0.127, 0.181);
+const float RIM_STRENGTH = 0.22;
 const float RIM_DARK_LUMA = 0.08;                     // forms darker than this take the full rim
-// Behind a focused flower the far layers fall back: softer (mip bias) and darker, on the gather light's follower.
+// Behind a focused flower (or a bed's flowers at rest) the far layers fall back: softer (mip bias) and darker.
 const vec2 FOCUS_BACK = vec2(0.35, 1.6);              // metres behind the flower where the fall-off starts and is full
 const float FOCUS_BLUR = 3.0;
 
@@ -99,7 +99,7 @@ void main() {
     outColor = decal();
     return;
   }
-  float back = uGather.w * smoothstep(FOCUS_BACK.x, FOCUS_BACK.y, vDepth - vFocusDepth);
+  float back = uFocusBack.w * smoothstep(FOCUS_BACK.x, FOCUS_BACK.y, vDepth - vFocusDepth);
   float blur = back * FOCUS_BLUR;
   // The colour softens behind the focus; the alpha stays sharp so tiled flats never open a seam.
   vec4 tex = vec4(texture(uColor, vUV, blur).rgb, texture(uColor, vUV).a);
@@ -146,17 +146,21 @@ void main() {
   lit += towardLight * mix(PAPER_RIM * PAPER_RIM_STRENGTH * sat(reach * 2.0), COOL_RIM * 0.3, shaded);
   lit *= 1.0 - EDGE_DARK * awayLight;
 
-  // Moon rim: inside the paper, where the soft alpha toward the moon runs out (two taps make the gradient).
+  float hazed = 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w);
+  lit = mix(lit, haze, hazed);
+  lit = layerAir(lit, vDepth - vPlaneDepth, back);
+
+  // Moon rim, after the air so the haze cannot eat it: inside the paper, where the soft alpha toward the moon runs out
+  // (two taps make the gradient). Thin moon white at the very edge into cool shade, only on the moon side.
   vec2 moonUV = toSpriteUV(uMoonBack.xy + vec2(0.0, 0.2));
   float rw = RIM_PX * length(fwidth(vUV));
   float edgeNear = 1.0 - rimAlpha(vUV + moonUV * rw * 0.4, tex.a);
   float edgeFar = 1.0 - rimAlpha(vUV + moonUV * rw, tex.a);
-  float rimBand = sat(0.6 * edgeNear + 0.4 * edgeFar) * (1.0 - shaded * 0.5);
+  // Thin stems and blades are open on the far side too: they take a trace of the rim, not a white outline.
+  float thin = 1.0 - rimAlpha(vUV - moonUV * rw, tex.a);
+  float rimBand = sat(0.7 * edgeNear + 0.3 * edgeFar) * (1.0 - shaded * 0.3) * (1.0 - 0.85 * thin);
   float dark = 1.0 - smoothstep(0.0, RIM_DARK_LUMA, luma(lit));
-  lit += mix(RIM_LILAC, RIM_MOON, edgeNear) * rimBand * RIM_STRENGTH * (0.35 + 0.65 * dark) * (1.0 - back);
-
-  lit = mix(lit, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w));
-  lit = layerAir(lit, vDepth - vPlaneDepth, back);
+  lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * RIM_STRENGTH * (0.3 + 0.7 * dark) * (1.0 - back) * (1.0 - 0.6 * hazed);
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);
