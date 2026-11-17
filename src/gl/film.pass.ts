@@ -24,9 +24,12 @@ const LENS_SOFT = 0.55;
 const LIFTED_BLACK = '#0d0a1e';
 /** Warm highlight tint #f3e6cf. */
 const HIGHLIGHT = '#f3e6cf';
-/** Grade gain and gamma (per channel): a touch warm in the highs, a touch cool in the mids. */
-const GAIN = [1.04, 1.0, 0.95] as const;
-const GAMMA = [1.0, 1.0, 1.04] as const;
+/** Exposure on the display value: mean V of a night shot lands near 34 %. */
+const EXPOSURE = 1.12;
+/** Grade gain and gamma (per channel): a touch warm in the highs, a touch cool in the mids; mids opened by x^0.88. */
+const GAIN = [1.04 * EXPOSURE, 1.0 * EXPOSURE, 0.95 * EXPOSURE] as const;
+const MID_GAMMA = 1 / 0.88;
+const GAMMA = [MID_GAMMA, MID_GAMMA, MID_GAMMA * 1.04] as const;
 
 /** The film pass plus what the Gfx owner drives per frame. */
 export interface FilmDriver extends FilmPass {

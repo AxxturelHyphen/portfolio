@@ -1,4 +1,4 @@
-// Halation source at quarter resolution: a 4x4 box of the scene through a soft luma threshold.
+// Halation source at quarter resolution: a 4x4 box of the scene through a soft threshold on luma or red.
 // Reads the used uScale fraction of the scene target and writes the same fraction of the quarter target.
 precision highp float;
 
@@ -19,6 +19,7 @@ void main() {
   vec2 uv = vUv * uScale;
   vec3 c = 0.25 * (tap(uv + vec2(-texel.x, -texel.y)) + tap(uv + vec2(texel.x, -texel.y))
     + tap(uv + vec2(-texel.x, texel.y)) + tap(uv + vec2(texel.x, texel.y)));
-  float luma = dot(c, vec3(0.2126, 0.7152, 0.0722));
-  fragColor = vec4(c * smoothstep(uThreshold, uThreshold * 1.5, luma), 1.0);
+  // The red layer halates first: a lit crimson edge passes the threshold before its luma would.
+  float level = max(dot(c, vec3(0.2126, 0.7152, 0.0722)), c.r * 0.5);
+  fragColor = vec4(c * smoothstep(uThreshold, uThreshold * 1.5, level), 1.0);
 }

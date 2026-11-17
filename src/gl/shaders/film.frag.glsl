@@ -34,14 +34,18 @@ out vec4 fragColor;
 const float PI = 3.14159265;
 const vec3 HALATION_TINT = vec3(0.604, 0.114, 0.059);   // #cc5f45, linear
 const float GRAIN_PX_1080 = 1.5;
-const float GRAIN_NORM = 1.0 / 0.2;
+const float GRAIN_NORM = 1.0 / 0.105;     // measured std of the smoothed noise after the 1.5 px interpolation
 const float MOTTLE_PX_1080 = 14.0;
 const float MOTTLE_LEVELS = 1.1 / 255.0;
 const float FRINGE_PX_1080 = 0.8;
 const float SOFT_PX_1080 = 1.6;
+const float FRINGE_ONSET = 0.12;      // under a tenth of a pixel of fringe: one tap
+const float SOFT_ONSET = 0.3;         // the lens stays sharp over the middle of the frame
 const float SHOULDER = 0.80;          // display value where highlights start to roll off
 const float WHITE = 0.94;             // luma 240: only the moon core gets here
-const float TOE = 0.045;              // deepens the darks toward the lifted black, mids almost untouched
+const float MAX_CHANNEL = 0.98;       // per-channel ceiling: saturated colours scale down instead of clipping
+const float TOE = 0.08;               // deepens the darks toward the lifted black, mids almost untouched
+const float IN_BLACK = 10.0 / 255.0;  // levels in-black before the lift: the floor lands on #0d0a1e
 const vec3 BAR_COLOR = vec3(0.090, 0.071, 0.055);
 const vec3 BAR_EDGE = vec3(0.545, 0.400, 0.227);
 const float GATE_JUMP = 0.004;
@@ -103,9 +107,12 @@ vec3 lens(vec2 uv, float k1080) {
   vec2 fromC = uv - 0.5;
   float edge = dot(fromC, fromC) * 2.0;
   vec2 px = 1.0 / uRes;
-  vec2 fringe = normalize(fromC + 1e-5) * px * FRINGE_PX_1080 * k1080 * edge;
-  vec3 c = vec3(tap(uv + fringe).r, tap(uv).g, tap(uv - fringe).b);
-  float soft = uSoft * edge;
+  vec3 c = tap(uv);
+  if (edge > FRINGE_ONSET) {
+    vec2 fringe = normalize(fromC + 1e-5) * px * FRINGE_PX_1080 * k1080 * edge;
+    c = vec3(tap(uv + fringe).r, c.g, tap(uv - fringe).b);
+  }
+  float soft = uSoft * sat((edge - SOFT_ONSET) / (1.0 - SOFT_ONSET));
   if (soft > 0.02) {
     vec2 o = px * SOFT_PX_1080 * k1080;
     vec3 blur = 0.25 * (tap(uv + vec2(o.x, o.y)) + tap(uv + vec2(-o.x, o.y)) + tap(uv + vec2(o.x, -o.y)) + tap(uv - o));
@@ -169,11 +176,13 @@ void main() {
   vec2 fromCentre = (vUv - 0.5) * 1.41421356;
   col *= 1.0 - uVignette.x * smoothstep(uVignette.y, 1.0, length(fromCentre));
 
+  col = max(col - IN_BLACK, 0.0) * (1.0 / (1.0 - IN_BLACK));
   col = pow(max(col * uGain, 0.0), 1.0 / uGamma);
   col = col * col / (col + TOE) * (1.0 + TOE);
   float y = luma(col);
   float rolled = y < SHOULDER ? y : SHOULDER + (WHITE - SHOULDER) * (1.0 - exp(-(y - SHOULDER) / (WHITE - SHOULDER)));
   col *= rolled / max(y, 1e-4);
+  col *= min(1.0, MAX_CHANNEL / max(max(col.r, col.g), max(col.b, 1e-4)));   // keep the hue of saturated reds: no salmon clip
   col = mix(col, col * uHighlight / luma(uHighlight), smoothstep(0.45, 0.9, rolled) * 0.35);
   float hue = 0.0;
   for (int i = 0; i < 3; i++) {
