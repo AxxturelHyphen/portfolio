@@ -8,19 +8,17 @@ import { linearHex } from './colour.ts';
  *
  * Light roles (cook/ART.md section 1, Light):
  * - uMoonDir / uMoonColor: the soft key on the faces, from the upper left front (written by the world light rig).
- * - uMoonBack: the real moon, low behind the garden at azimuth -10 degrees; it gives the rim on the moon side, the
- *   halo in the sky and the glint in the puddles. It sinks from 9 to 4 degrees with the camera x (setMoonByX).
+ * - uMoonBack: the real moon behind the garden; it gives the rim on the moon side, the halo in the sky and the glint in
+ *   the puddles. Each place sets where it hangs for its key frame (garden/place.ts eases it, so a walk never jumps).
  * - uCursor: the warm hand light; uGather: the focus light; uFly: up to 4 fireflies that light nearby paper.
  */
 export const FLY_LIGHTS = 4;
 
-/** Moon azimuth and its elevation at the gate and at the exit (cook/ART.md section 1). */
-const MOON = { azimuthDeg: -10, elevationGateDeg: 9, elevationExitDeg: 4, gateX: 0, exitX: 45 } as const;
 /** Shadow decals fall toward (+0.34 x, +0.94 z), length per unit of height (Rosaleda 0.5), opacity 18 %. */
 const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.18 } as const;
 
 /** Depth haze toward the wall: the place shadow, thickening past 3 m from the lens. */
-const HAZE = { colour: '#161a33', density: 0.06 } as const;
+const HAZE = { colour: '#0e0d24', density: 0.06 } as const;
 function hazeOf(hex: string, density: number): Vector4 {
   const c = linearHex(hex, new Vector3());
   return new Vector4(c.x, c.y, c.z, density);
@@ -53,14 +51,17 @@ export type SharedUniforms = typeof sharedUniforms;
 
 const DEG = Math.PI / 180;
 
-/** Places the real moon for a camera at world x: a fixed azimuth, sinking toward the exit. No allocation. */
-export function setMoonByX(x: number): void {
-  const t = Math.min(1, Math.max(0, (x - MOON.gateX) / (MOON.exitX - MOON.gateX)));
-  const el = (MOON.elevationGateDeg + (MOON.elevationExitDeg - MOON.elevationGateDeg) * t) * DEG;
-  const az = MOON.azimuthDeg * DEG;
+/** Places the real moon at an azimuth (degrees, negative is left of straight ahead) and elevation. No allocation. */
+export function setMoon(azimuthDeg: number, elevationDeg: number): void {
+  const el = elevationDeg * DEG;
+  const az = azimuthDeg * DEG;
   sharedUniforms.uMoonBack.value.set(Math.cos(el) * Math.sin(az), Math.sin(el), -Math.cos(el) * Math.cos(az));
 }
 
 /** One place's light (cook/ART.md section 1 table), as sRGB hexes; garden/place.ts parses and eases them. */
-export interface PlaceLight { skyTop: string; skyHorizon: string; ambient: string; shadow: string; shadowLength: number }
-setMoonByX(10);
+export interface PlaceLight {
+  skyTop: string; skyHorizon: string; ambient: string; shadow: string; shadowLength: number;
+  /** Where the moon hangs for this place's key frame: azimuth and elevation in degrees. */
+  moon: readonly [number, number];
+}
+setMoon(-10, 7);
