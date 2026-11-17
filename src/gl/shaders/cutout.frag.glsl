@@ -37,6 +37,7 @@ const float SHADED_FROM = 0.75;                       // tints darker than this 
 const float SILHOUETTE_HAZE = 0.3;                    // how far a shaded layer turns toward the haze hue
 const vec3 COOL_RIM = vec3(0.30, 0.36, 0.46);         // moonlit rim on the shaded layers
 const float AMBIENT_GAIN = 1.6;                       // the moonlit dusk fill: midground paper reads, blacks stay
+const float LEAF_MIP_BIAS = 3.0;                      // the leaf weight reads the plate at about 8 px
 // Lit paper keeps its hue: the brightest channel rolls off from KNEE toward CEIL (linear), the others follow it, so a
 // lit crimson stays crimson instead of washing to coral and no paper passes about luma 215 after the grade.
 const float KNEE = 0.22;
@@ -129,7 +130,9 @@ void main() {
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n);
-  vec3 lit = paperShoulder(albedo * (ambient + key + rim) + keyLit(albedo, hand));
+  // Leaf weight from a coarse mip of the plate, so block noise in a pale leaf never flips it on and off.
+  float leaf = leafWeight(texture(uColor, vUV, LEAF_MIP_BIAS).rgb);
+  vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
 
   // The light that moves the edges and shadows: the hand where it reaches, else the key.
   float reach = handReach(vWorld);

@@ -52,6 +52,15 @@ vec3 keyLit(vec3 albedo, vec3 light) {
   return mix(albedo, vec3(luma(albedo)), green * KEY_GREEN_GREY) * light;
 }
 
+// The warm key on a cutout's leaves. On a leaf plate the amber light gives way to its own value through a viridian
+// filter, so a lit leaf reads as a muted dusk green a step under the lit petals, not cream. `leaf` (0..1) is how
+// green the plate is around the fragment; petals, stone, paper and white flowers keep keyLit.
+const vec3 LEAF_KEY = vec3(0.035, 0.07, 0.075);
+float leafWeight(vec3 c) { return smoothstep(0.04, 0.14, (c.g - 0.5 * (c.r + c.b)) / max(c.g, 1e-4)); }
+vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
+  return mix(keyLit(albedo, light), albedo * luma(light) * LEAF_KEY, leaf);
+}
+
 // Air between the layers, banded by depth against the hand's plane (+ behind it, - in front): far layers sit lifted
 // and cooler in the dusk air, near layers darker and richer. `back` is the fall-off behind a focused flower (0..1).
 const vec3 FAR_AIR = vec3(0.027, 0.030, 0.058);    // #2d3044, a cool slate, not violet
