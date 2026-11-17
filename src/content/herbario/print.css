@@ -5,6 +5,10 @@
  */
 
 @media print {
+  .h-frontis {
+    display: none;
+  }
+
   @page {
     size: A4;
     margin: 14mm 15mm 13mm;

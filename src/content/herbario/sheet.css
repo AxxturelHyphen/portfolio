@@ -260,3 +260,24 @@
     transform: none;
   }
 }
+
+/* The frontispiece: the first specimen again, filling the hero's left column (desktop only). */
+.h-frontis {
+  grid-column: 1 / span 4;
+  grid-row: 2;
+  margin-top: clamp(1.5rem, 0.5rem + 2vw, 2.5rem);
+  transform: rotate(-2deg);
+}
+
+.h-frontis-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 44.99rem) {
+  .h-frontis {
+    display: none;
+  }
+}

@@ -18,21 +18,37 @@ type Lookup = (key: string) => string;
 
 const BEDS: readonly ProjectBed[] = ['rosaleda', 'estanque', 'semillero'];
 
-function mountOf(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex): string {
-  const shown = specimen(thumbs.get(p.id), l);
+/** Each project's place among the mounted specimens, in page order (beds in BEDS order), for loading priority. */
+type Order = ReadonlyMap<string, number>;
+
+function specimenOrder(c: HerbarioContent, thumbs: ThumbIndex): Order {
+  const ids = BEDS.flatMap((b) => projectsOf(b, c.projects)).filter((p) => thumbs.has(p.id)).map((p) => p.id);
+  return new Map(ids.map((id, i) => [id, i]));
+}
+
+/** The page's frontispiece: the first mounted specimen again (same file, so no extra request), filling the hero's left. */
+function frontispiece(thumbs: ThumbIndex, order: Order): string {
+  const first = [...order.entries()].find(([, i]) => i === 0)?.[0];
+  const t = first === undefined ? undefined : thumbs.get(first);
+  if (t === undefined) return '';
+  return `<figure class="h-frontis" aria-hidden="true"><img class="h-frontis-img" src="thumbs/${esc(t.file)}" alt="" width="480" height="480" loading="eager" fetchpriority="high" decoding="async"></figure>`;
+}
+
+function mountOf(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex, order: Order): string {
+  const shown = specimen(thumbs.get(p.id), l, order.get(p.id) ?? Number.MAX_SAFE_INTEGER);
   if (shown !== '') return `<div class="h-mount h-mount-full" data-flower-slot>${shown}</div>`;
   const latin = esc(latinOf(p, s));
   return `<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}${latin === '' ? '' : `<span class="h-mount-latin" lang="la">${latin}</span>`}</p></div>`;
 }
 
-function renderSheet(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex): string {
+function renderSheet(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex, order: Order): string {
   const id = esc(p.id);
   const latin = esc(latinOf(p, s));
   /** With a mounted specimen its plate names the Latin; the label then does not repeat a second, vaguer one. */
   const labelLatin = latin === '' || thumbs.has(p.id) ? '' : `<p class="h-latin" lang="la">${latin}</p>\n`;
   const priv = p.private === true ? `<p class="h-private">${esc(s('project.private'))}</p>` : '';
   return `<article class="h-sheet" id="p-${id}" data-flower="${id}" data-kind="${p.flower}" data-status="${p.status}" aria-labelledby="p-${id}-t">
-${mountOf(p, l, s, thumbs)}
+${mountOf(p, l, s, thumbs, order)}
 <div class="h-label">
 <h4 class="h-title" id="p-${id}-t"><a class="h-open" href="#/p/${id}">${esc(p.title)}</a></h4>
 ${labelLatin}<p class="h-oneliner">${text(p.oneLiner[l])}</p>
@@ -44,7 +60,7 @@ ${priv}
 </article>`;
 }
 
-function renderBed(c: HerbarioContent, bed: ProjectBed, l: Lang, s: Lookup, thumbs: ThumbIndex): string {
+function renderBed(c: HerbarioContent, bed: ProjectBed, l: Lang, s: Lookup, thumbs: ThumbIndex, order: Order): string {
   const projects = projectsOf(bed, c.projects);
   if (projects.length === 0) return '';
   const name = s(`bed.${bed}`);
@@ -52,7 +68,7 @@ function renderBed(c: HerbarioContent, bed: ProjectBed, l: Lang, s: Lookup, thum
   return `<section class="h-bed" id="b-${bed}" data-bed="${bed}" aria-labelledby="b-${bed}-t">
 <header class="h-bed-head"><h3 class="h-bed-title" id="b-${bed}-t">${esc(name)}</h3>${gloss === name ? '' : `<p class="h-bed-gloss">${esc(gloss)}</p>`}</header>
 <div class="h-sheets">
-${projects.map((p) => renderSheet(p, l, s, thumbs)).join('\n')}
+${projects.map((p) => renderSheet(p, l, s, thumbs, order)).join('\n')}
 </div>
 </section>`;
 }
@@ -64,6 +80,7 @@ function fact(cls: string, heading: string, body: string): string {
 export function renderHerbario(c: HerbarioContent, l: Lang): string {
   const s: Lookup = (key) => lookup(c.strings, l, key);
   const thumbs = loadThumbs();
+  const order = specimenOrder(c, thumbs);
   const pr = c.profile;
   const education = pr.education.map(
     (e) => `<span class="h-edu-title">${text(e.title[l])}</span><span class="h-edu-place">${text(e.place)}</span><span class="h-edu-status">${text(e.status[l])}</span>`,
@@ -86,6 +103,7 @@ export function renderHerbario(c: HerbarioContent, l: Lang): string {
 <p class="h-location">${text(pr.location)}</p>
 <section class="h-about" aria-labelledby="h-about-t"><h2 class="h-fact-title" id="h-about-t">${esc(s('section.about'))}</h2><p>${text(pr.about[l])}</p></section>
 </div>
+${frontispiece(thumbs, order)}
 </div>
 </header>
 <main class="h-main">
@@ -97,7 +115,7 @@ ${fact('h-contact', s('section.contact'), list(contact, 'h-contact-list'))}
 </div>
 <section class="h-projects" aria-labelledby="projects">
 <h2 class="h-section-title" id="projects" tabindex="-1">${esc(s('section.projects'))}</h2>
-${BEDS.map((b) => renderBed(c, b, l, s, thumbs)).join('\n')}
+${BEDS.map((b) => renderBed(c, b, l, s, thumbs, order)).join('\n')}
 </section>
 </main>
 <footer class="h-footer"><p>${esc(s('footer.type'))}</p></footer>

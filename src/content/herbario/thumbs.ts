@@ -17,10 +17,14 @@ const MANIFEST = 'public/thumbs/manifest.json';
 const BLOCK_ID = 'h-thumbs';
 const CREDIT: Record<Lang, string> = { en: 'Plate', es: 'Lámina' };
 
-function isThumb(v: unknown): v is Thumb {
-  if (typeof v !== 'object' || v === null) return false;
+/** One manifest entry as a Thumb: the asset manifest names the plate title `plateTitle`, the page block `title`. */
+function toThumb(v: unknown): Thumb | null {
+  if (typeof v !== 'object' || v === null) return null;
   const t = v as Record<string, unknown>;
-  return ['project', 'file', 'source', 'title', 'latin'].every((k) => typeof t[k] === 'string');
+  const title = t['title'] ?? t['plateTitle'];
+  const { project, file, source, latin } = t;
+  if (typeof project !== 'string' || typeof file !== 'string' || typeof source !== 'string' || typeof latin !== 'string' || typeof title !== 'string') return null;
+  return { project, file, source, title, latin };
 }
 
 function parse(json: string | undefined): Thumb[] {
@@ -28,7 +32,8 @@ function parse(json: string | undefined): Thumb[] {
   try {
     const raw: unknown = JSON.parse(json);
     const list = typeof raw === 'object' && raw !== null ? (raw as { thumbs?: unknown }).thumbs : undefined;
-    return Array.isArray(list) ? list.filter(isThumb).filter((t) => /^[\w-]+\.avif$/.test(t.file)) : [];
+    if (!Array.isArray(list)) return [];
+    return list.map(toThumb).filter((t): t is Thumb => t !== null && /^[\w-]+\.avif$/.test(t.file));
   } catch {
     return [];
   }
@@ -61,11 +66,18 @@ export function thumbBlock(index: ThumbIndex): string {
   return `<script type="application/json" id="${BLOCK_ID}">${json}</script>`;
 }
 
-/** The mounted specimen with its plate's Latin name and credit, or '' when the project has no thumbnail yet. */
-export function specimen(t: Thumb | undefined, l: Lang): string {
+/** Specimens above the fold load first (LCP); the rest wait until they near the viewport. */
+const EAGER = 2;
+
+/**
+ * The mounted specimen with its plate's Latin name and credit, or '' when the project has no thumbnail yet. `order` is
+ * the specimen's place on the page: the first two load eagerly at high priority. Width and height hold the box.
+ */
+export function specimen(t: Thumb | undefined, l: Lang, order: number): string {
   if (t === undefined) return '';
+  const load = order < EAGER ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
   return `<figure class="h-specimen">
-<img class="h-specimen-img" src="thumbs/${esc(t.file)}" alt="" width="480" height="480" loading="lazy" decoding="async">
+<img class="h-specimen-img" src="thumbs/${esc(t.file)}" alt="" width="480" height="480" ${load} decoding="async">
 <figcaption class="h-specimen-cap"><span class="h-specimen-latin" lang="la">${esc(t.latin)}</span><span class="h-specimen-credit">${CREDIT[l]}: ${esc(t.title)}</span></figcaption>
 </figure>`;
 }
