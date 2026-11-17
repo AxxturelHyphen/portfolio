@@ -4,9 +4,10 @@ import './styles/label.css';
 import { createMover } from './xform.ts';
 
 /**
- * The plant tag of the focused flower (cook/ART.md section 4, S08): an aged card tag punched at the top centre and
- * tied there with twine to the tip of a zinc rod staked beside the flower. The status, the name, the one-liner and
- * the stack in Kalnia, the Latin name in italic, and "View" as an underlined word.
+ * The plant tag of the focused flower (cook/ART.md section 4, S08): an aged card tag with a reinforced eyelet at the
+ * top centre, tied there with twine to a zinc rod that runs down behind it into the soil. The name, the one-liner and
+ * the stack (a plain comma list) in Kalnia, the Latin name in italic, "View" as an inked line in the tag's ink over a
+ * hand-ruled stroke, and the status as a small rubber stamp set askew in the bottom corner.
  * The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
  * opacity through preallocated movers: no layout reads, no allocation. The tag's own size comes from a
  * ResizeObserver and the viewport size from 'resize' events, both outside the frame.
@@ -33,10 +34,11 @@ const NARROW = '(max-width: 44.99rem)';
 const SVG = 'http://www.w3.org/2000/svg';
 
 /**
- * Twine in a 44x44 box: two strands up from the punched hole at (22, 32) over the top edge, three turns round the
- * rod tip at x 22, a knot and two short tails.
+ * Twine in a 44x60 box: the loop rising from the eyelet at (22, 48) on either side of the rod (x 19 to 25), two turns
+ * round the rod below its tip, a knot on the right and two tails falling from it.
  */
-const TIE = 'M22 32C18 28 16 23 17 19M22 32C26 28 28 23 27 19M16 19L28 15M16 14L28 10M16 9L28 5M28 5C31 3 33 7 31 11M16 9C13 11 12 16 14 20';
+const TIE = 'M21 47C19 38 18.5 28 19 19M23 47C25 38 25.5 28 25 19M17.5 18.5L26.5 15M17.5 13L26.5 9.5'
+  + 'M26.5 9.5C29.5 9 30.5 11.5 29 13.5C31 17 32.5 22 31.5 28M29 13.5C30 17 29 21 27.5 25';
 
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent: HTMLElement): HTMLElementTagNameMap[K] {
   const n = document.createElement(tag);
@@ -48,7 +50,7 @@ function node<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent
 function tie(parent: Element): void {
   const svg = document.createElementNS(SVG, 'svg');
   svg.setAttribute('class', 'lb-tie');
-  svg.setAttribute('viewBox', '0 0 44 44');
+  svg.setAttribute('viewBox', '0 0 44 60');
   svg.setAttribute('aria-hidden', 'true');
   for (let i = 0; i < 2; i += 1) {
     const path = document.createElementNS(SVG, 'path');
@@ -62,12 +64,12 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   el.setAttribute('aria-hidden', 'true');
   const card = node('div', 'lb', el);
   card.id = LABEL_ID;
-  const status = node('p', 'lb-status', card);
   const title = node('p', 'lb-title', card);
   const latin = node('p', 'lb-latin', card);
   const oneLiner = node('p', 'lb-oneliner', card);
   const stack = node('p', 'lb-stack', card);
   const view = node('p', 'lb-view', card);
+  const status = node('p', 'lb-status', card);
   tie(card);
 
   const anchor = createMover(el);
@@ -102,9 +104,10 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
       oneLiner.textContent = p === undefined ? '' : text.tr(p.oneLiner);
       oneLiner.hidden = p === undefined;
       const words = p?.stack.slice(0, UI.chipsMax) ?? [];
-      stack.textContent = words.join(' · ');
+      stack.textContent = words.join(', ');
       stack.hidden = words.length === 0;
       status.hidden = p === undefined;
+      if (p !== undefined) status.dataset.status = p.status;
       status.textContent = p === undefined ? '' : text.t(`status.${p.status}`);
       view.textContent = v.kind === 'project' ? text.t('label.view') : '';
       view.hidden = v.kind !== 'project';
