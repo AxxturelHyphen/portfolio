@@ -5,13 +5,15 @@ import { createMover, type Mover } from './xform.ts';
 
 /**
  * Signposts (cook/ART.md section 4): while a bed is the current place, one sign points back to the previous place
- * and one on to the next (at La Salida the next is "To the CV"). Each is a real <button>: a weathered board cut to a point
- * the way it leads, painted with the place name, on a post in the ground. A click is the travel (GOTO), or the mode
+ * and one on to the next (at La Salida the next is "To the CV"). Each is a real <button>: a slim painted garden label
+ * lashed with twine to a bamboo cane that stands in the soil and runs off the bottom of the screen, lettered with the
+ * place name, with an engraved pointing hand (a manicule) showing the way. A click is the travel (GOTO), or the mode
  * switch for the CV.
  * Where world supplies sign anchors (setAnchors), the label sits on its canvas board: projected each frame in stage
  * 'dom' (only when the rig moved), snapped to whole pixels, and docked to the nearest screen edge at the same height
  * when the board leaves the view, so a sign never disappears. Without anchors both signs dock at the screen edges
- * in the bottom third; on phones they stand above the folded plan, clear of the fixed controls and the hero.
+ * in the lower half; on phones they stand above the folded plan, clear of the fixed controls and the hero. The way back
+ * always stands higher than the way on, so the pair never reads as one row.
  */
 
 /** One canvas board: shown while `bed` is the current place; it points `dir` toward `to`. World point of the label. */
@@ -30,9 +32,21 @@ export interface Signposts {
 const EDGE_PX = 16;
 /** Below the fixed labels and the exit hint that hangs under them. */
 const TOP_PX = 120;
-/** The board's post below it (signs.css, --post) stays on screen; a docked board stands with its foot at this height. */
-const STAKE_PX = 72;
-const DOCK_FOOT = 0.76;
+/** Room kept under a label so its cane shows before it leaves the screen; docked labels stand with their foot here. */
+const STAKE_PX = 48;
+const DOCK_FOOT = 0.7;
+/** Half the height step between the way back (higher) and the way on (lower). */
+const STEP_PX = 40;
+const SVG = 'http://www.w3.org/2000/svg';
+/**
+ * A printer's manicule pointing right in a 48x24 box, in engraved line: the ruffled cuff with its hatching, the back
+ * of the hand, the index finger out with its nail, three curled fingers below and the thumb crease.
+ */
+const HAND = 'M3 5h7v15H3zM4.8 7.5v10M6.6 7.5v10M8.4 7.5v10M10 6.5c4-1.5 9-1.8 13-.5h18.5c2 0 3.2 1 3.2 2.3s-1.2 2.3-3.2 2.3H27'
+  + 'c2 0 3.1 1 3.1 2.2s-1.1 2.2-3.1 2.2h-.8c2 0 3 1 3 2.1s-1 2.1-3 2.1h-.8c1.6 0 2.5.9 2.5 1.9s-.9 1.9-2.5 1.9H17'
+  + 'c-3 0-5-.8-7-1.4M14 9.2c3 0 6 .5 9 1.4M23 10.6c1.4.2 2.8.3 4 .3M13 12.6h3M13 15h3.6M13 17.4h3M39.6 6.6c1.3.3 2 .9 2.1 1.7';
+/** Twine lashing the label to the cane: two turns round the cane over the label's top edge, a knot and a tail. */
+const LASH = 'M3 10l18-5M3 16l18-5M21 5c3-.6 4 1.6 2.4 3.4M21 11c3 .4 3.4 4 1 7.5';
 const NARROW = '(max-width: 44.99rem)';
 const SHOWN: readonly State['phase'][] = ['bed', 'focus'];
 
@@ -50,6 +64,17 @@ interface Sign {
 
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
 
+function drawing(cls: string, box: string, d: string): SVGSVGElement {
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('class', cls);
+  svg.setAttribute('viewBox', box);
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(SVG, 'path');
+  path.setAttribute('d', d);
+  svg.append(path);
+  return svg;
+}
+
 function makeSign(dir: -1 | 1, m: Machine): Sign {
   const el = document.createElement('button');
   el.type = 'button';
@@ -57,10 +82,10 @@ function makeSign(dir: -1 | 1, m: Machine): Sign {
   el.dataset.dir = dir < 0 ? 'prev' : 'next';
   const name = document.createElement('span');
   name.className = 'px-sign-name';
-  const post = document.createElement('span');
-  post.className = 'px-sign-post';
-  post.setAttribute('aria-hidden', 'true');
-  el.append(post, name);
+  const cane = document.createElement('span');
+  cane.className = 'px-sign-cane';
+  cane.setAttribute('aria-hidden', 'true');
+  el.append(cane, drawing('px-sign-lash', '0 0 26 26', LASH), name, drawing('px-sign-hand', '0 0 48 24', HAND));
   const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44 };
   el.addEventListener('click', () => {
     if (sign.to === 'cv') m.send({ type: 'SET_MODE', mode: 'herbario' });
@@ -138,6 +163,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       x = s.dir < 0 ? EDGE_PX : maxX;
       y = vh * DOCK_FOOT - s.h;
     }
+    y += s.dir * STEP_PX;
     s.mover.move(Math.round(x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x), Math.round(y < TOP_PX ? TOP_PX : y > maxY ? maxY : y), 1);
   }
 
