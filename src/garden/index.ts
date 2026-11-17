@@ -14,7 +14,7 @@ import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
 import { createModeLayers } from '../ui/mode.ts';
 import { createMover } from '../ui/xform.ts';
-import type { BedId, ChannelName, Clock, Content, DebugParams, GardenLayout, Machine, Pose, ProjectId, SlotId, SlotView, State } from '../types.ts';
+import type { BedId, ChannelName, Clock, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State } from '../types.ts';
 import { createRig } from '../world/camera.ts';
 import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
@@ -78,6 +78,7 @@ function bedPose(p: Pose, aspect: number): Pose {
 /** Mobile: the garden pauses while the panel is fully shown and the visitor still wants it. */
 const panelHoldsMobile = (s: State): boolean => s.mode === 'garden' && s.phase === 'inspect' && s.intent.k === 'project';
 const NO_SLOTS: readonly SlotView[] = [];
+const SHOT_FOCUS: Readonly<Record<string, SlotId>> = { S08: 'rosaleda/rose-a' };
 
 export function startGarden(host: GardenHost): GardenRuntime {
   const { machine, loop, content, q } = host;
@@ -125,12 +126,18 @@ export function startGarden(host: GardenHost): GardenRuntime {
   /** ?shot: every channel lands on its target until the shot's place is reached. */
   const shot = q.shot === undefined ? undefined : content.garden.shots[q.shot];
   let snapping = shot !== undefined;
+  /** S08 is the focused hero with its plant tag (cook/ART.md 2.2): the flower is focused once the shot has arrived. */
+  let shotFocus: SlotId | null = q.shot === undefined ? null : (SHOT_FOCUS[q.shot] ?? null);
   if (q.shot !== undefined && shot !== undefined) {
     rig.setShot(q.shot);
     loop.setT(shot.t);
   }
 
   loop.on('input', () => {
+    if (shotFocus !== null && !snapping && machine.state.phase === 'bed' && slots.some((v) => v.id === shotFocus)) {
+      machine.send({ type: 'FOCUS', slot: shotFocus });
+      shotFocus = null;
+    }
     if (seenResizes !== gfx.resizes) {
       seenResizes = gfx.resizes;
       const w = gfx.cssW;
@@ -176,13 +183,15 @@ export function startGarden(host: GardenHost): GardenRuntime {
     if (channelsSettled(machine)) quality.adapt(c);
     quality.setPanelScale(!quality.mobile && machine.ch.open.value >= OPEN_HALF ? PANEL_RENDER_SCALE : 1);
   });
-  let settledMode = machine.state.mode;
+  /** Null until the first settle, so entering from the Herbario settles the layers (html[data-mode], inert). */
+  let settledMode: Mode | null = null;
   loop.on('dom', (c) => {
     const mode = machine.ch.mode;
     layers.setProgress(mode.value);
-    if (mode.settled && settledMode !== machine.state.mode) {
-      settledMode = machine.state.mode;
-      layers.settle(settledMode);
+    const want = machine.state.mode;
+    if (mode.settled && mode.value === (want === 'garden' ? 0 : 1) && settledMode !== want) {
+      settledMode = want;
+      layers.settle(want);
     }
     proxies.sync(rig);
     labels.frame(c);
