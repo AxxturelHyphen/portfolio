@@ -1,6 +1,7 @@
 /*
  * The garden plan (cook/ART.md section 4), bottom left: folded, the dog-eared corner of a paper map that reads "Plan";
- * open, it unfolds a 360 px strip plan in pencil line on card stock. Opacity and transform only; folded, the sheet is inert and hidden.
+ * open, the same paper unfolds out of that corner into a strip plan in pencil line, its place names in the display
+ * serif. Opacity and transform only, scaled out from the dog-ear; folded, the sheet is inert and hidden.
  * Shown in the overview and in beds; never during the intro or while the notebook is open.
  */
 
@@ -8,6 +9,7 @@
   position: absolute;
   left: env(safe-area-inset-left, 0px);
   bottom: env(safe-area-inset-bottom, 0px);
+  isolation: isolate;
   pointer-events: none;
   transition: opacity var(--dur-ui) var(--ease-out);
 }
@@ -54,38 +56,42 @@
   text-underline-offset: 5px;
 }
 
-/* Open, the map lies unfolded above its corner: card stock, pencil line, the moth in rose where the visitor is. */
+/*
+ * Open, the map unfolds out of its own corner: the sheet grows up and right from the dog-ear, its bottom edge tucked
+ * under the corner so corner and sheet read as one paper. Same stock as the corner, one fold across the drawing.
+ */
 .pl-sheet {
+  --plw: 440px;
   position: absolute;
-  left: 16px;
-  bottom: 132px;
-  width: 360px;
+  z-index: -1;
+  left: 0;
+  bottom: 92px;
+  width: calc(var(--plw) + 12px);
   isolation: isolate;
-  padding: 14px 6px 6px;
+  padding: 14px 6px 10px;
   color: var(--pencil);
   filter: var(--cast);
-  rotate: -0.6deg;
   opacity: 0;
   visibility: hidden;
-  transform: translate3d(0, 6px, 0);
+  transform-origin: 120px 100%;
+  transform: scale(0.3, 0.12);
   transition:
     opacity var(--dur-ui-exit) var(--ease-out),
     transform var(--dur-ui-exit) var(--ease-out),
     visibility 0s linear var(--dur-ui-exit);
 }
 
-/* Card stock with hand-cut edges and one fold across the drawing: the far panel a shade darker, the crease lit. */
 .pl-sheet::before {
   content: "";
   position: absolute;
   z-index: -1;
   inset: 0;
   background:
-    linear-gradient(180deg, transparent 43%, rgb(255 252 244 / 0.45) 43.4%, rgb(70 52 34 / 0.12) 44%, transparent 52%),
+    linear-gradient(180deg, transparent 43%, rgb(255 252 244 / 0.4) 43.4%, rgb(70 52 34 / 0.14) 44%, transparent 52%),
     linear-gradient(180deg, rgb(70 52 34 / 0.07) 0 43.5%, transparent 43.5%),
-    var(--stock-card);
+    linear-gradient(174deg, #ddd5c5 0%, #d2c9b7 60%, #c9bfac 100%);
   box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.2);
-  clip-path: polygon(0 2px, 22% 0, 51% 2px, 83% 0, 100% 3px, calc(100% - 1px) 52%, 100% 100%, 58% calc(100% - 2px), 24% 100%, 1px calc(100% - 1px), 0 47%);
+  clip-path: polygon(0 4px, 22% 0, 51% 3px, 83% 0, 100% 5px, calc(100% - 2px) 52%, 100% calc(100% - 14px), 46% 100%, 0 100%);
 }
 
 .pl[data-open] .pl-sheet {
@@ -101,23 +107,25 @@
 
 .pl-title {
   padding: 0 14px;
-  font-size: 0.8125rem;
-  font-style: italic;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: 1.0625rem;
+  line-height: 1.3;
   color: var(--tag-ink);
 }
 
 .pl-map {
   position: relative;
-  width: 348px;
-  height: 140px;
+  width: var(--plw);
+  height: calc(var(--plw) * 0.289 + 52px);
 }
 
 .pl-drawing {
   position: absolute;
   top: 0;
   left: 0;
-  width: 348px;
-  height: 100px;
+  width: var(--plw);
+  height: calc(var(--plw) * 0.289);
   fill: none;
   stroke: var(--pencil);
   stroke-width: 1;
@@ -125,6 +133,7 @@
   stroke-linejoin: round;
 }
 
+/* One column per place (five), the moth over the middle of the current one. */
 .pl-moth {
   position: absolute;
   top: 2px;
@@ -132,7 +141,7 @@
   width: 18px;
   height: 13px;
   fill: var(--enamel-rose);
-  transform: translate3d(calc(var(--col, 0) * 69.6px + 25.8px), 0, 0);
+  transform: translate3d(calc(var(--col, 0) * var(--plw) / 5 + var(--plw) / 10 - 9px), 0, 0);
   transition: transform var(--dur-ui) var(--ease-out), opacity var(--dur-ui) var(--ease-out);
 }
 
@@ -150,24 +159,24 @@
 .pl-places button {
   width: 100%;
   min-height: var(--target);
-  padding: 2px 2px;
+  padding: 2px 1px;
   border: 0;
   background: none;
-  color: var(--pencil);
-  font-size: 0.8125rem;
+  color: var(--tag-ink);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: 0.875rem;
   line-height: 1.15;
   text-wrap: balance;
   cursor: pointer;
 }
 
 .pl-places button:hover {
-  color: var(--tag-ink);
   text-decoration: underline 1px;
   text-underline-offset: 3px;
 }
 
 .pl-places button[aria-current="location"] {
-  color: var(--tag-ink);
   text-decoration: underline 2px var(--enamel-rose);
   text-underline-offset: 4px;
 }
@@ -187,9 +196,9 @@
   }
 
   .pl-sheet {
-    left: 10px;
-    bottom: 98px;
-    width: min(360px, calc(100vw - 20px));
+    --plw: min(440px, calc(100vw - 32px));
+    bottom: 66px;
+    transform-origin: 88px 100%;
   }
 }
 
