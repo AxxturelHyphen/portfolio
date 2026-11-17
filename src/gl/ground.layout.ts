@@ -48,12 +48,13 @@ function catmull(k: readonly number[], i: number, t: number, out: Float64Array):
 
 /**
  * Bakes the unsigned distance to the path centre line over the layout rectangle (R8, 1 cm per level).
- * Each polyline segment only touches texels within RANGE_M of it, so the bake stays a few milliseconds.
+ * Each polyline segment only touches texels within RANGE_M of it, and the inner loop compares squared distances (one
+ * square root per texel at the end), so the bake stays a few milliseconds even on a throttled phone CPU.
  */
 export function bakePathField(l: GroundLayout): PathField {
   const w = Math.ceil((l.x1 - l.x0) / TEXEL_M);
   const h = Math.ceil((l.z1 - l.z0) / TEXEL_M);
-  const dist = new Float32Array(w * h).fill(RANGE_M);
+  const dist2 = new Float64Array(w * h).fill(RANGE_M * RANGE_M);
   const pts: number[] = [];
   const p = new Float64Array(2);
   const spans = l.path.length / 2 - 1;
@@ -73,18 +74,21 @@ export function bakePathField(l: GroundLayout): PathField {
     const tz0 = Math.max(0, Math.floor((Math.min(az, bz) - RANGE_M - l.z0) / TEXEL_M));
     const tz1 = Math.min(h - 1, Math.ceil((Math.max(az, bz) + RANGE_M - l.z0) / TEXEL_M));
     for (let tz = tz0; tz <= tz1; tz++) {
-      const z = l.z0 + (tz + 0.5) * TEXEL_M;
+      const dz = l.z0 + (tz + 0.5) * TEXEL_M - az;
+      const row = tz * w;
       for (let tx = tx0; tx <= tx1; tx++) {
-        const x = l.x0 + (tx + 0.5) * TEXEL_M;
-        const t = Math.min(1, Math.max(0, ((x - ax) * ex + (z - az) * ez) / len2));
-        const d = Math.hypot(x - ax - ex * t, z - az - ez * t);
-        const o = tz * w + tx;
-        if (d < (dist[o] ?? RANGE_M)) dist[o] = d;
+        const dx = l.x0 + (tx + 0.5) * TEXEL_M - ax;
+        const t = Math.min(1, Math.max(0, (dx * ex + dz * ez) / len2));
+        const qx = dx - ex * t;
+        const qz = dz - ez * t;
+        const d2 = qx * qx + qz * qz;
+        if (d2 < (dist2[row + tx] ?? 0)) dist2[row + tx] = d2;
       }
     }
   }
   const data = new Uint8Array(w * h);
-  for (let i = 0; i < data.length; i++) data[i] = Math.round(((dist[i] ?? RANGE_M) / RANGE_M) * 255);
+  const toLevel = 255 / RANGE_M;
+  for (let i = 0; i < data.length; i++) data[i] = Math.round(Math.fround(Math.sqrt(dist2[i] ?? 0)) * toLevel);
   return { data, w, h };
 }
 
