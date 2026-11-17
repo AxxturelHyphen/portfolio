@@ -21,18 +21,19 @@ const BOARD = { sprite: 'sh/board', labelAt: 0.82 } as const;
 /**
  * Ambients are cool neutrals per place (violet lives in the sky only); shadows keep the ART.md section 1 colours.
  * Moon [azimuth, elevation] per place puts it where the key frame wants it: Estanque high over the pond to the right of
- * the peacock (S04 at x 70, y 22), Salida low over the far fields left of the trunk (x 30, y 8). The overview has its own.
+ * the peacock (S04 at x 70, y 22), Salida over the far fields left of the trunk (x 33, y 4). All sit clear of the wall
+ * top. The overview has its own.
  */
 const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
-  puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#5f646c', shadow: '#2b2130', shadowLength: 0.6, moon: [-10, 9] },
-  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#363b44', shadow: '#261e3d', shadowLength: 0.5, moon: [-6, 8] },
-  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#151a26', shadow: '#16163d', shadowLength: 0.9, moon: [-5, 19] },
-  semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1f2329', shadow: '#1b1528', shadowLength: 0.3, moon: [-8, 6] },
-  gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3, moon: [-8, 6] },
-  salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1, moon: [-10, 4.5] },
+  puerta: { skyTop: '#16193d', skyHorizon: '#3e4c74', ambient: '#5f646c', shadow: '#2b2130', shadowLength: 0.6, moon: [-10, 15] },
+  rosaleda: { skyTop: '#151838', skyHorizon: '#38466e', ambient: '#363b44', shadow: '#261e3d', shadowLength: 0.5, moon: [-6, 12] },
+  estanque: { skyTop: '#101338', skyHorizon: '#2c3058', ambient: '#151a26', shadow: '#16163d', shadowLength: 0.9, moon: [-5, 19] },
+  semillero: { skyTop: '#101338', skyHorizon: '#2c3058', ambient: '#1f2329', shadow: '#1b1528', shadowLength: 0.3, moon: [-8, 10] },
+  gruta: { skyTop: '#101338', skyHorizon: '#2c3058', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3, moon: [-8, 6] },
+  salida: { skyTop: '#16193d', skyHorizon: '#3c4870', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1, moon: [-8, 5.6] },
 };
 /** The overview (S02): the moon right of centre over the pond, x 68, y 26 of the frame. */
-const OVERVIEW_MOON = [14.5, 6.5] as const;
+const OVERVIEW_MOON = [14.5, 10] as const;
 
 export function groundLayoutOf(g: WorldLayout): GroundLayout {
   const gr = g.ground;

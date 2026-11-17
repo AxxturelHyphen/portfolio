@@ -34,6 +34,11 @@ export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; win
 const GROUP_MIX: Record<ValueGroup, number> = { L: 0, M: 0.45, D: 0.7 };
 /** Wings are near masks (ART.md 2.2): a dark cool silhouette, uncapped (QUAD_FLAG.silhouette), never a lit plate. */
 const WING_TINT: readonly number[] = [0.13, 0.11, 0.2, 1];
+/**
+ * The sign board only anchors its DOM sign (garden/place.ts signAnchorsOf); it is not drawn, since its plate is a frame
+ * with an empty black centre that read as a hole in the garden.
+ */
+const SIGN_BOARD: SpriteId = 'sh/board';
 const FOOT_SPRAYS = 3;
 const FOOT_SPREAD = 0.18;
 
@@ -105,6 +110,7 @@ export function buildBed(i: BuildInput): BuildOutput {
 
   for (const layer of keptLayers(scene, i.tier, i.maxLayers)) {
     for (const it of layer.items) {
+      if (it.sprite === SIGN_BOARD) continue;
       const r = resolveSprite(it.sprite, bed.manifest, shared?.manifest ?? null);
       if (r === null) { skipped++; continue; }
       placedSize(r.rect, it.h, it.w, it.scale, size);
