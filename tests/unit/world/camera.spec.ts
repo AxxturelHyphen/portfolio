@@ -165,12 +165,12 @@ function walker() {
 test('a neighbour walk follows the rail, stays under 10 m/s and lands on the next stop', () => {
   const { rig, run, go, xs } = walker();
   run(30);
-  expect(rig.pose.x).toBeCloseTo(10.6, 6);
-  expect(rig.pose.z).toBeCloseTo(4.6, 6);
-  go('estanque', 10.6);
+  expect(rig.pose.x).toBeCloseTo(11.6, 6);
+  expect(rig.pose.z).toBeCloseTo(3.2, 6);
+  go('estanque', 11.6);
   run(200);
-  expect(rig.pose.x).toBeCloseTo(20.8, 3);
-  expect(rig.pose.y).toBeCloseTo(2.8, 3);
+  expect(rig.pose.x).toBeCloseTo(20.0, 3);
+  expect(rig.pose.y).toBeCloseTo(2.1, 3);
   let peak = 0;
   for (let i = 1; i < xs.length; i++) peak = Math.max(peak, Math.abs((xs[i] ?? 0) - (xs[i - 1] ?? 0)) * 60);
   expect(peak).toBeLessThanOrEqual(10.2);
@@ -179,12 +179,12 @@ test('a neighbour walk follows the rail, stays under 10 m/s and lands on the nex
 test('reversing a walk midway continues from where the camera is (no jump)', () => {
   const { run, go, xs } = walker();
   run(10);
-  go('estanque', 10.6);
+  go('estanque', 11.6);
   run(40);
   go('rosaleda', 15);
   run(200);
   let maxStep = 0;
   for (let i = 1; i < xs.length; i++) maxStep = Math.max(maxStep, Math.abs((xs[i] ?? 0) - (xs[i - 1] ?? 0)));
   expect(maxStep).toBeLessThan(10.5 / 60);
-  expect(xs.at(-1)).toBeCloseTo(10.6, 2);
+  expect(xs.at(-1)).toBeCloseTo(11.6, 2);
 });

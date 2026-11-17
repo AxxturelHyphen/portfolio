@@ -48,20 +48,20 @@ test('near wings fade between 5 and 6 m/s; the strip runs only for jumps over on
   expect(stripOf(0.5, 2, o).w).toBe(1);
 });
 
-test('the rail passes through its keys and eases between them; portrait lifts every key', () => {
+test('the rail passes through its keys and eases between them; portrait sets one height and moves each key by dz', () => {
   const rail = createRail(garden.rail);
   const p = { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 };
-  rail.sample(10.6, p);
-  expect(p).toMatchObject({ x: 10.6, y: 2.6, z: 4.6, fov: 35 });
-  expect(p.pitch).toBeCloseTo((-18 * Math.PI) / 180, 9);
+  rail.sample(11.6, p);
+  expect(p).toMatchObject({ x: 11.6, y: 2.4, z: 3.2, fov: 34 });
+  expect(p.pitch).toBeCloseTo((-15 * Math.PI) / 180, 9);
   rail.sample(13, p);
-  expect(p.z).toBeGreaterThan(4.6);
+  expect(p.z).toBeGreaterThan(3.2);
   expect(p.z).toBeLessThan(6.4);
   expect(rail.stopX('gruta')).toBeNaN();
   rail.setPortrait(true);
-  rail.sample(10.6, p);
-  expect(p).toMatchObject({ y: 3.4, fov: 46, yaw: 0 });
-  expect(p.z).toBeCloseTo(5.2, 9);
+  rail.sample(11.6, p);
+  expect(p).toMatchObject({ y: 2.3, fov: 42, yaw: 0 });
+  expect(p.z).toBeCloseTo(2.8, 9);
 });
 
 test('world packs instance flags exactly as gl reads them', () => {

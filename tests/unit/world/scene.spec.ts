@@ -20,11 +20,11 @@ test('garden layout: beds in order, grotto under the Semillero, shots S01 to S12
   expect(garden.grutaHost).toBe('semillero');
   expect(Object.keys(garden.shots).sort()).toEqual(Array.from({ length: 12 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
   expect(garden.shots['S11']?.viewport).toEqual([390, 844]);
-  expect(garden.film['S03']).toEqual({ x: 10.84, y: 1.01, z: 3.31, pitch: 3.2, yaw: 6.0, fov: 12.9 });
-  // S04 moved in front of the near-ground dressing so the water and the moon's streak read under the fan (R03).
-  expect(garden.film['S04']).toEqual({ x: 23.0, y: 0.75, z: 1.0, pitch: 6, yaw: -22, fov: 46 });
+  // S03 and S08 are lens close-ups from the live Rosaleda stop; S04 and S06 are the live Estanque and Puerta stops.
+  expect(garden.film['S03']).toEqual({ x: 11.6, y: 2.4, z: 3.2, pitch: -12, yaw: -1.7, fov: 10 });
+  expect(garden.film['S04']).toEqual({ x: 20, y: 2.1, z: 7.2, pitch: -7, yaw: 4, fov: 34 });
   expect(garden.film['S05']).toEqual({ x: 30.06, y: 2.2, z: 7.64, pitch: -10, yaw: 0, fov: 13.7 });
-  expect(garden.film['S06']).toEqual({ x: 1.2, y: 1.5, z: 3.0, pitch: 0, yaw: 0, fov: 33.4 });
+  expect(garden.film['S06']).toEqual({ x: 1.7, y: 1.7, z: 1.2, pitch: -6, yaw: -10, fov: 44 });
   // S02 (cook/SHOTS.md C): camera at 2.2 m, tilted down 6 degrees, wide; the overview is that pose.
   expect(garden.overview).toEqual({ x: 22.5, y: 2.2, z: 8, pitch: -6, fov: 44 });
   expect(garden.film['S02']).toEqual({ ...garden.overview, yaw: 0 });
@@ -32,7 +32,7 @@ test('garden layout: beds in order, grotto under the Semillero, shots S01 to S12
 
 test('the rail has five bed stops and four gap keys; each bed pose is its key', () => {
   const keys = garden.rail.keys;
-  expect(keys.map((k) => k.x)).toEqual([1.0, 5.4, 10.6, 15.4, 20.8, 26.0, 30.2, 36.2, 41.6]);
+  expect(keys.map((k) => k.x)).toEqual([1.7, 5.4, 11.6, 15.4, 20.0, 26.0, 30.2, 36.2, 41.6]);
   expect(keys.filter((k) => k.bed !== undefined).map((k) => k.bed)).toEqual(['puerta', 'rosaleda', 'estanque', 'semillero', 'salida']);
   for (const k of keys) {
     if (k.bed === undefined) continue;
