@@ -1,5 +1,5 @@
 // Night sky over the garden (common.glsl prepended): a blue-violet wash with hand-tinted bands and paper tooth, sparse
-// printed stars, and the moon: a 4 degree engraved disc with a soft warm-to-lilac halo. Linear output.
+// printed stars, and the moon: a 2.4 degree engraved disc with a tight cool halo. Linear output.
 uniform vec3 uSkyTop;
 uniform vec3 uSkyHorizon;
 uniform vec3 uMoonBack;
@@ -10,16 +10,16 @@ uniform float uMoonMapOn;
 in vec3 vRay;
 out vec4 outColor;
 
-const float MOON_R = 0.0349;          // 2 degree radius: a 4 degree disc (cook/ART.md section 1)
-const float HALO_R = 0.0873;          // 5 degrees: the 10 degree halo
+const float MOON_R = 0.0209;          // 1.2 degree radius: a 2.4 degree disc, small and clear of the wall
+const float HALO_R = 0.0436;          // 2.5 degrees: a tight halo hugging the disc
 const vec3 AFTERGLOW = vec3(0.479, 0.159, 0.085);   // #b86f52
-const vec3 HORIZON_ROSE = vec3(0.150, 0.075, 0.090);   // #6e4d54: the faint rose band low over the wall
-const float ROSE_HEIGHT = 0.12;       // radians over which the rose gives way to the indigo above
+const vec3 HORIZON_ROSE = vec3(0.110, 0.072, 0.085);   // #5e4c52: the faint dusty rose band low over the wall
+const float ROSE_HEIGHT = 0.035;      // radians: a thin dusty rose band just above the wall, blue-violet above
 const float EDGE_WOBBLE = 0.035;      // the hand-cut paper edge of the moon disc
-const vec3 EDGE_TINT = vec3(0.93, 0.70, 0.52);   // the warm tint that overran the edge when the plate was coloured
-const float MOON_GAIN = 1.6;          // the core reaches luma 236 to 240 after the film shoulder
-const vec3 HALO_WARM = vec3(0.87, 0.62, 0.44);
-const vec3 HALO_COOL = vec3(0.30, 0.25, 0.42);
+const vec3 EDGE_TINT = vec3(0.90, 0.88, 0.84);   // the pale tint that overran the edge when the plate was coloured
+const float MOON_GAIN = 1.05;         // the core reaches luma 236 to 240 after the film shoulder
+const vec3 HALO_WARM = vec3(0.66, 0.68, 0.72);
+const vec3 HALO_COOL = vec3(0.17, 0.20, 0.27);
 const vec3 INK_STAR = vec3(0.62, 0.55, 0.42);
 const float BANDS = 7.0;
 const float STAR_CELL = 0.035;        // about 2 degrees per cell
@@ -71,18 +71,18 @@ void main() {
   float hb = (floor(h * BANDS) + smoothstep(0.35, 0.65, fract(h * BANDS))) / BANDS;
   float wash = fbm3(vec2(atan(dir.x, -dir.z) * 3.0, el * 9.0));
   h = mix(h, hb, 0.4) + (wash - 0.5) * 0.06;
-  vec3 col = mix(uSkyHorizon, uSkyTop, pow(sat(h), 0.45));
-  col = mix(col, HORIZON_ROSE, exp(-max(el, 0.0) / ROSE_HEIGHT) * 0.55);
+  vec3 col = mix(uSkyHorizon, uSkyTop, pow(sat(h), 0.6));
+  col = mix(col, HORIZON_ROSE, exp(-max(el, 0.0) / ROSE_HEIGHT) * 0.5);
   col *= 1.0 + (fbm3(vec2(atan(dir.x, -dir.z), el) * 22.0) - 0.5) * 0.14;
 
   vec2 moonXZ = normalize(uMoonBack.xz);
   float side = 0.5 + 0.5 * dot(normalize(dir.xz + 1e-5), moonXZ);
-  col += AFTERGLOW * 0.25 * exp(-max(el, 0.0) / 0.07) * side * side;
+  col += AFTERGLOW * 0.05 * exp(-max(el, 0.0) / 0.025) * side * side;
 
   float ang = acos(clamp(dot(dir, uMoonBack), -1.0, 1.0));
   float halo = exp(-max(ang - MOON_R, 0.0) / (HALO_R * 0.45));
   float wide = exp(-max(ang - MOON_R, 0.0) / (HALO_R * 2.2));
-  col += mix(HALO_COOL, HALO_WARM, halo) * (0.22 * halo + 0.05 * wide) * uMoonBody.r;
+  col += mix(HALO_COOL, HALO_WARM, halo) * (0.2 * halo + 0.03 * wide) * uMoonBody.r;
 
   col += INK_STAR * 0.22 * stars(dir, el, px) * sat(el / 0.08) * smoothstep(MOON_R * 4.0, MOON_R * 9.0, ang);
 

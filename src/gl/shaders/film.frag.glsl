@@ -33,6 +33,8 @@ out vec4 fragColor;
 
 const float PI = 3.14159265;
 const vec3 HALATION_TINT = vec3(0.604, 0.114, 0.059);   // #cc5f45, linear
+const float HAL_COOL_SLOPE = 4.0;     // how fast a blue-leaning pixel (relative to its blue) counts as cool sky
+const float HAL_COOL_CUT = 0.9;       // share of the halation removed over the cool sky
 const float GRAIN_PX_1080 = 1.5;
 const float GRAIN_NORM = 1.0 / 0.105;     // measured std of the smoothed noise after the 1.5 px interpolation
 const float MOTTLE_PX_1080 = 14.0;
@@ -204,7 +206,10 @@ void main() {
 
   vec3 lin = lens(uv, k1080);
   // Halation glows around a light, not on it: the moon core keeps its paper white, the warm ring sits on its edge.
-  lin += uHalGain * HALATION_TINT * texture(uHalation, clampUV(uHalation, uv)).rgb * (1.0 - smoothstep(0.55, 0.95, luma(lin)));
+  // Over the cool sky it mostly stays away, so red over blue never turns the moon's halo magenta.
+  float overCool = sat((lin.b - lin.r) / max(lin.b, 1e-3) * HAL_COOL_SLOPE);
+  lin += uHalGain * HALATION_TINT * texture(uHalation, clampUV(uHalation, uv)).rgb * (1.0 - smoothstep(0.55, 0.95, luma(lin)))
+    * (1.0 - HAL_COOL_CUT * overCool);
   lin *= 1.0 + uFlicker;
   vec3 col = encodeSRGB(lin);
 

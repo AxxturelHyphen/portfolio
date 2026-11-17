@@ -40,6 +40,10 @@ const float GLINT_AZ = 0.1047;                        // 6 degrees
 const float GLINT = 0.16;                             // the moon streak in a puddle, broken into dashes
 const float WET_CEILING = 0.3;                        // nothing in the water above display luma about 150
 const float HAZE_START = 3.0;
+const float FIELDS_DEPTH = 34.0;                     // metres past the wall where the fields meet the horizon sky
+const float FIELDS_NEAR = 0.22;                       // share of the horizon sky in the near fields (a dusk silhouette)
+const float FIELDS_FAR = 0.6;
+const float FIELDS_CHROMA = 0.45;                     // the fields keep under half the sky's hue: land, not water
 const float GROUND_ALBEDO = 3.2;                     // night ramp to what the warm lights see (keeps the texture)
 
 // Voronoi: x = distance to the nearest centre, y = distance to the border (F2 - F1 style), zw = nearest cell id.
@@ -171,6 +175,11 @@ void main() {
   col *= 1.0 - LINE_CONTRAST * lineScreen(p, tone) * (1.0 - wet);
   vec3 haze = neutralise(uHaze.rgb);
   col = mix(col, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
-  col = mix(col, haze, smoothstep(uWallZ - 0.5, uWallZ - 6.0, z) * 0.8);   // past the wall: mist, not a slab
+  // Past the wall: mist, not a slab. The far fields rise into the horizon sky, so a low wall never opens onto black.
+  float past = smoothstep(uWallZ - 0.5, uWallZ - 6.0, z);
+  float far = smoothstep(uWallZ - 6.0, uWallZ - FIELDS_DEPTH, z);
+  col = mix(col, haze, past * 0.8);
+  vec3 fields = mix(vec3(luma(uSkyHorizon)), uSkyHorizon, FIELDS_CHROMA) * mix(FIELDS_NEAR, FIELDS_FAR, far);
+  col = mix(col, fields, past * (0.5 + 0.5 * far));
   outColor = vec4(col, 1.0);
 }
