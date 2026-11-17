@@ -5,7 +5,18 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import { createServer } from 'vite';
+import { OPEN_HALF } from '../../../src/core/motion.ts';
 import { gpuLaunch } from '../../helpers/gpu.ts';
+
+const WARM_UP_FRAMES = 480;
+const SAMPLE_FRAMES = 240;
+const SAMPLES = 5;
+
+const median = (v: readonly number[]): number => {
+  const s = [...v].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] ?? 0 : ((s[m - 1] ?? 0) + (s[m] ?? 0)) / 2;
+};
 
 const root = resolve(import.meta.dirname, '../../..');
 const out = resolve(root, 'test-results/gl-film');
@@ -48,11 +59,20 @@ try {
     await page.screenshot({ path: `${out}/${name}.png`, clip });
   }
 
-  const high = await page.evaluate(() => window.filmBench.time({ open: 0 }, 240));
-  const low = await page.evaluate(() => window.filmBench.time({ open: 0, tier: 'low' }, 240));
-  const off = await page.evaluate(() => window.filmBench.time({ filmOn: false }, 240));
+  // The first few hundred frames read far too high (GPU clocks ramping, caches cold): warm up, then report the median
+  // of several samples taken in turn, so one noisy sample cannot decide the number.
+  await page.evaluate((n) => window.filmBench.time({ open: 0 }, n), WARM_UP_FRAMES);
+  const cases = { shut: { open: OPEN_HALF }, open: { open: 0 }, low: { open: 1, tier: 'low' }, bypass: { filmOn: false } } as const;
+  const samples: Record<string, number[]> = {};
+  for (let i = 0; i < SAMPLES; i++) {
+    for (const [name, shot] of Object.entries(cases)) {
+      const r = await page.evaluate(([s, n]) => window.filmBench.time(s, n), [shot, SAMPLE_FRAMES] as const);
+      (samples[name] ??= []).push(Number(r.ms.toFixed(3)));
+    }
+  }
+  const medians = Object.fromEntries(Object.entries(samples).map(([k, v]) => [k, median(v)]));
   const programsAfterAll = await page.evaluate(() => window.filmBench.programs());
-  console.log(JSON.stringify({ gpu: gpu.mode, high, low, bypass: off, programsAfterWarm, programsAfterAll, errors, out }, null, 1));
+  console.log(JSON.stringify({ gpu: gpu.mode, medianMs: medians, samples, programsAfterWarm, programsAfterAll, errors, out }, null, 1));
 } finally {
   await browser.close();
   await server.close();

@@ -22,7 +22,13 @@ const quality: Quality & { cfg: TierConfig; tier: TierConfig['tier'] } = {
 const clock = { now: 0, dt: 1 / 60, t: 0, frame: 0, frozen: true };
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
-const renderer = new WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true });
+// The same context and clear policy as the app's renderer (src/gl/renderer.ts): no depth or stencil buffer and no
+// automatic clear, so the timer measures the pass the visitor runs and not a full-screen clear in front of it.
+const renderer = new WebGLRenderer({
+  canvas, antialias: false, alpha: false, depth: false, stencil: false, premultipliedAlpha: true,
+  powerPreference: 'high-performance', preserveDrawingBuffer: true,
+});
+renderer.autoClear = false;
 renderer.setPixelRatio(1);
 renderer.setSize(W, H, false);
 const sceneTarget = new WebGLRenderTarget(W, H, { type: HalfFloatType, minFilter: LinearFilter, magFilter: LinearFilter, depthBuffer: false });
