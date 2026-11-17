@@ -26,10 +26,14 @@ function specimenOrder(c: HerbarioContent, thumbs: ThumbIndex): Order {
   return new Map(ids.map((id, i) => [id, i]));
 }
 
-/** The page's frontispiece: the first mounted specimen again (same file, so no extra request), filling the hero's left. */
-function frontispiece(thumbs: ThumbIndex, order: Order): string {
-  const first = [...order.entries()].find(([, i]) => i === 0)?.[0];
-  const t = first === undefined ? undefined : thumbs.get(first);
+/**
+ * The page's frontispiece: a specimen already on the page (same file, so no new asset), taken from a later bed so it
+ * never repeats the plate that opens the first one. With a single bed mounted it falls back to the first specimen.
+ */
+function frontispiece(c: HerbarioContent, thumbs: ThumbIndex): string {
+  const mounted = (beds: readonly ProjectBed[]): Project | undefined => beds.flatMap((b) => projectsOf(b, c.projects)).find((p) => thumbs.has(p.id));
+  const shown = mounted(BEDS.slice(1)) ?? mounted(BEDS);
+  const t = shown === undefined ? undefined : thumbs.get(shown.id);
   if (t === undefined) return '';
   return `<figure class="h-frontis" aria-hidden="true"><img class="h-frontis-img" src="thumbs/${esc(t.file)}" alt="" width="480" height="480" loading="eager" fetchpriority="high" decoding="async"></figure>`;
 }
@@ -103,7 +107,7 @@ export function renderHerbario(c: HerbarioContent, l: Lang): string {
 <p class="h-location">${text(pr.location)}</p>
 <section class="h-about" aria-labelledby="h-about-t"><h2 class="h-fact-title" id="h-about-t">${esc(s('section.about'))}</h2><p>${text(pr.about[l])}</p></section>
 </div>
-${frontispiece(thumbs, order)}
+${frontispiece(c, thumbs)}
 </div>
 </header>
 <main class="h-main">
