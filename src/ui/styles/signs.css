@@ -123,19 +123,34 @@
   right: max(var(--edge), env(safe-area-inset-right, 0px));
 }
 
-/* Phones: both boards stand in the bottom third, their stakes ending above the folded plan, far from the controls. */
+/*
+ * Phones: two small boards low on the screen, just above the folded map corner, on short stakes, so the flower keeps
+ * the middle of the screen and nothing stands near the controls.
+ */
 @media (max-width: 44.99rem) {
   .px-signs .px-sign {
     top: auto;
-    bottom: calc(max(10px, env(safe-area-inset-bottom, 0px)) + var(--target) + 76px);
-    max-width: 44vw;
-    min-height: 52px;
-    padding: 4px 0.625rem;
-    gap: 8px;
-    font-size: 1.125rem;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 98px);
+    max-width: 46vw;
+    min-height: var(--target);
+    padding: 2px 0.5rem;
+    gap: 6px;
+    font-size: 1rem;
     white-space: normal;
     text-wrap: balance;
+    filter: drop-shadow(2px 5px 3px rgb(8 6 14 / 0.6));
     transform: none !important;
+  }
+
+  .px-signs .px-sign::after {
+    width: 4px;
+    left: calc(50% - 2px);
+    height: 22px;
+  }
+
+  .px-sign-arrow {
+    width: 18px;
+    height: 12px;
   }
 
   .px-signs .px-sign[data-dir="prev"] {
