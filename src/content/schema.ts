@@ -108,7 +108,8 @@ function checkProfile(c: Checker, v: unknown): void {
   const p = c.obj(v, 'profile');
   if (!p) return;
   c.onlyKeys(p, ['name', 'alias', 'location', 'headline', 'about', 'education', 'languages', 'stack', 'links', 'portrait', 'cv'], 'profile');
-  for (const k of ['name', 'alias', 'location', 'cv']) c.str(p[k], `profile.${k}`);
+  for (const k of ['name', 'alias', 'cv']) c.str(p[k], `profile.${k}`);
+  c.i18n(p.location, 'profile.location');
   c.i18n(p.headline, 'profile.headline');
   c.i18n(p.about, 'profile.about');
   c.arr(p.education, 'profile.education').forEach((e, i) => {

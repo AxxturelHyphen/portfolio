@@ -150,7 +150,7 @@ export type Project = {
   featured: boolean;
 };
 export interface Profile {
-  name: string; alias: string; location: string; headline: I18n; about: I18n;
+  name: string; alias: string; location: I18n; headline: I18n; about: I18n;
   education: { title: I18n; place: string; status: I18n }[]; languages: { name: I18n; level: string }[]; stack: string[];
   links: { key: string; label: I18n; href: string }[]; portrait: { src: string; alt: I18n }; cv: string;
 }

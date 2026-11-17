@@ -104,7 +104,7 @@ export function renderHerbario(c: HerbarioContent, l: Lang): string {
 </div>
 <div class="h-intro">
 <p class="h-role">${text(pr.headline[l])}</p>
-<p class="h-location">${text(pr.location)}</p>
+<p class="h-location">${text(pr.location[l])}</p>
 <section class="h-about" aria-labelledby="h-about-t"><h2 class="h-fact-title" id="h-about-t">${esc(s('section.about'))}</h2><p>${text(pr.about[l])}</p></section>
 </div>
 ${frontispiece(c, thumbs)}
