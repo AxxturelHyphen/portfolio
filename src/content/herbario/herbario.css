@@ -1,17 +1,19 @@
 /*
- * Herbario: the CV as a pressed-flower album. One calm page: the name set large like an album's title page, the
- * profile and the facts as labels tipped in at deliberate, uneven places, then one spread per bed with its sheets
- * staggered. Kalnia for names, Schibsted Grotesk for text, Latin in italic. Zero layout shift: every box is sized
- * by CSS before images or fonts arrive.
+ * Herbario: the CV as one pressed-flower album spread. The title page (name, profile, frontispiece) and the facts
+ * sit on a 12-column grid; the specimens hang in one row below, a track each, every bed spanning its own specimens.
+ * The page is paper with tooth, foxing and uneven tone, drawn by CSS and one tiny inline SVG noise (no image
+ * weight). Specimens are mounted on gummed corners with a ruled collection label, never in bordered or shadowed
+ * boxes. Kalnia for names, Schibsted Grotesk for text, Latin in italic. Zero layout shift: every box is sized by
+ * CSS before images or fonts arrive. This file holds the typography shared with print and the layout print.css
+ * builds on; the album's screen layout, paper and mounts live in album.css, so the printed CV never inherits them.
  */
+
+@import './album.css';
 
 #herbario {
   --tip: #fbf6ec;
   --tip-line: rgb(29 27 24 / 0.28);
   --shadow-tip: 0 1px 1px rgb(29 27 24 / 0.08), 0 8px 18px -12px rgb(29 27 24 / 0.35);
-  max-width: var(--page);
-  margin: 0 auto;
-  padding: 0 var(--gutter) 5rem;
 }
 
 .h-skip {
@@ -31,11 +33,6 @@
   transform: none;
 }
 
-/* Title page */
-.h-header {
-  padding-top: 1.25rem;
-}
-
 .h-site {
   display: flex;
   align-items: center;
@@ -44,17 +41,6 @@
   font-synthesis: none;
   font-size: var(--text-lg);
   color: var(--ink-2);
-}
-
-.h-hero {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 1.5rem;
-  padding-block: clamp(3.5rem, 2rem + 6vw, 8rem) 0;
-}
-
-.h-id {
-  grid-column: 1 / span 10;
 }
 
 .h-name {
@@ -74,15 +60,6 @@
   color: var(--ink-2);
 }
 
-.h-intro {
-  grid-row: 2;
-  grid-column: 6 / span 6;
-  align-content: start;
-  display: grid;
-  gap: 1rem;
-  margin-top: clamp(2rem, 1rem + 3vw, 3.5rem);
-}
-
 .h-role {
   max-width: var(--measure);
   font-size: 1.25rem;
@@ -93,43 +70,6 @@
 .h-location {
   font-size: var(--text-md);
   color: var(--ink-2);
-}
-
-.h-about {
-  display: grid;
-  gap: 0.5rem;
-  max-width: 28rem;
-  margin-top: 1.25rem;
-  margin-left: -1.5rem;
-}
-
-/* Facts: four labels tipped in across the page, each at its own height. */
-.h-facts {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 2rem 1.5rem;
-  align-items: start;
-  padding-top: clamp(3rem, 2rem + 3vw, 5rem);
-}
-
-.h-education {
-  grid-column: 1 / span 4;
-}
-
-.h-languages {
-  grid-column: 5 / span 3;
-  margin-top: 3.5rem;
-}
-
-.h-stack {
-  grid-column: 8 / span 3;
-  margin-top: 1rem;
-}
-
-.h-contact {
-  grid-column: 9 / span 4;
-  grid-row: 2;
-  margin-top: -0.5rem;
 }
 
 .h-fact-title {
@@ -186,11 +126,6 @@ a.h-contact-link:hover {
   color: var(--rose);
 }
 
-/* Projects: one spread per bed */
-.h-projects {
-  margin-top: clamp(5rem, 3rem + 6vw, 9rem);
-}
-
 .h-section-title {
   font-family: var(--font-display);
   font-synthesis: none;
@@ -201,30 +136,6 @@ a.h-contact-link:hover {
 
 .h-section-title:focus {
   outline: none;
-}
-
-.h-bed {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 1.5rem;
-  padding-block: clamp(3rem, 2rem + 3vw, 5rem) 0;
-}
-
-.h-bed + .h-bed {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 52rem;
-}
-
-.h-bed-head {
-  grid-column: 1 / span 3;
-  align-self: start;
-  padding-top: 2.5rem;
-}
-
-.h-bed:nth-of-type(even) .h-bed-head {
-  grid-column: 10 / span 3;
-  grid-row: 1;
-  text-align: right;
 }
 
 .h-bed-title {
@@ -240,29 +151,6 @@ a.h-contact-link:hover {
   font-size: var(--text-md);
   font-style: italic;
   color: var(--ink-2);
-}
-
-.h-sheets {
-  grid-column: 4 / span 9;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 3rem clamp(2rem, 1rem + 3vw, 4.5rem);
-  align-items: start;
-}
-
-.h-bed:nth-of-type(even) .h-sheets {
-  grid-column: 1 / span 9;
-  grid-row: 1;
-}
-
-.h-sheets > :nth-child(even) {
-  margin-top: 6rem;
-}
-
-.h-sheets > :only-child {
-  grid-column: 1 / -1;
-  width: min(100%, 26rem);
-  margin-left: 18%;
 }
 
 /* The full case, for readers without JS. With JS the panel shows it instead. */
@@ -281,113 +169,57 @@ a.h-contact-link:hover {
 }
 
 .h-footer {
-  margin-top: clamp(4rem, 3rem + 3vw, 6rem);
   font-size: var(--text-sm);
   color: var(--ink-2);
 }
 
-@media (max-width: 64rem) {
-  .h-intro {
-    grid-column: 3 / span 10;
-  }
-
-  .h-education {
-    grid-column: 1 / span 6;
-  }
-
-  .h-languages {
-    grid-column: 7 / span 5;
-  }
-
-  .h-stack {
-    grid-column: 2 / span 5;
-    margin-top: 0;
-  }
-
-  .h-contact {
-    grid-column: 7 / span 6;
-    margin-top: 2rem;
-  }
-
-  .h-bed-head,
-  .h-bed:nth-of-type(even) .h-bed-head {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    padding: 0 0 2rem;
-    text-align: left;
-  }
-
-  .h-sheets,
-  .h-bed:nth-of-type(even) .h-sheets {
-    grid-column: 1 / -1;
-    grid-row: auto;
-  }
-}
-
-@media (max-width: 44.99rem) {
-  #herbario {
-    padding-top: 4.5rem;
-  }
-
-  .h-site {
-    display: none;
+/* The layout the printed CV builds on; print.css refines it into one A4 page. */
+@media print {
+  .h-header {
+    padding-top: 1.25rem;
   }
 
   .h-hero,
-  .h-facts,
   .h-bed {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
   }
 
-  .h-hero {
-    padding-top: 1.5rem;
-  }
-
-  .h-id,
-  .h-intro,
-  .h-facts > .h-fact {
-    grid-column: 1;
-    grid-row: auto;
-    margin-top: 0;
+  .h-id {
+    grid-column: 1 / span 10;
   }
 
   .h-intro {
-    margin-top: 1.5rem;
+    grid-row: 2;
+    grid-column: 3 / span 10;
+    align-content: start;
+    display: grid;
+    gap: 1rem;
   }
 
   .h-about {
-    margin-left: 0;
+    display: grid;
+    gap: 0.5rem;
+    max-width: 28rem;
   }
 
   .h-facts {
-    gap: 1.5rem;
-    padding-top: 2.5rem;
+    display: grid;
+    gap: 2rem 1.5rem;
+    align-items: start;
   }
 
-  .h-languages,
-  .h-contact {
-    margin-left: 1.5rem;
-  }
-
-  .h-projects {
-    margin-top: 4rem;
-  }
-
-  .h-bed {
-    padding-top: 3rem;
+  .h-bed-head {
+    grid-column: 1 / -1;
+    align-self: start;
   }
 
   .h-sheets {
+    grid-column: 1 / -1;
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 2.5rem;
-  }
-
-  .h-sheets > :nth-child(even) {
-    margin-top: 0;
-  }
-
-  .h-sheets > :only-child {
-    margin-left: 0;
-    width: 100%;
+    align-items: start;
   }
 }

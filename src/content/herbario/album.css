@@ -1,0 +1,313 @@
+/*
+ * The Herbario on screen: one album spread on paper with tooth, foxing and uneven tone, specimens mounted on
+ * gummed corners. Screen only, so the printed CV (print.css) never inherits it. Imported by herbario.css.
+ */
+
+@media screen {
+  /* The album page: tooth, foxing, uneven tone and darker fore-edges. Behind text only, never over it. */
+  #herbario {
+    --ruled: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 4' preserveAspectRatio='none'%3E%3Cpath d='M0 2.3C70 1.5 130 2.8 205 2s140-.6 195 .5' fill='none' stroke='%234f4a43' stroke-opacity='.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    --gum: #d6c9ad;
+    --gum-edge: #b5a483;
+    --mount-paper: linear-gradient(168deg, #fdfbf6 0%, #f9f5ec 55%, #f4eee2 100%);
+    --col-gap: clamp(1rem, 0.4rem + 1.2vw, 2rem);
+    max-width: none;
+    padding: 0 max(clamp(1rem, -0.5rem + 5vw, 6rem), (100% - 108rem) / 2) 4rem;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .2 -.07'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23t)'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 17% 23%, rgb(146 98 50 / 0.14) 0 1px, rgb(146 98 50 / 0.05) 3px, transparent 6px) 0 0 / 53rem 71rem,
+      radial-gradient(circle at 64% 41%, rgb(146 98 50 / 0.1) 0 2px, rgb(146 98 50 / 0.04) 5px, transparent 10px) 11rem 7rem / 89rem 61rem,
+      radial-gradient(ellipse 9px 6px at 38% 77%, rgb(146 98 50 / 0.12), transparent) 23rem 3rem / 127rem 103rem,
+      radial-gradient(ellipse 7rem 5rem at 81% 12%, rgb(168 128 78 / 0.06), transparent 70%) 0 0 / 97rem 113rem,
+      radial-gradient(ellipse 60% 40rem at 12% 0, rgb(255 254 250 / 0.6), transparent 70%) no-repeat,
+      radial-gradient(ellipse 55% 50rem at 92% 30rem, rgb(205 186 152 / 0.08), transparent 70%) 0 0 / 100% 140rem,
+      radial-gradient(ellipse 50% 45rem at 20% 95rem, rgb(205 186 152 / 0.07), transparent 70%) 0 0 / 100% 140rem,
+      linear-gradient(90deg, rgb(130 102 66 / 0.05), transparent 2.5rem, transparent calc(100% - 2.5rem), rgb(130 102 66 / 0.05)),
+      var(--paper);
+  }
+
+  .h-header {
+    padding-top: 1.25rem;
+  }
+
+  .h-hero,
+  .h-facts {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--col-gap);
+  }
+
+  /* Title page: the name and profile on the left, the frontispiece mounted on the right. */
+  .h-hero {
+    grid-template-rows: auto 1fr;
+    padding-top: clamp(2.5rem, 1rem + 5vw, 6rem);
+  }
+
+  .h-id {
+    grid-column: 1 / span 8;
+    grid-row: 1;
+  }
+
+  .h-intro {
+    grid-column: 1 / span 7;
+    grid-row: 2;
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    margin-top: clamp(1.75rem, 1rem + 2vw, 3rem);
+  }
+
+  #herbario .h-frontis {
+    grid-column: 9 / span 4;
+    grid-row: 1 / span 2;
+    align-self: start;
+    justify-self: end;
+    width: min(100%, 28rem);
+    margin: 0;
+    transform: rotate(0.6deg);
+  }
+
+  /* Labels and facts are text set on the page: no slips, keylines or shadows. */
+  #herbario :is(.h-about, .h-fact, .h-label) {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  #herbario :is(.h-about, .h-fact, .h-label)::before {
+    content: none;
+  }
+
+  .h-about {
+    display: grid;
+    gap: 0.5rem;
+    max-width: var(--measure);
+    margin-top: 1.5rem;
+  }
+
+  .h-facts {
+    row-gap: 2.5rem;
+    padding-top: clamp(3rem, 2rem + 2.5vw, 4.5rem);
+  }
+
+  .h-facts > .h-fact {
+    grid-column: span 3;
+  }
+
+  /* The spread: one track per specimen, every bed spanning its own; the heading above them all. */
+  .h-projects {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    column-gap: var(--col-gap);
+    margin-top: clamp(4rem, 2.5rem + 4vw, 7rem);
+  }
+
+  .h-section-title {
+    grid-row: 1;
+    grid-column: 1 / span 3;
+    margin-bottom: 2rem;
+  }
+
+  .h-bed {
+    grid-row: 2;
+    grid-column: span 1;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: auto 1fr;
+    align-content: start;
+  }
+
+  .h-bed:has(.h-sheet:nth-child(2)) {
+    grid-column: span 2;
+  }
+
+  .h-bed:has(.h-sheet:nth-child(3)) {
+    grid-column: span 3;
+  }
+
+  .h-bed-head {
+    grid-column: 1 / -1;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.75rem;
+    background: var(--ruled) bottom left / 100% 4px no-repeat;
+  }
+
+  .h-sheets {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    row-gap: 3rem;
+    align-items: start;
+  }
+
+  .h-footer {
+    margin-top: clamp(4rem, 3rem + 3vw, 6rem);
+  }
+
+  /* A mounted specimen: the plate on its mount paper, held to the page by four gummed corners. Each mount sits a
+     little differently (tilt and corner size by position), the same on every load. */
+  #herbario .h-sheet {
+    --tilt: -0.4deg;
+    --corner: 1.75rem;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  #herbario .h-sheet:nth-child(2n) {
+    --tilt: 0.5deg;
+    --corner: 1.5rem;
+  }
+
+  #herbario .h-bed:nth-of-type(2n) .h-sheet:first-child {
+    --tilt: 0.25deg;
+    --corner: 2rem;
+  }
+
+  #herbario .h-mount-full,
+  #herbario .h-frontis {
+    position: relative;
+    padding: 1.25rem 1.25rem 0.875rem;
+    background: var(--mount-paper);
+  }
+
+  #herbario .h-mount-full {
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+    transform: rotate(var(--tilt));
+  }
+
+  #herbario .h-frontis {
+    padding-bottom: 1.25rem;
+  }
+
+  #herbario :is(.h-mount-full, .h-frontis)::before {
+    content: "";
+    position: absolute;
+    inset: -0.25rem;
+    width: auto;
+    height: auto;
+    box-shadow: none;
+    transform: none;
+    pointer-events: none;
+    background:
+      linear-gradient(135deg, var(--gum) 46%, var(--gum-edge) 49%, transparent 50%) top left,
+      linear-gradient(225deg, var(--gum) 46%, var(--gum-edge) 49%, transparent 50%) top right,
+      linear-gradient(45deg, var(--gum) 46%, var(--gum-edge) 49%, transparent 50%) bottom left,
+      linear-gradient(315deg, var(--gum) 46%, var(--gum-edge) 49%, transparent 50%) bottom right;
+    background-size: var(--corner, 1.75rem) var(--corner, 1.75rem);
+    background-repeat: no-repeat;
+  }
+
+  #herbario .h-mount-full::after {
+    content: none;
+  }
+
+  #herbario .h-specimen-img,
+  #herbario .h-frontis-img {
+    mix-blend-mode: multiply;
+  }
+
+  /* The collection label: Latin and plate on a hand-ruled line at the foot of the mount. */
+  #herbario .h-specimen-cap {
+    max-width: none;
+    margin: 0;
+    padding: 0.5rem 0 0.375rem;
+    background: var(--ruled) bottom left / 100% 4px no-repeat;
+  }
+
+  #herbario .h-label {
+    width: auto;
+    margin: 1.5rem 0 0;
+    gap: 0.5rem;
+  }
+
+  #herbario .h-title {
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 64rem) {
+    .h-id {
+      grid-column: 1 / -1;
+    }
+
+    .h-intro {
+      grid-column: 1 / span 7;
+    }
+
+    #herbario .h-frontis {
+      grid-column: 9 / span 4;
+      grid-row: 2;
+      margin-top: 2rem;
+    }
+
+    .h-facts > .h-fact {
+      grid-column: span 6;
+    }
+
+    .h-projects {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-columns: auto;
+      row-gap: 3.5rem;
+    }
+
+    .h-section-title {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
+    }
+
+    .h-bed,
+    .h-bed:has(.h-sheet:nth-child(2)),
+    .h-bed:has(.h-sheet:nth-child(3)) {
+      grid-row: auto;
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 44.99rem) {
+    #herbario {
+      padding-top: 4.5rem;
+    }
+
+    #herbario .h-site {
+      display: none;
+    }
+
+    .h-hero,
+    .h-facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .h-hero {
+      padding-top: 1.5rem;
+    }
+
+    .h-id,
+    .h-intro,
+    .h-facts > .h-fact {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .h-facts {
+      row-gap: 2rem;
+      padding-top: 2.5rem;
+    }
+
+    .h-projects {
+      grid-template-columns: minmax(0, 1fr);
+      margin-top: 4rem;
+    }
+
+    .h-sheets {
+      row-gap: 3.5rem;
+    }
+
+    #herbario .h-mount-full {
+      aspect-ratio: 4 / 5;
+    }
+  }
+}
