@@ -1,8 +1,10 @@
 /*
- * The plant tag (cook/ART.md section 4): a card tag with hand-cut edges, staked beside the flower on a zinc rod and
- * tied to it with twine through a punched hole, casting a soft shadow. The card is a masked layer behind the text
- * (::before), so lettering is never clipped and carries no texture; the rod (::after) runs behind the card.
+ * The plant tag (cook/ART.md section 4): an aged card tag with hand-cut edges, punched at the top centre and tied
+ * there with twine to the tip of a zinc rod that runs down behind it to the flower's foot. The card is a masked layer
+ * behind the text (::before) in cream gone a little blue with dusk, foxed at the edges, never textured under the
+ * words; it sits close on the scene with a tight contact shadow under a soft cast one.
  * #label carries the tag's top-left corner by a transform written in stage 'dom'; .lb carries the rise and the fade.
+ * Contrast: --tag-ink on the lightest card stop (#cbc2ae) 9.8:1, --lb-rose 6.2:1, --tag-ink-2 7.9:1.
  */
 
 #label {
@@ -23,25 +25,27 @@
 }
 
 .lb {
-  --hx: 30px;
+  --hy: 15px;
+  --lb-rose: #761720;
   position: absolute;
   top: 0;
   left: 0;
   isolation: isolate;
-  width: clamp(280px, 17vw, 340px);
-  padding: 22px 24px 26px;
+  width: clamp(300px, 19vw, 368px);
+  padding: 34px 26px 18px;
   color: var(--tag-ink);
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
   opacity: 0;
-  filter: drop-shadow(0 1px 1px rgb(6 8 16 / 0.5)) drop-shadow(4px 16px 12px rgb(4 6 12 / 0.6));
-  transform-origin: var(--hx) calc(100% - 13px);
-  rotate: -0.8deg;
+  filter: drop-shadow(0 1px 1px rgb(6 8 16 / 0.7)) drop-shadow(2px 4px 3px rgb(6 8 16 / 0.45)) drop-shadow(6px 18px 14px rgb(4 6 12 / 0.45));
+  transform-origin: 50% var(--hy);
+  rotate: -1.4deg;
   will-change: transform, opacity;
 }
 
 #label[data-side="left"] .lb {
-  --hx: calc(100% - 30px);
-  rotate: 0.8deg;
+  rotate: 1.2deg;
 }
 
 .lb::before {
@@ -50,115 +54,95 @@
   z-index: -1;
   inset: 0;
   background:
-    radial-gradient(circle at var(--hx) calc(100% - 13px), rgb(40 30 20 / 0.4) 4px, transparent 6.5px),
-    var(--stock-card);
-  box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.22), inset 0 -14px 20px -14px rgb(70 52 34 / 0.3);
+    radial-gradient(circle at 50% var(--hy), rgb(40 30 20 / 0.42) 4px, transparent 7px),
+    radial-gradient(14px 10px at 7% 91%, rgb(120 84 46 / 0.2), transparent),
+    radial-gradient(9px 7px at 94% 12%, rgb(120 84 46 / 0.16), transparent),
+    radial-gradient(120% 70% at 12% 0%, rgb(108 112 156 / 0.2), transparent 70%),
+    radial-gradient(90% 60% at 100% 100%, rgb(82 60 36 / 0.24), transparent 72%),
+    linear-gradient(176deg, #cbc2ae 0%, #bfb49c 100%);
+  box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.24), inset 0 0 18px -6px rgb(82 60 36 / 0.45);
   clip-path: polygon(0 3px, 18% 0, 47% 2px, 76% 0, 100% 4px, calc(100% - 2px) 38%, 100% 71%, calc(100% - 1px) 100%, 63% calc(100% - 2px), 31% 100%, 2px calc(100% - 1px), 0 64%, 1px 30%);
-  -webkit-mask-image: radial-gradient(circle at var(--hx) calc(100% - 13px), transparent 3.5px, #000 4.2px);
-  mask-image: radial-gradient(circle at var(--hx) calc(100% - 13px), transparent 3.5px, #000 4.2px);
+  -webkit-mask-image: radial-gradient(circle at 50% var(--hy), transparent 3.5px, #000 4.2px);
+  mask-image: radial-gradient(circle at 50% var(--hy), transparent 3.5px, #000 4.2px);
 }
 
-/* The rod: zinc, from behind the tag down toward the flower's foot, on the side that faces the flower. */
+/* The rod: zinc, its tip just above the tag, running down behind it to the flower's foot. */
 .lb::after {
   content: "";
   position: absolute;
   z-index: -2;
-  top: calc(100% - 20px);
-  left: calc(var(--hx) - 3px);
+  top: -26px;
+  left: calc(50% - 3px);
   width: 6px;
-  height: 84px;
+  height: calc(100% + 122px);
+  border-radius: 3px 3px 0 0;
   background: linear-gradient(90deg, #353a38, #a3a9a6 38%, #6d7370 62%, #3e4341);
 }
 
-/* The twine: through the hole, over the bottom edge and twice round the rod. */
+/* The twine: up from the hole, over the top edge and three times round the rod tip. */
 .lb-tie {
   position: absolute;
-  top: calc(100% - 17px);
-  left: calc(var(--hx) - 22px);
-  width: 44px;
-  height: 44px;
+  top: calc(var(--hy) - 48px);
+  left: calc(50% - 33px);
+  width: 66px;
+  height: 66px;
   fill: none;
   stroke-linecap: round;
 }
 
 .lb-tie path:first-child {
   stroke: #2f2519;
-  stroke-width: 3;
+  stroke-width: 2.2;
 }
 
 .lb-tie path:last-child {
   stroke: #bba57c;
-  stroke-width: 1.6;
+  stroke-width: 1.1;
 }
 
 .lb-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
-  font-style: italic;
+  color: var(--lb-rose);
+  font-size: 1rem;
   line-height: 1.3;
 }
 
-.lb-glyph {
-  width: 12px;
-  height: 12px;
-  flex: none;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .lb-title {
-  margin-top: 6px;
-  font-family: var(--font-display);
-  font-synthesis: none;
-  font-weight: 400;
-  font-size: 1.625rem;
-  line-height: 1.75rem;
+  margin-top: 4px;
+  font-size: 1.875rem;
+  line-height: 2rem;
   text-wrap: balance;
 }
 
 .lb-latin {
-  font-size: 0.875rem;
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
   font-style: italic;
   line-height: 1.4;
+  color: var(--tag-ink-2);
 }
 
 .lb-oneliner {
-  margin-top: 8px;
-  font-size: 0.9375rem;
-  line-height: 1.375rem;
+  margin-top: 10px;
+  font-size: 1rem;
+  line-height: 1.5rem;
   text-wrap: pretty;
 }
 
 .lb-stack {
   margin-top: 8px;
-  font-size: 0.875rem;
-  font-style: italic;
+  font-size: 0.9375rem;
   line-height: 1.4;
+  color: var(--tag-ink-2);
 }
 
 .lb-view {
   display: flex;
   align-items: center;
-  gap: 8px;
   min-height: var(--target);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--enamel-rose);
-}
-
-.lb-hand {
-  width: 18px;
-  height: 20px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1.1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  font-size: 1.125rem;
+  color: var(--lb-rose);
+  text-decoration: underline 1.5px;
+  text-underline-offset: 4px;
 }
 
 .lb [hidden] {
@@ -178,7 +162,7 @@
     right: max(10px, env(safe-area-inset-right, 0px));
     bottom: max(10px, env(safe-area-inset-bottom, 0px));
     width: auto;
-    padding: 16px 18px 8px;
+    padding: 14px 18px 4px;
   }
 
   #label .lb,
@@ -186,10 +170,14 @@
     rotate: none;
   }
 
+  /* No punch: the hole's bruise moves off the card. */
+  .lb {
+    --hy: -20px;
+  }
+
   .lb::before {
     -webkit-mask-image: none;
     mask-image: none;
-    background: var(--stock-card);
   }
 
   .lb::after,
@@ -197,9 +185,8 @@
     display: none;
   }
 
-  .lb-oneliner,
-  .lb-stack,
-  .lb-view {
-    font-size: 1rem;
+  .lb-title {
+    font-size: 1.5rem;
+    line-height: 1.75rem;
   }
 }

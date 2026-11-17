@@ -4,9 +4,9 @@ import './styles/label.css';
 import { createMover } from './xform.ts';
 
 /**
- * The plant tag of the focused flower (cook/ART.md section 4, S08): a hand-cut card tag tied with twine to a zinc
- * rod, staked beside the flower. Status with a line glyph of the bloom stage, the name in Kalnia, the Latin name in italic, the
- * one-liner, the stack as stamped words, and "View" with a drawn hand.
+ * The plant tag of the focused flower (cook/ART.md section 4, S08): an aged card tag punched at the top centre and
+ * tied there with twine to the tip of a zinc rod staked beside the flower. The status, the name, the one-liner and
+ * the stack in Kalnia, the Latin name in italic, and "View" as an underlined word.
  * The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
  * opacity through preallocated movers: no layout reads, no allocation. The tag's own size comes from a
  * ResizeObserver and the viewport size from 'resize' events, both outside the frame.
@@ -27,22 +27,16 @@ export const LABEL_ID = 'label-card';
 /** Space between the flower's hit ellipse and the tag, and the margin the tag keeps from the viewport edges. */
 const GAP_PX = 18;
 const EDGE_PX = 16;
-/** The fixed controls own the top band of the screen. */
-const TOP_PX = 76;
+/** The fixed controls own the top band of the screen; the rod tip and the tie stand above the tag. */
+const TOP_PX = 96;
 const NARROW = '(max-width: 44.99rem)';
 const SVG = 'http://www.w3.org/2000/svg';
 
-/** 12 px line glyphs of the bloom stage: a closed bud, a half-open cup, an open flower. */
-const GLYPHS: Record<string, string> = {
-  idea: 'M6 11V7M6 7C4.2 6 4 3.6 6 1.2C8 3.6 7.8 6 6 7Z',
-  wip: 'M6 11V7.5M6 7.5C3.6 7.5 2.4 5.6 2.6 3C4 3.6 5.2 4.6 6 6C6.8 4.6 8 3.6 9.4 3C9.6 5.6 8.4 7.5 6 7.5ZM6 6V2',
-  shipped: 'M6 11V8M6 8A1.6 1.6 0 1 0 6 4.8A1.6 1.6 0 1 0 6 8ZM6 4.8V1.4M7.6 6.4H10.8M4.4 6.4H1.2M7.2 5.2L9.6 2.8M4.8 5.2L2.4 2.8',
-};
-
-/** Twine in a 44x44 box: two strands from the punched hole at (22, 4), three turns round the rod at x 22, two tails. */
-const TIE = 'M22 4C18 8 16 13 17 17M22 4C26 8 28 13 27 17M16 17L28 21M16 22L28 26M16 27L28 31M28 31C31 34 32 38 29 42M28 26C32 28 35 32 34 37';
-
-const HAND = 'M1 9.5H12.5M12.5 9.5C14 9.5 14 7 12.5 7H8.5L10 5.2C10.6 4.4 9.6 3.4 8.8 4L4.8 7.4C4.2 7.9 3.6 8.2 3 8.2H1M12.5 9.5C14 9.5 14 12 12.5 12H11.5C12.9 12 12.9 14.3 11.5 14.3H10.5C11.8 14.3 11.8 16.4 10.5 16.4H5C3.8 16.4 3.2 15.8 1 15.8';
+/**
+ * Twine in a 44x44 box: two strands up from the punched hole at (22, 32) over the top edge, three turns round the
+ * rod tip at x 22, a knot and two short tails.
+ */
+const TIE = 'M22 32C18 28 16 23 17 19M22 32C26 28 28 23 27 19M16 19L28 15M16 14L28 10M16 9L28 5M28 5C31 3 33 7 31 11M16 9C13 11 12 16 14 20';
 
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent: HTMLElement): HTMLElementTagNameMap[K] {
   const n = document.createElement(tag);
@@ -64,31 +58,16 @@ function tie(parent: Element): void {
   parent.append(svg);
 }
 
-function glyph(parent: Element, cls: string, box: string): SVGPathElement {
-  const svg = document.createElementNS(SVG, 'svg');
-  svg.setAttribute('class', cls);
-  svg.setAttribute('viewBox', box);
-  svg.setAttribute('aria-hidden', 'true');
-  const path = document.createElementNS(SVG, 'path');
-  svg.append(path);
-  parent.append(svg);
-  return path;
-}
-
 export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   el.setAttribute('aria-hidden', 'true');
   const card = node('div', 'lb', el);
   card.id = LABEL_ID;
   const status = node('p', 'lb-status', card);
-  const stage = glyph(status, 'lb-glyph', '0 0 12 12');
-  const statusText = node('span', 'lb-status-text', status);
   const title = node('p', 'lb-title', card);
   const latin = node('p', 'lb-latin', card);
   const oneLiner = node('p', 'lb-oneliner', card);
   const stack = node('p', 'lb-stack', card);
   const view = node('p', 'lb-view', card);
-  const viewText = node('span', 'lb-view-text', view);
-  glyph(view, 'lb-hand', '0 0 15 17').setAttribute('d', HAND);
   tie(card);
 
   const anchor = createMover(el);
@@ -126,9 +105,8 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
       stack.textContent = words.join(' · ');
       stack.hidden = words.length === 0;
       status.hidden = p === undefined;
-      stage.setAttribute('d', p === undefined ? '' : (GLYPHS[p.status] ?? ''));
-      statusText.textContent = p === undefined ? '' : text.t(`status.${p.status}`);
-      viewText.textContent = v.kind === 'project' ? text.t('label.view') : '';
+      status.textContent = p === undefined ? '' : text.t(`status.${p.status}`);
+      view.textContent = v.kind === 'project' ? text.t('label.view') : '';
       view.hidden = v.kind !== 'project';
       reach = Math.max(v.hit[0], v.hit[1]) / 2;
       el.dataset.kind = v.kind;
