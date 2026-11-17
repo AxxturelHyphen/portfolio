@@ -17,6 +17,7 @@ in vec4 vOrient;
 in float vLift;
 in float vDecal;
 in float vDepth;
+in float vMirror;
 
 out vec4 outColor;
 
@@ -32,7 +33,18 @@ const float PAPER_RIM_STRENGTH = 0.4;
 const float TINT_FLOOR = 0.65;                        // shaded layers darken by 35 % at most
 const float SHADED_FROM = 0.75;                       // tints darker than this luma count as a shaded layer
 const float SILHOUETTE_HAZE = 0.3;                    // how far a shaded layer turns toward the haze hue
-const vec3 COOL_RIM = vec3(0.30, 0.34, 0.52);         // moonlit rim on the shaded layers
+const vec3 COOL_RIM = vec3(0.30, 0.36, 0.46);         // moonlit rim on the shaded layers
+const float AMBIENT_GAIN = 1.6;                       // the moonlit dusk fill: midground paper reads, blacks stay
+// Lit paper keeps its hue: the brightest channel rolls off from KNEE toward CEIL (linear), the others follow it, so a
+// lit crimson stays crimson instead of washing to coral and no paper passes about luma 215 after the grade.
+const float KNEE = 0.22;
+const float CEIL = 0.36;
+
+vec3 paperShoulder(vec3 c) {
+  float m = max(max(c.r, c.g), max(c.b, 1e-4));
+  float rolled = m < KNEE ? m : KNEE + (CEIL - KNEE) * (1.0 - exp(-(m - KNEE) / (CEIL - KNEE)));
+  return c * (rolled / m);
+}
 
 float rectAlpha(vec2 uv, float bias) {
   vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
@@ -60,7 +72,7 @@ vec4 decal() {
   float foot = rectAlpha(vec2(vUV.x, vRect.y + size.y * 0.02), 1.0);
   float contact = CONTACT * foot * (1.0 - smoothstep(0.0, 0.06, vDecal));
   float op = (uShadowDir.w * sat(a * DECAL_COVERAGE) * pow(1.0 - vDecal, 1.4) + contact) * vTint.a * uReveal;
-  return vec4(uShadowColor * 0.5 * op, op);
+  return vec4(neutralise(uShadowColor) * 0.5 * op, op);
 }
 
 void main() {
@@ -70,15 +82,17 @@ void main() {
   }
   vec4 tex = texture(uColor, vUV);
   vec2 nxy = texture(uNormal, vUV).xy * 2.0 - 1.0;
-  nxy.x *= vFrame.z;
+  nxy.x *= vFrame.z * (vMirror > 0.5 ? -1.0 : 1.0);
   nxy = vec2(vFrame.x * nxy.x - vFrame.y * nxy.y, vFrame.y * nxy.x + vFrame.x * nxy.y);
   vec3 n = vec3(nxy, sqrt(max(1.0 - dot(nxy, nxy), 0.05)));
   // Shaded layers keep their plate: the place tint is capped and turned toward the haze hue, not a brown multiply.
   float shaded = sat((SHADED_FROM - luma(vTint.rgb)) / (SHADED_FROM - TINT_FLOOR)) * (1.0 - vSilhouette);
   vec3 albedo = tex.rgb * max(vTint.rgb, vec3(TINT_FLOOR * (1.0 - vSilhouette)));
-  vec3 hazeHue = mix(vec3(1.0), uDepthFade.rgb / max(luma(uDepthFade.rgb), 1e-3), 0.5);
+  vec3 haze = neutralise(uDepthFade.rgb);
+  vec3 hazeHue = mix(vec3(1.0), haze / max(luma(haze), 1e-3), 0.5);
   albedo = mix(albedo, luma(albedo) * hazeHue, shaded * SILHOUETTE_HAZE);
-  if (!gl_FrontFacing) {
+  // A cutout mirrored by a negative width has its winding reversed: its plate face is the geometric back.
+  if (gl_FrontFacing == (vMirror > 0.5)) {
     albedo = PAPER_BACK;
     n = vec3(-nxy.x, nxy.y, n.z) * 0.4 + vec3(0.0, 0.0, 0.6);
   }
@@ -89,11 +103,11 @@ void main() {
   n = vOrient.w > 0.5 ? vec3(n.x, n.z, -n.y) : n;
   n = normalize(vec3(n.x * vOrient.x + n.z * vOrient.y, n.y, -n.x * vOrient.y + n.z * vOrient.x));
 
-  vec3 ambient = uAmbient * mix(0.8, 1.25, n.y * 0.5 + 0.5);
-  vec3 key = uMoonColor * wrapLight(dot(n, uMoonDir), 0.4);
+  vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5);
+  vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n);
-  vec3 lit = albedo * (ambient + key + rim + hand);
+  vec3 lit = paperShoulder(albedo * (ambient + key + rim + hand));
 
   // The light that moves the edges and shadows: the hand where it reaches, else the key.
   float reach = handReach(vWorld);
@@ -106,10 +120,11 @@ void main() {
   float awayLight = 1.0 - edgeAlpha(vUV - lightUV * ew, tex.a);
   float edgeGain = luma(key + hand) * 2.0 + 0.05;
   lit += albedo * towardLight * EDGE_LIGHT * edgeGain;
-  lit += towardLight * mix(PAPER_RIM * PAPER_RIM_STRENGTH * min(edgeGain, 1.0), COOL_RIM * 0.3, shaded);
+  // The pale paper edge shows only where the hand light falls; shaded layers get the cool moon rim instead.
+  lit += towardLight * mix(PAPER_RIM * PAPER_RIM_STRENGTH * sat(reach * 2.0), COOL_RIM * 0.3, shaded);
   lit *= 1.0 - EDGE_DARK * awayLight;
 
-  lit = mix(lit, uDepthFade.rgb, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w));
+  lit = mix(lit, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w));
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);
@@ -117,5 +132,5 @@ void main() {
   float opacity = vTint.a * uReveal;
   float a = tex.a * opacity;
   float shadowA = shadow * opacity * (1.0 - a);
-  outColor = vec4(lit * a + uShadowColor * 0.4 * shadowA, a + shadowA);
+  outColor = vec4(lit * a + neutralise(uShadowColor) * 0.4 * shadowA, a + shadowA);
 }

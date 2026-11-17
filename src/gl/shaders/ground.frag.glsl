@@ -26,7 +26,7 @@ const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
-const float POOL_SPREAD = 1.25;                       // the hand's pool on the ground, in cursor radii
+const float POOL_SPREAD = 0.8;                        // the hand's pool on the ground, in cursor radii
 const float POOL = 0.9;
 const vec3 STONE = vec3(0.060, 0.055, 0.052);
 const vec3 MOSS_SHADE = vec3(0.016, 0.054, 0.028);   // #21422f
@@ -169,7 +169,8 @@ void main() {
 
   float tone = sat(luma(col) / 0.22);
   col *= 1.0 - LINE_CONTRAST * lineScreen(p, tone) * (1.0 - wet);
-  col = mix(col, uHaze.rgb, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
-  col = mix(col, uHaze.rgb, smoothstep(uWallZ - 0.5, uWallZ - 6.0, z) * 0.8);   // past the wall: mist, not a slab
+  vec3 haze = neutralise(uHaze.rgb);
+  col = mix(col, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
+  col = mix(col, haze, smoothstep(uWallZ - 0.5, uWallZ - 6.0, z) * 0.8);   // past the wall: mist, not a slab
   outColor = vec4(col, 1.0);
 }

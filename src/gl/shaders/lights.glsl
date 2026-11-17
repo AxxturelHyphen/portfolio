@@ -13,6 +13,11 @@ uniform vec3 uAmbient;
 uniform vec3 uShadowColor;
 
 const float FLY_RADIUS = 0.9;
+// Place colours tint the sky; on paper, ground and haze they keep only a trace of their hue, so each plate keeps its
+// own colour: a cool neutral leaning blue-green in the shade instead of one violet wash over everything.
+const vec3 COOL_NEUTRAL = vec3(0.86, 1.0, 1.04);
+const float PLACE_HUE_KEPT = 0.2;
+vec3 neutralise(vec3 c) { return mix(luma(c) * COOL_NEUTRAL / luma(COOL_NEUTRAL), c, PLACE_HUE_KEPT); }
 
 float falloff(vec3 d, float r) { float k = sat(1.0 - dot(d, d) / (r * r)); return k * k * k; }
 

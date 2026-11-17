@@ -32,7 +32,12 @@ const FLY_SHARE = 0.25;
 export const FIREFLY_ORDER = 1e5;
 
 const fract = (x: number): number => x - Math.floor(x);
-const hash = (i: number, k: number): number => fract(Math.sin(i * 12.9898 + k * 78.233) * 43758.5453);
+/** Integer hash (no sine banding): neighbouring flies land apart, never in a row. */
+function hash(i: number, k: number): number {
+  let n = Math.imul(i * 374761393 + k * 668265263, 0x27d4eb2d);
+  n = Math.imul(n ^ (n >>> 15), 0x2c1b3c6d);
+  return ((n ^ (n >>> 13)) >>> 0) / 4294967296;
+}
 
 /** A coordinate that drifts by `moved` box lengths and wraps inside -reach..reach. */
 const drift = (base: number, moved: number, reach: number): number => (fract(base + moved) * 2 - 1) * reach;

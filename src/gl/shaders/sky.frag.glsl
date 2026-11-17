@@ -13,6 +13,11 @@ out vec4 outColor;
 const float MOON_R = 0.0349;          // 2 degree radius: a 4 degree disc (cook/ART.md section 1)
 const float HALO_R = 0.0873;          // 5 degrees: the 10 degree halo
 const vec3 AFTERGLOW = vec3(0.479, 0.159, 0.085);   // #b86f52
+const vec3 HORIZON_ROSE = vec3(0.150, 0.075, 0.090);   // #6e4d54: the faint rose band low over the wall
+const float ROSE_HEIGHT = 0.12;       // radians over which the rose gives way to the indigo above
+const float EDGE_WOBBLE = 0.035;      // the hand-cut paper edge of the moon disc
+const vec3 EDGE_TINT = vec3(0.93, 0.70, 0.52);   // the warm tint that overran the edge when the plate was coloured
+const float MOON_GAIN = 1.25;         // the core reaches luma 236 to 240 after the film shoulder
 const vec3 HALO_WARM = vec3(0.87, 0.62, 0.44);
 const vec3 HALO_COOL = vec3(0.30, 0.25, 0.42);
 const vec3 INK_STAR = vec3(0.62, 0.55, 0.42);
@@ -67,6 +72,7 @@ void main() {
   float wash = fbm3(vec2(atan(dir.x, -dir.z) * 3.0, el * 9.0));
   h = mix(h, hb, 0.4) + (wash - 0.5) * 0.06;
   vec3 col = mix(uSkyHorizon, uSkyTop, pow(sat(h), 0.45));
+  col = mix(col, HORIZON_ROSE, exp(-max(el, 0.0) / ROSE_HEIGHT) * 0.55);
   col *= 1.0 + (fbm3(vec2(atan(dir.x, -dir.z), el) * 22.0) - 0.5) * 0.14;
 
   vec2 moonXZ = normalize(uMoonBack.xz);
@@ -83,8 +89,11 @@ void main() {
   vec3 up = normalize(cross(cross(uMoonBack, vec3(0.0, 1.0, 0.0)), uMoonBack));
   vec3 rt = normalize(cross(uMoonBack, up));
   vec2 q = vec2(dot(dir, rt), dot(dir, up)) / MOON_R;
-  float disc = smoothstep(1.0, 1.0 - px / MOON_R * 1.5, length(q));
-  if (disc > 0.0) col = mix(col, uMoonBody * moonFace(q, px / MOON_R), disc);
+  float rq = length(q) * (1.0 + EDGE_WOBBLE * (valueNoise(vec2(atan(q.y, q.x) * 4.0, 1.7)) - 0.5));
+  float disc = smoothstep(1.0, 1.0 - px / MOON_R * 1.5, rq);
+  float overrun = smoothstep(1.12, 1.0, rq) * smoothstep(0.86, 1.0, rq);
+  col += uMoonBody * EDGE_TINT * overrun * 0.18;
+  if (disc > 0.0) col = mix(col, uMoonBody * MOON_GAIN * moonFace(q, px / MOON_R) * mix(vec3(1.0), EDGE_TINT, smoothstep(0.8, 1.0, rq) * 0.35), disc);
 
   // Paper tooth: a fine fixed fibre under the wash.
   col *= 1.0 + (valueNoise(gl_FragCoord.xy * 0.6) - 0.5) * 0.05;
