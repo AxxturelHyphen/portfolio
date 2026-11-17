@@ -4,7 +4,8 @@ import type { GardenRig } from '../world/camera.ts';
 
 /**
  * Drives the label card from the machine (spec section 7): shown for the focused slot after the MOTION delay,
- * placed at the flower's screen point in stage 'dom' (transform only), hidden once it has faded out.
+ * placed at the flower's screen point in stage 'dom' (transform only), hidden once it has faded out. Under frozen
+ * time it is fully shown while focused.
  */
 
 export interface LabelDrive {
@@ -41,7 +42,8 @@ export function createLabelDrive(label: LabelCard, rig: GardenRig): LabelDrive {
     frame(c) {
       if (!shown || view === null) return;
       elapsedS += c.dt;
-      const p = labelOf(elapsedS, focused);
+      /** Frozen time (?t, stills) has no dt: the card shows at its end state, as a flower shows its target pose. */
+      const p = c.frozen ? (focused ? 1 : 0) : labelOf(elapsedS, focused);
       if (!focused && p <= 0) {
         label.hide();
         shown = false;

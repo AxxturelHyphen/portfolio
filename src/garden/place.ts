@@ -3,6 +3,7 @@ import type { GroundLayout } from '../gl/ground.ts';
 import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
 import { sharedUniforms, type PlaceLight } from '../gl/lights.ts';
+import { MAX_REFLECTORS, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
@@ -17,13 +18,14 @@ const GROUND_MARGIN = { x: 14, far: 40, near: 16 } as const;
 /** The board sprite and the share of its height where the sign label sits. */
 const BOARD = { sprite: 'sh/board', labelAt: 0.82 } as const;
 
+/** Ambients are cool neutrals per place (violet lives in the sky only); shadows keep the ART.md section 1 colours. */
 const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
-  puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#746583', shadow: '#2b2130', shadowLength: 0.6 },
-  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#34364a', shadow: '#261e3d', shadowLength: 0.5 },
-  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#16163d', shadow: '#16163d', shadowLength: 0.9 },
-  semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1b1528', shadow: '#1b1528', shadowLength: 0.3 },
+  puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#5f646c', shadow: '#2b2130', shadowLength: 0.6 },
+  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#363b44', shadow: '#261e3d', shadowLength: 0.5 },
+  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1a2030', shadow: '#16163d', shadowLength: 0.9 },
+  semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1f2329', shadow: '#1b1528', shadowLength: 0.3 },
   gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3 },
-  salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#361e3e', shadow: '#2a1c38', shadowLength: 1.1 },
+  salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1 },
 };
 
 export function groundLayoutOf(g: WorldLayout): GroundLayout {
@@ -104,7 +106,25 @@ export function signAnchorsOf(g: WorldLayout, scenes: Readonly<Record<BedId, Bed
   return out;
 }
 
-/** Everything gl must have before warm() so no texture uploads on first draw. */
-export function prepareGl(gfx: GlGfx, g: WorldLayout): void {
+/** The Estanque water from its bed file: the pond procedural's rectangle and the items marked to reflect (gl/pond.ts). */
+export function pondOf(scene: BedScene3): { rect: PondRect; reflectors: PondReflector[] } | null {
+  const p = scene.procedural.find((x) => x.type === 'pond');
+  if (p === undefined) return null;
+  const reflectors: PondReflector[] = [];
+  for (const l of scene.layers) {
+    for (const it of l.items) {
+      if (it.reflect === undefined) continue;
+      reflectors.push({ x: it.x, z: it.z, h: (it.h ?? it.reflect.w) * it.scale, w: it.reflect.w * it.scale, colour: it.reflect.colour });
+    }
+  }
+  return { rect: { x0: p.x - p.w / 2, z0: p.z - p.h / 2, x1: p.x + p.w / 2, z1: p.z + p.h / 2 }, reflectors: reflectors.slice(0, MAX_REFLECTORS) };
+}
+
+/** Everything gl must have before warm() so no texture uploads on first draw: the ground layout and the pond, once. */
+export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>): void {
   gfx.ground.setLayout(groundLayoutOf(g));
+  const pond = pondOf(scenes.estanque);
+  if (pond === null) return;
+  gfx.pond.setRect(pond.rect);
+  gfx.pond.setReflectors(pond.reflectors);
 }

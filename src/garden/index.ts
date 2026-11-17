@@ -3,7 +3,7 @@ import { projectsOf } from '../content/load.ts';
 import { createStatsOverlay, testApiEnabled } from '../core/debug.ts';
 import { createInput } from '../core/input.ts';
 import { channelsSettled, CHANNELS, type RuntimeLoop } from '../core/loop.ts';
-import { OPEN_HALF } from '../core/motion.ts';
+import { INTRO, OPEN_HALF } from '../core/motion.ts';
 import type { GardenGeo } from '../core/machine.ts';
 import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/quality.ts';
 import { arrived, installTestApi } from '../core/testapi.ts';
@@ -20,6 +20,7 @@ import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
 import { createMoth } from '../world/moth.ts';
 import { createFilmDrive } from './film.ts';
+import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
 import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
 import type { WorldLayout } from '../world/layout.ts';
@@ -94,10 +95,11 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit });
   const input = createInput({ machine, rig, light, loop, surface: host.canvas });
   const film = createFilmDrive(machine, rig, content.garden);
+  const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
   const world = content.garden as WorldLayout;
-  prepareGl(gfx, world);
+  prepareGl(gfx, world, SCENES);
   const placeLight = createPlaceLighting();
   proxies.setSigns(signAnchorsOf(world, SCENES));
 
@@ -132,8 +134,12 @@ export function startGarden(host: GardenHost): GardenRuntime {
     rig.setShot(q.shot);
     loop.setT(shot.t);
   }
+  /** S01 is the kaleidoscope mid-turn: the intro channel holds at the shot's time instead of landing. */
+  const introShot = q.shot === 'S01' && shot !== undefined ? Math.min(0.95, shot.t / INTRO.totalS) : null;
 
   loop.on('input', () => {
+    /** Arrival can complete on a frame with no state change (channels settle after the bed went active). */
+    if (snapping && arrived(machine.state, machine, machine.state.intent, garden.residency.stateOf)) snapping = false;
     if (shotFocus !== null && !snapping && machine.state.phase === 'bed' && slots.some((v) => v.id === shotFocus)) {
       machine.send({ type: 'FOCUS', slot: shotFocus });
       shotFocus = null;
@@ -147,10 +153,11 @@ export function startGarden(host: GardenHost): GardenRuntime {
       for (const b of content.garden.order) rig.setBedPose(b, bedPose(SCENES[b].pose, w / Math.max(1, h)));
     }
     input.frame();
+    if (introShot !== null) machine.ch.intro.snap(introShot);
     if (!snapping) return;
     for (let i = 0; i < CHANNELS.length; i++) {
       const ch = machine.ch[CHANNELS[i] as ChannelName];
-      if (!ch.settled) ch.snap(ch.target);
+      if (!ch.settled && (introShot === null || ch !== machine.ch.intro)) ch.snap(ch.target);
     }
   });
   loop.on('camera', (c) => {
@@ -174,6 +181,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     sharedUniforms.uCursor.value.fromArray(light.cursor);
     sharedUniforms.uGather.value.fromArray(light.gather);
     sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
+    intro.frame(machine.ch.intro.value, machine.state.phase === 'intro' || machine.ch.intro.value < 1);
     const u = gfx.film.uniforms;
     gfx.setFilm(machine.state.reduced, film.frame(c, u.uIris.value, u.uStrip.value, slots));
   });
@@ -183,6 +191,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
     if (channelsSettled(machine)) quality.adapt(c);
     quality.setPanelScale(!quality.mobile && machine.ch.open.value >= OPEN_HALF ? PANEL_RENDER_SCALE : 1);
   });
+  /** True once warm-up and the first beds are done (GARDEN_READY sent). */
+  let gardenReady = false;
   /** Null until the first settle, so entering from the Herbario settles the layers (html[data-mode], inert). */
   let settledMode: Mode | null = null;
   loop.on('dom', (c) => {
@@ -195,8 +205,12 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
     proxies.sync(rig);
     labels.frame(c);
-    /** Mobile: once the panel covers the garden and nothing moves (the mode fade included), the garden sleeps. */
-    if (quality.mobile && panelHoldsMobile(machine.state) && channelsSettled(machine)) loop.pause('panel-mobile');
+    /**
+     * Mobile: once the panel covers the garden and nothing moves (the mode fade included), the garden sleeps. Never
+     * before the garden is ready: warm-up and streaming advance only in frames, so a pause then would hold the entry
+     * from the Herbario (panel open) forever.
+     */
+    if (gardenReady && quality.mobile && panelHoldsMobile(machine.state) && channelsSettled(machine)) loop.pause('panel-mobile');
   });
   if (q.stats === 1) {
     const stats = createStatsOverlay(document.body, { calls: () => gfx.renderer.info.render.calls, tier: () => quality.tier, dpr: () => quality.dpr });
@@ -232,6 +246,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
 
   loop.setCallsProbe(() => gfx.renderer.info.render.calls);
   const ready = Promise.all([gfx.warm(), garden.ready]).then(() => {
+    gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     void quality.probe().then((tier) => {
       if (tier === 'fail') host.fail();
