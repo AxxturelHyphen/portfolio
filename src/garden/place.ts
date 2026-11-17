@@ -2,7 +2,7 @@ import type { GlGfx } from '../gl/renderer.ts';
 import type { GroundLayout } from '../gl/ground.ts';
 import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
-import { sharedUniforms, type PlaceLight } from '../gl/lights.ts';
+import { setMoon, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
 import { MAX_REFLECTORS, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
@@ -18,15 +18,21 @@ const GROUND_MARGIN = { x: 14, far: 40, near: 16 } as const;
 /** The board sprite and the share of its height where the sign label sits. */
 const BOARD = { sprite: 'sh/board', labelAt: 0.82 } as const;
 
-/** Ambients are cool neutrals per place (violet lives in the sky only); shadows keep the ART.md section 1 colours. */
+/**
+ * Ambients are cool neutrals per place (violet lives in the sky only); shadows keep the ART.md section 1 colours.
+ * Moon [azimuth, elevation] per place puts it where the key frame wants it: Estanque high over the pond to the right of
+ * the peacock (S04 at x 70, y 22), Salida low over the far fields left of the trunk (x 30, y 8). The overview has its own.
+ */
 const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
-  puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#5f646c', shadow: '#2b2130', shadowLength: 0.6 },
-  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#363b44', shadow: '#261e3d', shadowLength: 0.5 },
-  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1a2030', shadow: '#16163d', shadowLength: 0.9 },
-  semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1f2329', shadow: '#1b1528', shadowLength: 0.3 },
-  gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3 },
-  salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1 },
+  puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#5f646c', shadow: '#2b2130', shadowLength: 0.6, moon: [-10, 9] },
+  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#363b44', shadow: '#261e3d', shadowLength: 0.5, moon: [-6, 8] },
+  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1a2030', shadow: '#16163d', shadowLength: 0.9, moon: [-5, 19] },
+  semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1f2329', shadow: '#1b1528', shadowLength: 0.3, moon: [-8, 6] },
+  gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3, moon: [-8, 6] },
+  salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1, moon: [-10, 4.5] },
 };
+/** The overview (S02): the moon right of centre over the pond, x 68, y 26 of the frame. */
+const OVERVIEW_MOON = [14.5, 6.5] as const;
 
 export function groundLayoutOf(g: WorldLayout): GroundLayout {
   const gr = g.ground;
@@ -44,7 +50,7 @@ export function groundLayoutOf(g: WorldLayout): GroundLayout {
 /** Seconds for the light to settle on a new place: about one walk, so the sky turns while the camera moves. */
 const LIGHT_TAU_S = 0.5;
 
-interface LinearLight { skyTop: Vector3; skyHorizon: Vector3; ambient: Vector3; shadow: Vector3; shadowLength: number }
+interface LinearLight { skyTop: Vector3; skyHorizon: Vector3; ambient: Vector3; shadow: Vector3; shadowLength: number; moon: readonly [number, number] }
 
 export interface PlaceLighting {
   /** The place the camera is heading to; the overview keeps the Rosaleda night. */
@@ -63,14 +69,19 @@ export function createPlaceLighting(): PlaceLighting {
       ambient: linearHex(p.ambient, new Vector3()),
       shadow: linearHex(p.shadow, new Vector3()),
       shadowLength: p.shadowLength,
+      moon: p.moon,
     });
   }
   const u = sharedUniforms;
   let goal = parsed.get('rosaleda') as LinearLight;
+  let moonGoal: readonly [number, number] = OVERVIEW_MOON;
+  let az = moonGoal[0];
+  let el = moonGoal[1];
   let snap = true;
   return {
     set(bed) {
       goal = parsed.get(bed ?? 'rosaleda') ?? goal;
+      moonGoal = bed === null ? OVERVIEW_MOON : goal.moon;
     },
     frame(dt) {
       const k = snap ? 1 : 1 - Math.exp(-dt / LIGHT_TAU_S);
@@ -80,6 +91,9 @@ export function createPlaceLighting(): PlaceLighting {
       u.uAmbient.value.lerp(goal.ambient, k);
       u.uShadowColor.value.lerp(goal.shadow, k);
       u.uShadowDir.value.z += (goal.shadowLength - u.uShadowDir.value.z) * k;
+      az += (moonGoal[0] - az) * k;
+      el += (moonGoal[1] - el) * k;
+      setMoon(az, el);
     },
   };
 }

@@ -7,7 +7,7 @@ import { createFireflies } from './fireflies.ts';
 import type { Fireflies } from './fireflies.ts';
 import { createGround } from './ground.ts';
 import type { Ground } from './ground.ts';
-import { setMoonByX, sharedUniforms } from './lights.ts';
+import { sharedUniforms } from './lights.ts';
 import { createPond } from './pond.ts';
 import type { Pond } from './pond.ts';
 import { residentTextureBytes } from './ktx2.ts';
@@ -197,7 +197,6 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     setPose(p): void {
       camera.position.set(p.x, p.y, p.z);
       camera.rotation.set(p.pitch, -(p.yaw ?? 0), 0);
-      setMoonByX(p.x);
       if (camera.fov !== p.fov) {
         camera.fov = p.fov;
         camera.updateProjectionMatrix();
