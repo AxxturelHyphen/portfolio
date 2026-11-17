@@ -51,6 +51,28 @@
   --note-ink: #1f1713;
   --note-rose: #8f1d27;
   --pencil: #4a4038;
+  /*
+   * Hanging-tag stock (fixed controls, plan corner, plant tag). Weathered zinc: --tag-ink on its darkest stop 5.6:1,
+   * --tag-ink-2 4.9:1. Paper and card stocks: --tag-ink on their darkest stop above 10:1. Low-frequency tone only,
+   * never grain, so the lettering stays clean.
+   */
+  --tag-ink: #1b1a19;
+  --tag-ink-2: #2e2b28;
+  --stock-zinc:
+    radial-gradient(130% 90% at 16% 12%, rgb(236 242 240 / 0.2), transparent 62%),
+    radial-gradient(70% 80% at 88% 96%, rgb(34 46 44 / 0.24), transparent 72%),
+    radial-gradient(40% 60% at 62% 40%, rgb(120 116 100 / 0.12), transparent 70%),
+    linear-gradient(171deg, #b2b7b4 0%, #a1a7a4 52%, #8d9491 100%);
+  --stock-paper:
+    radial-gradient(120% 90% at 20% 10%, rgb(255 255 255 / 0.5), transparent 60%),
+    linear-gradient(174deg, #fbf8f2 0%, #f1ebe0 100%);
+  --stock-card:
+    radial-gradient(120% 80% at 18% 8%, rgb(250 246 238 / 0.42), transparent 58%),
+    radial-gradient(90% 70% at 92% 100%, rgb(74 58 40 / 0.16), transparent 70%),
+    linear-gradient(176deg, #ded6c6 0%, #d2c8b5 100%);
+  --wire: linear-gradient(90deg, #5d625f, #c9cdca 45%, #6f7471);
+  --cast: drop-shadow(3px 8px 5px rgb(6 8 16 / 0.55));
+  --cast-paper: drop-shadow(1px 3px 3px rgb(29 27 24 / 0.2));
   --target: 44px;
   --edge: 16px;
   /* Plates are 9-slice SVGs with chamfered corners and an inset keyline, drawn by border-image (crisp at any DPR). */
