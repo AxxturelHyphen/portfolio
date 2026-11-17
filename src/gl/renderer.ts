@@ -39,6 +39,8 @@ export interface GlGfx extends Gfx {
   setFilm(reduced: boolean, exposure: number): void;
   /** The kaleidoscope intro: an uploaded page texture and the intro channel (0..1), every frame of the intro. */
   setIntro(page: Texture | null, intro: number): void;
+  /** The intro motif rects (film pass, kaleido.glsl). */
+  setIntroMotifs(rects: readonly (readonly number[])[]): void;
   /** The one resize signal (a single ResizeObserver on the canvas): CSS size, and a counter that grows on every resize. */
   readonly cssW: number;
   readonly cssH: number;
@@ -217,6 +219,9 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     setFilm(r: boolean, e: number): void {
       reduced = r;
       exposure = e;
+    },
+    setIntroMotifs(rects): void {
+      film.setIntroMotifs(rects);
     },
     setIntro(page, intro): void {
       film.setIntro(page, intro);

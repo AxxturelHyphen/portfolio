@@ -9,6 +9,7 @@ import { createHalation } from './halation.ts';
 import common from './shaders/common.glsl?raw';
 import vertexShader from './shaders/film.vert.glsl?raw';
 import fragmentBody from './shaders/film.frag.glsl?raw';
+import kaleido from './shaders/kaleido.glsl?raw';
 
 // Look constants (cook/SHOTS.md B). Display-referred unless noted.
 /** Grain std at mid grey: 2.5 levels of 255 (1 %), 1.0 level at the black and white points (luminance weighted). */
@@ -25,7 +26,7 @@ const LIFTED_BLACK = '#0d0a1e';
 /** Warm highlight tint #f3e6cf. */
 const HIGHLIGHT = '#f3e6cf';
 /** Exposure on the display value: mean V of a night shot lands near 34 %. */
-const EXPOSURE = 1.12;
+const EXPOSURE = 1.28;
 /** Grade gain and gamma (per channel): a touch warm in the highs, a touch cool in the mids; mids opened by x^0.88. */
 const GAIN = [1.04 * EXPOSURE, 1.0 * EXPOSURE, 0.95 * EXPOSURE] as const;
 const MID_GAMMA = 1 / 0.88;
@@ -40,6 +41,8 @@ export interface FilmDriver extends FilmPass {
    * mandala fills what the iris does not show; at 1 the iris is plain again. Null keeps the plain ground. No allocation.
    */
   setIntro(page: Texture | null, intro: number): void;
+  /** The uv rects of the intro motifs (hub, rose, leaf, plume, swallow), once the intro manifest is read. */
+  setIntroMotifs(rects: readonly (readonly number[])[]): void;
   /** Compiles the film and halation programs, uploads the fallback texture and runs the chain once into its targets. */
   warm(scene: WebGLRenderTarget): Promise<void>;
   dispose(): void;
@@ -79,15 +82,16 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
   const clear = new DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1);
   clear.needsUpdate = true;
   const uniforms = filmUniforms(black);
-  const extras: FilmExtras & { uHighlight: { value: Vector3 }; uKaleido: { value: Texture }; uIntro: { value: number } } = {
+  const extras: FilmExtras & { uHighlight: { value: Vector3 }; uKaleido: { value: Texture }; uKRect: { value: Vector4[] }; uIntro: { value: number } } = {
     uScratch: { value: new Vector3() },
     uHalGain: { value: HALATION_GAIN },
     uHighlight: { value: displayHex(HIGHLIGHT, new Vector3()) },
     uKaleido: { value: clear },
+    uKRect: { value: Array.from({ length: 5 }, () => new Vector4()) },
     uIntro: { value: 1 },
   };
   const material = new RawShaderMaterial({
-    glslVersion: GLSL3, vertexShader, fragmentShader: common + fragmentBody, uniforms: { ...uniforms, ...extras }, depthTest: false, depthWrite: false,
+    glslVersion: GLSL3, vertexShader, fragmentShader: common + kaleido + fragmentBody, uniforms: { ...uniforms, ...extras }, depthTest: false, depthWrite: false,
   });
   const mesh = new Mesh(geometry, material);
   mesh.frustumCulled = false;
@@ -138,6 +142,9 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
     setIntro(page, intro) {
       extras.uKaleido.value = page ?? clear;
       extras.uIntro.value = intro;
+    },
+    setIntroMotifs(rects) {
+      rects.forEach((r, i) => extras.uKRect.value[i]?.set(r[0] ?? 0, r[1] ?? 0, r[2] ?? 0, r[3] ?? 0));
     },
     async warm(target) {
       renderer.initTexture(black);

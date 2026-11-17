@@ -13,12 +13,16 @@ export interface IntroDrive {
   frame(intro: number, playing: boolean): void;
 }
 
+/** The motifs in the order kaleido.glsl reads them. */
+const MOTIFS = ['in/hub', 'in/rose', 'in/leaf', 'in/plume', 'in/swallow'] as const;
+
 export function createIntroDrive(gfx: GlGfx, variant: 'hi' | 'lo'): IntroDrive {
   let page: Texture | null = null;
   let done = false;
   const abort = new AbortController();
   void (async () => {
     const m = await fetchManifest('intro', abort.signal);
+    if (MOTIFS.some((id) => m.sprites[id] === undefined)) return;
     const tex = await loadAtlas(gfx, m, variant, abort.signal);
     for (const n of tex.normal) n.dispose();
     for (let i = 1; i < tex.color.length; i++) tex.color[i]?.dispose();
@@ -29,6 +33,7 @@ export function createIntroDrive(gfx: GlGfx, variant: 'hi' | 'lo'): IntroDrive {
       return;
     }
     uploadTexture(gfx, first);
+    gfx.setIntroMotifs(MOTIFS.map((id) => m.sprites[id]?.uv ?? [0, 0, 0, 0]));
     page = first;
   })().catch(() => {
     page = null;
