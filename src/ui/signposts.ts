@@ -5,8 +5,9 @@ import { createMover, type Mover } from './xform.ts';
 
 /**
  * Signposts (cook/ART.md section 4): while a bed is the current place, one sign points back to the previous place
- * and one on to the next (at La Salida the next is "To the CV"). Each is a real <button> on a night plate with the
- * place name and a drawn arrow. A click is the travel (GOTO), or the mode switch for the CV.
+ * and one on to the next (at La Salida the next is "To the CV"). Each is a real <button>: a weathered board cut to a point
+ * the way it leads, painted with the place name, on a post in the ground. A click is the travel (GOTO), or the mode
+ * switch for the CV.
  * Where world supplies sign anchors (setAnchors), the label sits on its canvas board: projected each frame in stage
  * 'dom' (only when the rig moved), snapped to whole pixels, and docked to the nearest screen edge at the same height
  * when the board leaves the view, so a sign never disappears. Without anchors both signs dock at the screen edges
@@ -29,12 +30,11 @@ export interface Signposts {
 const EDGE_PX = 16;
 /** Below the fixed labels and the exit hint that hangs under them. */
 const TOP_PX = 120;
-/** The board's stake below it (signs.css) stays on screen; a docked board stands with its foot at this height. */
-const STAKE_PX = 58;
+/** The board's post below it (signs.css, --post) stays on screen; a docked board stands with its foot at this height. */
+const STAKE_PX = 72;
 const DOCK_FOOT = 0.76;
 const NARROW = '(max-width: 44.99rem)';
 const SHOWN: readonly State['phase'][] = ['bed', 'focus'];
-const ARROW = 'M1 6H17M12 1.5L17 6L12 10.5';
 
 interface Sign {
   el: HTMLButtonElement;
@@ -57,14 +57,10 @@ function makeSign(dir: -1 | 1, m: Machine): Sign {
   el.dataset.dir = dir < 0 ? 'prev' : 'next';
   const name = document.createElement('span');
   name.className = 'px-sign-name';
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('class', 'px-sign-arrow');
-  svg.setAttribute('viewBox', '0 0 18 12');
-  svg.setAttribute('aria-hidden', 'true');
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', ARROW);
-  svg.append(path);
-  el.append(name, svg);
+  const post = document.createElement('span');
+  post.className = 'px-sign-post';
+  post.setAttribute('aria-hidden', 'true');
+  el.append(post, name);
   const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44 };
   el.addEventListener('click', () => {
     if (sign.to === 'cv') m.send({ type: 'SET_MODE', mode: 'herbario' });
