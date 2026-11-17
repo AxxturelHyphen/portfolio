@@ -4,19 +4,20 @@ import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 /**
  * Grass clumps (cook/ART.md section 1): each is three parallel blade cards 4 cm apart, leaning 6, 12 and 18 degrees,
- * never crossed quads. One instanced batch from the shared atlas. Without the clump sprites (or a placeholder) in the
- * shared manifest nothing is drawn: a stand-in creature as grass would read worse than none.
+ * never crossed quads. One instanced batch from the shared atlas. A clump sprite missing from the shared manifest draws
+ * nothing. Species, height and tint vary per clump so no two neighbours repeat (cook/R02_FINDINGS.md 2).
  */
 
 const CARDS = 3;
 const GAP = 0.04;
 const LEAN_DEG = [6, 12, 18] as const;
 const DEG = Math.PI / 180;
+/** Per-clump tints (viridian, olive, dusty rose-grey, moonlit straw), picked by a hash of the index so neighbours differ. */
+const TINTS: readonly (readonly [number, number, number])[] = [[0.62, 0.78, 0.66], [0.78, 0.76, 0.52], [0.74, 0.62, 0.64], [0.9, 0.86, 0.72], [0.5, 0.64, 0.6]];
 
 export function clumpSprite(m: AtlasManifest, variant: number): string | null {
   const id = `sh/clump-${variant + 1}`;
-  if (m.sprites[id] !== undefined) return id;
-  return m.sprites['placeholder'] === undefined ? null : 'placeholder';
+  return m.sprites[id] === undefined ? null : id;
 }
 
 export function writeClumps(g: GroundBuild, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
@@ -33,7 +34,9 @@ export function writeClumps(g: GroundBuild, m: AtlasManifest, createBatch: (page
     const rect = id === null ? undefined : m.sprites[id];
     if (rect === undefined || rect.page !== page) continue;
     const h = g.clumps[o + 4] ?? 0.3;
-    const side = variant % 2 === 0 ? 1 : -1;
+    const side = (i * 7) % 3 === 0 ? -1 : 1;
+    const tint = TINTS[(i * 5 + variant * 3) % TINTS.length] ?? TINTS[0];
+    for (let c = 0; c < 3; c++) (q.tint as number[])[c] = tint?.[c] ?? 1;
     for (let k = 0; k < CARDS; k++) {
       q.x = (g.clumps[o] ?? 0) + (k - 1) * 0.03;
       q.z = (g.clumps[o + 1] ?? 0) + (k - 1) * GAP;

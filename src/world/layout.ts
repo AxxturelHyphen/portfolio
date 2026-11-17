@@ -64,6 +64,8 @@ export interface Placement3 extends Placement {
   react: boolean;
   flat?: boolean;
   wing?: boolean;
+  /** Mirrored in the Estanque water (gl/pond.ts reflector): its width in metres and mean plate colour (sRGB 0..1). */
+  reflect?: { w: number; colour: [number, number, number] };
 }
 
 export interface Layer3 extends Layer { items: Placement3[] }
@@ -71,7 +73,10 @@ export interface Layer3 extends Layer { items: Placement3[] }
 /** Slots carry a hinge too (the flower turns from it toward the camera on focus). */
 export interface Slot3 extends Slot { hinge: number }
 
-/** shade: the place shadow colour (hex) that groups M and D are mixed toward. */
-export interface BedScene3 extends BedScene { layers: Layer3[]; slots: Slot3[]; shade: string }
+/**
+ * shade: the place shadow colour (hex) that groups M and D are mixed toward. actorSprite: a sprite whose atlas page the
+ * behaviour's actor batch samples (default: the first flower's page).
+ */
+export interface BedScene3 extends BedScene { layers: Layer3[]; slots: Slot3[]; shade: string; actorSprite?: string }
 
 export const DEG = Math.PI / 180;

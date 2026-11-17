@@ -23,7 +23,7 @@ export interface GroundBuild {
   dress: Float32Array; dressCount: number;
 }
 
-const CLUMP = { wallInset: 0.3, wallStep: 0.45, rimCount: 18, footSpread: 0.25, h: [0.28, 0.42] } as const;
+const CLUMP = { wallInset: 0.3, wallStep: [0.35, 1.9], rimCount: 18, footSpread: 0.25, h: [0.2, 0.55] } as const;
 const DEG = Math.PI / 180;
 
 /** Seeded uniform 0..1 (mulberry32). */
@@ -51,10 +51,13 @@ export function wallHeightAt(g: GroundData, x: number): number {
   return g.wall.h;
 }
 
+/** The wall runs on past the gate piers so the Puerta key and S06 never see sky beside the flank walls. */
+const WALL_FROM_X = -9.2;
+
 function buildWall(g: GroundData, length: number): number[] {
   const out: number[] = [];
   let flip = 0;
-  for (let x = -2; x < length; x += g.wall.flatW) {
+  for (let x = WALL_FROM_X; x < length; x += g.wall.flatW) {
     const mid = x + g.wall.flatW / 2;
     out.push(x, x + g.wall.flatW, (g.wall.flatYaw[flip] ?? 0) * DEG, wallHeightAt(g, mid), 0);
     flip = 1 - flip;
@@ -76,7 +79,7 @@ function buildClumps(g: GroundData, scenes: readonly BedScene3[], tier: Tier, le
     const a = (i / CLUMP.rimCount) * Math.PI * 2;
     spots.push([g.pond.x + Math.cos(a) * (g.pond.rx + 0.15), g.pond.z + Math.sin(a) * (g.pond.rz + 0.15)]);
   }
-  for (let x = -1.5; x < length; x += CLUMP.wallStep) spots.push([x + r() * 0.5, g.wall.z + CLUMP.wallInset + r() * 0.2]);
+  for (let x = -1.5; x < length; x += CLUMP.wallStep[0] + r() * r() * (CLUMP.wallStep[1] - CLUMP.wallStep[0])) spots.push([x + r() * 0.3, g.wall.z + CLUMP.wallInset + r() * 0.45]);
   const cap = tier === 'low' ? g.clumps.low : g.clumps.high;
   const out: number[] = [];
   for (let i = 0; i < spots.length && i < cap; i++) {

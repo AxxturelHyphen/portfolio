@@ -16,10 +16,10 @@ export const WALL_TILE = 'tile/wall';
 const PIER_PROUD = 0.25;
 const OVERLAP = 0.18;
 /**
- * The wall sits back in the place shadow as a cool stone grey, never violet. The current tile is printed violet (mean
- * #37324e), so the tint takes most of the blue out; a neutral tile would want about [0.9, 0.92, 0.88].
+ * The wall sits back in the place shadow as a cool stone grey, never violet. The tile is neutral stone (mean #626256),
+ * so the tint only cools it a touch.
  */
-const WALL_TINT = [0.9, 0.97, 0.44] as const;
+const WALL_TINT = [0.9, 0.92, 0.88] as const;
 /** Shade jitter per flat (fraction of the tint). */
 const SHADE_JITTER = 0.1;
 /** The tile's outer texels fade in alpha (page border, mips): each quad stays this share of the tile inside it. */

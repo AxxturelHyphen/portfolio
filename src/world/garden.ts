@@ -210,12 +210,13 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
   function writeCard(card: OverviewCard, alpha: number): void {
     const { rect, bed } = card;
     card.alpha = alpha;
-    quad.x = bed.anchorX;
+    /** The card is the flattened bed between its bounds: its left edge sits on bounds[0] (the manifest pivot may not). */
+    quad.x = bed.scene.bounds[0];
     quad.y = 0;
     quad.z = OVERVIEW_Z;
     quad.w = rect.size[0];
     quad.h = rect.size[1];
-    quad.px = rect.pivot[0];
+    quad.px = 0;
     quad.py = rect.pivot[1];
     quad.uv = rect.uv;
     tint[0] = SILHOUETTE[0]; tint[1] = SILHOUETTE[1]; tint[2] = SILHOUETTE[2]; tint[3] = alpha;
@@ -248,6 +249,8 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
         const shown = (bed.state === 'ready' || bed.state === 'active') && (bed.id !== 'gruta' || heading === 'gruta' || active === 'gruta');
         const v = shown ? 1 : 0;
         if (bed.reveal.target !== v) bed.reveal.to(v);
+        /** Frozen time (stills) has no dt: the reveal lands at once, so no overview card lingers over a loaded bed. */
+        if (c.frozen && bed.reveal.value !== v) bed.reveal.snap(v);
         if (bed.state === 'ready' || bed.state === 'active') bed.update(c, s, machine.ch);
       }
       for (let i = 0; i < cards.length; i++) {

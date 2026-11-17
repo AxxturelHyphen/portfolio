@@ -1,7 +1,7 @@
 import type {
   AtlasManifest, AtlasTextures, Bed, BedBehaviour, BedCtx, BedId, BedModule, BedState, Channel, Clock, Content,
   CreateCutoutBatch, CutoutBatch, Gfx, Lang, LightRig, LoadAtlas, Machine, Moth, Project, ProjectBed,
-  Quality, SlotView, State,
+  Quality, SlotView, SpriteId, SpriteRect, State,
 } from '../types.ts';
 import type { Texture } from 'three';
 import { spring } from '../core/spring.ts';
@@ -30,10 +30,14 @@ export interface StreamKit {
 /** Transform writer that allocates nothing per frame (ui/xform.ts Mover, seen from world). */
 export interface DomMover { move(x: number, y: number, s: number): void; reset(): void }
 
-/** What a bed behaviour gets: the BedCtx of cook/ARCH.md 2.6 plus its DOM stage, since world may not import ui. */
+/**
+ * What a bed behaviour gets: the BedCtx of cook/ARCH.md 2.6 plus its DOM stage, since world may not import ui, and the
+ * bed's sprite rects (the actor batch samples the page of scene.actorSprite).
+ */
 export interface StreamBedCtx extends BedCtx {
   onDom: StreamKit['onDom'];
   createMover: StreamKit['createMover'];
+  sprites: Readonly<Record<SpriteId, SpriteRect>>;
 }
 
 /** Shared world context of every bed: the always-resident shared atlas (null until loaded) and the garden memory. */
@@ -90,8 +94,8 @@ export class StreamBed implements Bed {
   private batches: CutoutBatch[] = [];
   private flowers: FlowerRef[] = [];
   private wings: WingRef[] = [];
-  /** Placements drawn with a stand-in sprite because the atlas does not hold their id yet. */
-  placeholders = 0;
+  /** Placements skipped because the atlas does not hold their sprite id yet (they draw nothing). */
+  missing = 0;
   private actors: CutoutBatch | null = null;
   private behaviour: BedBehaviour | null = null;
 
@@ -197,17 +201,21 @@ export class StreamBed implements Bed {
     });
     this.flowers = out.flowers;
     this.wings = out.wings;
-    this.placeholders = out.placeholders;
+    this.missing = out.skipped;
     const hero = this.flowers[0]?.batch ?? this.batches[0];
-    if (this.module !== null && hero !== undefined) {
-      this.actors = env.kit.createCutoutBatch(env.gfx, hero.uniforms.uColor.value, hero.uniforms.uNormal.value, ACTOR_CAPACITY);
+    const actorPage = m.sprites[this.scene.actorSprite ?? '']?.page;
+    const color = actorPage === undefined ? hero?.uniforms.uColor.value : tex.color[actorPage];
+    const normal = actorPage === undefined ? hero?.uniforms.uNormal.value : tex.normal[actorPage];
+    if (this.module !== null && color !== undefined && normal !== undefined) {
+      this.actors = env.kit.createCutoutBatch(env.gfx, color, normal, ACTOR_CAPACITY);
       this.actors.mesh.renderOrder = order + this.batches.length;
       this.actors.mesh.frustumCulled = false;
     }
     this.drawCalls = this.batches.length + (this.actors === null ? 0 : 1);
     if (this.module !== null && this.actors !== null) {
       const ctx: StreamBedCtx = { scene: this.scene, actors: this.actors.writer, machine: env.machine, light: env.light,
-        rig: env.rig, quality: env.quality, content: env.content, moth: env.kit.moth(), onDom: env.kit.onDom, createMover: env.kit.createMover };
+        rig: env.rig, quality: env.quality, content: env.content, moth: env.kit.moth(), onDom: env.kit.onDom, createMover: env.kit.createMover,
+        sprites: m.sprites };
       this.behaviour = this.module.default(ctx);
     }
     return true;

@@ -3,7 +3,7 @@ import { createFlower, type GardenFlower } from './flower.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { keptLayers } from './scene.ts';
-import { placedSize, resolveSprite, standIns, type AtlasKey } from './sprites.ts';
+import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
 
 /**
  * Turns a bed's 3D placements into instanced cutout batches: one batch per atlas page used (bed pages and the shared
@@ -28,7 +28,7 @@ export interface BuildInput {
 
 export interface FlowerRef { flower: GardenFlower; batch: CutoutBatch; at: number }
 export interface WingRef { batch: CutoutBatch; at: number; quad: QuadParams; alpha: number }
-export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; placeholders: number; skipped: number }
+export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; skipped: number }
 
 /** Share of the place shadow colour mixed into each value group. */
 const GROUP_MIX: Record<ValueGroup, number> = { L: 0, M: 0.45, D: 0.7 };
@@ -77,10 +77,8 @@ const once = (q: QuadParams) => (b: CutoutBatch, at: number): number => {
 export function buildBed(i: BuildInput): BuildOutput {
   const { scene, bed, shared } = i;
   const shade = hexRgb(scene.shade, new Float32Array(3));
-  const stand = standIns(bed.manifest);
   const groups = new Map<string, Group>();
   const size: [number, number] = [0, 0];
-  let placeholders = 0;
   let skipped = 0;
 
   const groupOf = (from: AtlasKey, page: number): Group => {
@@ -107,15 +105,14 @@ export function buildBed(i: BuildInput): BuildOutput {
 
   for (const layer of keptLayers(scene, i.tier, i.maxLayers)) {
     for (const it of layer.items) {
-      const r = resolveSprite(it.sprite, it.size, bed.manifest, shared?.manifest ?? null, stand);
+      const r = resolveSprite(it.sprite, bed.manifest, shared?.manifest ?? null);
       if (r === null) { skipped++; continue; }
-      if (r.placeholder) placeholders++;
       placedSize(r.rect, it.h, it.w, it.scale, size);
       const q = quadOf(it, r.rect, size, shade);
       add(r.from, r.rect.page, it.wing === true ? { z: it.z, write: once(q), wing: q } : { z: it.z, write: once(q) }, 1);
-      if (it.foot !== 'sprays' || r.placeholder) continue;
+      if (it.foot !== 'sprays') continue;
       for (let f = 1; f <= FOOT_SPRAYS; f++) {
-        const foot = exact(`${it.sprite}.foot${f}`);
+        const foot = exact(`${it.sprite}.foot${f}`) ?? (f === 2 ? exact(`${it.sprite}-foot`) : null);
         if (foot === null) continue;
         placedSize(foot.rect, undefined, undefined, 1, size);
         const dx = (f - 2) * FOOT_SPREAD * size[1];
@@ -137,7 +134,7 @@ export function buildBed(i: BuildInput): BuildOutput {
   }
 
   const ordered = [...groups.values()].sort((a, b) => a.zSum / a.entries.length - b.zSum / b.entries.length);
-  const out: BuildOutput = { batches: [], flowers: [], wings: [], placeholders, skipped };
+  const out: BuildOutput = { batches: [], flowers: [], wings: [], skipped };
   for (const g of ordered) {
     const batch = i.createBatch(g.from, g.page, Math.max(1, g.quads));
     g.entries.sort((a, b) => a.z - b.z);
