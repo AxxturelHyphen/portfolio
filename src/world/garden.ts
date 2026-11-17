@@ -11,6 +11,8 @@ import type { BuildAtlas } from './bed.build.ts';
 import type { GardenRig } from './camera.ts';
 import { buildGround, type GroundBuild } from './ground.ts';
 import { writeClumps } from './clumps.ts';
+import { writeDressing } from './dressing.ts';
+import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { writeWall } from './wall.ts';
 import type { BedScene3, WorldLayout } from './layout.ts';
 import { createMemory, type GardenMemory } from './memory.ts';
@@ -26,6 +28,11 @@ export const SCENES: Readonly<Record<BedId, BedScene3>> = { puerta, rosaleda, es
 
 /** Depth of the overview stand-in cards: the beds' middle band. */
 const OVERVIEW_Z = -2;
+/**
+ * A bed not yet loaded stands as its flattened overview card (64 px per metre) pushed into cool shade, garden further
+ * along the wall, until its real cutouts fade in over it. The tint is uncapped (QUAD_FLAG.silhouette).
+ */
+const SILHOUETTE = [0.4, 0.4, 0.58] as const;
 const SETTLED: readonly Phase[] = ['bed', 'focus', 'opening', 'inspect', 'closing'];
 
 export interface StreamGarden extends GardenHandle {
@@ -46,6 +53,7 @@ interface OverviewCard { bed: StreamBed; batch: CutoutBatch; index: number; rect
 const quad: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: [0, 0, 0, 0], sway: 0, phase: 0, lift: 0, facing: 0, tint: [1, 1, 1, 1] };
 const tint = new Float32Array(4);
 quad.tint = tint;
+quad.phase = packPhase(0, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
 
 export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig }): StreamGarden {
   const { gfx, machine, content, proxies } = d;
@@ -163,6 +171,11 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
       clumps.mesh.renderOrder = RENDER_ORDER.bed - 1;
       gfx.scene.add(clumps.mesh);
     }
+    const dressing = writeDressing(ground, manifest, batchOn);
+    if (dressing !== null) {
+      dressing.mesh.renderOrder = RENDER_ORDER.near;
+      gfx.scene.add(dressing.mesh);
+    }
     await residency.frame();
   }
 
@@ -205,7 +218,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
     quad.px = rect.pivot[0];
     quad.py = rect.pivot[1];
     quad.uv = rect.uv;
-    tint[0] = 1; tint[1] = 1; tint[2] = 1; tint[3] = alpha;
+    tint[0] = SILHOUETTE[0]; tint[1] = SILHOUETTE[1]; tint[2] = SILHOUETTE[2]; tint[3] = alpha;
     card.batch.writer.set(card.index, quad);
     card.batch.writer.commit(card.index, card.index + 1);
   }

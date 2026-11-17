@@ -28,6 +28,8 @@ export const QUAD_FLAG = {
   noLean: 4,
   /** No ground decal. */
   noShadow: 8,
+  /** The tint is applied uncapped: a dark silhouette (overview cards of beds not loaded). */
+  silhouette: 16,
 } as const;
 const PHASE_SPAN = 8;
 

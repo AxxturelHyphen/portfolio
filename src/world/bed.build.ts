@@ -32,6 +32,8 @@ export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; win
 
 /** Share of the place shadow colour mixed into each value group. */
 const GROUP_MIX: Record<ValueGroup, number> = { L: 0, M: 0.45, D: 0.7 };
+/** Wings are near masks (ART.md 2.2): a dark cool silhouette, uncapped (QUAD_FLAG.silhouette), never a lit plate. */
+const WING_TINT: readonly number[] = [0.13, 0.11, 0.2, 1];
 const FOOT_SPRAYS = 3;
 const FOOT_SPREAD = 0.18;
 
@@ -50,7 +52,7 @@ function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade:
   const m = GROUP_MIX[it.group];
   const t = it.tint ?? [1, 1, 1];
   const flags = (it.flat === true ? QUAD_FLAG.flat : 0) | (it.lean === 0 ? QUAD_FLAG.noLean : 0)
-    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0);
+    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0);
   return {
     x, y, z,
     rot: (it.rot ?? 0) * DEG,
@@ -63,7 +65,7 @@ function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade:
     phase: packPhase(((x * 1.618034 + z) % 1) * Math.PI * 2, flags),
     lift: 0,
     facing: -it.hinge * DEG,
-    tint: [t[0] * (1 - m * (1 - (shade[0] ?? 1))), t[1] * (1 - m * (1 - (shade[1] ?? 1))), t[2] * (1 - m * (1 - (shade[2] ?? 1))), 1],
+    tint: it.wing === true ? [...WING_TINT] : [t[0] * (1 - m * (1 - (shade[0] ?? 1))), t[1] * (1 - m * (1 - (shade[1] ?? 1))), t[2] * (1 - m * (1 - (shade[2] ?? 1))), 1],
   };
 }
 

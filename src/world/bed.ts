@@ -46,7 +46,8 @@ export interface BedEnv {
 export interface Slicer { frame(): Promise<void>; upload(): Promise<void>; spent(): boolean }
 
 /** Paint order: the overview atlas under every bed, the grotto under its host so the ivy covers it. */
-export const RENDER_ORDER = { overview: -1, hidden: 0, bed: 100 } as const;
+/** Paint order bases; `near` is the ground dressing in front of every bed (world/dressing.ts). */
+export const RENDER_ORDER = { overview: -1, hidden: 0, bed: 100, near: 600 } as const;
 const ACTOR_CAPACITY = 64;
 
 const behaviours = import.meta.glob<BedModule>('./behaviours/*.ts');
@@ -169,6 +170,11 @@ export class StreamBed implements Bed {
   private async build(m: AtlasManifest, tex: AtlasTextures, alive: () => boolean): Promise<boolean> {
     const env = this.env;
     if (this.slicer.spent()) {
+      await this.slicer.frame();
+      if (!alive()) return false;
+    }
+    /** Shared sprites (pots, lanterns, boards, ivy) resolve only against the loaded shared atlas: wait for it. */
+    while (env.shared() === null) {
       await this.slicer.frame();
       if (!alive()) return false;
     }
