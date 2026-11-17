@@ -1,7 +1,12 @@
 import { DataTexture, PerspectiveCamera, RGBAFormat, SRGBColorSpace, Scene, WebGLRenderer } from 'three';
 import type { Clock, Gfx, InfoSnapshot, Loop, Pose, Quality } from '../types.ts';
-import { createCutoutBatch, sharedUniforms } from './cutout.material.ts';
+import { createCutoutBatch } from './cutout.material.ts';
 import { createFilmPass } from './film.pass.ts';
+import { createFireflies } from './fireflies.ts';
+import type { Fireflies } from './fireflies.ts';
+import { createGround } from './ground.ts';
+import type { Ground } from './ground.ts';
+import { setMoonByX, sharedUniforms } from './lights.ts';
 import { residentTextureBytes } from './ktx2.ts';
 import { createSky } from './sky.ts';
 import type { Sky } from './sky.ts';
@@ -18,9 +23,13 @@ import type { PixelSize, SceneTarget } from './targets.ts';
 export interface GlGfx extends Gfx {
   readonly camera: PerspectiveCamera;
   readonly sky: Sky;
+  /** The ground plane (one draw): the world builder sets its layout and photo stone. */
+  readonly ground: Ground;
+  /** Fireflies and motes (one draw): the world builder sets the pockets of the place. */
+  readonly fireflies: Fireflies;
   readonly target: SceneTarget;
-  /** World Y up, camera looks toward -Z; pitch in radians (positive looks up), fov vertical in degrees. */
-  setPose(p: Readonly<Pose>): void;
+  /** World Y up, camera looks toward -Z; pitch and yaw in radians (positive looks up, positive yaw turns toward +x, order YXZ), fov vertical in degrees. */
+  setPose(p: Readonly<Pose> & { readonly yaw?: number }): void;
   /** Film inputs owned by state: reduced motion and the travel exposure dip (1 = none), applied on the next render. */
   setFilm(reduced: boolean, exposure: number): void;
   /** The one resize signal (a single ResizeObserver on the canvas): CSS size, and a counter that grows on every resize. */
@@ -31,6 +40,8 @@ export interface GlGfx extends Gfx {
 
 const NEAR = 0.05;
 const FAR = 200;
+/** The largest firefly cap of any tier (core/quality.ts): the instance buffer never reallocates. */
+const FIREFLY_CAPACITY = 64;
 
 export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loop): GlGfx {
   const renderer = new WebGLRenderer({
@@ -51,8 +62,12 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
   scene.matrixAutoUpdate = false;
   scene.matrixWorldAutoUpdate = false;
   const camera = new PerspectiveCamera(40, 16 / 9, NEAR, FAR);
+  camera.rotation.order = 'YXZ';
   const sky = createSky();
-  scene.add(sky.mesh);
+  const ground = createGround(sky.uniforms.uMoonBody.value);
+  const fireflies = createFireflies(FIREFLY_CAPACITY);
+  fireflies.setCount(quality.cfg.fireflies);
+  scene.add(sky.mesh, ground.mesh, fireflies.mesh);
   const target = createSceneTarget();
   const film = createFilmPass(renderer, quality);
 
@@ -78,6 +93,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
   }).observe(canvas);
   /** Only a tier change reallocates; DPR steps and the panel scale move the sub-rect (cook/ARCH.md 2.7). */
   quality.onChange((q) => {
+    fireflies.setCount(q.cfg.fireflies);
     if (q.cfg.dprMax === dprMax && q.cfg.pixelCap === pixelCap) return;
     dprMax = q.cfg.dprMax;
     pixelCap = q.cfg.pixelCap;
@@ -104,7 +120,6 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     target.resize(size.w, size.h);
     film.resize(size.w, size.h, quality.cfg.pixelCap);
     const aspect = size.w / size.h;
-    sky.setAspect(aspect);
     if (camera.aspect !== aspect) {
       camera.aspect = aspect;
       camera.updateProjectionMatrix();
@@ -114,7 +129,13 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
 
   function updateViewProj(): void {
     camera.updateMatrixWorld();
-    sharedUniforms.uViewProj.value.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    const vp = sharedUniforms.uViewProj.value;
+    vp.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    sky.uniforms.uInvViewProj.value.copy(vp).invert();
+    const m = camera.matrixWorld.elements;
+    sharedUniforms.uCamRight.value.set(m[0] ?? 1, m[1] ?? 0, m[2] ?? 0);
+    sharedUniforms.uCamUp.value.set(m[4] ?? 0, m[5] ?? 1, m[6] ?? 0);
+    sharedUniforms.uCamPos.value.copy(camera.position);
   }
 
   function renderScene(c: Clock): void {
@@ -122,6 +143,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     target.setScale(quality.scale);
     film.uniforms.uScale.value = target.scale;
     sharedUniforms.uTime.value = c.t;
+    fireflies.update(c);
     film.tick(c, reduced, exposure);
     renderer.info.reset();
     renderer.setRenderTarget(target.target);
@@ -140,12 +162,13 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     if (dirty) applySize();
     const probe = createCutoutBatch(gfx, pixel, pixel, 1);
     const warmScene = new Scene();
-    warmScene.add(sky.mesh, probe.mesh);
+    warmScene.add(sky.mesh, ground.mesh, fireflies.mesh, probe.mesh);
+    for (const t of ground.textures) renderer.initTexture(t);
     renderer.setRenderTarget(target.target);
     await renderer.compileAsync(warmScene, camera);
     renderer.render(warmScene, camera);
     await film.warm(target.target);
-    scene.add(sky.mesh);
+    scene.add(sky.mesh, ground.mesh, fireflies.mesh);
   }
 
   const gfx: GlGfx = {
@@ -154,15 +177,18 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     film,
     camera,
     sky,
+    ground,
+    fireflies,
     target,
     render: renderScene,
     warm,
     get cssW() { return cssW; },
     get cssH() { return cssH; },
     get resizes() { return resizes; },
-    setPose(p: Readonly<Pose>): void {
+    setPose(p): void {
       camera.position.set(p.x, p.y, p.z);
-      camera.rotation.set(p.pitch, 0, 0);
+      camera.rotation.set(p.pitch, -(p.yaw ?? 0), 0);
+      setMoonByX(p.x);
       if (camera.fov !== p.fov) {
         camera.fov = p.fov;
         camera.updateProjectionMatrix();

@@ -1,50 +1,53 @@
-import { GLSL3, Matrix4, Mesh, NormalBlending, RawShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
+import { DoubleSide, GLSL3, Mesh, NormalBlending, RawShaderMaterial, Vector3, Vector4 } from 'three';
 import type { Texture } from 'three';
 import type { CutoutBatch, CutoutUniforms, Gfx } from '../types.ts';
 import { createCutoutGeometry } from './instances.ts';
-import vertexShader from './shaders/cutout.vert.glsl?raw';
-import fragmentShader from './shaders/cutout.frag.glsl?raw';
+import { sharedUniforms } from './lights.ts';
+import common from './shaders/common.glsl?raw';
+import lights from './shaders/lights.glsl?raw';
+import vertexBody from './shaders/cutout.vert.glsl?raw';
+import fragmentBody from './shaders/cutout.frag.glsl?raw';
+
+export { sharedUniforms } from './lights.ts';
+
+/** Drop shadow onto the paper behind (uv offset per unit lift, mip bias, strength) and the depth haze toward the wall. */
+const SHADOW = { offset: 0.012, softness: 2.5, strength: 0.5 } as const;
+const VERTEX = common + vertexBody;
+const FRAGMENT = common + lights + fragmentBody;
 
 /**
- * Uniforms shared by every cutout batch and the sky: one object per uniform, referenced (not copied) by each
- * material, so the camera and light rigs write them once per frame. Colours are linear.
- * Defaults are the P1 dusk: blue-violet sky, cool moon from the upper left, warm cursor light.
+ * The one lit cutout material. Premultiplied output, no depth: instance order and renderOrder are paint order.
+ * Two sided: the back of a turned cutout shows plain paper. The returned uniforms are the frozen CutoutUniforms;
+ * the material also reads the rest of the shared light set (lights.ts) by reference.
  */
-export const sharedUniforms = {
-  uViewProj: { value: new Matrix4() },
-  uTime: { value: 0 },
-  uWind: { value: new Vector2(0, 0.5) },
-  uCursor: { value: new Vector4(0, 0, 1, 2.5) },
-  uCursorColor: { value: new Vector3(1.5, 1.05, 0.62) },
-  uGather: { value: new Vector4(0, 0, 0, 0) },
-  uMoonDir: { value: new Vector3(-0.45, 0.55, 0.7).normalize() },
-  uMoonColor: { value: new Vector3(0.42, 0.46, 0.62) },
-  uSkyTop: { value: new Vector3(0.018, 0.02, 0.07) },
-  uSkyHorizon: { value: new Vector3(0.065, 0.042, 0.11) },
-};
-
-/** Per-batch defaults: contact shadow (uv offset per unit lift, mip bias, strength) and depth fade toward the dusk haze. */
-const SHADOW = { offset: 0.012, softness: 2.5, strength: 0.55 } as const;
-const DEPTH_FADE = { r: 0.06, g: 0.05, b: 0.12, perUnit: 0.035 } as const;
-
-/** The one lit cutout material. Premultiplied output, no depth: instance order and renderOrder are paint order. */
 export function createCutoutMaterial(color: Texture, normal: Texture): { material: RawShaderMaterial; uniforms: CutoutUniforms } {
+  const haze = sharedUniforms.uHaze.value;
   const uniforms: CutoutUniforms = {
-    ...sharedUniforms,
+    uViewProj: sharedUniforms.uViewProj,
+    uTime: sharedUniforms.uTime,
+    uWind: sharedUniforms.uWind,
+    uCursor: sharedUniforms.uCursor,
+    uCursorColor: sharedUniforms.uCursorColor,
+    uGather: sharedUniforms.uGather,
+    uMoonDir: sharedUniforms.uMoonDir,
+    uMoonColor: sharedUniforms.uMoonColor,
+    uSkyTop: sharedUniforms.uSkyTop,
+    uSkyHorizon: sharedUniforms.uSkyHorizon,
     uColor: { value: color },
     uNormal: { value: normal },
     uReveal: { value: 1 },
     uShadow: { value: new Vector3(SHADOW.offset, SHADOW.softness, SHADOW.strength) },
-    uDepthFade: { value: new Vector4(DEPTH_FADE.r, DEPTH_FADE.g, DEPTH_FADE.b, DEPTH_FADE.perUnit) },
+    uDepthFade: { value: new Vector4(haze.x, haze.y, haze.z, haze.w) },
   };
   const material = new RawShaderMaterial({
     glslVersion: GLSL3,
-    vertexShader,
-    fragmentShader,
-    uniforms,
+    vertexShader: VERTEX,
+    fragmentShader: FRAGMENT,
+    uniforms: { ...sharedUniforms, ...uniforms },
     transparent: true,
     premultipliedAlpha: true,
     blending: NormalBlending,
+    side: DoubleSide,
     depthTest: false,
     depthWrite: false,
   });
@@ -52,8 +55,9 @@ export function createCutoutMaterial(color: Texture, normal: Texture): { materia
 }
 
 /**
- * One draw call: a bed page (or the actors) as instanced quads. The caller adds `mesh` to the scene and sets
- * `mesh.renderOrder` to the layer's paint order. Textures are not owned here: the atlas owner disposes them.
+ * One draw call: a bed page (or the actors) as instanced quads, each with its ground decal drawn just before it.
+ * The caller adds `mesh` to the scene and sets `mesh.renderOrder` to the layer's paint order. Textures are not owned
+ * here: the atlas owner disposes them.
  */
 export function createCutoutBatch(_gfx: Gfx, color: Texture, normal: Texture, capacity: number): CutoutBatch {
   const { geometry, writer } = createCutoutGeometry(capacity);

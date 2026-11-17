@@ -1,73 +1,103 @@
-// The one cutout material, fragment stage. Lighting in linear space (the colour atlas is sampled as sRGB),
-// output premultiplied. Light model: cook/ARCH.md section 2.7.
-precision highp float;
-
+// The one cutout material, fragment stage (common.glsl and lights.glsl are prepended). Lighting in linear space (the
+// colour atlas is sampled as sRGB), output premultiplied. Light model: cook/ARCH.md 2.7 with the roles of lights.ts.
 uniform sampler2D uColor;
 uniform sampler2D uNormal;
 uniform float uReveal;
-uniform vec4 uCursor;      // xyz, radius
-uniform vec3 uCursorColor;
-uniform vec4 uGather;      // xyz, amount
-uniform vec3 uMoonDir;
-uniform vec3 uMoonColor;
-uniform vec3 uSkyTop;
-uniform vec3 uSkyHorizon;
-uniform vec3 uShadow;      // uv offset per unit lift, softness (mip bias), strength
-uniform vec4 uDepthFade;   // rgb, amount per unit of -z
+uniform vec3 uShadow;      // drop shadow onto what is behind: uv offset per unit lift, softness (mip bias), strength
+uniform vec4 uDepthFade;   // haze rgb, density per metre past HAZE_START
+uniform vec4 uShadowDir;   // decal x, z, length per height, opacity
 
 in vec2 vUV;
 in vec4 vRect;
 in vec3 vWorld;
 in vec4 vTint;
-in vec3 vFrame;
+in vec4 vFrame;
+in vec4 vOrient;
 in float vLift;
+in float vDecal;
+in float vDepth;
 
 out vec4 outColor;
 
-float sat(float x) { return clamp(x, 0.0, 1.0); }
-float sq(float x) { return x * x; }
-float wrapLight(float d, float w) { return max((d + w) / (1.0 + w), 0.0); }
+const vec3 PAPER_BACK = vec3(0.184, 0.133, 0.067);   // acg-paper006 at #7b6648, linear
+const float HAZE_START = 3.0;
+const float DECAL_SOFT_BIAS = 3.5;                    // alpha from about mip 3: 30 to 70 px soft
+const float DECAL_COVERAGE = 3.0;                     // sparse plants still cast a readable patch
+const float CONTACT = 0.32;                           // the darker line where the paper meets the ground
+const float EDGE_LIGHT = 0.55;
+const float EDGE_DARK = 0.38;
 
-// Alpha of the sprite at uv, zero outside its own rect so a tap never reads a neighbour in the atlas.
 float rectAlpha(vec2 uv, float bias) {
   vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
   return texture(uColor, uv, bias).a * inside.x * inside.y;
 }
 
+// Direction in the sprite's uv frame of a world-space xy direction (undoes rotation and flip).
+vec2 toSpriteUV(vec2 d) {
+  vec2 local = vec2(vFrame.x * d.x + vFrame.y * d.y, -vFrame.y * d.x + vFrame.x * d.y);
+  local.x *= vFrame.z;
+  return normalize(local + vec2(1e-4, 0.0));
+}
+
+vec4 decal() {
+  vec2 size = vRect.zw - vRect.xy;
+  float spread = size.x * (0.04 + 0.1 * vDecal);
+  float a = 0.25 * (rectAlpha(vUV + vec2(-spread, 0.0), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(spread, 0.0), DECAL_SOFT_BIAS)
+    + rectAlpha(vUV + vec2(0.0, -spread), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(0.0, spread), DECAL_SOFT_BIAS));
+  float foot = rectAlpha(vec2(vUV.x, vRect.y + size.y * 0.02), 1.0);
+  float contact = CONTACT * foot * (1.0 - smoothstep(0.0, 0.06, vDecal));
+  float op = (uShadowDir.w * sat(a * DECAL_COVERAGE) * pow(1.0 - vDecal, 1.4) + contact) * vTint.a * uReveal;
+  return vec4(uShadowColor * 0.5 * op, op);
+}
+
 void main() {
+  if (vFrame.w < 0.5) {
+    outColor = decal();
+    return;
+  }
   vec4 tex = texture(uColor, vUV);
   vec2 nxy = texture(uNormal, vUV).xy * 2.0 - 1.0;
   nxy.x *= vFrame.z;
   nxy = vec2(vFrame.x * nxy.x - vFrame.y * nxy.y, vFrame.y * nxy.x + vFrame.x * nxy.y);
-  vec3 n = normalize(vec3(nxy, sqrt(max(1.0 - dot(nxy, nxy), 0.05))));
-
-  vec3 toCursor = uCursor.xyz - vWorld;
-  float r2 = max(uCursor.w * uCursor.w, 1e-4);
-  float cursorFall = sq(sat(1.0 - dot(toCursor, toCursor) / r2));
-  vec3 toGather = uGather.xyz - vWorld;
-  float gather = uGather.w * sq(sat(1.0 - dot(toGather, toGather) / r2));
-  vec3 l = normalize(toCursor + vec3(0.0, 0.0, 1e-3));
-
+  vec3 n = vec3(nxy, sqrt(max(1.0 - dot(nxy, nxy), 0.05)));
   vec3 albedo = tex.rgb * vTint.rgb;
-  vec3 ambient = mix(uSkyHorizon, uSkyTop, n.y * 0.5 + 0.5);
-  vec3 cursorLight = uCursorColor * wrapLight(dot(n, l), 0.25) * cursorFall * (1.0 + gather);
-  vec3 lit = albedo * (ambient + uMoonColor * wrapLight(dot(n, uMoonDir), 0.4) + cursorLight);
+  if (!gl_FrontFacing) {
+    albedo = PAPER_BACK;
+    n = vec3(-nxy.x, nxy.y, n.z) * 0.4 + vec3(0.0, 0.0, 0.6);
+  }
+  // Quad frame to world: lean back (tilts the face up), then yaw; flat cutouts face the sky.
+  float cl = cos(vOrient.z);
+  float sl = sin(vOrient.z);
+  n = vec3(n.x, n.y * cl + n.z * sl, n.z * cl - n.y * sl);
+  n = vOrient.w > 0.5 ? vec3(n.x, n.z, -n.y) : n;
+  n = normalize(vec3(n.x * vOrient.x + n.z * vOrient.y, n.y, -n.x * vOrient.y + n.z * vOrient.x));
 
-  // Lifted paper edge: the rim catches the light on the lit side and shades on the far side.
-  float edge = sat(tex.a * (1.0 - tex.a) * 4.0);
-  vec2 lightXY = normalize(l.xy + vec2(1e-4, 0.0));
-  float facing = dot(normalize(nxy + vec2(1e-4, 0.0)), lightXY);
-  lit += albedo * edge * 0.35 * (uCursorColor * cursorFall + uMoonColor * 0.3) * max(facing, 0.0);
-  lit *= 1.0 - edge * 0.25 * max(-facing, 0.0);
+  vec3 ambient = uAmbient * mix(0.8, 1.25, n.y * 0.5 + 0.5);
+  vec3 key = uMoonColor * wrapLight(dot(n, uMoonDir), 0.4);
+  vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
+  vec3 hand = handLights(vWorld, n);
+  vec3 lit = albedo * (ambient + key + rim + hand);
 
-  lit = mix(lit, uDepthFade.rgb, sat(-vWorld.z * uDepthFade.w));
+  // The light that moves the edges and shadows: the hand where it reaches, else the key.
+  float reach = handReach(vWorld);
+  vec2 lightXY = mix(uMoonDir.xy, normalize(uCursor.xy - vWorld.xy + vec2(1e-4, 0.0)), sat(reach * 3.0));
+  vec2 lightUV = toSpriteUV(lightXY);
 
-  // Contact shadow: a soft second alpha tap toward the light, so the shadow falls away from it, inside the gutter.
-  vec2 shadowUV = vUV + lightXY * uShadow.x * vLift;
-  float shadow = rectAlpha(shadowUV, uShadow.y) * uShadow.z * sat(vLift * 4.0);
+  // Lifted paper edge: a thin lighter rim facing the light, a darker one on the far side (1.5 px on screen).
+  float ew = 1.5 * length(fwidth(vUV));
+  float towardLight = 1.0 - rectAlpha(vUV + lightUV * ew, 0.0);
+  float awayLight = 1.0 - rectAlpha(vUV - lightUV * ew, 0.0);
+  float edgeGain = luma(key + hand) * 2.0 + 0.05;
+  lit += albedo * towardLight * EDGE_LIGHT * edgeGain;
+  lit *= 1.0 - EDGE_DARK * awayLight;
+
+  lit = mix(lit, uDepthFade.rgb, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w));
+
+  // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
+  float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);
 
   float opacity = vTint.a * uReveal;
   float a = tex.a * opacity;
   float shadowA = shadow * opacity * (1.0 - a);
-  outColor = vec4(lit * a, a + shadowA);
+  outColor = vec4(lit * a + uShadowColor * 0.4 * shadowA, a + shadowA);
 }

@@ -13,6 +13,8 @@ const int RADIUS = 12;
 const float STEP = 2.0;
 const float INV_TIGHT = 1.0 / (2.0 * 3.0 * 3.0);
 const float INV_WIDE = 1.0 / (2.0 * 11.0 * 11.0);
+// Share of the tight lobe: the wide lobe carries the 45 px half-strength radius at 1080p.
+const float TIGHT_SHARE = 0.12;
 
 void main() {
   vec2 texel = 1.0 / vec2(textureSize(uSrc, 0));
@@ -30,5 +32,5 @@ void main() {
     tightSum += wt;
     wideSum += ww;
   }
-  fragColor = vec4(0.5 * (tight / tightSum + wide / wideSum), 1.0);
+  fragColor = vec4(TIGHT_SHARE * tight / tightSum + (1.0 - TIGHT_SHARE) * wide / wideSum, 1.0);
 }

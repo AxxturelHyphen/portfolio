@@ -1,37 +1,92 @@
-// Procedural dusk sky with a large soft moon (P1 version). Linear output; the film pass grades and encodes.
-precision highp float;
-
+// Night sky over the garden (common.glsl prepended): a blue-violet wash with hand-tinted bands and paper tooth, sparse
+// printed stars, and the moon: a 4 degree engraved disc with a soft warm-to-lilac halo. Linear output.
 uniform vec3 uSkyTop;
 uniform vec3 uSkyHorizon;
-uniform vec3 uMoonColor;
-uniform vec4 uMoon;      // centre x, y (0..1 of the viewport), radius and halo radius in viewport heights
-uniform float uAspect;   // viewport width / height
-uniform float uHorizon;  // screen height of the horizon, 0..1
+uniform vec3 uMoonBack;
+uniform vec3 uMoonBody;
+uniform sampler2D uMoonMap;
+uniform float uMoonMapOn;
 
-in vec2 vScreen;
+in vec3 vRay;
 out vec4 outColor;
 
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+const float MOON_R = 0.0349;          // 2 degree radius: a 4 degree disc (cook/ART.md section 1)
+const float HALO_R = 0.0873;          // 5 degrees: the 10 degree halo
+const vec3 AFTERGLOW = vec3(0.479, 0.159, 0.085);   // #b86f52
+const vec3 HALO_WARM = vec3(0.87, 0.62, 0.44);
+const vec3 HALO_COOL = vec3(0.30, 0.25, 0.42);
+const vec3 INK_STAR = vec3(0.62, 0.55, 0.42);
+const float BANDS = 7.0;
+const float STAR_CELL = 0.035;        // about 2 degrees per cell
+
+// Engraved moon face from disc coordinates q (|q| < 1): broad irregular maria and many small rim-lit craters, read
+// through a curved engraver's line screen (thicker lines where the tone is darker).
+float moonFace(vec2 q, float px) {
+  vec2 w = q * 1.3 + 0.35 * vec2(valueNoise(q * 2.0 + 4.0), valueNoise(q * 2.0 + 9.0));
+  float maria = smoothstep(0.5, 0.68, fbm3(w + vec2(5.3, 2.9)));
+  float tone = 1.0 - 0.3 * maria;
+  for (int i = 0; i < 14; i++) {
+    vec2 c = hash22(vec2(float(i), 11.0)) * 1.7 - 0.85;
+    float r = 0.035 + 0.07 * sq(hash12(vec2(float(i), 5.0)));
+    float d = length(q - c) / r;
+    tone += 0.09 * smoothstep(0.18, 0.0, abs(d - 1.0)) - 0.05 * smoothstep(1.0, 0.6, d);
+  }
+  if (uMoonMapOn > 0.5) tone = mix(tone, luma(texture(uMoonMap, q * 0.5 + 0.5).rgb) * 1.15, 0.85);
+  float pitch = 0.05;
+  float line = abs(fract((q.y + 0.18 * q.x * q.x) / pitch) - 0.5) * 2.0;
+  float width = sat(1.0 - tone) * 1.4;
+  float ink = smoothstep(width + px / pitch, width, line) * sat(pitch / px * 0.5 - 0.6);
+  float limb = 1.0 - 0.3 * pow(dot(q, q), 2.0);
+  return max(tone - 0.25 * ink, 0.2) * limb;
+}
+
+float stars(vec3 dir, float el, float px) {
+  float az = atan(dir.x, -dir.z);
+  vec2 g = vec2(az * cos(el), el) / STAR_CELL;
+  vec2 base = floor(g - 0.5);
+  float s = 0.0;
+  for (int k = 0; k < 4; k++) {
+    vec2 cc = base + vec2(float(k & 1), float(k >> 1));
+    float pick = hash12(cc + 17.0);
+    if (pick > 0.16) continue;
+    vec2 p = cc + hash22(cc) * 0.8 + 0.1;
+    vec2 d = (g - p) * STAR_CELL;
+    float r = px * (0.7 + 1.1 * hash12(cc + 3.0));
+    float rough = 1.0 + 0.35 * (valueNoise(d / px * 1.7 + cc) - 0.5);
+    s += (0.25 + 0.75 * hash12(cc + 9.0)) * smoothstep(r * rough, r * 0.4, length(d));
+  }
+  return s;
 }
 
 void main() {
-  float h = clamp((vScreen.y - uHorizon) / (1.0 - uHorizon), 0.0, 1.0);
-  vec3 sky = mix(uSkyHorizon, uSkyTop, pow(h, 0.6));
-  // A thin warm band right at the horizon: the last of the dusk.
-  sky += vec3(0.035, 0.015, 0.02) * exp(-h * 9.0);
+  vec3 dir = normalize(vRay);
+  float el = asin(clamp(dir.y, -1.0, 1.0));
+  float px = length(fwidth(dir));
+  float h = sat(el / 0.3);
+  float hb = (floor(h * BANDS) + smoothstep(0.35, 0.65, fract(h * BANDS))) / BANDS;
+  float wash = fbm3(vec2(atan(dir.x, -dir.z) * 3.0, el * 9.0));
+  h = mix(h, hb, 0.4) + (wash - 0.5) * 0.06;
+  vec3 col = mix(uSkyHorizon, uSkyTop, pow(sat(h), 0.45));
+  col *= 1.0 + (fbm3(vec2(atan(dir.x, -dir.z), el) * 22.0) - 0.5) * 0.14;
 
-  vec2 d = vec2((vScreen.x - uMoon.x) * uAspect, vScreen.y - uMoon.y);
-  float r = length(d);
-  float disc = 1.0 - smoothstep(uMoon.z * 0.9, uMoon.z * 1.03, r);
-  vec2 q = d / max(uMoon.z, 1e-3);
-  float mottle = 0.72 + 0.18 * noise(q * 2.2 + 3.0) + 0.1 * noise(q * 6.0 + 9.0);
-  float halo = exp(-max(r - uMoon.z, 0.0) / max(uMoon.w, 1e-3) * 3.0);
+  vec2 moonXZ = normalize(uMoonBack.xz);
+  float side = 0.5 + 0.5 * dot(normalize(dir.xz + 1e-5), moonXZ);
+  col += AFTERGLOW * 0.25 * exp(-max(el, 0.0) / 0.07) * side * side;
 
-  vec3 color = sky + uMoonColor * (halo * 0.35 + disc * 1.6 * mottle);
-  outColor = vec4(color, 1.0);
+  float ang = acos(clamp(dot(dir, uMoonBack), -1.0, 1.0));
+  float halo = exp(-max(ang - MOON_R, 0.0) / (HALO_R * 0.45));
+  float wide = exp(-max(ang - MOON_R, 0.0) / (HALO_R * 2.2));
+  col += mix(HALO_COOL, HALO_WARM, halo) * (0.22 * halo + 0.05 * wide) * uMoonBody.r;
+
+  col += INK_STAR * 0.22 * stars(dir, el, px) * sat(el / 0.08) * smoothstep(MOON_R * 4.0, MOON_R * 9.0, ang);
+
+  vec3 up = normalize(cross(cross(uMoonBack, vec3(0.0, 1.0, 0.0)), uMoonBack));
+  vec3 rt = normalize(cross(uMoonBack, up));
+  vec2 q = vec2(dot(dir, rt), dot(dir, up)) / MOON_R;
+  float disc = smoothstep(1.0, 1.0 - px / MOON_R * 1.5, length(q));
+  if (disc > 0.0) col = mix(col, uMoonBody * moonFace(q, px / MOON_R), disc);
+
+  // Paper tooth: a fine fixed fibre under the wash.
+  col *= 1.0 + (valueNoise(gl_FragCoord.xy * 0.6) - 0.5) * 0.05;
+  outColor = vec4(col, 1.0);
 }
