@@ -39,3 +39,30 @@ vec3 handLights(vec3 p, vec3 n) {
 
 // Strength of the hand light at p (0..1), for edges and shadows that follow it.
 float handReach(vec3 p) { return falloff(uCursor.xyz - p, max(uCursor.w, 1e-3)); }
+
+// The warm key on a plate colour: lit by value with a little of the key's warmth. Greens take the key's value only,
+// so leaves brighten without turning acid yellow-green.
+const vec3 KEY_WARMTH = vec3(1.08, 1.0, 0.86);
+vec3 keyLit(vec3 albedo, vec3 light) {
+  float green = sat((albedo.g - max(albedo.r, albedo.b)) / max(albedo.g, 1e-4) * 2.5);
+  return mix(albedo * light, albedo * luma(light) * KEY_WARMTH, green);
+}
+
+// Air between the layers, banded by depth against the hand's plane (+ behind it, - in front): far layers sit lifted
+// and cooler in the dusk air, near layers darker and richer. `back` is the fall-off behind a focused flower (0..1).
+const vec3 FAR_AIR = vec3(0.018, 0.019, 0.045);    // #24263c, a cool slate, not violet
+const vec3 FAR_HUE = vec3(0.92, 0.99, 1.15);         // the cool lean of far paper at its own value
+const float FAR_AIR_MIX = 0.25;
+const float FAR_COOL = 0.35;
+const float NEAR_DARK = 0.75;
+const float NEAR_RICH = 0.15;
+const float FOCUS_DARK = 0.38;
+vec3 layerAir(vec3 c, float rel, float back) {
+  float far = smoothstep(0.5, 3.0, rel);
+  float near = smoothstep(0.3, 1.5, -rel);
+  c = mix(c, luma(c) * FAR_HUE, far * FAR_COOL);
+  c = mix(c, FAR_AIR, far * FAR_AIR_MIX);
+  c *= mix(1.0, NEAR_DARK, near);
+  c = max(mix(vec3(luma(c)), c, 1.0 + NEAR_RICH * near), 0.0);
+  return c * (1.0 - FOCUS_DARK * back);
+}

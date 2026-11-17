@@ -26,8 +26,8 @@ const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
-const float POOL_SPREAD = 0.8;                        // the hand's pool on the ground, in cursor radii
-const float POOL = 0.9;
+const float POOL_SPREAD = 1.0;                        // the hand's pool on the ground, in cursor radii
+const float POOL = 0.8;
 const vec3 STONE = vec3(0.060, 0.055, 0.052);
 const vec3 MOSS_SHADE = vec3(0.016, 0.054, 0.028);   // #21422f
 const vec3 MOSS_MID = vec3(0.044, 0.118, 0.073);     // #3b614c
@@ -150,7 +150,7 @@ void main() {
   float pool = sat(1.0 - dot(dp, dp) / (pr * pr));
   hand += uCursorColor * (pool * pool * POOL);
   vec3 albedo = base * GROUND_ALBEDO;
-  vec3 col = base * (0.5 + 1.6 * key) + albedo * hand;
+  vec3 col = base * (0.5 + 1.6 * key) + keyLit(albedo, hand);
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;
@@ -175,6 +175,9 @@ void main() {
   col *= 1.0 - LINE_CONTRAST * lineScreen(p, tone) * (1.0 - wet);
   vec3 haze = neutralise(uHaze.rgb);
   col = mix(col, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
+  float dist = length(vWorld - uCamPos);
+  float back = uGather.w * smoothstep(0.35, 1.6, dist - length(uGather.xyz - uCamPos));
+  col = layerAir(col, dist - length(uCursor.xyz - uCamPos), back);
   // Past the wall: mist, not a slab. The far fields rise into the horizon sky, so a low wall never opens onto black.
   float past = smoothstep(uWallZ - 0.5, uWallZ - 6.0, z);
   float far = smoothstep(uWallZ - 6.0, uWallZ - FIELDS_DEPTH, z);
