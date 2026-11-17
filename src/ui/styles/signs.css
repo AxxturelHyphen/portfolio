@@ -216,8 +216,9 @@
 }
 
 /*
- * Phones: two small labels at clearly different heights. The way back stands on the left, its foot 34 px above the
- * folded plan corner; the way on stands low on the right, where no corner is, and the flower keeps the middle.
+ * Phones: two small labels at clearly different heights. The way back stands on the left, its foot 34 px above
+ * the folded plan corner; the way on stands low on the right, where no corner is, 40 px above the bottom
+ * edge, and the flower keeps the middle. Both stand 20 px in from the sides, so the tilted corners keep 16.
  */
 @media (max-width: 44.99rem) {
   .px-signs .px-sign {
@@ -242,7 +243,7 @@
   .px-signs .px-sign[data-dir="prev"] {
     padding-inline: 0.625rem 1.875rem;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 90px + 34px);
-    left: max(10px, env(safe-area-inset-left, 0px));
+    left: max(20px, env(safe-area-inset-left, 0px));
   }
 
   .px-signs .px-sign[data-dir="prev"] .px-sign-hand {
@@ -252,7 +253,7 @@
   .px-signs .px-sign[data-dir="next"] {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
     left: auto;
-    right: max(10px, env(safe-area-inset-right, 0px));
+    right: max(20px, env(safe-area-inset-right, 0px));
   }
 }
 
