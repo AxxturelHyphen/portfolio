@@ -1,0 +1,135 @@
+/*
+ * Signposts (cook/ART.md section 4): the place name in Kalnia and one drawn arrow on a night plate. Anchored signs
+ * are moved by transform in stage 'dom'; docked signs (no anchor yet, and every phone) sit at the screen edges at
+ * mid height. Hover nudges the plate 4 px the way it points. Shown only while a bed is the current place.
+ */
+
+.px-signs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-ui-exit) var(--ease-out),
+    visibility 0s linear var(--dur-ui-exit);
+}
+
+.px-signs[data-shown] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--dur-ui) var(--ease-out),
+    visibility 0s;
+}
+
+.px-sign {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--target);
+  padding: 0 0.75rem;
+  border: 6px solid transparent;
+  border-image: var(--plate-night) 8 fill / 8px stretch;
+  background: none;
+  color: var(--zinc-ink);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+  transition: translate var(--dur-hover) var(--ease-out);
+}
+
+.px-sign[hidden] {
+  display: none;
+}
+
+.px-sign[data-dir="prev"] {
+  flex-direction: row-reverse;
+}
+
+.px-sign-arrow {
+  width: 18px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: var(--zinc-rose);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.px-sign[data-dir="prev"] .px-sign-arrow {
+  scale: -1 1;
+}
+
+/* The nudge rides on `translate`, so it never fights the per-frame transform. */
+.px-sign[data-dir="next"]:hover {
+  translate: 4px 0;
+}
+
+.px-sign[data-dir="prev"]:hover {
+  translate: -4px 0;
+}
+
+.px-sign:active {
+  scale: 0.98;
+}
+
+.px-sign[data-docked] {
+  top: 50%;
+  margin-top: calc(var(--target) / -2);
+}
+
+.px-sign[data-docked][data-dir="prev"] {
+  left: max(var(--edge), env(safe-area-inset-left, 0px));
+}
+
+.px-sign[data-docked][data-dir="next"] {
+  left: auto;
+  right: max(var(--edge), env(safe-area-inset-right, 0px));
+}
+
+/* Phones: both signs dock under the fixed controls, clear of the hero (centre) and the tag strip (bottom). */
+@media (max-width: 44.99rem) {
+  .px-signs .px-sign {
+    top: calc(max(10px, env(safe-area-inset-top, 0px)) + var(--target) + 10px);
+    margin-top: 0;
+    max-width: 38vw;
+    padding: 4px 0.5rem;
+    gap: 6px;
+    font-size: 0.9375rem;
+    white-space: normal;
+    text-wrap: balance;
+    transform: none !important;
+  }
+
+  .px-signs .px-sign[data-dir="prev"] {
+    left: max(10px, env(safe-area-inset-left, 0px));
+  }
+
+  .px-signs .px-sign[data-dir="next"] {
+    left: auto;
+    right: max(10px, env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-sign,
+  .px-signs,
+  .px-signs[data-shown] {
+    transition: none;
+  }
+
+  .px-sign:hover {
+    translate: none;
+  }
+}

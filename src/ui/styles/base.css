@@ -35,6 +35,28 @@
   --measure: 34rem;
   --page: 86rem;
 
+  /*
+   * Stock of the diegetic UI (cook/ART.md section 4): japanned zinc night plates, one enamel tag, notebook paper.
+   * Contrast: --zinc-ink on --zinc 14.3:1, --zinc-ink-2 8.0:1, --zinc-rose 6.7:1; --enamel-ink on --enamel 12.0:1,
+   * --enamel-rose 6.0:1; --note-ink on --note 10.4:1, --note-rose 5.2:1, --pencil 6.0:1. Luma stays under the moon.
+   */
+  --zinc: #1f1713;
+  --zinc-ink: #f3e6cf;
+  --zinc-ink-2: #b9ad9b;
+  --zinc-rose: #d98a84;
+  --enamel: #ddd4c3;
+  --enamel-ink: #1f1713;
+  --enamel-rose: #8f1d27;
+  --note: #cfc6b6;
+  --note-ink: #1f1713;
+  --note-rose: #8f1d27;
+  --pencil: #4a4038;
+  --target: 44px;
+  --edge: 16px;
+  /* Plates are 9-slice SVGs with chamfered corners and an inset keyline, drawn by border-image (crisp at any DPR). */
+  --plate-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M4 0H20L24 4V20L20 24H4L0 20V4Z' fill='%231f1713'/%3E%3Cpath d='M5.2 3.5H18.8L20.5 5.2V18.8L18.8 20.5H5.2L3.5 18.8V5.2Z' fill='none' stroke='%23f3e6cf' stroke-opacity='.3'/%3E%3C/svg%3E");
+  --plate-enamel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M6 0H26L32 6V26L26 32H6L0 26V6Z' fill='%23ddd4c3'/%3E%3Cpath d='M6.5 4.5H25.5L27.5 6.5V25.5L25.5 27.5H6.5L4.5 25.5V6.5Z' fill='none' stroke='%231f1713'/%3E%3C/svg%3E");
+
   /* Fallbacks only: src/ui/tokens.ts writes these from src/core/motion.ts (UI timings, EASE_OUT). */
   --ease-out: cubic-bezier(0.27, 0.82, 0.62, 1);
   --ease-in-out: cubic-bezier(0.27, 0.82, 0.62, 1);
@@ -107,6 +129,15 @@ button {
   border-radius: var(--radius-sm);
 }
 
+/* Focus on the night stock and in the world: a double ring, pale inside dark, readable over any picture. */
+:is(#toggles, .pn-bar, .pl) :focus-visible,
+:is(.px-sign, .pn-close):focus-visible {
+  outline: 2px solid var(--zinc-ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px var(--zinc);
+  border-radius: 0;
+}
+
 /*
  * Mode layers (src/ui/mode.ts): #world (canvas, poster, proxies, label) and #herbario cross-fade by opacity only.
  * Before JS runs, html[data-mode] (set by the inline boot stub) decides which one shows; the hidden one is inert
@@ -161,40 +192,33 @@ html[data-mode="garden"] {
   contain-intrinsic-block-size: auto 100vh;
 }
 
-/* Owner gaps: visible, honest, quiet. */
+/* Owner gaps: a quiet pencil blank, the literal mark kept so nothing reads as invented. */
 .h-fill {
   color: var(--ink-3);
-  font-size: 0.86em;
-  font-style: normal;
-  letter-spacing: 0.01em;
-  padding: 0 0.3em;
-  border: 1px dashed var(--rule-strong);
-  border-radius: var(--radius-sm);
+  font-size: 0.92em;
+  font-style: italic;
+  padding: 0 0.15em 0.05em;
+  border-bottom: 1px dashed currentcolor;
   white-space: normal;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
-/* Stack chips. */
+/* The stack as stamped words on one italic line: no chips, no pills. */
 .h-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.h-tags > li {
-  font-size: var(--text-xs);
-  line-height: 1.3;
-  padding: 0.25rem 0.55rem;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-sm);
-  background: var(--sheet);
+  column-gap: 0.45em;
+  font-style: italic;
+  font-size: var(--text-sm);
   color: var(--ink-2);
 }
 
-.h-tags .h-fill {
-  border: 0;
-  padding: 0;
+.h-tags > li + li::before {
+  content: "\00B7";
+  margin-right: 0.45em;
+  font-style: normal;
+  color: var(--ink-3);
 }
 
 /* Status marks: filled for shipped, ring for in progress, thin ring for idea. */

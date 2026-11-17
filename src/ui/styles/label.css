@@ -1,7 +1,7 @@
 /*
- * Label card beside a focused flower. #label is anchored at the flower's screen point by a transform written in
- * stage 'dom'; the card sits to its left or right through the individual `translate` property, so the per-frame
- * transform (rise) and the side offset never fight. Crisp paper and ink: no grain, no glow, no gradient.
+ * The plant tag (cook/ART.md section 4): an enamel plate, chamfered, with an inset ink keyline, on a 4 px zinc stake.
+ * #label carries the tag's top-left corner by a transform written in stage 'dom'; .lb carries the rise and the fade.
+ * Crisp stock and ink: no grain, no glow, no gradient, no shadow larger than a hairline lift.
  */
 
 #label {
@@ -14,6 +14,7 @@
   pointer-events: none;
   visibility: hidden;
   contain: layout style;
+  will-change: transform;
 }
 
 #label[data-shown] {
@@ -21,90 +22,132 @@
 }
 
 .lb {
-  --lb-gap: 2.75rem;
   position: absolute;
   top: 0;
   left: 0;
-  width: max-content;
-  max-width: min(19rem, 70vw);
-  padding: 0.875rem 1rem 0.8rem;
-  background: var(--sheet);
-  color: var(--ink);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sheet);
+  width: clamp(280px, 17vw, 340px);
+  padding: 14px 20px 6px;
+  border: 10px solid transparent;
+  border-image: var(--plate-enamel) 10 fill / 10px stretch;
+  color: var(--enamel-ink);
+  font-family: var(--font-ui);
   opacity: 0;
-  translate: var(--lb-gap) -50%;
   will-change: transform, opacity;
 }
 
-#label[data-side="left"] .lb {
-  translate: calc(-100% - var(--lb-gap)) -50%;
+/* The stake: zinc, from under the plate toward the flower's foot, on the side that faces the flower. */
+.lb::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 28px;
+  width: 4px;
+  height: 64px;
+  background: var(--zinc);
+  border-left: 1px solid rgb(243 230 207 / 0.35);
 }
 
-.lb-title {
-  font-family: var(--font-display);
-  font-synthesis: none;
-  font-weight: 400;
-  font-size: var(--display-sm);
-  line-height: 1.12;
-}
-
-.lb-latin {
-  margin-top: 0.125rem;
-  font-style: italic;
-  font-size: var(--text-sm);
-  color: var(--ink-3);
-}
-
-.lb-oneliner {
-  margin-top: 0.5rem;
-  font-size: var(--text-sm);
-  line-height: 1.45;
-  color: var(--ink-2);
-  text-wrap: pretty;
-}
-
-.lb-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.625rem;
-}
-
-.lb-chip {
-  font-size: var(--text-xs);
-  line-height: 1.3;
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-sm);
-  color: var(--ink-2);
-}
-
-.lb-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  margin-top: 0.75rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--rule);
-  font-size: var(--text-xs);
+#label[data-side="left"] .lb::after {
+  left: auto;
+  right: 28px;
 }
 
 .lb-status {
-  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.lb-glyph {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lb-title {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: 1.625rem;
+  line-height: 1.75rem;
+  text-wrap: balance;
+}
+
+.lb-latin {
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.lb-oneliner {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+  line-height: 1.375rem;
+  text-wrap: pretty;
+}
+
+.lb-stack {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.4;
 }
 
 .lb-view {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--target);
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--rose-ink);
+  color: var(--enamel-rose);
 }
 
-.lb-view:not(:empty)::after {
-  content: " \2192";
+.lb-hand {
+  width: 18px;
+  height: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .lb [hidden] {
   display: none;
+}
+
+/* Phones: a full-width strip above the bottom edge, text at 16 px; no stake. */
+@media (max-width: 44.99rem) {
+  #label {
+    width: 100%;
+    height: 100%;
+  }
+
+  .lb {
+    top: auto;
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    width: auto;
+  }
+
+  .lb::after {
+    display: none;
+  }
+
+  .lb-oneliner,
+  .lb-stack,
+  .lb-view {
+    font-size: 1rem;
+  }
 }

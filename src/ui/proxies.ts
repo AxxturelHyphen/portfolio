@@ -1,11 +1,14 @@
 import type { BedId, CameraRig, Machine, ProxyLayer, ScreenPt, SlotView } from '../types.ts';
 import { LABEL_ID } from './label.ts';
+import { createPlan } from './plan.ts';
+import { createSignposts, type BedSign, type SignAnchor } from './signposts.ts';
 import './styles/proxies.css';
 import { createMover, type Mover } from './xform.ts';
 
 /**
  * DOM proxies, the only picking of the garden (cook/ARCH.md 2.10): one real <button> per project flower or prop and
- * one <a> per link, in the bed's slot order, then one button per bed in garden order. Tab order is DOM order.
+ * one <a> per link, in the bed's slot order, then the two signposts of the current bed, then the garden plan
+ * (ui/signposts.ts, ui/plan.ts). Tab order is DOM order. #proxies[data-phase] mirrors the phase for the CSS.
  * Each slot proxy is an ellipse sized to its hit area in world units at mount; sync() moves it by transform from the
  * rig's projection in stage 'dom', only when the rig moved. Mouse hover and keyboard focus send FOCUS, leaving sends
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
@@ -19,18 +22,25 @@ const ANNOUNCE_DELAY_MS = 100;
 
 export const ACTIVATE_EVENT = 'jardin:activate';
 
+/** ProxyLayer plus the sign anchors that world supplies (bed boards in world units). */
+export interface GardenProxies extends ProxyLayer {
+  mountBeds(beds: readonly BedSign[]): void;
+  setSigns(anchors: readonly SignAnchor[]): void;
+}
+
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
 
-export function createProxies(el: HTMLElement, m: Machine): ProxyLayer {
+export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   const slotsGroup = document.createElement('div');
   slotsGroup.className = 'px-slots';
   slotsGroup.setAttribute('role', 'group');
-  const bedsGroup = document.createElement('div');
-  bedsGroup.className = 'px-beds';
   const live = document.createElement('p');
   live.className = 'px-live';
   live.setAttribute('aria-live', 'polite');
-  el.replaceChildren(slotsGroup, bedsGroup, live);
+  el.replaceChildren(slotsGroup);
+  const signs = createSignposts(el, m);
+  const plan = createPlan(el, m);
+  el.append(live);
 
   const bedTitles = new Map<BedId, string>();
   let nodes: HTMLElement[] = [];
@@ -38,6 +48,7 @@ export function createProxies(el: HTMLElement, m: Machine): ProxyLayer {
   let world = new Float32Array(0);
   let off: boolean[] = [];
   let dirty = false;
+  let signsDirty = true;
   let lastPointer = 'mouse';
   let announceTimer = 0;
 
@@ -113,20 +124,28 @@ export function createProxies(el: HTMLElement, m: Machine): ProxyLayer {
     return n;
   }
 
+  const follow = (): void => {
+    const s = m.state;
+    el.dataset.phase = s.phase;
+    signs.onState(s);
+    plan.onState(s);
+    signsDirty = true;
+  };
+  m.subscribe(follow);
+  follow();
+
   return {
-    mountBeds(beds: readonly { id: BedId; title: string }[]): void {
+    mountBeds(beds: readonly BedSign[]): void {
       bedTitles.clear();
-      const buttons = beds.map((b) => {
-        bedTitles.set(b.id, b.title);
-        const n = document.createElement('button');
-        n.type = 'button';
-        n.className = 'px-bed';
-        n.dataset.bed = b.id;
-        n.textContent = b.title;
-        n.addEventListener('click', () => m.send({ type: 'GOTO', place: { k: 'bed', bed: b.id } }));
-        return n;
-      });
-      bedsGroup.replaceChildren(...buttons);
+      for (const b of beds) bedTitles.set(b.id, b.title);
+      signs.mount(beds);
+      plan.mount(beds);
+      signsDirty = true;
+    },
+
+    setSigns(anchors: readonly SignAnchor[]): void {
+      signs.setAnchors(anchors);
+      signsDirty = true;
     },
 
     mountSlots(bed: BedId, slots: readonly SlotView[]): void {
@@ -154,6 +173,8 @@ export function createProxies(el: HTMLElement, m: Machine): ProxyLayer {
     },
 
     sync(rig: CameraRig): void {
+      signs.sync(rig, signsDirty);
+      signsDirty = false;
       if (!rig.changed && !dirty) return;
       dirty = false;
       for (let i = 0; i < movers.length; i++) {

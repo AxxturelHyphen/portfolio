@@ -1,99 +1,117 @@
-/* Top-right controls, the same in every mode: view, Download CV, language. */
+/*
+ * The fixed controls (cook/ART.md section 4): one row of night zinc plates, top right, 16 px from the edges and the
+ * safe areas, 8 px apart, in every mode and above the open notebook. Text only, 44 px targets. They never move
+ * during a mode switch. The panel's dialog renders an identical row at the same spot (.pn-bar).
+ */
 
-#toggles {
+#toggles,
+.pn-bar {
   position: fixed;
   z-index: 10;
-  top: 0;
-  right: max(0px, (100vw - var(--page)) / 2);
-  padding: 1.125rem var(--gutter) 0;
+  top: max(var(--edge), env(safe-area-inset-top, 0px));
+  right: max(var(--edge), env(safe-area-inset-right, 0px));
   pointer-events: none;
 }
 
 .tg {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 8px;
+  font-family: var(--font-ui);
   pointer-events: auto;
 }
 
-.tg-group {
+/* One stock and one shape for all three: the chamfered plate is the border image, so the focus ring stays square. */
+.tg-plate,
+.tg-cv,
+.tg-exit {
   position: relative;
-  display: flex;
-  padding: 2px;
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-}
-
-.tg-seg,
-.tg-lang-link,
-.tg-cv {
   display: inline-flex;
   align-items: center;
-  min-height: 2.125rem;
-  padding: 0 0.75rem;
-  font-size: var(--text-sm);
-  font-weight: 500;
+  min-height: var(--target);
+  margin: 0;
+  border: 6px solid transparent;
+  border-image: var(--plate-night) 8 fill / 8px stretch;
+  background: none;
+  color: var(--zinc-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
   line-height: 1;
   text-decoration: none;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--ink-2);
+  white-space: nowrap;
   cursor: pointer;
+  transition: transform var(--dur-hover) var(--ease-out);
 }
 
-.tg-seg[aria-pressed="true"],
+.tg-cv,
+.tg-exit {
+  padding: 0 0.625rem;
+}
+
+.tg-lang {
+  padding: 0;
+  cursor: auto;
+}
+
+.tg-lang-link {
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--target) - 12px);
+  height: calc(var(--target) - 12px);
+  color: var(--zinc-ink-2);
+  text-decoration: none;
+}
+
 .tg-lang-link[aria-current="true"] {
-  background: var(--ink);
-  color: var(--sheet);
+  color: var(--zinc-ink);
+  text-decoration: underline 2px var(--zinc-rose);
+  text-underline-offset: 5px;
 }
 
-.tg-seg[aria-disabled="true"] {
-  color: var(--ink-3);
+.tg-lang-link:not([aria-current="true"]):hover {
+  color: var(--zinc-ink);
+}
+
+.tg-cv:hover,
+.tg-exit:not([aria-disabled="true"]):hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+.tg-cv:active,
+.tg-exit:not([aria-disabled="true"]):active {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
+}
+
+.tg-exit[aria-disabled="true"] {
+  color: var(--zinc-ink-2);
   cursor: default;
-  text-decoration: underline dotted var(--rule-strong);
-  text-underline-offset: 0.3em;
 }
 
-.tg-seg[aria-busy="true"] {
-  opacity: 0.6;
+.tg-exit[aria-busy="true"] {
   cursor: progress;
 }
 
-.tg-seg:not([aria-pressed="true"], [aria-disabled="true"]):hover,
-.tg-lang-link:not([aria-current="true"]):hover {
-  color: var(--ink);
-  background: var(--mount);
+.tg-short {
+  display: none;
 }
 
-.tg-cv {
-  border: 1px solid var(--rose);
-  background: var(--rose);
-  color: #fff;
-  min-height: 2.375rem;
-  padding: 0 0.9rem;
-  box-shadow: var(--shadow-sheet);
-}
-
-.tg-cv:hover {
-  background: var(--rose-ink);
-  border-color: var(--rose-ink);
+.tg-mode {
+  position: relative;
 }
 
 .tg-note {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
+  top: calc(100% + 8px);
+  right: 0;
   width: 16rem;
-  padding: 0.625rem 0.75rem;
-  font-size: var(--text-xs);
+  padding: 0.75rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
   line-height: 1.45;
-  color: var(--ink-2);
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sheet);
+  color: var(--zinc-ink);
+  border: 6px solid transparent;
+  border-image: var(--plate-night) 8 fill / 8px stretch;
   opacity: 0;
   visibility: hidden;
   transition:
@@ -101,7 +119,7 @@
     visibility 0s linear var(--dur-ui-exit);
 }
 
-.tg-mode:has([data-mode="garden"][aria-disabled="true"]:is(:hover, :focus-visible)) .tg-note {
+.tg-mode:has(.tg-exit[aria-disabled="true"]:is(:hover, :focus-visible)) .tg-note {
   opacity: 1;
   visibility: visible;
   transition:
@@ -109,47 +127,44 @@
     visibility 0s;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .tg-note {
-    transform: translate3d(0, -4px, 0);
-    transition:
-      opacity var(--dur-ui-exit) var(--ease-out),
-      transform var(--dur-ui-exit) var(--ease-out),
-      visibility 0s linear var(--dur-ui-exit);
+@media (prefers-reduced-motion: reduce) {
+  .tg-plate,
+  .tg-cv,
+  .tg-exit {
+    transition: none;
   }
 
-  .tg-mode:has([data-mode="garden"][aria-disabled="true"]:is(:hover, :focus-visible)) .tg-note {
+  .tg-cv:hover,
+  .tg-exit:not([aria-disabled="true"]):hover,
+  .tg-cv:active,
+  .tg-exit:not([aria-disabled="true"]):active {
     transform: none;
-    transition:
-      opacity var(--dur-ui) var(--ease-out),
-      transform var(--dur-ui) var(--ease-out),
-      visibility 0s;
   }
 }
 
-/* Phone: a full-width bar on paper, so the controls never sit on top of text. */
+/* Phones: the same row, tighter; "Download CV" becomes "CV" and keeps its full name for assistive tech. */
 @media (max-width: 44.99rem) {
-  #toggles {
-    left: 0;
-    right: 0;
-    padding: 0.625rem 1rem;
-    background: var(--paper);
-    border-bottom: 1px solid var(--rule);
+  #toggles,
+  .pn-bar {
+    top: max(10px, env(safe-area-inset-top, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
   }
 
   .tg {
-    justify-content: space-between;
-    gap: 0.375rem;
+    gap: 6px;
   }
 
-  .tg-seg,
-  .tg-lang-link {
-    padding: 0 0.55rem;
-    font-size: var(--text-xs);
+  .tg-long {
+    display: none;
   }
 
-  .tg-cv {
-    padding: 0 0.7rem;
-    font-size: var(--text-xs);
+  .tg-short {
+    display: inline;
+  }
+
+  .tg-cv,
+  .tg-exit {
+    padding: 0 0.375rem;
+    font-size: 0.8125rem;
   }
 }

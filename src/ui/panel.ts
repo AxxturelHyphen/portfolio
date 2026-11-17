@@ -3,16 +3,18 @@ import type { Content, Lang, Machine, Panel, Project, ProjectId, State } from '.
 import { bindToggles, isPending, paintMode, renderToggles } from './toggles.ts';
 
 /**
- * The project panel: one native <dialog id="panel"> present from load (cook/ARCH.md 2.10). Desktop: right side,
- * about 40 % wide. Mobile: bottom sheet. Layout comes from container queries in panel.css.
+ * The project panel, drawn as the field notebook of cook/ART.md section 4: one native <dialog id="panel"> present
+ * from load (cook/ARCH.md 2.10). The dialog itself is a transparent full-viewport layer; its .pn-page is the notebook
+ * page (desktop: right side, about 40 % wide; mobile: a bottom sheet bound along the top) and the only thing that
+ * moves. Layout comes from container queries in panel.css.
  * The panel subscribes to the machine and only follows it:
  *  - garden: shown while the phase is opening or inspect. The `open` channel drives it every frame through
  *    setProgress (panelOf: transform and opacity inline, CSS transitions off); close() when 'closing' has settled.
  *  - herbario: shown while the intent is a project. CSS transitions animate transform and opacity; leaving the
  *    project runs the exit while the dialog is still in the top layer, and close() follows it.
- * Its header bar repeats the mode toggle, Download CV and language, which the modal would otherwise make inert.
- * Esc, the close button and a click on the backdrop never close directly: they send CLOSE (BACK when no project is
- * the intent), and the state decides.
+ * Its bar repeats the fixed controls at their own spot (the modal would otherwise make them inert). The page's
+ * ribbon bookmark is the "Close" button. Esc, the ribbon and a click beside the page never close directly: they send
+ * CLOSE (BACK when no project is the intent), and the state decides. Sections fade up once the page shows.
  */
 
 /** Renders the case of one project (head and body); injected by the composition root so ui stays free of content. */
@@ -21,6 +23,8 @@ export type CaseRenderer = (p: Project, lang: Lang, titleId: string) => string;
 const TITLE_ID = 'pn-title';
 const STEPS = 100;
 const EXIT_TIMEOUT_MS = 1000;
+/** From this step of setProgress the sections fade up (once per opening). */
+const UNFOLD_STEP = 50;
 
 /** Precomputed style strings so setProgress allocates nothing per frame. */
 const OPACITY: string[] = [];
@@ -69,7 +73,19 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   let selfClosed = false;
 
   el.setAttribute('aria-labelledby', TITLE_ID);
-  bindToggles(el, m);
+  const barEl = document.createElement('div');
+  barEl.className = 'pn-bar';
+  const page = document.createElement('div');
+  page.className = 'pn-page';
+  const closeEl = document.createElement('button');
+  closeEl.type = 'button';
+  closeEl.className = 'pn-close';
+  closeEl.dataset.close = '';
+  const body = document.createElement('div');
+  body.className = 'pn-body';
+  page.append(closeEl, body);
+  el.replaceChildren(barEl, page);
+  bindToggles(barEl, m);
 
   const leave = (): void => m.send(m.state.intent.k === 'project' ? { type: 'CLOSE' } : { type: 'BACK' });
 
@@ -88,22 +104,21 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
       leave();
       return;
     }
-    /** The second click of a double click on a sheet lands on the backdrop: it must not undo the open. */
-    if (e.target !== el || e.detail > 1) return;
-    const r = el.getBoundingClientRect();
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) leave();
+    /** Beside the page is the dialog itself. The second click of a double click must not undo the open. */
+    if (e.target === el && e.detail <= 1) leave();
   });
 
   function clearDriven(): void {
     delete el.dataset.driven;
-    el.style.removeProperty('opacity');
-    el.style.removeProperty('transform');
+    delete el.dataset.unfold;
+    page.style.removeProperty('opacity');
+    page.style.removeProperty('transform');
     shownStep = -1;
   }
 
-  function bar(lang: Lang): string {
-    const close = c.strings[lang]['panel.close'] ?? 'Close';
-    return `<header class="pn-bar">${renderToggles(c.strings, lang, c.profile.cv, 'pn')}<button type="button" class="pn-close" data-close aria-label="${close}"><span aria-hidden="true">×</span></button></header>`;
+  function paintChrome(lang: Lang): void {
+    barEl.innerHTML = renderToggles(c.strings, lang, c.profile.cv, 'pn');
+    closeEl.textContent = c.strings[lang]['panel.close'] ?? 'Close';
   }
 
   const panel: Panel = {
@@ -122,10 +137,11 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
         const hadFocus = el.open && el.contains(document.activeElement);
         key = next;
         current = id;
-        el.innerHTML = `${bar(lang)}<div class="pn-body">${render(p, lang, TITLE_ID)}</div>`;
+        paintChrome(lang);
+        body.innerHTML = render(p, lang, TITLE_ID);
         if (hadFocus) el.querySelector<HTMLElement>(`#${TITLE_ID}`)?.focus({ preventScroll: true });
-        paintMode(el, m.state.mode, isPending(m.state), c.strings, lang);
-        el.scrollTop = 0;
+        paintMode(barEl, m.state.mode, isPending(m.state), c.strings, lang);
+        page.scrollTop = 0;
         const media = el.querySelectorAll<HTMLImageElement>('img[data-media]');
         media.forEach((img, i) => {
           if (i > 0) img.addEventListener('load', () => void reveal(img), { once: true });
@@ -145,8 +161,10 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
       if (el.dataset.driven === undefined) el.dataset.driven = '';
       if (i === shownStep) return;
       shownStep = i;
-      el.style.opacity = OPACITY[i] ?? '1';
-      el.style.transform = (sheet.matches ? SHEET : SIDE)[i] ?? 'none';
+      if (i >= UNFOLD_STEP) el.dataset.unfold = '';
+      else if (i === 0) delete el.dataset.unfold;
+      page.style.opacity = OPACITY[i] ?? '1';
+      page.style.transform = (sheet.matches ? SHEET : SIDE)[i] ?? 'none';
     },
 
     commitOpen(): void {
@@ -172,7 +190,7 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
 
   async function hide(): Promise<void> {
     el.dataset.closing = '';
-    await settle(el);
+    await settle(page);
     if (el.dataset.closing !== undefined && wanted(m.state) === null) panel.commitClosed();
   }
 
@@ -200,9 +218,9 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   m.subscribe((s, prev) => {
     if (s.mode !== prev.mode) {
       if (s.mode === 'herbario') clearDriven();
-      paintMode(el, s.mode, isPending(s), c.strings, s.lang);
+      paintMode(barEl, s.mode, isPending(s), c.strings, s.lang);
     } else if (s.gardenReady !== prev.gardenReady) {
-      paintMode(el, s.mode, isPending(s), c.strings, s.lang);
+      paintMode(barEl, s.mode, isPending(s), c.strings, s.lang);
     }
     reconcile(s);
   });

@@ -1,0 +1,184 @@
+/*
+ * The garden plan (cook/ART.md section 4), bottom left: a folded 44 px night plate with the 8-point rose, opening to
+ * a 360 px strip plan in pale engraved line. Opacity and transform only; folded, the sheet is inert and hidden.
+ * Shown in the overview and in beds; never during the intro or while the notebook is open.
+ */
+
+.pl {
+  position: absolute;
+  left: max(var(--edge), env(safe-area-inset-left, 0px));
+  bottom: max(var(--edge), env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+
+#proxies:is([data-phase="intro"], [data-phase="opening"], [data-phase="inspect"], [data-phase="closing"]) .pl {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.pl-rose {
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border: 6px solid transparent;
+  border-image: var(--plate-night) 8 fill / 8px stretch;
+  background: none;
+  color: var(--zinc-ink-2);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+
+.pl-rose:hover {
+  color: var(--zinc-ink);
+  transform: translate3d(0, -2px, 0);
+}
+
+.pl-rose:active {
+  transform: scale(0.98);
+}
+
+.pl-rose-mark {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.pl[data-open] .pl-rose-mark {
+  stroke: var(--zinc-rose);
+}
+
+.pl-sheet {
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--target) + 8px);
+  width: 360px;
+  padding: 10px 0 4px;
+  border: 6px solid transparent;
+  border-image: var(--plate-night) 8 fill / 8px stretch;
+  color: var(--zinc-ink-2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, 6px, 0);
+  transition:
+    opacity var(--dur-ui-exit) var(--ease-out),
+    transform var(--dur-ui-exit) var(--ease-out),
+    visibility 0s linear var(--dur-ui-exit);
+}
+
+.pl[data-open] .pl-sheet {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  transition:
+    opacity var(--dur-ui) var(--ease-out),
+    transform var(--dur-ui) var(--ease-out),
+    visibility 0s;
+}
+
+.pl-title {
+  padding: 0 14px;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--zinc-ink);
+}
+
+.pl-map {
+  position: relative;
+  width: 348px;
+  height: 140px;
+}
+
+.pl-drawing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 348px;
+  height: 100px;
+  fill: none;
+  stroke: var(--zinc-ink-2);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pl-moth {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 18px;
+  height: 13px;
+  fill: var(--zinc-rose);
+  transform: translate3d(calc(var(--col, 0) * 69.6px + 25.8px), 0, 0);
+  transition: transform var(--dur-ui) var(--ease-out), opacity var(--dur-ui) var(--ease-out);
+}
+
+.pl-moth[data-off] {
+  opacity: 0;
+}
+
+.pl-places {
+  position: absolute;
+  inset: auto 0 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+}
+
+.pl-places button {
+  width: 100%;
+  min-height: var(--target);
+  padding: 2px 2px;
+  border: 0;
+  background: none;
+  color: var(--zinc-ink-2);
+  font-size: 0.8125rem;
+  line-height: 1.15;
+  text-wrap: balance;
+  cursor: pointer;
+}
+
+.pl-places button:hover {
+  color: var(--zinc-ink);
+  text-decoration: underline 1px;
+  text-underline-offset: 3px;
+}
+
+.pl-places button[aria-current="location"] {
+  color: var(--zinc-ink);
+  text-decoration: underline 2px var(--zinc-rose);
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 44.99rem) {
+  .pl {
+    left: max(10px, env(safe-area-inset-left, 0px));
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* The plant tag takes the bottom strip on phones: the plan steps aside while a flower is focused. */
+  #proxies[data-phase="focus"] .pl {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .pl-sheet {
+    width: min(360px, calc(100vw - 20px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl,
+  .pl-rose,
+  .pl-sheet,
+  .pl[data-open] .pl-sheet,
+  .pl-moth {
+    transition: none;
+  }
+}

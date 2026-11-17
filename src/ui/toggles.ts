@@ -1,14 +1,16 @@
 import type { Lang, Machine, Mode, State, Strings, Toggles } from '../types.ts';
+import { uiText } from './copy.ts';
 
 /**
- * Top-right controls in every mode: view (Garden, Herbario), Download CV, language. The panel's header bar renders
- * the same controls (renderToggles with its own id prefix) and binds them with bindToggles, so they stay reachable
- * while the modal dialog makes the rest of the page inert.
+ * The three fixed controls, top right in every mode (cook/ART.md section 4): language, Download CV, and one way-out
+ * button that leads to the other mode ("Exit to CV" in the garden, "Enter the garden" in the Herbario). Night zinc
+ * plates, text only. The panel renders the same controls in its dialog (renderToggles with its own id prefix, bound
+ * with bindToggles) at the same spot, so they stay usable while the modal makes the rest of the page inert.
  * renderToggles is pure (scripts/prerender.ts puts it in index.html, so the controls exist without JS): there the
  * garden button is disabled, because without JS there is no garden.
- * With JS, "Enter the garden" is live wherever WebGL2 exists: it sends SET_MODE garden, and the machine keeps it
- * pending until the garden is ready (data-pending, aria-busy). Without WebGL2, or once the garden broke, it is
- * disabled with its note.
+ * The way-out button carries the mode it leads to in data-mode. "Enter the garden" is live wherever WebGL2 exists:
+ * the machine keeps it pending until the garden is ready (data-pending, aria-busy). Without WebGL2, or once the
+ * garden broke, it is disabled with its note.
  */
 
 const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
@@ -23,19 +25,18 @@ export function disableGarden(): void {
 }
 
 export function renderToggles(strings: Strings, lang: Lang, cv: string, prefix = 'tg'): string {
-  const s = (key: string): string => esc(strings[lang][key] ?? key);
+  const s = (key: string): string => esc(uiText(strings, lang, key));
   const note = `${prefix}-note`;
   const langs = LANGS.map(
     (l) => `<a class="tg-lang-link" href="?lang=${l}" hreflang="${l}" lang="${l}" data-lang="${l}"${l === lang ? ' aria-current="true"' : ''}>${l.toUpperCase()}</a>`,
   ).join('');
   return `<nav class="tg" aria-label="${s('nav.controls')}" data-label-key="nav.controls">
-<div class="tg-group tg-mode" role="group" aria-label="${s('nav.view')}" data-label-key="nav.view">
-<button type="button" class="tg-seg" data-mode="garden" aria-pressed="false" aria-disabled="true" aria-describedby="${note}" data-key="mode.gardenShort">${s('mode.gardenShort')}</button>
-<button type="button" class="tg-seg" data-mode="herbario" aria-pressed="true" data-key="mode.herbario">${s('mode.herbario')}</button>
+<div class="tg-plate tg-lang" role="group" aria-label="${s('nav.lang')}" data-label-key="nav.lang">${langs}</div>
+<a class="tg-cv" href="${esc(cv)}" download aria-label="${s('cv.download')}" data-label-key="cv.download"><span class="tg-long" data-key="cv.download">${s('cv.download')}</span><span class="tg-short" aria-hidden="true" data-key="cv.short">${s('cv.short')}</span></a>
+<div class="tg-mode">
+<button type="button" class="tg-exit" data-mode="garden" aria-disabled="true" aria-describedby="${note}">${s('mode.garden')}</button>
 <p class="tg-note" id="${note}" data-key="mode.gardenNote">${s('mode.gardenNote')}</p>
 </div>
-<a class="tg-cv" href="${esc(cv)}" download data-key="cv.download">${s('cv.download')}</a>
-<div class="tg-group tg-lang" role="group" aria-label="${s('nav.lang')}" data-label-key="nav.lang">${langs}</div>
 </nav>`;
 }
 
@@ -55,26 +56,27 @@ export function bindToggles(root: HTMLElement, m: Pick<Machine, 'send'>): void {
   });
 }
 
-/** Pressed, pending and disabled state of the view buttons under `root`. */
+/** The way-out button under `root`: where it leads, its words, and its pending and disabled state. */
 export function paintMode(root: HTMLElement, mode: Mode, pending: boolean, strings: Strings, lang: Lang): void {
-  for (const b of root.querySelectorAll<HTMLElement>('[data-mode]')) {
-    const garden = b.dataset.mode === 'garden';
-    b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
-    if (!garden) continue;
-    if (canGarden) b.removeAttribute('aria-disabled');
-    else b.setAttribute('aria-disabled', 'true');
-    if (pending) b.setAttribute('aria-busy', 'true');
-    else b.removeAttribute('aria-busy');
-    if (canGarden && mode === 'herbario') b.setAttribute('aria-label', strings[lang]['mode.garden'] ?? 'mode.garden');
-    else b.removeAttribute('aria-label');
-  }
+  const exit = root.querySelector<HTMLElement>('.tg-exit');
+  if (exit === null) return;
+  /** While the garden is still getting ready, the button keeps offering it (busy) instead of the way back out. */
+  const toGarden = mode === 'herbario' || pending;
+  exit.dataset.mode = toGarden ? 'garden' : 'herbario';
+  exit.textContent = uiText(strings, lang, toGarden ? 'mode.garden' : 'mode.exit');
+  if (toGarden) exit.removeAttribute('aria-label');
+  else exit.setAttribute('aria-label', uiText(strings, lang, 'mode.exitLabel'));
+  if (toGarden && !canGarden) exit.setAttribute('aria-disabled', 'true');
+  else exit.removeAttribute('aria-disabled');
+  if (pending) exit.setAttribute('aria-busy', 'true');
+  else exit.removeAttribute('aria-busy');
   root.querySelector<HTMLElement>('.tg')?.toggleAttribute('data-pending', pending);
 }
 
 /** Texts and the current language mark under `root`. */
 export function paintLang(root: HTMLElement, strings: Strings, l: Lang): void {
-  for (const n of root.querySelectorAll<HTMLElement>('.tg [data-key]')) n.textContent = strings[l][n.dataset.key ?? ''] ?? '';
-  for (const n of root.querySelectorAll<HTMLElement>('.tg [data-label-key]')) n.setAttribute('aria-label', strings[l][n.dataset.labelKey ?? ''] ?? '');
+  for (const n of root.querySelectorAll<HTMLElement>('.tg [data-key]')) n.textContent = uiText(strings, l, n.dataset.key ?? '');
+  for (const n of root.querySelectorAll<HTMLElement>('.tg [data-label-key]')) n.setAttribute('aria-label', uiText(strings, l, n.dataset.labelKey ?? ''));
   for (const a of root.querySelectorAll<HTMLElement>('.tg [data-lang]')) {
     if (a.dataset.lang === l) a.setAttribute('aria-current', 'true');
     else a.removeAttribute('aria-current');

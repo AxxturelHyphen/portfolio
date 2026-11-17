@@ -1,27 +1,50 @@
 /*
- * Project panel: one native <dialog class="pn">. Right side on desktop, bottom sheet on phones.
- * Herbario driver: CSS transitions on transform and opacity; [data-closing] runs the exit while the dialog is
- * still in the top layer, and clearing it mid-way reverses from the current value. close() follows the exit.
+ * The field notebook (cook/ART.md section 4): one native <dialog class="pn">, a transparent full-viewport layer
+ * that holds the fixed controls (.pn-bar, styled in toggles.css) and the notebook page (.pn-page), the only thing
+ * that moves. Desktop: the right-hand page of a bound notebook, about 40 percent wide, with a marbled gutter strip.
+ * Phones: a bottom sheet bound along the top. The deep rose ribbon bookmark is the "Close" button.
+ * Herbario driver: CSS transitions on the page; [data-closing] runs the exit while the dialog is still in the top
+ * layer, and clearing it mid-way reverses from the current value. close() follows the exit.
  * Garden driver: [data-driven] turns the transition off and setProgress writes transform and opacity inline.
  */
 
 .pn {
-  --pn-from: translate3d(3rem, 0, 0);
   position: fixed;
-  inset: 0 0 0 auto;
-  width: clamp(26rem, 40vw, 48rem);
-  max-width: 100vw;
-  height: 100dvh;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
   max-height: none;
   margin: 0;
   padding: 0;
   border: 0;
-  border-left: 1px solid var(--rule);
-  background: var(--sheet);
-  color: var(--ink);
-  box-shadow: var(--shadow-panel);
-  overflow-y: auto;
+  background: transparent;
+  color: var(--note-ink);
+  overflow: hidden;
   overscroll-behavior: contain;
+}
+
+.pn-page {
+  --pn-from: translate3d(3rem, 0, 0);
+  --ink: var(--note-ink);
+  --ink-2: #3a302a;
+  --ink-3: var(--pencil);
+  --rule: rgb(31 23 19 / 0.22);
+  --rule-strong: rgb(31 23 19 / 0.4);
+  --rose: var(--note-rose);
+  --rose-ink: var(--note-rose);
+  --mount: #bdb3a2;
+  --marble: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='40'%3E%3Crect width='18' height='40' fill='%232a211c'/%3E%3Cg fill='none'%3E%3Cpath d='M0 6C4 2 8 10 12 6S17 4 18 6' stroke='%238f1d27' stroke-width='3'/%3E%3Cpath d='M0 16C5 12 9 20 13 15S17 14 18 16' stroke='%23a59174' stroke-width='1.5'/%3E%3Cpath d='M0 27C4 23 9 31 12 26S17 25 18 27' stroke='%238f1d27' stroke-width='2'/%3E%3Cpath d='M0 35C5 32 8 38 13 34S17 34 18 35' stroke='%23cfc6b6' stroke-opacity='.5'/%3E%3C/g%3E%3C/svg%3E");
+  position: fixed;
+  top: 76px;
+  right: max(var(--edge), env(safe-area-inset-right, 0px));
+  bottom: max(var(--edge), env(safe-area-inset-bottom, 0px));
+  width: clamp(420px, 40vw, 640px);
+  max-width: calc(100vw - 2 * var(--edge));
+  padding-left: 18px;
+  background: var(--note) var(--marble) left top / 18px 40px repeat-y;
+  color: var(--note-ink);
+  box-shadow: 0 1px 0 rgb(13 10 30 / 0.4), 0 18px 40px -22px rgb(13 10 30 / 0.7);
   container: panel / inline-size;
   contain: layout paint style;
   opacity: 0;
@@ -30,7 +53,7 @@
   transition-timing-function: var(--ease-in-out);
 }
 
-.pn[open]:not([data-closing]) {
+.pn[open]:not([data-closing]) .pn-page {
   opacity: 1;
   transition-duration: var(--dur-ui);
   transition-timing-function: var(--ease-out);
@@ -41,11 +64,11 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .pn {
+  .pn-page {
     transform: var(--pn-from);
   }
 
-  .pn[open]:not([data-closing]) {
+  .pn[open]:not([data-closing]) .pn-page {
     transform: none;
 
     @starting-style {
@@ -55,21 +78,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pn,
-  .pn[open]:not([data-closing]) {
+  .pn-page,
+  .pn[open]:not([data-closing]) .pn-page {
     transition-duration: 0.12s;
   }
 }
 
-.pn[data-driven] {
+.pn[data-driven] .pn-page {
   transition: none;
 }
 
 .pn::backdrop {
-  background: rgb(29 27 24 / 0.2);
+  background: rgb(13 10 30 / 0.22);
   opacity: 0;
-  overflow: hidden;
-  overscroll-behavior: contain;
   transition: opacity var(--dur-ui-exit) var(--ease-in-out);
 }
 
@@ -82,74 +103,100 @@
   }
 }
 
-.pn:modal {
+.pn-body {
+  height: 100%;
+  overflow-y: auto;
   overscroll-behavior: contain;
+  padding: 2.25rem clamp(1.25rem, 6cqi, 3rem) 3.5rem;
+  scroll-padding-top: 1rem;
 }
 
-@media (max-width: 44.99rem) {
-  .pn {
-    --pn-from: translate3d(0, 100%, 0);
-    inset: auto 0 0 0;
-    width: 100%;
-    height: auto;
-    max-height: 88dvh;
-    border-left: 0;
-    border-top: 1px solid var(--rule);
-    border-radius: 0.75rem 0.75rem 0 0;
-    box-shadow: 0 -18px 48px -24px rgb(29 27 24 / 0.3);
-  }
-}
-
-/* Header bar: the same view, CV and language controls as the page (the modal makes those inert), then Close. */
-.pn-bar {
-  position: sticky;
-  z-index: 1;
-  top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.625rem;
-  padding: 0.75rem clamp(1rem, 3cqi, 1.5rem);
-  background: var(--sheet);
-  border-bottom: 1px solid var(--rule);
-}
-
-.pn-bar .tg {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
+/* The ribbon bookmark: code-drawn deep rose with a forked tail, hanging over the top edge of the page. */
 .pn-close {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 2.375rem;
-  height: 2.375rem;
-  padding: 0;
-  font-size: 1.375rem;
-  line-height: 1;
-  color: var(--ink-2);
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
+  position: absolute;
+  z-index: 1;
+  top: -6px;
+  right: 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 56px;
+  height: 104px;
+  padding: 0 0 26px;
+  border: 0;
+  background: none;
+  color: var(--zinc-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+
+.pn-close::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--note-rose);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
 }
 
 .pn-close:hover {
-  color: var(--ink);
-  border-color: var(--rule-strong);
+  transform: translate3d(0, 4px, 0);
 }
 
-.pn-body {
-  padding: 2rem clamp(1.25rem, 5cqi, 3rem) 3.5rem;
+.pn-close:active {
+  transform: translate3d(0, 4px, 0) scale(0.98);
 }
 
-@container panel (max-width: 30rem) {
-  .pn-bar .tg-seg,
-  .pn-bar .tg-lang-link,
-  .pn-bar .tg-cv {
-    padding: 0 0.5rem;
-    font-size: var(--text-xs);
+/* Sections fade up 30 ms apart once the page shows (garden: from open 0.5; Herbario: on open). */
+@keyframes pn-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pn:is([data-unfold], [open]:not([data-driven])) :is(.c-head, .c-part) {
+    animation: pn-up var(--dur-ui) var(--ease-out) both;
+  }
+
+  .pn .c-part:nth-of-type(1) { animation-delay: 30ms; }
+  .pn .c-part:nth-of-type(2) { animation-delay: 60ms; }
+  .pn .c-part:nth-of-type(3) { animation-delay: 90ms; }
+  .pn .c-part:nth-of-type(4) { animation-delay: 120ms; }
+  .pn .c-part:nth-of-type(5) { animation-delay: 150ms; }
+  .pn .c-part:nth-of-type(6) { animation-delay: 180ms; }
+  .pn .c-part:nth-of-type(7) { animation-delay: 210ms; }
+}
+
+@media (max-width: 44.99rem) {
+  .pn-page {
+    --pn-from: translate3d(0, 100%, 0);
+    inset: auto 0 0 0;
+    top: auto;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: calc(100dvh - 68px);
+    padding: 14px 0 0;
+    background: var(--note) var(--marble) left top / 40px 14px repeat-x;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pn-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    padding-top: 1.75rem;
+  }
+
+  .pn-close {
+    top: 0;
+    right: 20px;
+    height: 88px;
   }
 }
 
@@ -170,8 +217,12 @@
   font-family: var(--font-display);
   font-synthesis: none;
   font-weight: 400;
-  font-size: clamp(2rem, 1.4rem + 3cqi, 3rem);
-  line-height: 1.08;
+  font-size: 2.5rem;
+  line-height: 2.75rem;
+}
+
+.pn .c-head {
+  padding-right: 4.5rem;
 }
 
 .c-title:focus {
@@ -212,14 +263,15 @@
 }
 
 .c-h {
-  font-size: var(--text-sm);
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ink-2);
 }
 
 .c-text {
   max-width: var(--measure);
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.625rem;
 }
 
 .c-private {
@@ -245,7 +297,7 @@ a.c-link:hover {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   background: var(--mount);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule-strong);
 }
 
 img.c-media-item {
@@ -260,6 +312,13 @@ img.c-media-item.is-ready {
 .c-media-fill {
   font-size: var(--text-sm);
   color: var(--ink-3);
+}
+
+@container panel (max-width: 30rem) {
+  .c-title {
+    font-size: 2rem;
+    line-height: 2.25rem;
+  }
 }
 
 @container panel (min-width: 34rem) {

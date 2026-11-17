@@ -20,6 +20,7 @@
   }
 
   #toggles,
+  #world,
   .pn,
   .h-skip,
   .h-site,
@@ -193,7 +194,6 @@
   }
 
   .h-tags > li {
-    padding: 0.2mm 1.2mm;
     font-size: 7.5pt;
   }
 
