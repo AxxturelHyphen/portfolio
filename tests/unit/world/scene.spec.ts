@@ -20,7 +20,7 @@ test('garden layout: beds in order, grotto under the Semillero, shots S01 to S12
   expect(garden.grutaHost).toBe('semillero');
   expect(Object.keys(garden.shots).sort()).toEqual(Array.from({ length: 12 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
   expect(garden.shots['S11']?.viewport).toEqual([390, 844]);
-  expect(garden.film['S03']).toEqual({ x: 10.84, y: 1.01, z: 3.31, pitch: 4, yaw: 5, fov: 16.1 });
+  expect(garden.film['S03']).toEqual({ x: 10.84, y: 1.01, z: 3.31, pitch: 4.5, yaw: 3.6, fov: 12.9 });
   expect(garden.film['S04']).toEqual({ x: 24.43, y: 0.6, z: 5.5, pitch: 6.4, yaw: -19.7, fov: 27 });
   expect(garden.film['S05']).toEqual({ x: 30.06, y: 2.2, z: 7.64, pitch: -10, yaw: 0, fov: 13.7 });
   expect(garden.film['S06']).toEqual({ x: 1.2, y: 1.5, z: 3.0, pitch: 0, yaw: 0, fov: 33.4 });
