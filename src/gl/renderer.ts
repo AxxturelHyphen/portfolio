@@ -1,4 +1,5 @@
 import { DataTexture, PerspectiveCamera, RGBAFormat, SRGBColorSpace, Scene, WebGLRenderer } from 'three';
+import type { Texture } from 'three';
 import type { Clock, Gfx, InfoSnapshot, Loop, Pose, Quality } from '../types.ts';
 import { createCutoutBatch } from './cutout.material.ts';
 import { createFilmPass } from './film.pass.ts';
@@ -7,6 +8,8 @@ import type { Fireflies } from './fireflies.ts';
 import { createGround } from './ground.ts';
 import type { Ground } from './ground.ts';
 import { setMoonByX, sharedUniforms } from './lights.ts';
+import { createPond } from './pond.ts';
+import type { Pond } from './pond.ts';
 import { residentTextureBytes } from './ktx2.ts';
 import { createSky } from './sky.ts';
 import type { Sky } from './sky.ts';
@@ -27,11 +30,15 @@ export interface GlGfx extends Gfx {
   readonly ground: Ground;
   /** Fireflies and motes (one draw): the world builder sets the pockets of the place. */
   readonly fireflies: Fireflies;
+  /** The Estanque water (one draw, empty until world calls setRect). */
+  readonly pond: Pond;
   readonly target: SceneTarget;
   /** World Y up, camera looks toward -Z; pitch and yaw in radians (positive looks up, positive yaw turns toward +x, order YXZ), fov vertical in degrees. */
   setPose(p: Readonly<Pose> & { readonly yaw?: number }): void;
   /** Film inputs owned by state: reduced motion and the travel exposure dip (1 = none), applied on the next render. */
   setFilm(reduced: boolean, exposure: number): void;
+  /** The kaleidoscope intro: an uploaded page texture and the intro channel (0..1), every frame of the intro. */
+  setIntro(page: Texture | null, intro: number): void;
   /** The one resize signal (a single ResizeObserver on the canvas): CSS size, and a counter that grows on every resize. */
   readonly cssW: number;
   readonly cssH: number;
@@ -67,7 +74,8 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
   const ground = createGround(sky.uniforms.uMoonBody.value);
   const fireflies = createFireflies(FIREFLY_CAPACITY);
   fireflies.setCount(quality.cfg.fireflies);
-  scene.add(sky.mesh, ground.mesh, fireflies.mesh);
+  const pond = createPond();
+  scene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh);
   const target = createSceneTarget();
   const film = createFilmPass(renderer, quality);
 
@@ -162,13 +170,13 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     if (dirty) applySize();
     const probe = createCutoutBatch(gfx, pixel, pixel, 1);
     const warmScene = new Scene();
-    warmScene.add(sky.mesh, ground.mesh, fireflies.mesh, probe.mesh);
+    warmScene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh, probe.mesh);
     for (const t of ground.textures) renderer.initTexture(t);
     renderer.setRenderTarget(target.target);
     await renderer.compileAsync(warmScene, camera);
     renderer.render(warmScene, camera);
     await film.warm(target.target);
-    scene.add(sky.mesh, ground.mesh, fireflies.mesh);
+    scene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh);
   }
 
   const gfx: GlGfx = {
@@ -179,6 +187,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     sky,
     ground,
     fireflies,
+    pond,
     target,
     render: renderScene,
     warm,
@@ -209,6 +218,9 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     setFilm(r: boolean, e: number): void {
       reduced = r;
       exposure = e;
+    },
+    setIntro(page, intro): void {
+      film.setIntro(page, intro);
     },
     onContextLost(fn: () => void): void { lostHandlers.push(fn); },
   };

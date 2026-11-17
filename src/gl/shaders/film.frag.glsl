@@ -27,6 +27,8 @@ uniform float uFilmOn;
 uniform vec3 uScratch;     // x (0..1), opacity, wobble phase
 uniform float uHalGain;    // halation strength, trailing the flicker by 100 ms
 uniform vec3 uHighlight;   // warm highlight tint (#f3e6cf), display
+uniform sampler2D uKaleido; // the intro page (linear, premultiplied cutouts on clear)
+uniform float uIntro;      // the intro channel 0..1; at 1 the iris shows its plain colour again
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -57,6 +59,11 @@ const vec2 DUST_CELLS = vec2(8.0, 5.0);
 const vec3 DUST_DARK = vec3(0.16, 0.12, 0.10);
 const vec3 DUST_LIGHT = vec3(0.86, 0.80, 0.68);
 const vec3 SCRATCH = vec3(0.84, 0.78, 0.66);
+const float INTRO_S = 3.0;
+const float K_SECTORS = 8.0;
+const float K_STEP = 0.04363;                 // 2.5 degrees per held pose, 12 poses a second
+const float K_FIT = 0.92;                     // the page's half width reaches this share of the frame half height
+const vec3 K_GROUND = vec3(0.192, 0.173, 0.110);   // #312c1c, display
 
 vec3 encodeSRGB(vec3 c) {
   c = max(c, 0.0);
@@ -141,6 +148,21 @@ vec3 dust(vec3 col, vec2 film, float k1080, float aspect, uint seed) {
   return dark ? col + rim * 0.12 : col;
 }
 
+// The intro mandala: the page folded into 8 mirrored sectors around the frame centre, turning on twos.
+vec3 kaleido(vec2 uv, float aspect) {
+  float t = uIntro * INTRO_S;
+  float pose = floor(t * 12.0);
+  vec2 hub = 0.006 * vec2(sin(pose * 1.7), cos(pose * 2.3));
+  vec2 p = (uv - 0.5) * vec2(aspect, 1.0) - hub;
+  float sector = 2.0 * PI / K_SECTORS;
+  float a = mod(atan(p.y, p.x) + pose * K_STEP, sector);
+  a = min(a, sector - a);
+  vec2 q = vec2(cos(a), sin(a)) * length(p) * K_FIT;
+  vec4 page = textureLod(uKaleido, 0.5 + q, 0.5) * step(max(abs(q.x), abs(q.y)), 0.5);
+  vec3 c = encodeSRGB(page.rgb) + K_GROUND * (1.0 - page.a);
+  return c * smoothstep(0.0, 0.1, uIntro);
+}
+
 void main() {
   vec2 film = (floor(vUv * uRes) + 0.5);
   if (uFilmOn < 0.5) {
@@ -194,7 +216,8 @@ void main() {
   col = uLift + col * (1.0 - uLift);
 
   float irisD = length((vUv - uIris.xy) * vec2(aspect, 1.0));
-  col = mix(col, uIrisColor, smoothstep(uIris.z - 2.0 * uIris.w, uIris.z, irisD));
+  vec3 irisCol = uIntro < 1.0 ? uLift + kaleido(vUv, aspect) * (1.0 - uLift) : uIrisColor;
+  col = mix(col, irisCol, smoothstep(uIris.z - 2.0 * uIris.w, uIris.z, irisD));
   col = mix(col, BAR_COLOR, barMask);
   col = mix(col, BAR_EDGE, barEdge);
   col = mix(col, mix(BAR_COLOR, PERF_LIGHT, perfHole), perf);

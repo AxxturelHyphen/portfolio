@@ -1,5 +1,5 @@
 import { BufferGeometry, Camera, DataTexture, Float32BufferAttribute, GLSL3, Mesh, RawShaderMaterial, Scene, Vector2, Vector3, Vector4 } from 'three';
-import type { WebGLRenderer, WebGLRenderTarget } from 'three';
+import type { Texture, WebGLRenderer, WebGLRenderTarget } from 'three';
 import type { Clock, FilmPass, FilmUniforms, Quality } from '../types.ts';
 import { displayHex } from './colour.ts';
 import { createFilmDrive } from './film.drive.ts';
@@ -35,6 +35,11 @@ const GAMMA = [MID_GAMMA, MID_GAMMA, MID_GAMMA * 1.04] as const;
 export interface FilmDriver extends FilmPass {
   /** Per frame, before render(): time, seed, weave, flicker, scratch, tint breathing. `exposure` multiplies in. */
   tick(c: Clock, reduced: boolean, exposure: number): void;
+  /**
+   * The kaleidoscope intro: `page` is the plate shown in radial symmetry, `intro` the intro channel (0..1). Below 1 the
+   * mandala fills what the iris does not show; at 1 the iris is plain again. Null keeps the plain ground. No allocation.
+   */
+  setIntro(page: Texture | null, intro: number): void;
   /** Compiles the film and halation programs, uploads the fallback texture and runs the chain once into its targets. */
   warm(scene: WebGLRenderTarget): Promise<void>;
   dispose(): void;
@@ -71,11 +76,15 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
   const geometry = fullscreenTriangle();
   const black = new DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
   black.needsUpdate = true;
+  const clear = new DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1);
+  clear.needsUpdate = true;
   const uniforms = filmUniforms(black);
-  const extras: FilmExtras & { uHighlight: { value: Vector3 } } = {
+  const extras: FilmExtras & { uHighlight: { value: Vector3 }; uKaleido: { value: Texture }; uIntro: { value: number } } = {
     uScratch: { value: new Vector3() },
     uHalGain: { value: HALATION_GAIN },
     uHighlight: { value: displayHex(HIGHLIGHT, new Vector3()) },
+    uKaleido: { value: clear },
+    uIntro: { value: 1 },
   };
   const material = new RawShaderMaterial({
     glslVersion: GLSL3, vertexShader, fragmentShader: common + fragmentBody, uniforms: { ...uniforms, ...extras }, depthTest: false, depthWrite: false,
@@ -126,8 +135,13 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
     },
     render,
     tick: drive.tick,
+    setIntro(page, intro) {
+      extras.uKaleido.value = page ?? clear;
+      extras.uIntro.value = intro;
+    },
     async warm(target) {
       renderer.initTexture(black);
+      renderer.initTexture(clear);
       await Promise.all([renderer.compileAsync(scene, camera), ...halation.scenes.map((s) => renderer.compileAsync(s, camera))]);
       render(target);
     },
@@ -137,6 +151,7 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
       material.dispose();
       geometry.dispose();
       black.dispose();
+      clear.dispose();
     },
   };
 }
