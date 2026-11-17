@@ -69,7 +69,7 @@ test('flow 6 garden: overview, beds, flowers, panel and Herbario by keyboard, Es
   await page.keyboard.press('Escape'); // one level: bed to overview
   await jardin.settled();
   expect(await phase()).toBe('overview');
-  await page.getByRole('button', { name: /herbario/i }).focus();
+  await page.getByRole('button', { name: 'Exit to the CV album' }).focus();
   await page.keyboard.press('Enter');
   await jardin.settled();
   expect(await jardin.mode()).toBe('herbario');
