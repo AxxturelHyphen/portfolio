@@ -1,6 +1,6 @@
 {
  "id": "estanque",
- "hash": "822ca136d509921b",
+ "hash": "84671090c8d9df06",
  "pages": [
   {
    "w": 2048,
@@ -14,8 +14,8 @@
     "lo": "estanque.0.n.lo.ktx2"
    },
    "fileBytes": {
-    "hi": 456660,
-    "lo": 141879
+    "hi": 430136,
+    "lo": 137425
    }
   },
   {

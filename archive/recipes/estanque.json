@@ -232,12 +232,12 @@
       {
        "hue": "all",
        "gm": [
-        "#746583",
         "#a294a8",
-        "#ddd4cb"
+        "#ddd4cb",
+        "#f7e4d4"
        ],
-       "amount": 0.9,
-       "value": 0.65
+       "amount": 1,
+       "value": 0.85
       }
      ]
     },
@@ -383,12 +383,12 @@
       {
        "hue": "all",
        "gm": [
-        "#746583",
         "#a294a8",
-        "#ddd4cb"
+        "#ddd4cb",
+        "#f7e4d4"
        ],
-       "amount": 0.9,
-       "value": 0.65
+       "amount": 1,
+       "value": 0.85
       }
      ]
     },
@@ -412,12 +412,12 @@
       {
        "hue": "all",
        "gm": [
-        "#91809a",
-        "#b6a9b9",
-        "#ddd4cb"
+        "#a294a8",
+        "#ddd4cb",
+        "#f3e6cf"
        ],
        "amount": 1,
-       "value": 0.6
+       "value": 0.8
       }
      ]
     },
@@ -445,12 +445,12 @@
       {
        "hue": "all",
        "gm": [
-        "#91809a",
-        "#b6a9b9",
-        "#ddd4cb"
+        "#a294a8",
+        "#ddd4cb",
+        "#f3e6cf"
        ],
        "amount": 1,
-       "value": 0.6
+       "value": 0.8
       }
      ]
     },
