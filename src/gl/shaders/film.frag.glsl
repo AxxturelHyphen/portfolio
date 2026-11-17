@@ -27,8 +27,6 @@ uniform float uFilmOn;
 uniform vec3 uScratch;     // x (0..1), opacity, wobble phase
 uniform float uHalGain;    // halation strength, trailing the flicker by 100 ms
 uniform vec3 uHighlight;   // warm highlight tint (#f3e6cf), display
-uniform sampler2D uKaleido; // the intro page (linear, premultiplied cutouts on clear)
-uniform float uIntro;      // the intro channel 0..1; at 1 the iris shows its plain colour again
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -47,16 +45,18 @@ const float SHOULDER = 0.80;          // display value where highlights start to
 const float WHITE = 0.955;            // shoulder asymptote: the moon core measures luma 236 to 240, nothing else gets near
 const float MAX_CHANNEL = 0.98;       // per-channel ceiling: saturated colours scale down instead of clipping
 const float TOE = 0.08;               // deepens the darks toward the lifted black, mids almost untouched
-const float IN_BLACK = 10.0 / 255.0;  // levels in-black before the lift: the floor lands on #0d0a1e
-const float CHROMA = 1.6;             // vibrance on greyed plates: their own hue pushed back toward the plate colour
+const float IN_BLACK = 16.0 / 255.0;  // levels in-black before the lift: the floor lands on #0d0a1e
+const float CHROMA = 2.0;             // vibrance on greyed plates: their own hue pushed back toward the plate colour
 const float VIVID_FROM = 0.3;         // HSV saturation where the push starts to fade
+const float DIM_FROM = 0.08;          // dark stone and shade stay neutral: they recede by value, not by hue
+const float DIM_TO = 0.2;
 const float PALE_FROM = 0.35;         // pale paper (the white peacock, lilac whites) keeps its own quiet tint
 const float PALE_TO = 0.6;
 const float VIVID_TO = 0.65;          // and where it is gone: the hero rose keeps its drawn crimson, never neon
-const vec3 DEEP = vec3(0.55, 0.45, 1.0);  // the hue the darks sink into (#181634 to #261e3d), luma-normalised below
-const float DEEP_AMOUNT = 0.45;       // share of the deep hue in the lows; mids and highlights keep the plate hue
+const vec3 DEEP = vec3(0.9, 0.9, 1.0);    // the hue the darks sink into: a cool neutral, stone recedes by value, not by hue
+const float DEEP_AMOUNT = 0.3;        // share of the deep hue in the lows; mids and highlights keep the plate hue
 const float DEEP_TOP = 0.32;          // display luma where the deep shadow hue has faded out
-const float DARK_PULL = 0.34;         // the lows pulled toward the black point: mortar and leaf shade read as dark ground
+const float DARK_PULL = 0.42;         // the lows pulled toward the black point: mortar and leaf shade read as dark ground
 const vec3 BAR_COLOR = vec3(0.090, 0.071, 0.055);
 const vec3 BAR_EDGE = vec3(0.545, 0.400, 0.227);
 const float GATE_JUMP = 0.004;
@@ -69,10 +69,6 @@ const vec3 DUST_DARK = vec3(0.16, 0.12, 0.10);
 const vec3 DUST_LIGHT = vec3(0.86, 0.80, 0.68);
 const vec3 SCRATCH = vec3(0.84, 0.78, 0.66);
 const float INTRO_S = 3.0;
-const float K_SECTORS = 8.0;
-const float K_STEP = 0.04363;                 // 2.5 degrees per held pose, 12 poses a second
-const float K_FIT = 0.92;                     // the page's half width reaches this share of the frame half height
-const vec3 K_GROUND = vec3(0.192, 0.173, 0.110);   // #312c1c, display
 
 vec3 encodeSRGB(vec3 c) {
   c = max(c, 0.0);
@@ -113,7 +109,7 @@ vec3 tint(vec3 c) {
   float y = luma(c);
   float hi = max(max(c.r, c.g), c.b);
   float s = (hi - min(min(c.r, c.g), c.b)) / max(hi, 1e-4);
-  float plain = (1.0 - smoothstep(VIVID_FROM, VIVID_TO, s)) * (1.0 - smoothstep(PALE_FROM, PALE_TO, y));
+  float plain = (1.0 - smoothstep(VIVID_FROM, VIVID_TO, s)) * (1.0 - smoothstep(PALE_FROM, PALE_TO, y)) * smoothstep(DIM_FROM, DIM_TO, y);
   c = max(vec3(y) + (c - y) * mix(1.0, CHROMA, plain), 0.0);
   float low = 1.0 - smoothstep(0.0, DEEP_TOP, y);
   c = mix(c, y * DEEP / luma(DEEP), low * DEEP_AMOUNT * plain);
@@ -170,18 +166,11 @@ vec3 dust(vec3 col, vec2 film, float k1080, float aspect, uint seed) {
   return dark ? col + rim * 0.12 : col;
 }
 
-// The intro mandala: the page folded into 8 mirrored sectors around the frame centre, turning on twos.
+// The intro mandala (kaleido.glsl) round the frame centre, on held poses with a 1 percent hub wobble.
 vec3 kaleido(vec2 uv, float aspect) {
-  float t = uIntro * INTRO_S;
-  float pose = floor(t * 12.0);
+  float pose = floor(uIntro * INTRO_S * 12.0);
   vec2 hub = 0.006 * vec2(sin(pose * 1.7), cos(pose * 2.3));
-  vec2 p = (uv - 0.5) * vec2(aspect, 1.0) - hub;
-  float sector = 2.0 * PI / K_SECTORS;
-  float a = mod(atan(p.y, p.x) + pose * K_STEP, sector);
-  a = min(a, sector - a);
-  vec2 q = vec2(cos(a), sin(a)) * length(p) * K_FIT;
-  vec4 page = textureLod(uKaleido, 0.5 + q, 0.5) * step(max(abs(q.x), abs(q.y)), 0.5);
-  vec3 c = encodeSRGB(page.rgb) + K_GROUND * (1.0 - page.a);
+  vec3 c = encodeSRGB(mandala((uv - 0.5) * vec2(aspect, 1.0) - hub, pose));
   return c * smoothstep(0.0, 0.1, uIntro);
 }
 

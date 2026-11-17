@@ -18,7 +18,7 @@ export const FLY_LIGHTS = 4;
 const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.18 } as const;
 
 /** Depth haze toward the wall: the place shadow, thickening past 3 m from the lens. */
-const HAZE = { colour: '#0e0d24', density: 0.06 } as const;
+const HAZE = { colour: '#100f17', density: 0.06 } as const;
 function hazeOf(hex: string, density: number): Vector4 {
   const c = linearHex(hex, new Vector3());
   return new Vector4(c.x, c.y, c.z, density);

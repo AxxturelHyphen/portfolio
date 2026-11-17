@@ -26,7 +26,7 @@ const BOARD = { sprite: 'sh/board', labelAt: 0.82 } as const;
 const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
   puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#5f646c', shadow: '#2b2130', shadowLength: 0.6, moon: [-10, 9] },
   rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#363b44', shadow: '#261e3d', shadowLength: 0.5, moon: [-6, 8] },
-  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1a2030', shadow: '#16163d', shadowLength: 0.9, moon: [-5, 19] },
+  estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#151a26', shadow: '#16163d', shadowLength: 0.9, moon: [-5, 19] },
   semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1f2329', shadow: '#1b1528', shadowLength: 0.3, moon: [-8, 6] },
   gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3, moon: [-8, 6] },
   salida: { skyTop: '#261e3d', skyHorizon: '#b8775c', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1, moon: [-10, 4.5] },

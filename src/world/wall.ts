@@ -19,7 +19,7 @@ const OVERLAP = 0.18;
  * The wall sits back in the place shadow as dark cool stone (a dark ground of cook/SHOTS.md B), never violet. The tile
  * is neutral stone (mean #626256): the tint darkens it and leans it a touch toward indigo, so the flowers carry the frame.
  */
-const WALL_TINT = [0.62, 0.63, 0.72] as const;
+const WALL_TINT = [0.76, 0.72, 0.68] as const;
 /** Shade jitter per flat (fraction of the tint). */
 const SHADE_JITTER = 0.1;
 /** The tile's outer texels fade in alpha (page border, mips): each quad stays this share of the tile inside it. */
