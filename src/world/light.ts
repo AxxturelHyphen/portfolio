@@ -13,7 +13,7 @@ const GEOM = {
   /** The light floats in front of the plane by this share of its radius, so it always reaches the paper. */
   liftOfRadius: 0.45,
   /** Smallest radius in metres: close shots still get a hand-sized pool. */
-  minRadius: 0.75,
+  minRadius: 1.1,
   planeZ: 0,
   restX: 0.5,
   restY: 0.42,

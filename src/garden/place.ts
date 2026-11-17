@@ -19,7 +19,7 @@ const BOARD = { sprite: 'sh/board', labelAt: 0.82 } as const;
 
 const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
   puerta: { skyTop: '#261e3d', skyHorizon: '#746583', ambient: '#746583', shadow: '#2b2130', shadowLength: 0.6 },
-  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#3a3550', shadow: '#261e3d', shadowLength: 0.5 },
+  rosaleda: { skyTop: '#181634', skyHorizon: '#5e506d', ambient: '#34364a', shadow: '#261e3d', shadowLength: 0.5 },
   estanque: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#16163d', shadow: '#16163d', shadowLength: 0.9 },
   semillero: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#1b1528', shadow: '#1b1528', shadowLength: 0.3 },
   gruta: { skyTop: '#101338', skyHorizon: '#261e3d', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3 },
@@ -33,6 +33,7 @@ export function groundLayoutOf(g: WorldLayout): GroundLayout {
     x1: gr.length + GROUND_MARGIN.x,
     z0: gr.wall.z - GROUND_MARGIN.far,
     z1: GROUND_MARGIN.near,
+    wallZ: gr.wall.z,
     path: gr.path.points.flat(),
     puddles: gr.puddles.flat(),
   };

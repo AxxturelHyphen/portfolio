@@ -20,7 +20,7 @@ const MOON = { azimuthDeg: -10, elevationGateDeg: 9, elevationExitDeg: 4, gateX:
 const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.18 } as const;
 
 /** Depth haze toward the wall: the place shadow, thickening past 3 m from the lens. */
-const HAZE = { colour: '#1b1838', density: 0.06 } as const;
+const HAZE = { colour: '#161a33', density: 0.06 } as const;
 function hazeOf(hex: string, density: number): Vector4 {
   const c = linearHex(hex, new Vector3());
   return new Vector4(c.x, c.y, c.z, density);
@@ -34,7 +34,7 @@ export const sharedUniforms = {
   uTime: { value: 0 },
   uWind: { value: new Vector2(0, 0.5) },
   uCursor: { value: new Vector4(0, 0, 1, 2.5) },
-  uCursorColor: { value: linearHex('#ffd6ab', new Vector3(), 2.2) },
+  uCursorColor: { value: linearHex('#ffd6ab', new Vector3(), 5.0) },
   uGather: { value: new Vector4(0, 0, 0, 0) },
   uMoonDir: { value: new Vector3(-0.35, 0.8, 0.5).normalize() },
   uMoonColor: { value: linearHex('#b3aacb', new Vector3(), 1.1) },

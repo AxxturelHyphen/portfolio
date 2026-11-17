@@ -30,7 +30,7 @@ export interface Sky {
 }
 
 /** Moon body in linear light; above 1 so the core reaches the white point after the grade. */
-const MOON_BODY_GAIN = 1.45;
+const MOON_BODY_GAIN = 1.75;
 
 export function createSky(): Sky {
   const geometry = new BufferGeometry();
