@@ -1,0 +1,237 @@
+import type { CameraRig, LightRig, Loop, Machine } from '../types.ts';
+
+/**
+ * Unified input (spec section 7, cook/ARCH.md 2.1 and 2.5): pointer drag with inertia, wheel and pinch zoom, tap,
+ * swipe between beds, keys. Input only sends machine events and calls the rig; it never moves anything itself.
+ * Handlers accumulate into module-owned numbers; the 'input' frame stage applies them once per frame.
+ * Proxies (ui) own clicks, hover and Enter on flowers and beds; the canvas gets what they do not.
+ */
+
+export const GESTURE = {
+  /** Movement under this (px) is a tap. */
+  tapPx: 8,
+  tapMs: 300,
+  /** Inside a bed: a horizontal drag over this distance, or a flick over this speed, steps to the next bed. */
+  swipePx: 60,
+  swipePxPerMs: 0.5,
+  /** Pointer samples kept for the release velocity (ms window). */
+  velocityWindowMs: 80,
+  /** Wheel to zoom: k = exp(-deltaY * rate); trackpad pinch (ctrl+wheel) is finer grained. */
+  wheelRate: 0.0015,
+  pinchWheelRate: 0.01,
+  lineHeightPx: 16,
+} as const;
+
+export interface InputDeps { machine: Machine; rig: CameraRig; light: LightRig; loop: Loop; surface: HTMLElement }
+export interface Input { /** Stage 'input': applies this frame's pan and zoom to the rig. */ frame(): void; dispose(): void }
+
+const SAMPLES = 8;
+
+export function createInput(d: InputDeps): Input {
+  const { machine, rig, light, loop, surface } = d;
+  const ids = new Int32Array(2).fill(-1);
+  const px = new Float64Array(2);
+  const py = new Float64Array(2);
+  const sampleT = new Float64Array(SAMPLES);
+  const sampleX = new Float64Array(SAMPLES);
+  let sampleN = 0;
+  let downX = 0;
+  let downY = 0;
+  let downT = 0;
+  let travelled = 0;
+  let pinchDist = 0;
+  let panPx = 0;
+  let zoomLog = 0;
+  let zoomAt = 0;
+
+  const garden = (): boolean => machine.state.mode === 'garden';
+  const phase = (): string => machine.state.phase;
+  const inOverview = (): boolean => phase() === 'overview';
+  const panelUp = (): boolean => {
+    const p = phase();
+    return p === 'opening' || p === 'inspect' || p === 'closing';
+  };
+
+  /** Any input during the intro skips it (MOTION D: 300 ms cross-fade, no snap). */
+  function anyInput(): void {
+    loop.wake();
+    if (phase() === 'intro') machine.send({ type: 'SKIP_INTRO' });
+  }
+
+  function slot(id: number): number {
+    return ids[0] === id ? 0 : ids[1] === id ? 1 : -1;
+  }
+
+  function pushSample(t: number, x: number): void {
+    const i = sampleN % SAMPLES;
+    sampleT[i] = t;
+    sampleX[i] = x;
+    sampleN++;
+  }
+
+  /** px per second over the last velocityWindowMs of samples. */
+  function releaseVelocity(now: number): number {
+    const n = Math.min(sampleN, SAMPLES);
+    let oldest = -1;
+    for (let k = 1; k <= n; k++) {
+      const i = (sampleN - k) % SAMPLES;
+      if (now - (sampleT[i] ?? 0) > GESTURE.velocityWindowMs) break;
+      oldest = i;
+    }
+    if (oldest < 0) return 0;
+    const newest = (sampleN - 1) % SAMPLES;
+    const dt = (sampleT[newest] ?? 0) - (sampleT[oldest] ?? 0);
+    return dt > 0 ? (((sampleX[newest] ?? 0) - (sampleX[oldest] ?? 0)) / dt) * 1000 : 0;
+  }
+
+  const pinching = (): boolean => ids[0] !== -1 && ids[1] !== -1;
+  const spread = (): number => Math.hypot((px[0] ?? 0) - (px[1] ?? 0), (py[0] ?? 0) - (py[1] ?? 0));
+
+  function onDown(e: PointerEvent): void {
+    if (!garden() || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    anyInput();
+    const i = ids[0] === -1 ? 0 : ids[1] === -1 ? 1 : -1;
+    if (i < 0) return;
+    ids[i] = e.pointerId;
+    px[i] = e.clientX;
+    py[i] = e.clientY;
+    surface.setPointerCapture(e.pointerId);
+    if (e.pointerType !== 'mouse') light.setPointer(e.clientX, e.clientY, 'touch');
+    if (pinching()) {
+      pinchDist = spread();
+      return;
+    }
+    downX = e.clientX;
+    downY = e.clientY;
+    downT = e.timeStamp;
+    travelled = 0;
+    sampleN = 0;
+    pushSample(e.timeStamp, e.clientX);
+  }
+
+  function onMove(e: PointerEvent): void {
+    if (!garden()) return;
+    if (e.pointerType === 'mouse') light.setPointer(e.clientX, e.clientY, 'mouse');
+    const i = slot(e.pointerId);
+    if (i < 0) return;
+    loop.wake();
+    if (e.pointerType !== 'mouse') light.setPointer(e.clientX, e.clientY, 'touch');
+    const dx = e.clientX - (px[i] ?? 0);
+    px[i] = e.clientX;
+    py[i] = e.clientY;
+    if (pinching()) {
+      const dist = spread();
+      if (pinchDist > 0 && dist > 0 && inOverview()) {
+        zoomLog += Math.log(dist / pinchDist);
+        zoomAt = ((px[0] ?? 0) + (px[1] ?? 0)) / 2;
+        panPx += dx / 2;
+      }
+      pinchDist = dist;
+      return;
+    }
+    travelled = Math.max(travelled, Math.hypot(e.clientX - downX, e.clientY - downY));
+    pushSample(e.timeStamp, e.clientX);
+    if (inOverview()) panPx += dx;
+  }
+
+  function onUp(e: PointerEvent): void {
+    const i = slot(e.pointerId);
+    if (i < 0) return;
+    const wasPinch = pinching();
+    ids[i] = -1;
+    if (surface.hasPointerCapture(e.pointerId)) surface.releasePointerCapture(e.pointerId);
+    if (wasPinch) {
+      pinchDist = 0;
+      sampleN = 0;
+      return;
+    }
+    if (e.type === 'pointercancel' || !garden()) return;
+    const dx = e.clientX - downX;
+    const vx = releaseVelocity(e.timeStamp);
+    if (travelled < GESTURE.tapPx && e.timeStamp - downT < GESTURE.tapMs) {
+      if (phase() === 'focus') machine.send({ type: 'BLUR' });
+      return;
+    }
+    if (inOverview()) {
+      rig.fling(vx);
+      return;
+    }
+    const p = phase();
+    if (p !== 'bed' && p !== 'focus' && p !== 'travel') return;
+    if (Math.abs(dx) > Math.abs(e.clientY - downY) && (Math.abs(dx) > GESTURE.swipePx || Math.abs(vx) > GESTURE.swipePxPerMs * 1000)) {
+      machine.send({ type: 'STEP_BED', dir: dx < 0 ? 1 : -1 });
+    }
+  }
+
+  function onWheel(e: WheelEvent): void {
+    if (!garden()) return;
+    e.preventDefault();
+    anyInput();
+    if (!inOverview()) return;
+    const unit = e.deltaMode === 1 ? GESTURE.lineHeightPx : e.deltaMode === 2 ? innerHeight : 1;
+    const dy = e.deltaY * unit;
+    const dx = e.deltaX * unit;
+    if (!e.ctrlKey && Math.abs(dx) > Math.abs(dy)) {
+      panPx -= dx;
+      return;
+    }
+    zoomLog -= dy * (e.ctrlKey ? GESTURE.pinchWheelRate : GESTURE.wheelRate);
+    zoomAt = e.clientX;
+  }
+
+  function onKey(e: KeyboardEvent): void {
+    if (!garden() || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (t instanceof Element && t.closest('input, textarea, select, [contenteditable], dialog')) return;
+    anyInput();
+    const p = phase();
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        if (panelUp() || p === 'intro') return;
+        e.preventDefault();
+        machine.send({ type: 'STEP_BED', dir: e.key === 'ArrowLeft' ? -1 : 1 });
+        return;
+      case 'm':
+      case 'M':
+        if (p === 'bed' || p === 'focus' || p === 'travel') machine.send({ type: 'GOTO', place: { k: 'overview' } });
+        return;
+      case 'Escape':
+        machine.send({ type: 'BACK' });
+        return;
+      case 'Enter':
+        if (p === 'overview' && (t === document.body || t === surface)) {
+          e.preventDefault();
+          machine.send({ type: 'STEP_BED', dir: 1 });
+        }
+        return;
+      default:
+    }
+  }
+
+  const ac = new AbortController();
+  const passive = { passive: true, signal: ac.signal };
+  surface.addEventListener('pointerdown', onDown, passive);
+  surface.addEventListener('pointerup', onUp, passive);
+  surface.addEventListener('pointercancel', onUp, passive);
+  surface.addEventListener('lostpointercapture', onUp, passive);
+  surface.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal });
+  window.addEventListener('pointermove', onMove, passive);
+  window.addEventListener('keydown', onKey, { signal: ac.signal });
+
+  return {
+    frame(): void {
+      if (panPx !== 0) {
+        rig.panBy(panPx);
+        panPx = 0;
+      }
+      if (zoomLog !== 0) {
+        rig.zoomBy(Math.exp(zoomLog), zoomAt);
+        zoomLog = 0;
+      }
+    },
+    dispose(): void {
+      ac.abort();
+    },
+  };
+}

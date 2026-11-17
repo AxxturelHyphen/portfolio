@@ -19,6 +19,9 @@ export interface TourDeps {
   rec: { start(label: string): void; stop(): FrameReport };
   info(): InfoSnapshot;
   heapMB(): number | null;
+  /** Closes the open project and resolves when the garden rests (closing returns to phase 'focus', which goto
+   * never reports as arrived at the bed). Defaults to window.__jardin CLOSE + settled, else goto(bed hash). */
+  close?(): Promise<void>;
   /** First project id per bed, for the open and close leg. Beds without a project are omitted. */
   projects: Partial<Record<BedId, string>>;
 }
@@ -29,10 +32,21 @@ export interface TourLeg {
   textureMB: number;
 }
 
+/** Closing a project rests on its flower (phase 'focus'), so the close leg cannot wait on goto(bed). */
+function closeOf(d: TourDeps, bedHash: string): () => Promise<void> {
+  if (d.close !== undefined) return d.close.bind(d);
+  const api = (globalThis as { __jardin?: { send(e: { type: 'CLOSE' }): void; settled(): Promise<void> } }).__jardin;
+  if (api === undefined) return () => d.goto(bedHash);
+  return () => {
+    api.send({ type: 'CLOSE' });
+    return api.settled();
+  };
+}
+
 /** Runs one named leg under the frame recorder. */
-async function leg(d: TourDeps, label: string, hash: string): Promise<TourLeg> {
+async function leg(d: TourDeps, label: string, hash: string, run: () => Promise<void> = () => d.goto(hash)): Promise<TourLeg> {
   d.rec.start(label);
-  await d.goto(hash);
+  await run();
   const report = d.rec.stop();
   const i = d.info();
   return { label, report, textureMB: (i.texBytes + i.targetBytes) / 2 ** 20 };
@@ -72,7 +86,7 @@ export async function runTour(d: TourDeps): Promise<PerfLine> {
     const id = d.projects[bed];
     if (id !== undefined) {
       legs.push(await leg(d, `open ${id}`, `#/p/${id}`));
-      legs.push(await leg(d, `close ${id}`, `#/b/${bed}`));
+      legs.push(await leg(d, `close ${id}`, `#/b/${bed}`, closeOf(d, `#/b/${bed}`)));
     }
   }
   legs.push(await leg(d, 'back to overview', '#/'));

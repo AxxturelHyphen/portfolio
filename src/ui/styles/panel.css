@@ -100,15 +100,31 @@
   }
 }
 
-.pn-close {
+/* Header bar: the same view, CV and language controls as the page (the modal makes those inert), then Close. */
+.pn-bar {
   position: sticky;
   z-index: 1;
-  top: 0.875rem;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  padding: 0.75rem clamp(1rem, 3cqi, 1.5rem);
+  background: var(--sheet);
+  border-bottom: 1px solid var(--rule);
+}
+
+.pn-bar .tg {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pn-close {
   display: grid;
+  flex: none;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  margin: 0.875rem 0.875rem -3.375rem auto;
+  width: 2.375rem;
+  height: 2.375rem;
   padding: 0;
   font-size: 1.375rem;
   line-height: 1;
@@ -125,7 +141,16 @@
 }
 
 .pn-body {
-  padding: 2.75rem clamp(1.25rem, 5cqi, 3rem) 3.5rem;
+  padding: 2rem clamp(1.25rem, 5cqi, 3rem) 3.5rem;
+}
+
+@container panel (max-width: 30rem) {
+  .pn-bar .tg-seg,
+  .pn-bar .tg-lang-link,
+  .pn-bar .tg-cv {
+    padding: 0 0.5rem;
+    font-size: var(--text-xs);
+  }
 }
 
 /* Case content: shared by the panel and the no-JS details in the Herbario. */
@@ -134,7 +159,6 @@
   display: grid;
   gap: 0.5rem;
   padding-bottom: 1.75rem;
-  padding-right: 2.5rem;
 }
 
 .c-bed {

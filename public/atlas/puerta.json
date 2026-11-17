@@ -1,0 +1,267 @@
+{
+ "id": "puerta",
+ "hash": "ae3e68429ba30927",
+ "pages": [
+  {
+   "w": 1024,
+   "h": 1024,
+   "color": {
+    "hi": "puerta.0.c.ktx2",
+    "lo": "puerta.0.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "puerta.0.n.ktx2",
+    "lo": "puerta.0.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 38112,
+    "lo": 17972
+   }
+  },
+  {
+   "w": 512,
+   "h": 512,
+   "color": {
+    "hi": "puerta.1.c.ktx2",
+    "lo": "puerta.1.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "puerta.1.n.ktx2",
+    "lo": "puerta.1.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 33792,
+    "lo": 15316
+   }
+  },
+  {
+   "w": 512,
+   "h": 1024,
+   "color": {
+    "hi": "puerta.2.c.ktx2",
+    "lo": "puerta.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "puerta.2.n.ktx2",
+    "lo": "puerta.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 36106,
+    "lo": 16341
+   }
+  }
+ ],
+ "sprites": {
+  "puerta/cypress": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.3046875,
+    0.158203125,
+    0.9921875
+   ],
+   "size": [
+    1.2,
+    5.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/gate-arch": {
+   "page": 0,
+   "uv": [
+    0.173828125,
+    0.591796875,
+    0.4736328125,
+    0.9921875
+   ],
+   "size": [
+    2.4,
+    3.2
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/wall": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.0224609375,
+    0.9921875,
+    0.2890625
+   ],
+   "size": [
+    9.6,
+    2.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/ivy": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.384765625,
+    0.31640625,
+    0.984375
+   ],
+   "size": [
+    1.2,
+    2.4
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/portrait-frame": {
+   "page": 1,
+   "uv": [
+    0.34765625,
+    0.734375,
+    0.546875,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    1
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/grass": {
+   "page": 1,
+   "uv": [
+    0.578125,
+    0.759765625,
+    0.87890625,
+    0.984375
+   ],
+   "size": [
+    1.2,
+    0.9
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/path": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.228515625,
+    0.916015625,
+    0.353515625
+   ],
+   "size": [
+    3.6,
+    0.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/trunk": {
+   "page": 2,
+   "uv": [
+    0.015625,
+    0.3671875,
+    0.21484375,
+    0.9921875
+   ],
+   "size": [
+    0.8,
+    5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/gate-post": {
+   "page": 2,
+   "uv": [
+    0.24609375,
+    0.591796875,
+    0.4453125,
+    0.9921875
+   ],
+   "size": [
+    0.8,
+    3.2
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "puerta/ivy-corner": {
+   "page": 2,
+   "uv": [
+    0.4765625,
+    0.7919921875,
+    0.876953125,
+    0.9921875
+   ],
+   "size": [
+    1.6,
+    1.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  }
+ },
+ "blooms": {}
+}

@@ -35,10 +35,12 @@
   --measure: 34rem;
   --page: 86rem;
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-ui: 0.34s;
-  --dur-ui-exit: 0.26s;
+  /* Fallbacks only: src/ui/tokens.ts writes these from src/core/motion.ts (UI timings, EASE_OUT). */
+  --ease-out: cubic-bezier(0.27, 0.82, 0.62, 1);
+  --ease-in-out: cubic-bezier(0.27, 0.82, 0.62, 1);
+  --dur-ui: 0.42s;
+  --dur-ui-exit: 0.3s;
+  --dur-hover: 0.2s;
 }
 
 *,
@@ -105,12 +107,58 @@ button {
   border-radius: var(--radius-sm);
 }
 
-/* The world layers have no content until the garden chunk mounts them. */
+/*
+ * Mode layers (src/ui/mode.ts): #world (canvas, poster, proxies, label) and #herbario cross-fade by opacity only.
+ * Before JS runs, html[data-mode] (set by the inline boot stub) decides which one shows; the hidden one is inert
+ * from settle on and skips rendering, while its size is remembered so the Herbario keeps its scroll position.
+ */
+#world {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
 #garden,
-#poster,
-#proxies,
-#label {
-  display: none;
+#poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#garden {
+  display: block;
+}
+
+/* The poster only covers the canvas until the first frame; input goes to the canvas under it. */
+#poster {
+  pointer-events: none;
+}
+
+#world,
+#herbario {
+  will-change: opacity;
+}
+
+html:not([data-mode="garden"]) #world,
+html[data-mode="garden"] #herbario {
+  opacity: 0;
+}
+
+html:not([data-mode="garden"]) #world {
+  pointer-events: none;
+}
+
+/* The Herbario keeps its laid-out height and scroll position under the garden; the document does not scroll there. */
+html[data-mode="garden"] {
+  overflow: hidden;
+}
+
+[data-layer-hidden] {
+  content-visibility: hidden;
+  contain-intrinsic-block-size: auto 100vh;
 }
 
 /* Owner gaps: visible, honest, quiet. */

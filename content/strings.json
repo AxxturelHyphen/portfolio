@@ -49,10 +49,12 @@
     "specimen.pending": "Specimen to be mounted",
     "flower.rose.latin": "Rosa sp.",
     "flower.lily.latin": "Nymphaea sp.",
-    "flower.pod.latin": "Capsula seminis",
-    "flower.bud.latin": "Gemma",
     "panel.close": "Close",
-    "footer.type": "Set in Kalnia and Schibsted Grotesk."
+    "footer.type": "Set in Kalnia and Schibsted Grotesk.",
+    "label.view": "View",
+    "gruta.push": "Push the ball",
+    "gruta.score": "Goals",
+    "gruta.goal": "Goal!"
   },
   "es": {
     "site.title": "El Jardín",
@@ -104,9 +106,11 @@
     "specimen.pending": "Espécimen pendiente de montar",
     "flower.rose.latin": "Rosa sp.",
     "flower.lily.latin": "Nymphaea sp.",
-    "flower.pod.latin": "Capsula seminis",
-    "flower.bud.latin": "Gemma",
     "panel.close": "Cerrar",
-    "footer.type": "Compuesto en Kalnia y Schibsted Grotesk."
+    "footer.type": "Compuesto en Kalnia y Schibsted Grotesk.",
+    "label.view": "Ver",
+    "gruta.push": "Empuja la pelota",
+    "gruta.score": "Goles",
+    "gruta.goal": "¡Gol!"
   }
 }

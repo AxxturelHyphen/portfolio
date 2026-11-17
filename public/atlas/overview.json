@@ -1,0 +1,151 @@
+{
+ "id": "overview",
+ "hash": "95ac31e56e5f9da5",
+ "pages": [
+  {
+   "w": 512,
+   "h": 256,
+   "color": {
+    "hi": "overview.0.c.ktx2",
+    "lo": "overview.0.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "overview.0.n.ktx2",
+    "lo": "overview.0.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 25828,
+    "lo": 11024
+   }
+  }
+ ],
+ "sprites": {
+  "puerta": {
+   "page": 0,
+   "uv": [
+    0.015625,
+    0.625,
+    0.296875,
+    0.96875
+   ],
+   "size": [
+    9,
+    5.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "rosaleda": {
+   "page": 0,
+   "uv": [
+    0.328125,
+    0.625,
+    0.609375,
+    0.96875
+   ],
+   "size": [
+    9,
+    5.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque": {
+   "page": 0,
+   "uv": [
+    0.640625,
+    0.65625,
+    0.921875,
+    0.96875
+   ],
+   "size": [
+    9,
+    5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida": {
+   "page": 0,
+   "uv": [
+    0.015625,
+    0.25,
+    0.296875,
+    0.5625
+   ],
+   "size": [
+    9,
+    5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero": {
+   "page": 0,
+   "uv": [
+    0.328125,
+    0.31640625,
+    0.609375,
+    0.5625
+   ],
+   "size": [
+    9,
+    3.9
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "gruta": {
+   "page": 0,
+   "uv": [
+    0.640625,
+    0.34375,
+    0.7421875,
+    0.5625
+   ],
+   "size": [
+    3.2,
+    3.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  }
+ },
+ "blooms": {}
+}

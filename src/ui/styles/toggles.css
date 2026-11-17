@@ -56,6 +56,11 @@
   text-underline-offset: 0.3em;
 }
 
+.tg-seg[aria-busy="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .tg-seg:not([aria-pressed="true"], [aria-disabled="true"]):hover,
 .tg-lang-link:not([aria-current="true"]):hover {
   color: var(--ink);
@@ -96,7 +101,7 @@
     visibility 0s linear var(--dur-ui-exit);
 }
 
-.tg-mode:has([data-mode="garden"]:is(:hover, :focus-visible)) .tg-note {
+.tg-mode:has([data-mode="garden"][aria-disabled="true"]:is(:hover, :focus-visible)) .tg-note {
   opacity: 1;
   visibility: visible;
   transition:
@@ -113,7 +118,7 @@
       visibility 0s linear var(--dur-ui-exit);
   }
 
-  .tg-mode:has([data-mode="garden"]:is(:hover, :focus-visible)) .tg-note {
+  .tg-mode:has([data-mode="garden"][aria-disabled="true"]:is(:hover, :focus-visible)) .tg-note {
     transform: none;
     transition:
       opacity var(--dur-ui) var(--ease-out),

@@ -45,7 +45,7 @@ test('flow 3 herbario: rapid back and forward bursts end in one valid state', as
   expect(open, `panel ${open ? 'open' : 'closed'} with hash ${h}`).toBe(h.startsWith('#/p/'));
 });
 
-test.fixme('flow 3 garden: back and forward through projects in different beds, URL, panel, camera in sync', async ({ page, jardin }) => {
+test('flow 3 garden: back and forward through projects in different beds, URL, panel, camera in sync', async ({ page, jardin }) => {
   const [a, b] = projectsInDifferentBeds();
   if (a === undefined || b === undefined) throw new Error('need projects in two beds');
   await jardin.visit({ mode: 'garden' });

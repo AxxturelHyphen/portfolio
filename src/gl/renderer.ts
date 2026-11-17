@@ -1,0 +1,190 @@
+import { DataTexture, PerspectiveCamera, RGBAFormat, SRGBColorSpace, Scene, WebGLRenderer } from 'three';
+import type { Clock, Gfx, InfoSnapshot, Loop, Pose, Quality } from '../types.ts';
+import { createCutoutBatch, sharedUniforms } from './cutout.material.ts';
+import { createFilmPass } from './film.pass.ts';
+import { residentTextureBytes } from './ktx2.ts';
+import { createSky } from './sky.ts';
+import type { Sky } from './sky.ts';
+import { createSceneTarget, fitPixels } from './targets.ts';
+import type { PixelSize, SceneTarget } from './targets.ts';
+
+/**
+ * The gl side of the garden: one WebGL2 renderer, the scene target, the sky, the film pass.
+ * Colour pipeline: every program is a RawShaderMaterial, so three converts nothing. Colour atlases are sRGB textures
+ * (decoded to linear by the sampler), shaders light and blend in linear into an SRGB8_ALPHA8 target, and the film pass
+ * is the only place that grades and encodes to sRGB for the canvas.
+ * Wiring (garden/index.ts): call `setPose` in stage 'camera' and `render` in stage 'render'; `warm()` before `ready`.
+ */
+export interface GlGfx extends Gfx {
+  readonly camera: PerspectiveCamera;
+  readonly sky: Sky;
+  readonly target: SceneTarget;
+  /** World Y up, camera looks toward -Z; pitch in radians (positive looks up), fov vertical in degrees. */
+  setPose(p: Readonly<Pose>): void;
+  /** Film inputs owned by state: reduced motion and the travel exposure dip (1 = none), applied on the next render. */
+  setFilm(reduced: boolean, exposure: number): void;
+  /** The one resize signal (a single ResizeObserver on the canvas): CSS size, and a counter that grows on every resize. */
+  readonly cssW: number;
+  readonly cssH: number;
+  readonly resizes: number;
+}
+
+const NEAR = 0.05;
+const FAR = 200;
+
+export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loop): GlGfx {
+  const renderer = new WebGLRenderer({
+    canvas,
+    antialias: false,
+    alpha: false,
+    depth: false,
+    stencil: false,
+    premultipliedAlpha: true,
+    powerPreference: 'high-performance',
+  });
+  renderer.outputColorSpace = SRGBColorSpace;
+  renderer.autoClear = false;
+  renderer.info.autoReset = false;
+  renderer.setPixelRatio(1);
+
+  const scene = new Scene();
+  scene.matrixAutoUpdate = false;
+  scene.matrixWorldAutoUpdate = false;
+  const camera = new PerspectiveCamera(40, 16 / 9, NEAR, FAR);
+  const sky = createSky();
+  scene.add(sky.mesh);
+  const target = createSceneTarget();
+  const film = createFilmPass(renderer, quality);
+
+  const size: PixelSize = { w: 0, h: 0 };
+  let cssW = canvas.clientWidth;
+  let cssH = canvas.clientHeight;
+  let resizes = 1;
+  let dirty = true;
+  let dprMax = quality.cfg.dprMax;
+  let pixelCap = quality.cfg.pixelCap;
+  let reduced = false;
+  let exposure = 1;
+  const lostHandlers: (() => void)[] = [];
+
+  new ResizeObserver((entries) => {
+    const box = entries[0]?.contentRect;
+    if (box === undefined) return;
+    cssW = box.width;
+    cssH = box.height;
+    resizes++;
+    dirty = true;
+    loop.wake();
+  }).observe(canvas);
+  /** Only a tier change reallocates; DPR steps and the panel scale move the sub-rect (cook/ARCH.md 2.7). */
+  quality.onChange((q) => {
+    if (q.cfg.dprMax === dprMax && q.cfg.pixelCap === pixelCap) return;
+    dprMax = q.cfg.dprMax;
+    pixelCap = q.cfg.pixelCap;
+    dirty = true;
+  });
+
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    loop.pause('context-lost');
+    for (const fn of lostHandlers) fn();
+  });
+  canvas.addEventListener('webglcontextrestored', () => {
+    size.w = 0;
+    dirty = true;
+    loop.resume('context-lost');
+  });
+
+  function applySize(): void {
+    dirty = false;
+    const prevW = size.w;
+    const prevH = size.h;
+    fitPixels(cssW, cssH, dprMax, pixelCap, size);
+    if (size.w !== prevW || size.h !== prevH) renderer.setSize(size.w, size.h, false);
+    target.resize(size.w, size.h);
+    film.resize(size.w, size.h, quality.cfg.pixelCap);
+    const aspect = size.w / size.h;
+    sky.setAspect(aspect);
+    if (camera.aspect !== aspect) {
+      camera.aspect = aspect;
+      camera.updateProjectionMatrix();
+      updateViewProj();
+    }
+  }
+
+  function updateViewProj(): void {
+    camera.updateMatrixWorld();
+    sharedUniforms.uViewProj.value.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+  }
+
+  function renderScene(c: Clock): void {
+    if (dirty) applySize();
+    target.setScale(quality.scale);
+    film.uniforms.uScale.value = target.scale;
+    sharedUniforms.uTime.value = c.t;
+    film.tick(c, reduced, exposure);
+    renderer.info.reset();
+    renderer.setRenderTarget(target.target);
+    renderer.render(scene, camera);
+    film.render(target.target);
+  }
+
+  /**
+   * Hidden warm scene: one instance of every program, so compileAsync covers the fixed set before first use.
+   * The probe batch is never disposed: it anchors the cutout program, so evicting every bed never releases it
+   * (three frees a program when its last material is disposed, and the next bed would compile on first draw).
+   */
+  const pixel = new DataTexture(new Uint8Array([128, 128, 255, 0]), 1, 1, RGBAFormat);
+  pixel.needsUpdate = true;
+  async function warm(): Promise<void> {
+    if (dirty) applySize();
+    const probe = createCutoutBatch(gfx, pixel, pixel, 1);
+    const warmScene = new Scene();
+    warmScene.add(sky.mesh, probe.mesh);
+    renderer.setRenderTarget(target.target);
+    await renderer.compileAsync(warmScene, camera);
+    renderer.render(warmScene, camera);
+    await film.warm(target.target);
+    scene.add(sky.mesh);
+  }
+
+  const gfx: GlGfx = {
+    renderer,
+    scene,
+    film,
+    camera,
+    sky,
+    target,
+    render: renderScene,
+    warm,
+    get cssW() { return cssW; },
+    get cssH() { return cssH; },
+    get resizes() { return resizes; },
+    setPose(p: Readonly<Pose>): void {
+      camera.position.set(p.x, p.y, p.z);
+      camera.rotation.set(p.pitch, 0, 0);
+      if (camera.fov !== p.fov) {
+        camera.fov = p.fov;
+        camera.updateProjectionMatrix();
+      }
+      updateViewProj();
+    },
+    info(out: InfoSnapshot): InfoSnapshot {
+      const info = renderer.info;
+      out.calls = info.render.calls;
+      out.triangles = info.render.triangles;
+      out.textures = info.memory.textures;
+      out.geometries = info.memory.geometries;
+      out.programs = info.programs?.length ?? 0;
+      out.texBytes = residentTextureBytes();
+      out.targetBytes = target.bytes + film.targetBytes;
+      return out;
+    },
+    setFilm(r: boolean, e: number): void {
+      reduced = r;
+      exposure = e;
+    },
+    onContextLost(fn: () => void): void { lostHandlers.push(fn); },
+  };
+  return gfx;
+}

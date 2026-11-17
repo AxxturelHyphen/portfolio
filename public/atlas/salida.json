@@ -1,0 +1,225 @@
+{
+ "id": "salida",
+ "hash": "7f561374661604f2",
+ "pages": [
+  {
+   "w": 2048,
+   "h": 1024,
+   "color": {
+    "hi": "salida.0.c.ktx2",
+    "lo": "salida.0.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "salida.0.n.ktx2",
+    "lo": "salida.0.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 23792,
+    "lo": 12183
+   }
+  },
+  {
+   "w": 512,
+   "h": 256,
+   "color": {
+    "hi": "salida.1.c.ktx2",
+    "lo": "salida.1.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "salida.1.n.ktx2",
+    "lo": "salida.1.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 11850,
+    "lo": 6413
+   }
+  },
+  {
+   "w": 1024,
+   "h": 512,
+   "color": {
+    "hi": "salida.2.c.ktx2",
+    "lo": "salida.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "salida.2.n.ktx2",
+    "lo": "salida.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 14882,
+    "lo": 7704
+   }
+  }
+ ],
+ "sprites": {
+  "salida/trunk": {
+   "page": 0,
+   "uv": [
+    0.00390625,
+    0.3671875,
+    0.0537109375,
+    0.9921875
+   ],
+   "size": [
+    0.8,
+    5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/wall": {
+   "page": 0,
+   "uv": [
+    0.0615234375,
+    0.7255859375,
+    0.5537109375,
+    0.9921875
+   ],
+   "size": [
+    9.6,
+    2.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/branch": {
+   "page": 0,
+   "uv": [
+    0.5615234375,
+    0.9169921875,
+    0.7490234375,
+    0.9921875
+   ],
+   "size": [
+    3,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/postcard": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.46875,
+    0.21484375,
+    0.96875
+   ],
+   "size": [
+    0.8,
+    1
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/ribbon": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.10546875,
+    0.765625,
+    0.40625
+   ],
+   "size": [
+    3,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/swallow": {
+   "page": 1,
+   "uv": [
+    0.796875,
+    0.2578125,
+    0.921875,
+    0.40625
+   ],
+   "size": [
+    0.5,
+    0.3
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/end-wall": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.234375,
+    0.4580078125,
+    0.984375
+   ],
+   "size": [
+    3.6,
+    3
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "salida/grass": {
+   "page": 2,
+   "uv": [
+    0.4736328125,
+    0.759765625,
+    0.6240234375,
+    0.984375
+   ],
+   "size": [
+    1.2,
+    0.9
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  }
+ },
+ "blooms": {}
+}

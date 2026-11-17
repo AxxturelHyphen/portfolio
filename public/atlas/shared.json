@@ -1,0 +1,46 @@
+{
+ "id": "shared",
+ "hash": "2cf0cbdba2b35d67",
+ "pages": [
+  {
+   "w": 64,
+   "h": 64,
+   "color": {
+    "hi": "shared.0.c.ktx2",
+    "lo": "shared.0.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "shared.0.n.ktx2",
+    "lo": "shared.0.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 2631,
+    "lo": 1701
+   }
+  }
+ ],
+ "sprites": {
+  "moth": {
+   "page": 0,
+   "uv": [
+    0.125,
+    0.46875,
+    0.71875,
+    0.875
+   ],
+   "size": [
+    0.3,
+    0.2
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  }
+ },
+ "blooms": {}
+}

@@ -9,6 +9,7 @@ const EM_DASH = String.fromCharCode(0x2014);
 
 function walk(dir: string, exts: readonly string[], out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
+    if (name.startsWith('.') || name === 'node_modules') continue;
     const p = join(dir, name);
     if (statSync(p).isDirectory()) walk(p, exts, out);
     else if (exts.some((e) => p.endsWith(e))) out.push(p);

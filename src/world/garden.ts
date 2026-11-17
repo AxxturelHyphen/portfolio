@@ -1,0 +1,202 @@
+import type { AtlasManifest, AtlasTextures, BedBehaviour, BedId, BedScene, Clock, CutoutBatch, GardenDeps, GardenHandle, Phase, QuadParams, SpriteRect, State } from '../types.ts';
+import puerta from '../../content/beds/puerta.json' with { type: 'json' };
+import rosaleda from '../../content/beds/rosaleda.json' with { type: 'json' };
+import estanque from '../../content/beds/estanque.json' with { type: 'json' };
+import semillero from '../../content/beds/semillero.json' with { type: 'json' };
+import gruta from '../../content/beds/gruta.json' with { type: 'json' };
+import salida from '../../content/beds/salida.json' with { type: 'json' };
+import { RENDER_ORDER, StreamBed, fetchManifest, uploadPages, type BedEnv, type StreamKit } from './bed.ts';
+import { createResidency, type StreamResidency } from './residency.ts';
+
+/**
+ * The garden (cook/ARCH.md 2.6): six beds along X, the residency that streams them, and the always-resident overview
+ * atlas that stands in for every bed that is not revealed. Scenes are bundled (a few KB, validated at build); their
+ * textures stream. The bed under the camera is entered once it is ready; its slots go to the proxy layer.
+ */
+
+/** Every scene file, keyed by bed. Adding a project is JSON only: projects bind to the slots of their bed. */
+export const SCENES: Readonly<Record<BedId, BedScene>> = { puerta, rosaleda, estanque, semillero, gruta, salida } as unknown as Record<BedId, BedScene>;
+
+/** Depth of the overview stand-in cards: the beds' middle band. */
+const OVERVIEW_Z = -2;
+const SETTLED: readonly Phase[] = ['bed', 'focus', 'opening', 'inspect', 'closing'];
+
+export interface StreamGarden extends GardenHandle {
+  readonly residency: StreamResidency;
+  readonly beds: ReadonlyMap<BedId, StreamBed>;
+  /** Resolves once the overview atlas is uploaded and drawn once (hidden), so the overview can show. */
+  readonly ready: Promise<void>;
+  /** Pointer or focus over a bed in the overview: prefetch its bytes. */
+  hover(bed: BedId | null): void;
+}
+
+interface OverviewCard { bed: StreamBed; batch: CutoutBatch; index: number; rect: SpriteRect; alpha: number }
+
+const quad: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: [0, 0, 0, 0], sway: 0, phase: 0, lift: 0, facing: 0, tint: [1, 1, 1, 1] };
+const tint = new Float32Array(4);
+quad.tint = tint;
+
+export function createGarden(d: GardenDeps & { kit: StreamKit }): StreamGarden {
+  const { gfx, machine, content, proxies } = d;
+  const layout = content.garden;
+  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit };
+  const beds = new Map<BedId, StreamBed>();
+  const list: StreamBed[] = [];
+  const slicer = { frame: () => residency.frame(), upload: () => residency.upload(), spent: () => residency.spent() };
+  for (const id of layout.order) {
+    const bed = new StreamBed(id, SCENES[id], layout.anchors[id], env, slicer);
+    beds.set(id, bed);
+    list.push(bed);
+  }
+  const residency = createResidency(beds, layout, machine, d.quality, gfx);
+  const cards: OverviewCard[] = [];
+  let origin: BedId | null = null;
+  let active: BedId | null = null;
+  let heading: BedId | null = null;
+  let hovered: BedId | null = null;
+  let entered: StreamBed | null = null;
+
+  const mountBeds = (): void => {
+    const lang = machine.state.lang;
+    proxies.mountBeds(layout.order.filter((b) => b !== 'gruta').map((b) => ({ id: b, title: SCENES[b].title[lang] })));
+  };
+
+  /** Where the camera is (active) and where it is going (heading); the bed being left stays wanted until arrival. */
+  const place = (s: State): void => {
+    if (s.phase === 'travel') {
+      heading = s.intent.k === 'overview' ? null : s.bed;
+      active = origin;
+    } else if (SETTLED.includes(s.phase)) {
+      active = s.bed;
+      origin = s.bed;
+      heading = null;
+    } else {
+      active = null;
+      origin = null;
+      heading = null;
+    }
+  };
+
+  /** Enters the bed the camera has settled on as soon as it is ready; leaves it the moment the camera moves on. */
+  const syncEntered = (): void => {
+    const s = machine.state;
+    const target = SETTLED.includes(s.phase) ? s.bed : null;
+    if (entered !== null && entered.id !== target) {
+      entered.leave();
+      proxies.unmountSlots();
+      entered = null;
+    }
+    if (entered !== null || target === null) return;
+    const bed = beds.get(target);
+    if (bed?.state !== 'ready') return;
+    bed.enter();
+    bed.focus(s.slot);
+    proxies.mountSlots(target, bed.slots);
+    entered = bed;
+  };
+
+  const slotEvents = (s: State, prev: State, hooks: BedBehaviour | null): void => {
+    if (hooks === null) return;
+    hooks.onState?.(s, prev);
+    if (hooks.onSlot === undefined) return;
+    if (prev.slot !== null && prev.slot !== s.slot) hooks.onSlot(prev.slot, 'blur');
+    if (s.slot !== null && prev.slot !== s.slot) hooks.onSlot(s.slot, 'focus');
+    if (s.slot !== null && s.phase === 'opening' && prev.phase !== 'opening') hooks.onSlot(s.slot, 'open');
+    if (s.slot !== null && prev.phase === 'closing' && s.phase !== 'closing' && s.phase !== 'opening') hooks.onSlot(s.slot, 'close');
+  };
+
+  machine.subscribe((s, prev) => {
+    const wasActive = active;
+    const wasHeading = heading;
+    place(s);
+    if (active !== wasActive || heading !== wasHeading) residency.want(active, heading, hovered);
+    if (s.lang !== prev.lang) {
+      for (const bed of list) bed.setLang(s.lang);
+      mountBeds();
+      if (entered !== null) proxies.mountSlots(entered.id, entered.slots);
+    }
+    syncEntered();
+    if (entered !== null && s.slot !== prev.slot) entered.focus(s.slot);
+    slotEvents(s, prev, entered?.behaviourHooks ?? null);
+  });
+
+  const ready = loadOverview();
+
+  async function loadOverview(): Promise<void> {
+    const signal = new AbortController().signal;
+    const manifest: AtlasManifest = await fetchManifest('overview', signal);
+    const tex: AtlasTextures = await d.kit.loadAtlas(gfx, manifest, d.quality.cfg.atlas, signal);
+    await uploadPages(env, tex, slicer, () => true);
+    residency.addShared(tex.gpuBytes);
+    const pages = new Map<number, CutoutBatch>();
+    for (const bed of list) {
+      const rect = manifest.sprites[bed.id];
+      if (bed.id === 'gruta' || rect === undefined) continue;
+      let batch = pages.get(rect.page);
+      if (batch === undefined) {
+        const color = tex.color[rect.page];
+        const normal = tex.normal[rect.page];
+        if (color === undefined || normal === undefined) throw new Error(`overview atlas: no page ${rect.page}`);
+        batch = d.kit.createCutoutBatch(gfx, color, normal, list.length);
+        batch.mesh.renderOrder = RENDER_ORDER.overview;
+        batch.uniforms.uReveal.value = 1;
+        pages.set(rect.page, batch);
+        gfx.scene.add(batch.mesh);
+      }
+      const card: OverviewCard = { bed, batch, index: batch.writer.count++, rect, alpha: -1 };
+      cards.push(card);
+      writeCard(card, 1);
+    }
+    await residency.frame();
+  }
+
+  function writeCard(card: OverviewCard, alpha: number): void {
+    const { rect, bed } = card;
+    card.alpha = alpha;
+    quad.x = bed.anchorX;
+    quad.y = 0;
+    quad.z = OVERVIEW_Z;
+    quad.w = rect.size[0];
+    quad.h = rect.size[1];
+    quad.px = rect.pivot[0];
+    quad.py = rect.pivot[1];
+    quad.uv = rect.uv;
+    tint[0] = 1; tint[1] = 1; tint[2] = 1; tint[3] = alpha;
+    card.batch.writer.set(card.index, quad);
+    card.batch.writer.commit(card.index, card.index + 1);
+  }
+
+  mountBeds();
+  place(machine.state);
+  residency.want(active, heading, hovered);
+
+  return {
+    residency,
+    beds,
+    ready,
+    hover(bed) {
+      if (bed === hovered) return;
+      hovered = bed;
+      residency.want(active, heading, hovered);
+    },
+    update(c: Clock) {
+      residency.tick(c);
+      if (entered === null) syncEntered();
+      const s = machine.state;
+      for (let i = 0; i < list.length; i++) {
+        const bed = list[i];
+        if (bed === undefined) continue;
+        const shown = (bed.state === 'ready' || bed.state === 'active') && (bed.id !== 'gruta' || heading === 'gruta' || active === 'gruta');
+        const v = shown ? 1 : 0;
+        if (bed.reveal.target !== v) bed.reveal.to(v);
+        if (bed.state === 'ready' || bed.state === 'active') bed.update(c, s, machine.ch);
+      }
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        if (card === undefined) continue;
+        const alpha = 1 - card.bed.reveal.value;
+        if (Math.abs(alpha - card.alpha) > 0.002 || (alpha === 0) !== (card.alpha === 0)) writeCard(card, alpha);
+      }
+    },
+  };
+}

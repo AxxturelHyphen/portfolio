@@ -1,17 +1,18 @@
 import projects from '../../content/projects.json' with { type: 'json' };
 import profile from '../../content/profile.json' with { type: 'json' };
 import strings from '../../content/strings.json' with { type: 'json' };
-import type { Profile, Project, ProjectBed, Strings } from '../types.ts';
-import type { HerbarioContent } from './schema.ts';
+import garden from '../../content/garden.json' with { type: 'json' };
+import type { Content, GardenLayout, Profile, Project, ProjectBed, Strings } from '../types.ts';
 
-/** Static content, validated at build by scripts/prerender.ts (schema.ts), so the browser only casts. */
-const content: HerbarioContent = {
+/** Static content, validated at build by scripts/prerender.ts (schema.ts, world/scene.ts), so the browser only casts. */
+const content: Content = {
   projects: projects as Project[],
   profile: profile as Profile,
   strings: strings as Strings,
+  garden: garden as unknown as GardenLayout,
 };
 
-export function loadContent(): HerbarioContent {
+export function loadContent(): Content {
   return content;
 }
 

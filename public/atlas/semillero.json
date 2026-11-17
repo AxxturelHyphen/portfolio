@@ -1,0 +1,556 @@
+{
+ "id": "semillero",
+ "hash": "97671d0f77c90b60",
+ "pages": [
+  {
+   "w": 1024,
+   "h": 1024,
+   "color": {
+    "hi": "semillero.0.c.ktx2",
+    "lo": "semillero.0.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "semillero.0.n.ktx2",
+    "lo": "semillero.0.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 41479,
+    "lo": 19273
+   }
+  },
+  {
+   "w": 1024,
+   "h": 512,
+   "color": {
+    "hi": "semillero.1.c.ktx2",
+    "lo": "semillero.1.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "semillero.1.n.ktx2",
+    "lo": "semillero.1.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 44573,
+    "lo": 20538
+   }
+  },
+  {
+   "w": 512,
+   "h": 512,
+   "color": {
+    "hi": "semillero.2.c.ktx2",
+    "lo": "semillero.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "semillero.2.n.ktx2",
+    "lo": "semillero.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 18399,
+    "lo": 8991
+   }
+  }
+ ],
+ "sprites": {
+  "semillero/ivy-curtain": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.6171875,
+    0.3828125,
+    0.9921875
+   ],
+   "size": [
+    3,
+    3
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/far-wall": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.3349609375,
+    0.9921875,
+    0.6015625
+   ],
+   "size": [
+    9.6,
+    2.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/wall": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.052734375,
+    0.9921875,
+    0.3193359375
+   ],
+   "size": [
+    9.6,
+    2.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/stalk": {
+   "page": 1,
+   "uv": [
+    0.0078125,
+    0.68359375,
+    0.0263671875,
+    0.984375
+   ],
+   "size": [
+    0.15,
+    1.2
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/cloche": {
+   "page": 1,
+   "uv": [
+    0.0419921875,
+    0.759765625,
+    0.1416015625,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    0.9
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "pod.f0": {
+   "page": 1,
+   "uv": [
+    0.1572265625,
+    0.78515625,
+    0.2197265625,
+    0.984375
+   ],
+   "size": [
+    0.5,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "pod.f1": {
+   "page": 1,
+   "uv": [
+    0.2353515625,
+    0.78515625,
+    0.2978515625,
+    0.984375
+   ],
+   "size": [
+    0.5,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "pod.f2": {
+   "page": 1,
+   "uv": [
+    0.3134765625,
+    0.78515625,
+    0.3759765625,
+    0.984375
+   ],
+   "size": [
+    0.5,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "pod.f3": {
+   "page": 1,
+   "uv": [
+    0.3916015625,
+    0.78515625,
+    0.4541015625,
+    0.984375
+   ],
+   "size": [
+    0.5,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "pod.f4": {
+   "page": 1,
+   "uv": [
+    0.4697265625,
+    0.78515625,
+    0.5322265625,
+    0.984375
+   ],
+   "size": [
+    0.5,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "pod.f5": {
+   "page": 1,
+   "uv": [
+    0.5478515625,
+    0.78515625,
+    0.6103515625,
+    0.984375
+   ],
+   "size": [
+    0.5,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "bud.f0": {
+   "page": 1,
+   "uv": [
+    0.6259765625,
+    0.78515625,
+    0.67578125,
+    0.984375
+   ],
+   "size": [
+    0.4,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "bud.f1": {
+   "page": 1,
+   "uv": [
+    0.69140625,
+    0.78515625,
+    0.7412109375,
+    0.984375
+   ],
+   "size": [
+    0.4,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "bud.f2": {
+   "page": 1,
+   "uv": [
+    0.7568359375,
+    0.78515625,
+    0.806640625,
+    0.984375
+   ],
+   "size": [
+    0.4,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "bud.f3": {
+   "page": 1,
+   "uv": [
+    0.822265625,
+    0.78515625,
+    0.8720703125,
+    0.984375
+   ],
+   "size": [
+    0.4,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "bud.f4": {
+   "page": 1,
+   "uv": [
+    0.8876953125,
+    0.78515625,
+    0.9375,
+    0.984375
+   ],
+   "size": [
+    0.4,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "bud.f5": {
+   "page": 1,
+   "uv": [
+    0.0078125,
+    0.453125,
+    0.0576171875,
+    0.65234375
+   ],
+   "size": [
+    0.4,
+    0.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/stone-bed": {
+   "page": 1,
+   "uv": [
+    0.0732421875,
+    0.52734375,
+    0.5234375,
+    0.65234375
+   ],
+   "size": [
+    3.6,
+    0.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/stone-edge": {
+   "page": 1,
+   "uv": [
+    0.0078125,
+    0.333984375,
+    0.5078125,
+    0.421875
+   ],
+   "size": [
+    4,
+    0.35
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/wall-pier": {
+   "page": 2,
+   "uv": [
+    0.015625,
+    0.18359375,
+    0.21484375,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    3.2
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/label-stake": {
+   "page": 2,
+   "uv": [
+    0.24609375,
+    0.68359375,
+    0.283203125,
+    0.984375
+   ],
+   "size": [
+    0.15,
+    1.2
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "semillero/fern": {
+   "page": 2,
+   "uv": [
+    0.314453125,
+    0.759765625,
+    0.615234375,
+    0.984375
+   ],
+   "size": [
+    1.2,
+    0.9
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  }
+ },
+ "blooms": {
+  "pod": {
+   "kind": "pod",
+   "mode": "frames",
+   "steps": 6,
+   "frames": [
+    "pod.f0",
+    "pod.f1",
+    "pod.f2",
+    "pod.f3",
+    "pod.f4",
+    "pod.f5"
+   ],
+   "rest": {
+    "idea": 0.4,
+    "wip": 0.7,
+    "shipped": 1
+   }
+  },
+  "bud": {
+   "kind": "bud",
+   "mode": "frames",
+   "steps": 6,
+   "frames": [
+    "bud.f0",
+    "bud.f1",
+    "bud.f2",
+    "bud.f3",
+    "bud.f4",
+    "bud.f5"
+   ],
+   "rest": {
+    "idea": 0.4,
+    "wip": 0.7,
+    "shipped": 1
+   }
+  }
+ }
+}

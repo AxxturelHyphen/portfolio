@@ -36,17 +36,19 @@ test('flow 2 herbario: bed deep link scrolls its section into view', async ({ pa
   expect(await jardin.openDialogs()).toBe(0);
 });
 
-test.fixme('flow 2 garden: cold deep link lands in the right bed with the project open, back is valid', async ({ page, jardin }) => {
+test('flow 2 garden: cold deep link lands in the right bed with the project open, back is valid', async ({ page, jardin }) => {
   const p = projectsInDifferentBeds()[1] ?? PROJECTS[0];
   if (p === undefined) return;
-  await jardin.visit({ mode: 'garden', hash: `#/p/${p.id}` });
+  await jardin.visit({ mode: 'garden' }); // an earlier garden document to go back to
+  await jardin.settled();
+  await jardin.visit({ mode: 'garden', hash: `#/p/${p.id}`, query: { cold: p.id } }); // full document load, not a hash change
   await jardin.settled();
   const s = await jardin.withApi((api) => api.state());
   expect(s.bed).toBe(p.bed);
   expect(s.project).toBe(p.id);
   expect(s.phase).toBe('inspect');
   await jardin.expectOpen(p);
-  await page.goBack().catch(() => undefined);
+  await page.goBack();
   await jardin.settled();
   const after = await jardin.withApi((api) => api.state());
   expect(['overview', 'bed']).toContain(after.phase);

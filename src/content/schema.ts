@@ -3,7 +3,7 @@ import type { Content, Lang } from '../types.ts';
 /** Build-time validation of the content JSON. Collects every error with its path; never runs in the browser. */
 
 export const FILL = '[FILL]';
-const EM_DASH = '—';
+const EM_DASH = '\u2014';
 const BEDS = ['rosaleda', 'estanque', 'semillero'];
 const FLOWERS = ['rose', 'lily', 'pod', 'bud'];
 const STATUSES = ['idea', 'wip', 'shipped'];

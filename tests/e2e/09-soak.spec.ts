@@ -1,14 +1,15 @@
 import { expect, PROJECTS, test } from '../helpers/jardin.ts';
 
-// Flow 9: 5 minutes of scripted wandering: JS heap and GPU memory flat. Garden only, fixme until P1.
+// Flow 9: 5 minutes of scripted wandering: JS heap and GPU memory flat. Garden only.
 
 const BEDS = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'] as const;
 const mean = (a: number[]): number => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
 
-test.fixme('flow 9 garden: five minutes of wandering keeps heap and GPU memory flat', async ({ page, jardin }) => {
+test('flow 9 garden: five minutes of wandering keeps heap and GPU memory flat', async ({ page, jardin }) => {
   test.setTimeout(8 * 60_000);
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/', true);
+  await jardin.longTasksAfterReady(); // stamps the end of load
   const heap: number[] = [];
   const tex: number[] = [];
   const end = Date.now() + 5 * 60_000;
@@ -33,6 +34,5 @@ test.fixme('flow 9 garden: five minutes of wandering keeps heap and GPU memory f
   expect(mean(heap.slice(-third)), 'JS heap MB, last third vs first third').toBeLessThanOrEqual(mean(heap.slice(0, third)) * 1.1 + 2);
   const tthird = Math.max(1, Math.floor(tex.length / 3));
   expect(mean(tex.slice(-tthird)), 'texture MB, last third vs first third').toBeLessThanOrEqual(mean(tex.slice(0, tthird)) * 1.05 + 1);
-  const longTasks = await page.evaluate(() => performance.getEntriesByType('longtask').filter((e) => e.duration > 100).length);
-  expect(longTasks, 'long tasks over 100 ms').toBe(0);
+  expect(await jardin.longTasksAfterReady(), 'long tasks over 100 ms after load').toEqual([]);
 });

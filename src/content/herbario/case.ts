@@ -11,7 +11,12 @@ type Lookup = (key: string) => string;
 
 const LINK_KEYS = ['repo', 'live', 'video', 'spotify'] as const;
 
-export const latinOf = (p: Project, s: Lookup): string => s(`flower.${p.flower}.latin`);
+/** The flower's Latin name, or '' when the kind has none yet (pod and bud until their source plate names one). */
+export function latinOf(p: Project, s: Lookup): string {
+  const key = `flower.${p.flower}.latin`;
+  const name = s(key);
+  return name === key ? '' : name;
+}
 
 function prose(p: Project, key: 'problem' | 'naiveFails' | 'built' | 'result', l: Lang, s: Lookup): string {
   return `<section class="c-part c-${key}"><h3 class="c-h">${esc(s(`project.${key}`))}</h3><div class="c-text"><p>${text(p[key][l])}</p></div></section>`;
@@ -49,12 +54,12 @@ function media(p: Project, l: Lang, s: Lookup): string {
 }
 
 export function renderCaseHead(p: Project, l: Lang, s: Lookup, titleId: string): string {
+  const latin = latinOf(p, s);
   const role = `<div><dt>${esc(s('project.role'))}</dt><dd>${text(p.role[l])}</dd></div>`;
   return `<header class="c-head">
 <p class="c-bed">${esc(s(`bed.${p.bed}`))}</p>
 <h2 class="c-title" id="${titleId}" tabindex="-1">${esc(p.title)}</h2>
-<p class="c-latin" lang="la">${esc(latinOf(p, s))}</p>
-<p class="c-oneliner">${text(p.oneLiner[l])}</p>
+${latin === '' ? '' : `<p class="c-latin" lang="la">${esc(latin)}</p>\n`}<p class="c-oneliner">${text(p.oneLiner[l])}</p>
 <dl class="c-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="c-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div><div><dt>${esc(s('project.year'))}</dt><dd>${text(String(p.year))}</dd></div>${role}</dl>
 </header>`;
 }

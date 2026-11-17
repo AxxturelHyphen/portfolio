@@ -1,22 +1,22 @@
-import type { Content, Lang, Machine, Panel, Project, ProjectId } from '../types.ts';
+import { panelOf } from '../core/motion.ts';
+import type { Content, Lang, Machine, Panel, Project, ProjectId, State } from '../types.ts';
+import { bindToggles, isPending, paintMode, renderToggles } from './toggles.ts';
 
 /**
- * The project panel: one native <dialog id="panel"> present from load (cook/ARCH.md 2.10).
- * Desktop: right side, about 40% wide. Mobile: bottom sheet. Layout comes from container queries in panel.css.
- * Two drivers share the same element:
- *  - the garden's `open` channel calls setProgress every frame (inline transform and opacity, CSS transition off);
- *  - the Herbario calls show and hide, and CSS transitions animate transform and opacity. Removing or adding
- *    data-closing mid-way reverses the running transition from where it is.
- * Esc, the close button and a click on the backdrop never close directly: they send BACK, and the state decides.
+ * The project panel: one native <dialog id="panel"> present from load (cook/ARCH.md 2.10). Desktop: right side,
+ * about 40 % wide. Mobile: bottom sheet. Layout comes from container queries in panel.css.
+ * The panel subscribes to the machine and only follows it:
+ *  - garden: shown while the phase is opening or inspect. The `open` channel drives it every frame through
+ *    setProgress (panelOf: transform and opacity inline, CSS transitions off); close() when 'closing' has settled.
+ *  - herbario: shown while the intent is a project. CSS transitions animate transform and opacity; leaving the
+ *    project runs the exit while the dialog is still in the top layer, and close() follows it.
+ * Its header bar repeats the mode toggle, Download CV and language, which the modal would otherwise make inert.
+ * Esc, the close button and a click on the backdrop never close directly: they send CLOSE (BACK when no project is
+ * the intent), and the state decides.
  */
 
 /** Renders the case of one project (head and body); injected by the composition root so ui stays free of content. */
 export type CaseRenderer = (p: Project, lang: Lang, titleId: string) => string;
-
-export interface HerbarioPanel extends Panel {
-  show(): void;
-  hide(): Promise<void>;
-}
 
 const TITLE_ID = 'pn-title';
 const STEPS = 100;
@@ -46,39 +46,67 @@ function reveal(img: HTMLImageElement): Promise<void> {
     .then(() => img.classList.add('is-ready'));
 }
 
-export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' | 'strings'>, m: Pick<Machine, 'send' | 'state'>, render: CaseRenderer): HerbarioPanel {
+/** The project the panel should show for this state, or null. */
+function wanted(s: State): ProjectId | null {
+  if (s.mode === 'herbario') return s.intent.k === 'project' ? s.intent.id : null;
+  return s.phase === 'opening' || s.phase === 'inspect' ? s.project : null;
+}
+
+/** Focus goes back to what opened the project when the browser could not restore it (the opener was re-rendered). */
+function returnFocus(id: ProjectId): void {
+  if (document.activeElement !== null && document.activeElement !== document.body) return;
+  const sel = `#p-${CSS.escape(id)} .h-open, #proxies [data-project="${CSS.escape(id)}"]`;
+  document.querySelector<HTMLElement>(sel)?.focus({ preventScroll: true });
+}
+
+export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' | 'strings' | 'profile'>, m: Machine, render: CaseRenderer): Panel {
   const sheet = matchMedia('(max-width: 44.99rem)');
   let current: ProjectId | null = null;
   let key = '';
   let ready: Promise<void> = Promise.resolve();
+  let readyGen = -1;
+  let shownStep = -1;
+  let selfClosed = false;
 
   el.setAttribute('aria-labelledby', TITLE_ID);
+  bindToggles(el, m);
+
+  const leave = (): void => m.send(m.state.intent.k === 'project' ? { type: 'CLOSE' } : { type: 'BACK' });
+
   el.addEventListener('cancel', (e) => {
     e.preventDefault();
-    m.send({ type: 'BACK' });
+    leave();
   });
   /** The browser may still force a close (repeated Esc): keep the state in step. */
   el.addEventListener('close', () => {
-    if (!el.open && m.state.project !== null) m.send({ type: 'BACK' });
+    const forced = !selfClosed;
+    selfClosed = false;
+    if (forced && !el.open && m.state.intent.k === 'project') m.send({ type: 'CLOSE' });
   });
   el.addEventListener('click', (e) => {
-    const closer = e.target instanceof Element ? e.target.closest('[data-close]') : null;
-    if (closer !== null) {
-      m.send({ type: 'BACK' });
+    if (e.target instanceof Element && e.target.closest('[data-close]') !== null) {
+      leave();
       return;
     }
     /** The second click of a double click on a sheet lands on the backdrop: it must not undo the open. */
     if (e.target !== el || e.detail > 1) return;
     const r = el.getBoundingClientRect();
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) m.send({ type: 'BACK' });
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) leave();
   });
 
-  function returnFocus(id: ProjectId): void {
-    if (document.activeElement !== null && document.activeElement !== document.body) return;
-    document.querySelector<HTMLElement>(`#p-${CSS.escape(id)} .h-open`)?.focus({ preventScroll: true });
+  function clearDriven(): void {
+    delete el.dataset.driven;
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('transform');
+    shownStep = -1;
   }
 
-  const panel: HerbarioPanel = {
+  function bar(lang: Lang): string {
+    const close = c.strings[lang]['panel.close'] ?? 'Close';
+    return `<header class="pn-bar">${renderToggles(c.strings, lang, c.profile.cv, 'pn')}<button type="button" class="pn-close" data-close aria-label="${close}"><span aria-hidden="true">×</span></button></header>`;
+  }
+
+  const panel: Panel = {
     el,
     get current() {
       return current;
@@ -87,56 +115,97 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
     prepare(id: ProjectId, gen: number): Promise<void> {
       const lang = m.state.lang;
       const next = `${id}:${lang}`;
-      if (next === key) return ready;
-      const p = c.projects.find((x) => x.id === id);
-      if (p === undefined) return Promise.resolve();
-      key = next;
-      current = id;
-      const close = c.strings[lang]['panel.close'] ?? 'Close';
-      el.innerHTML = `<button type="button" class="pn-close" data-close aria-label="${close}"><span aria-hidden="true">×</span></button><div class="pn-body">${render(p, lang, TITLE_ID)}</div>`;
-      el.scrollTop = 0;
-      const media = el.querySelectorAll<HTMLImageElement>('img[data-media]');
-      media.forEach((img, i) => {
-        if (i > 0) img.addEventListener('load', () => void reveal(img), { once: true });
+      readyGen = gen;
+      if (next !== key) {
+        const p = c.projects.find((x) => x.id === id);
+        if (p === undefined) return Promise.resolve();
+        const hadFocus = el.open && el.contains(document.activeElement);
+        key = next;
+        current = id;
+        el.innerHTML = `${bar(lang)}<div class="pn-body">${render(p, lang, TITLE_ID)}</div>`;
+        if (hadFocus) el.querySelector<HTMLElement>(`#${TITLE_ID}`)?.focus({ preventScroll: true });
+        paintMode(el, m.state.mode, isPending(m.state), c.strings, lang);
+        el.scrollTop = 0;
+        const media = el.querySelectorAll<HTMLImageElement>('img[data-media]');
+        media.forEach((img, i) => {
+          if (i > 0) img.addEventListener('load', () => void reveal(img), { once: true });
+        });
+        const first = media[0];
+        ready = first === undefined ? Promise.resolve() : reveal(first);
+      }
+      /** Repeat calls share one promise; PANEL_READY always carries the newest gen asked for. */
+      return ready.then(() => {
+        if (key === next) m.send({ type: 'PANEL_READY', id, gen: readyGen });
       });
-      const first = media[0];
-      ready = (first === undefined ? Promise.resolve() : reveal(first)).then(() => {
-        if (key === next) m.send({ type: 'PANEL_READY', id, gen });
-      });
-      return ready;
     },
 
     setProgress(p: number): void {
-      const i = Math.round(Math.min(1, Math.max(0, p)) * STEPS);
-      el.dataset.driven = '';
+      if (m.state.mode === 'herbario') return;
+      const i = Math.round((p < 0 ? 0 : p > 1 ? 1 : p) * STEPS);
+      if (el.dataset.driven === undefined) el.dataset.driven = '';
+      if (i === shownStep) return;
+      shownStep = i;
       el.style.opacity = OPACITY[i] ?? '1';
       el.style.transform = (sheet.matches ? SHEET : SIDE)[i] ?? 'none';
     },
 
     commitOpen(): void {
-      if (!el.open) el.showModal();
+      delete el.dataset.closing;
+      if (el.open) return;
+      if (m.state.mode === 'garden') panel.setProgress(panelOf(m.ch.open.value));
+      el.showModal();
+      el.querySelector<HTMLElement>(`#${TITLE_ID}`)?.focus({ preventScroll: true });
     },
 
     commitClosed(): void {
       delete el.dataset.closing;
-      if (el.open) el.close();
+      if (el.open) {
+        selfClosed = true;
+        el.close();
+      }
       const id = current;
       current = null;
       key = '';
       if (id !== null) returnFocus(id);
     },
-
-    show(): void {
-      delete el.dataset.closing;
-      panel.commitOpen();
-    },
-
-    async hide(): Promise<void> {
-      if (!el.open) return;
-      el.dataset.closing = '';
-      await settle(el);
-      if (el.dataset.closing !== undefined) panel.commitClosed();
-    },
   };
+
+  async function hide(): Promise<void> {
+    el.dataset.closing = '';
+    await settle(el);
+    if (el.dataset.closing !== undefined && wanted(m.state) === null) panel.commitClosed();
+  }
+
+  function reconcile(s: State): void {
+    const id = wanted(s);
+    if (id !== null) {
+      if (key !== `${id}:${s.lang}` || readyGen !== s.gen) void panel.prepare(id, s.gen);
+      panel.commitOpen();
+      return;
+    }
+    if (!el.open) return;
+    /** Garden: the channel runs the exit; close() waits until 'closing' has settled into another phase. */
+    if (s.mode === 'garden' && s.phase === 'closing') {
+      el.dataset.closing = '';
+      return;
+    }
+    /** Garden: the channel has already faded the panel out, so the dialog closes on the same frame. */
+    if (s.mode === 'garden' && el.dataset.driven !== undefined) {
+      panel.commitClosed();
+      return;
+    }
+    void hide();
+  }
+
+  m.subscribe((s, prev) => {
+    if (s.mode !== prev.mode) {
+      if (s.mode === 'herbario') clearDriven();
+      paintMode(el, s.mode, isPending(s), c.strings, s.lang);
+    } else if (s.gardenReady !== prev.gardenReady) {
+      paintMode(el, s.mode, isPending(s), c.strings, s.lang);
+    }
+    reconcile(s);
+  });
+  reconcile(m.state);
   return panel;
 }

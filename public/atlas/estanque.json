@@ -1,0 +1,349 @@
+{
+ "id": "estanque",
+ "hash": "8ce6cf0f6f06a16c",
+ "pages": [
+  {
+   "w": 1024,
+   "h": 512,
+   "color": {
+    "hi": "estanque.0.c.ktx2",
+    "lo": "estanque.0.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "estanque.0.n.ktx2",
+    "lo": "estanque.0.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 25760,
+    "lo": 13051
+   }
+  },
+  {
+   "w": 512,
+   "h": 512,
+   "color": {
+    "hi": "estanque.1.c.ktx2",
+    "lo": "estanque.1.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "estanque.1.n.ktx2",
+    "lo": "estanque.1.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 28541,
+    "lo": 13382
+   }
+  },
+  {
+   "w": 512,
+   "h": 1024,
+   "color": {
+    "hi": "estanque.2.c.ktx2",
+    "lo": "estanque.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "estanque.2.n.ktx2",
+    "lo": "estanque.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 19797,
+    "lo": 9686
+   }
+  }
+ ],
+ "sprites": {
+  "estanque/hedge": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.615234375,
+    0.9921875,
+    0.984375
+   ],
+   "size": [
+    9.6,
+    1.8
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque/sundial-plinth": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.333984375,
+    0.0830078125,
+    0.583984375
+   ],
+   "size": [
+    0.6,
+    1
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "lily.f0": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.833984375,
+    0.21484375,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "lily.f1": {
+   "page": 1,
+   "uv": [
+    0.24609375,
+    0.833984375,
+    0.4453125,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "lily.f2": {
+   "page": 1,
+   "uv": [
+    0.4765625,
+    0.833984375,
+    0.67578125,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "lily.f3": {
+   "page": 1,
+   "uv": [
+    0.70703125,
+    0.833984375,
+    0.90625,
+    0.984375
+   ],
+   "size": [
+    0.8,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "lily.f4": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.65234375,
+    0.21484375,
+    0.802734375
+   ],
+   "size": [
+    0.8,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "lily.f5": {
+   "page": 1,
+   "uv": [
+    0.24609375,
+    0.65234375,
+    0.4453125,
+    0.802734375
+   ],
+   "size": [
+    0.8,
+    0.6
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque/pond-rim": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.49609375,
+    0.916015625,
+    0.62109375
+   ],
+   "size": [
+    3.6,
+    0.5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque/peacock": {
+   "page": 1,
+   "uv": [
+    0.015625,
+    0.390625,
+    0.140625,
+    0.46484375
+   ],
+   "size": [
+    0.5,
+    0.3
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque/lily-pad": {
+   "page": 1,
+   "uv": [
+    0.171875,
+    0.40234375,
+    0.396484375,
+    0.46484375
+   ],
+   "size": [
+    0.9,
+    0.25
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque/trunk": {
+   "page": 2,
+   "uv": [
+    0.015625,
+    0.3671875,
+    0.21484375,
+    0.9921875
+   ],
+   "size": [
+    0.8,
+    5
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  },
+  "estanque/iris-leaves": {
+   "page": 2,
+   "uv": [
+    0.24609375,
+    0.8671875,
+    0.595703125,
+    0.9921875
+   ],
+   "size": [
+    1.4,
+    1
+   ],
+   "pivot": [
+    0.5,
+    0
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder"
+   ]
+  }
+ },
+ "blooms": {
+  "lily": {
+   "kind": "lily",
+   "mode": "frames",
+   "steps": 6,
+   "frames": [
+    "lily.f0",
+    "lily.f1",
+    "lily.f2",
+    "lily.f3",
+    "lily.f4",
+    "lily.f5"
+   ],
+   "rest": {
+    "idea": 0.4,
+    "wip": 0.7,
+    "shipped": 1
+   }
+  }
+ }
+}

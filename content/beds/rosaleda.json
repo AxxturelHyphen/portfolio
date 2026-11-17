@@ -1,0 +1,46 @@
+{
+  "id": "rosaleda",
+  "title": { "en": "Rosaleda", "es": "Rosaleda" },
+  "alt": {
+    "en": "Climbing roses on an old wall under the moon, one large rose for each project.",
+    "es": "Rosales trepadores sobre un muro viejo bajo la luna, una rosa grande por cada proyecto."
+  },
+  "pose": { "x": 0, "y": 1.5, "z": 7, "pitch": 0, "fov": 33.4 },
+  "bounds": [-4.5, 4.5],
+  "layers": [
+    { "id": "far-cypress", "z": -8, "minTier": "high", "page": 0, "items": [
+      { "sprite": "rosaleda/cypress", "x": -2.4, "y": 0, "scale": 1, "sway": 0.02 },
+      { "sprite": "rosaleda/cypress", "x": 3.6, "y": 0, "scale": 0.9, "flip": true, "sway": 0.02 }
+    ] },
+    { "id": "wall", "z": -5, "minTier": "low", "page": 0, "items": [
+      { "sprite": "rosaleda/wall", "x": 0, "y": 0, "scale": 1 }
+    ] },
+    { "id": "canes", "z": -3.5, "minTier": "mid", "page": 1, "items": [
+      { "sprite": "rosaleda/canes", "x": -1.0, "y": 0, "scale": 1, "sway": 0.03 },
+      { "sprite": "rosaleda/canes", "x": 2.4, "y": 0, "scale": 0.9, "flip": true, "sway": 0.03 }
+    ] },
+    { "id": "buds", "z": -2, "minTier": "mid", "page": 1, "items": [
+      { "sprite": "rosaleda/bud", "x": -0.4, "y": 2.1, "scale": 1, "sway": 0.05 },
+      { "sprite": "rosaleda/bud", "x": 2.0, "y": 1.9, "scale": 0.8, "flip": true, "sway": 0.05 },
+      { "sprite": "rosaleda/leaves", "x": 0.6, "y": 1.1, "scale": 1, "sway": 0.04 }
+    ] },
+    { "id": "hero", "z": -1.2, "minTier": "low", "page": 1, "items": [
+      { "sprite": "rosaleda/stem", "x": 1.0, "y": 0, "scale": 1, "sway": 0.02 },
+      { "sprite": "rosaleda/stem", "x": -1.8, "y": 0, "scale": 0.8, "sway": 0.02 },
+      { "sprite": "rosaleda/stem", "x": 3.0, "y": 0, "scale": 0.6, "sway": 0.02 }
+    ] },
+    { "id": "near", "z": 0, "minTier": "low", "page": 2, "items": [
+      { "sprite": "rosaleda/near-leaf", "x": -3.9, "y": 0.2, "scale": 1, "sway": 0.03 },
+      { "sprite": "rosaleda/thorn-cane", "x": -3.2, "y": 0, "scale": 1, "sway": 0.02 },
+      { "sprite": "rosaleda/wall-pier", "x": 5.0, "y": 0, "scale": 1 }
+    ] }
+  ],
+  "slots": [
+    { "id": "rose-a", "kind": "project", "accepts": "rose", "x": 1.0, "y": 1.6, "z": -1.2, "scale": 1, "bloom": "rose", "hit": [0.9, 0.9], "label": "auto" },
+    { "id": "rose-b", "kind": "project", "accepts": "rose", "x": -1.8, "y": 1.25, "z": -1.2, "scale": 0.75, "bloom": "rose", "hit": [0.7, 0.7], "label": "auto" },
+    { "id": "rose-c", "kind": "project", "accepts": "rose", "x": 3.0, "y": 0.95, "z": -1.2, "scale": 0.6, "bloom": "rose", "hit": [0.6, 0.6], "label": "left" }
+  ],
+  "procedural": [
+    { "type": "fireflies", "x": 0, "y": 1.8, "z": -2.5, "w": 6, "h": 2, "params": { "count": 5 } }
+  ]
+}

@@ -40,10 +40,18 @@ async function heapMB(page: Page): Promise<number> {
   return h.usedSize / 2 ** 20;
 }
 
-async function longTasks(page: Page): Promise<{ n: number; over100: number }> {
+/** n: every long task; over100: those over 100 ms that started after load (garden ready), the spec section 10 gate.
+ * loadMax: the longest task during load, informational. */
+async function longTasks(page: Page): Promise<{ n: number; over100: number; loadMax: number }> {
   return page.evaluate(() => {
-    const l = (window as unknown as { __lt?: number[] }).__lt ?? [];
-    return { n: l.length, over100: l.filter((d) => d > 100).length };
+    const w = window as unknown as { __lt?: Array<[number, number]>; __readyAt?: number };
+    const l = w.__lt ?? [];
+    const at = w.__readyAt ?? 0;
+    return {
+      n: l.length,
+      over100: l.filter(([s, d]) => s >= at && d > 100).length,
+      loadMax: Math.round(Math.max(0, ...l.filter(([s]) => s < at).map(([, d]) => d))),
+    };
   });
 }
 
@@ -98,10 +106,10 @@ async function main(): Promise<number> {
   try {
     const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
     await ctx.addInitScript(() => {
-      const w = window as unknown as { __lt: number[] };
+      const w = window as unknown as { __lt: Array<[number, number]> };
       w.__lt = [];
       new PerformanceObserver((l) => {
-        for (const e of l.getEntries()) w.__lt.push(e.duration);
+        for (const e of l.getEntries()) w.__lt.push([e.startTime, e.duration]);
       }).observe({ type: 'longtask', buffered: true });
     });
     const page = await ctx.newPage();
@@ -116,9 +124,11 @@ async function main(): Promise<number> {
         const t = await page.evaluate(async () => {
           const api = (window as unknown as { __jardin: { ready: Promise<void>; tour(): Promise<Record<string, number | string>> } }).__jardin;
           await api.ready;
+          (window as unknown as { __readyAt: number }).__readyAt = performance.now();
           return api.tour();
         });
         const lt = await longTasks(page);
+        if (lt.loadMax > 100) log(`note: a ${lt.loadMax} ms long task during load (before ready), not counted in longTasksOver100`);
         line = {
           tier: String(t['tier'] ?? tier), route: 'garden', drawCallsP95: Number(t['drawCallsP95']), textureMB: Number(t['textureMB']),
           heapMB: round(Number(t['heapMB'])), frameAvg: round(Number(t['frameAvg'])), frameP95: round(Number(t['frameP95'])),

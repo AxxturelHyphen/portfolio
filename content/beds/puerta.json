@@ -1,0 +1,43 @@
+{
+  "id": "puerta",
+  "title": { "en": "La Puerta", "es": "La Puerta" },
+  "alt": {
+    "en": "An old garden gate with sigils in the stone and a stereoscope portrait hanging in the ivy.",
+    "es": "Una vieja puerta de jardín con sigilos en la piedra y un retrato de estereoscopio colgado en la hiedra."
+  },
+  "pose": { "x": 0, "y": 1.5, "z": 7, "pitch": -2, "fov": 33.4 },
+  "bounds": [-4.5, 4.5],
+  "layers": [
+    { "id": "far-cypress", "z": -9, "minTier": "mid", "page": 0, "items": [
+      { "sprite": "puerta/cypress", "x": -3.2, "y": 0, "scale": 1, "sway": 0.02 },
+      { "sprite": "puerta/cypress", "x": 2.6, "y": 0, "scale": 0.85, "flip": true, "sway": 0.02 }
+    ] },
+    { "id": "wall", "z": -5, "minTier": "low", "page": 0, "items": [
+      { "sprite": "puerta/wall", "x": 0, "y": 0, "scale": 1 },
+      { "sprite": "puerta/gate-arch", "x": -1.2, "y": 0, "scale": 1 }
+    ] },
+    { "id": "ivy", "z": -3, "minTier": "low", "page": 1, "items": [
+      { "sprite": "puerta/ivy", "x": 1.6, "y": 1.9, "scale": 1, "sway": 0.04 },
+      { "sprite": "puerta/portrait-frame", "x": 1.6, "y": 1.5, "scale": 1, "lift": 0.05 },
+      { "sprite": "puerta/ivy", "x": 3.3, "y": 2.4, "scale": 0.8, "flip": true, "sway": 0.05 }
+    ] },
+    { "id": "ground", "z": -1.6, "minTier": "mid", "page": 1, "items": [
+      { "sprite": "puerta/path", "x": -0.6, "y": 0, "scale": 1 },
+      { "sprite": "puerta/grass", "x": 2.2, "y": 0, "scale": 1, "sway": 0.06 }
+    ] },
+    { "id": "foreground", "z": 0, "minTier": "low", "page": 2, "items": [
+      { "sprite": "puerta/gate-post", "x": -4.3, "y": 0, "scale": 1 },
+      { "sprite": "puerta/ivy-corner", "x": 4.0, "y": 3.2, "scale": 1, "sway": 0.03 },
+      { "sprite": "puerta/trunk", "x": 5.0, "y": 0, "scale": 1 }
+    ] }
+  ],
+  "slots": [
+    { "id": "portrait", "kind": "prop", "ref": "portrait", "x": 1.6, "y": 1.5, "z": -2.9, "scale": 0.6, "hit": [0.7, 0.9], "label": "left",
+      "alt": { "en": "Stereoscope portrait", "es": "Retrato de estereoscopio" } }
+  ],
+  "procedural": [
+    { "type": "sigils", "x": -1.2, "y": 2.2, "z": -4.95, "w": 2.2, "h": 1.2 },
+    { "type": "stereoscope", "x": 1.6, "y": 1.5, "z": -2.95, "w": 0.5, "h": 0.6 },
+    { "type": "fireflies", "x": -1.2, "y": 1.2, "z": -3.5, "w": 2.5, "h": 1.5, "params": { "count": 6 } }
+  ]
+}

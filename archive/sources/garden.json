@@ -143,7 +143,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "The Metropolitan Museum of Art, Purchase, Daniel Ergmann Gift, 2014 (Open Access, CC0)",
   "file": "garden/met-726302.jpg",
-  "need": "frames",
+  "need": "frames-herbarium",
   "px": [
    4000,
    2673
@@ -219,7 +219,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "The Metropolitan Museum of Art, Purchase, Daniel Ergmann Gift, 2014 (Open Access, CC0)",
   "file": "garden/met-726306.jpg",
-  "need": "frames",
+  "need": "frames-herbarium",
   "px": [
    4000,
    2673
@@ -276,7 +276,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "The Metropolitan Museum of Art, Gift of Mrs. Morris Hawkes, 1927 (Open Access, CC0)",
   "file": "garden/met-849927.jpg",
-  "need": "frames",
+  "need": "frames-herbarium",
   "px": [
    2810,
    4000
@@ -618,7 +618,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "The Cleveland Museum of Art, Dudley P. Allen Fund (Open Access, CC0)",
   "file": "garden/cma-146685.jpg",
-  "need": "frames",
+  "need": "frames-herbarium",
   "px": [
    3400,
    3306
@@ -637,12 +637,639 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "The Cleveland Museum of Art, L. E. Holden Fund (Open Access, CC0)",
   "file": "garden/cma-148664.jpg",
-  "need": "frames",
+  "need": "frames-herbarium",
   "px": [
    1363,
    3400
   ],
   "background": "toned paper",
   "notes": "Oppenord red-chalk design for a cartouche: tall asymmetrical scrolls, warm red already in palette. Slim edge frame; plain paper."
+ },
+ {
+  "id": "met-287962",
+  "title": "Old Cypress Trees in Carthusian Convent, Rome",
+  "creator": "Jane Martha St. John",
+  "date": "1853–56",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/287962",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Gilman Collection, Gift of The Howard Gilman Foundation, 2005 (Open Access, CC0)",
+  "file": "garden/met-287962.jpg",
+  "need": "trees",
+  "px": [
+   2638,
+   3486
+  ],
+  "background": "photo",
+  "notes": "1850s albumen photograph of two tall columnar cypresses in a Carthusian cloister garden, Rome (Jane Martha St. John), with a pencil caption below. Classic cypress silhouettes against cloister arches; sepia tone; sky is plain pale so a luminance key separates the trees, crop caption."
+ },
+ {
+  "id": "cma-111718",
+  "title": "Cypress Bower",
+  "creator": "Ernest Haskell (American, 1876–1925)",
+  "date": "1891–1925",
+  "institution": "The Cleveland Museum of Art",
+  "sourceUrl": "https://clevelandart.org/art/1930.245",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Cleveland Museum of Art, Dudley P. Allen Fund (Open Access, CC0)",
+  "file": "garden/cma-111718.jpg",
+  "need": "trees",
+  "px": [
+   3400,
+   2699
+  ],
+  "background": "toned paper",
+  "notes": "Etching Cypress Bower: wind-swept dark cypress canopies over a clearing, cream paper. Dense dark masses, use as a silhouette tree cluster at the garden edge; plate border and signature to crop."
+ },
+ {
+  "id": "met-344561",
+  "title": "Labyrinte de Versailles",
+  "creator": "Isaac de Benserade",
+  "date": "1677",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/344561",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1931 (Open Access, CC0)",
+  "file": "garden/met-344561.jpg",
+  "need": "trees",
+  "px": [
+   2667,
+   4000
+  ],
+  "background": "toned paper",
+  "notes": "Labyrinthe de Versailles (1677) engraving: a clipped-hedge tunnel with an arched opening and statue plinths, on plain paper inside a plate mark. A hedge archway for foreground framing or a green door; statues are small garden sculpture. Black and white, would be tinted green."
+ },
+ {
+  "id": "met-735212",
+  "title": "'De Laan na Ceres, tegen over 't Beeld van Phaunus'', in: Tooneel Der Voornaamste Nederlands Huizen, En Lust Hoven, Naar T Leven Afgebeeld",
+  "creator": "Carel Allard",
+  "date": "n.d.",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/735212",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1937 (Open Access, CC0)",
+  "file": "garden/met-735212.jpg",
+  "need": "trees",
+  "px": [
+   4000,
+   3439
+  ],
+  "background": "coloured",
+  "notes": "Hand-coloured print of a long tree-lined avenue ending in a niche arch, from a bound Dutch garden book. Soft greens and rose; clipped lime avenue would give hedge and tree rows. Book margins and leather edge to crop; small figures."
+ },
+ {
+  "id": "met-735055",
+  "title": "' ’De Koninginne Tuin met 't Groene Kabinet , en de Oranjerie, van Achteren gezien\", in: Tooneel Der Voornaamste Nederlands Huizen, En Lust Hoven, Naar T Leven Afgebeeld",
+  "creator": "Carel Allard",
+  "date": "n.d.",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/735055",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1937 (Open Access, CC0)",
+  "file": "garden/met-735055.jpg",
+  "need": "trees",
+  "px": [
+   4000,
+   3434
+  ],
+  "background": "coloured",
+  "notes": "Hand-coloured view of a formal garden with clipped orange trees in tubs and a long orangery, from a Dutch garden book. Topiary and parterre in delicate colour; bound-book margins to crop; tiny figures."
+ },
+ {
+  "id": "met-735056",
+  "title": "'De Cascade van Narcissus, aan de Oost-zyde van de Groote Tuin', in: Tooneel Der Voornaamste Nederlands Huizen, En Lust Hoven, Naar T Leven Afgebeeld",
+  "creator": "Carel Allard",
+  "date": "n.d.",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/735056",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1937 (Open Access, CC0)",
+  "file": "garden/met-735056.jpg",
+  "need": "stone",
+  "px": [
+   4000,
+   3423
+  ],
+  "background": "coloured",
+  "notes": "Hand-coloured print of a stepped stone cascade (Cascade of Narcissus) with urns and a central statue in a garden, from a Dutch garden book. Coloured stone and water, fountain with urns. Book margins to crop; people at the sides are small."
+ },
+ {
+  "id": "met-735203",
+  "title": "'Het Groote Doolhof', in: Tooneel Der Voornaamste Nederlands Huizen, En Lust Hoven, Naar T Leven Afgebeeld",
+  "creator": "Carel Allard",
+  "date": "n.d.",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/735203",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1937 (Open Access, CC0)",
+  "file": "garden/met-735203.jpg",
+  "need": "gates",
+  "px": [
+   4000,
+   3469
+  ],
+  "background": "coloured",
+  "notes": "Hand-coloured print of the entrance pavilions and open gate to a garden labyrinth (Het Groote Doolhof) with hedge walls behind. Garden entrance layer; book margins to crop; several small figures at the gate."
+ },
+ {
+  "id": "met-399409",
+  "title": "View of a Garden with a Water Basin and Large Fountain, title page from \"Grottes et fontaines de jardins à l'italienne\"",
+  "creator": "Jean Le Pautre",
+  "date": "17th century",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/399409",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Bequest of Phyllis Massar, 2011 (Open Access, CC0)",
+  "file": "garden/met-399409.jpg",
+  "need": "ponds",
+  "px": [
+   3555,
+   2364
+  ],
+  "background": "toned paper",
+  "notes": "17th-century engraving of a garden with a large round water basin carrying a fountain group, balustraded terraces and hedged walls, topped by a cartouche. Reflective basin plus balustrade and cartouche, plain paper margins; the fountain group has putti and sea figures as sculpture."
+ },
+ {
+  "id": "wc-hieracium-pilosella-in-billings-kittredge-herbar",
+  "title": "Hieracium Pilosella in Billings-Kittredge Herbaria (herbarium sheet)",
+  "creator": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller National Historical Park (imaging by Boston Photo Imaging)",
+  "date": "collected 1919-07-01",
+  "institution": "National Park Service, via NPGallery and Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hieracium_Pilosella_in_Billings-Kittredge_Herbaria_(16935bde-5b46-4142-8d7a-5f65da6c6c3c).tif",
+  "license": "Public domain (US federal government work)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-USGov",
+  "attribution": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller NHP, National Park Service (public domain), via Wikimedia Commons",
+  "file": "garden/wc-hieracium-pilosella-in-billings-kittredge-herbar.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   3840,
+   5239
+  ],
+  "background": "toned paper",
+  "notes": "Early-1900s herbarium sheet (collected 1919): mouse-ear hawkweed pressed with rosette and flower head on foxed paper, typed label and herbarium stamp lower right. Warm cream sheet with torn edge; plant cut by luminance key against paper; label can be a separate card layer."
+ },
+ {
+  "id": "wc-brassica-arvensis-in-billings-kittredge-herbaria",
+  "title": "Brassica Arvensis in Billings-Kittredge Herbaria (herbarium sheet)",
+  "creator": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller National Historical Park (imaging by Boston Photo Imaging)",
+  "date": "collected 1928-07-20",
+  "institution": "National Park Service, via NPGallery and Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Brassica_Arvensis_in_Billings-Kittredge_Herbaria_(2a6f3228-3ebd-4396-9ee7-42010bccfb0a).tif",
+  "license": "Public domain (US federal government work)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-USGov",
+  "attribution": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller NHP, National Park Service (public domain), via Wikimedia Commons",
+  "file": "garden/wc-brassica-arvensis-in-billings-kittredge-herbaria.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   3840,
+   5296
+  ],
+  "background": "toned paper",
+  "notes": "Herbarium sheet (1928) of a tall pressed charlock stem with pods on aged paper, label at bottom. Slender silhouette good for a vertical Herbario card; label text is real handwriting and typed text, keep as texture."
+ },
+ {
+  "id": "wc-antennaria-canadensis-in-billings-kittredge-herb",
+  "title": "Antennaria Canadensis in Billings-Kittredge Herbaria (herbarium sheet)",
+  "creator": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller National Historical Park (imaging by Boston Photo Imaging)",
+  "date": "collected 1911-06-02",
+  "institution": "National Park Service, via NPGallery and Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Antennaria_Canadensis_in_Billings-Kittredge_Herbaria_(142bce8a-54cc-4219-ac5f-0ee080788423).tif",
+  "license": "Public domain (US federal government work)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-USGov",
+  "attribution": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller NHP, National Park Service (public domain), via Wikimedia Commons",
+  "file": "garden/wc-antennaria-canadensis-in-billings-kittredge-herb.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   3840,
+   5296
+  ],
+  "background": "toned paper",
+  "notes": "Herbarium sheet (1911) with pressed pussytoes flower tuft on a long stem and basal leaves, soft fluffy head. Very airy silhouette; delicate fluff needs careful keying. Label bottom right."
+ },
+ {
+  "id": "wc-carex-trichocarpa-in-billings-kittredge-herbaria",
+  "title": "Carex Trichocarpa in Billings-Kittredge Herbaria (herbarium sheet)",
+  "creator": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller National Historical Park (imaging by Boston Photo Imaging)",
+  "date": "collected 1920-07-22",
+  "institution": "National Park Service, via NPGallery and Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Carex_Trichocarpa_in_Billings-Kittredge_Herbaria_(e266ba25-485b-4e2c-8d2e-de6370ef3fd6).tif",
+  "license": "Public domain (US federal government work)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-USGov",
+  "attribution": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller NHP, National Park Service (public domain), via Wikimedia Commons",
+  "file": "garden/wc-carex-trichocarpa-in-billings-kittredge-herbaria.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   3840,
+   5252
+  ],
+  "background": "toned paper",
+  "notes": "Herbarium sheet (1920) of long curving sedge blades and seed spikes on a damaged brown-tan sheet with chipped corner. Graphic sweeping lines; good as a background herbarium texture with torn edges."
+ },
+ {
+  "id": "wc-panicum-lindheimeri-in-billings-kittredge-herbar",
+  "title": "Panicum Lindheimeri in Billings-Kittredge Herbaria (herbarium sheet)",
+  "creator": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller National Historical Park (imaging by Boston Photo Imaging)",
+  "date": "collected 1923-07-28",
+  "institution": "National Park Service, via NPGallery and Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Panicum_Lindheimeri_in_Billings-Kittredge_Herbaria_(92f13424-3202-42e0-95ea-c596db5e8e66).tif",
+  "license": "Public domain (US federal government work)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-USGov",
+  "attribution": "Billings-Kittredge Herbaria, Marsh-Billings-Rockefeller NHP, National Park Service (public domain), via Wikimedia Commons",
+  "file": "garden/wc-panicum-lindheimeri-in-billings-kittredge-herbar.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   3840,
+   5252
+  ],
+  "background": "toned paper",
+  "notes": "Herbarium sheet (1923) of a branching pressed grass-like plant with narrow leaves and airy flower sprays on stained paper with a torn corner and a typed label."
+ },
+ {
+  "id": "wc-marcel-etringer-herbarium-sheet-malva-alcea",
+  "title": "Herbarium sheet, Malva alcea (collector Marcel Etringer)",
+  "creator": "Marcel Etringer (collector); scan by Musee national d'histoire naturelle Luxembourg",
+  "date": "specimen sheet, scanned 2020-03-16",
+  "institution": "Musee national d'histoire naturelle Luxembourg (Herbarium LUX)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Marcel_Etringer_herbarium_sheet_Malva_alcea.jpg",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Herbarium sheet Malva alcea (Marcel Etringer), Musee national d'histoire naturelle Luxembourg, CC BY 4.0, via Wikimedia Commons",
+  "file": "garden/wc-marcel-etringer-herbarium-sheet-malva-alcea.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   3840,
+   4963
+  ],
+  "background": "toned paper",
+  "notes": "Herbarium sheet of vervain mallow with a pink bloom, original collector label and a pasted handwritten tag. Sheet carries a colour scale bar and barcode on the right edge: crop them off. Warm paper, nice foliage."
+ },
+ {
+  "id": "wc-a-wish-postcard-1913-reverse",
+  "title": "\"A Wish\" postcard (1913), reverse",
+  "creator": "Unknown publisher (scan by AWB)",
+  "date": "1913",
+  "institution": "Wikimedia Commons (scan of a card at Antique Village, Hanover, VA)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:%22A_Wish%22_postcard_(1913)_reverse.tif",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-US-expired",
+  "attribution": "\"A Wish\" postcard (1913) reverse, scan by AWB, public domain, via Wikimedia Commons",
+  "file": "garden/wc-a-wish-postcard-1913-reverse.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   3840,
+   2386
+  ],
+  "background": "toned paper",
+  "notes": "Reverse of a 1913 postcard: ornate art-nouveau POST CARD heading, divided message and address areas, stamp box, tiny printer mark bottom left. Almost blank grey-cream card: usable as a Herbario card back or a postcard prop; heading can be kept as period type."
+ },
+ {
+  "id": "wc-piranesi-vase-rp-p-ob-39-601",
+  "title": "Antique vase (from Vasi, candelabri, cippi, sarcofagi, tripodi, lucerne, ed ornamenti antichi), RP-P-OB-39.601",
+  "creator": "Giovanni Battista Piranesi",
+  "date": "1778",
+  "institution": "Rijksmuseum",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Antieke_vaas_Vazen,_kandelaars,_grafstenen,_sarcofagen,_tripods,_lampen_en_ornamenten_ontworpen_en_gegraveerd_door_Giovanni_Battista_Piranesi_(serietitel)_Vasi,_candelabri,_cippi,_sarcofagi,_tripodi,_lucerne,_ed_orname,_RP-P-OB-39.601.jpg",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "Rijksmuseum, Amsterdam, RP-P-OB-39.601 (CC0), via Wikimedia Commons",
+  "file": "garden/wc-piranesi-vase-rp-p-ob-39-601.jpg",
+  "need": "stone",
+  "px": [
+   3840,
+   5172
+  ],
+  "background": "toned paper",
+  "notes": "Piranesi etching (1778) of a large marble Medici-type krater urn with acanthus and relief band on a fluted base, plain cream paper, caption lettering below. Superb garden urn for a pier; strong silhouette, easy paper key, crop caption. Rijksmuseum, 4000+ px original (downloaded at 3840 wide)."
+ },
+ {
+  "id": "wc-piranesi-candelabrum-rp-p-ob-39-641",
+  "title": "Candelabrum, cippi and vase (from Vasi, candelabri, cippi, sarcofagi, tripodi, lucerne, ed ornamenti antichi), RP-P-OB-39.641",
+  "creator": "Giovanni Battista Piranesi",
+  "date": "1778",
+  "institution": "Rijksmuseum",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kandelabers,_grafzuilen_en_vaas_Vazen,_kandelaars,_grafstenen,_sarcofagen,_tripods,_lampen_en_ornamenten_ontworpen_en_gegraveerd_door_Giovanni_Battista_Piranesi_(serietitel)_Vasi,_candelabri,_cippi,_sarcofagi,_tripodi,,_RP-P-OB-39.641.jpg",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "Rijksmuseum, Amsterdam, RP-P-OB-39.641 (CC0), via Wikimedia Commons",
+  "file": "garden/wc-piranesi-candelabrum-rp-p-ob-39-641.jpg",
+  "need": "stone",
+  "px": [
+   3840,
+   5466
+  ],
+  "background": "toned paper",
+  "notes": "Piranesi etching sheet of an ornate stone candelabrum with sphinx-footed base, two cippi tablets and urns around it, on white paper. Tall stone column to harvest as garden obelisk or pedestal; Latin captions are part of the engraving, crop or cover."
+ },
+ {
+  "id": "wc-piranesi-tripod-altar-rp-p-ob-39-610",
+  "title": "Tripod or altar (from Vasi, candelabri, cippi, sarcofagi, tripodi, lucerne, ed ornamenti antichi), RP-P-OB-39.610",
+  "creator": "Giovanni Battista Piranesi",
+  "date": "1778",
+  "institution": "Rijksmuseum",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tripod_of_altaar_Vazen,_kandelaars,_grafstenen,_sarcofagen,_tripods,_lampen_en_ornamenten_ontworpen_en_gegraveerd_door_Giovanni_Battista_Piranesi_(serietitel)_Vasi,_candelabri,_cippi,_sarcofagi,_tripodi,_lucerne,_ed_or,_RP-P-OB-39.610.jpg",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "Rijksmuseum, Amsterdam, RP-P-OB-39.610 (CC0), via Wikimedia Commons",
+  "file": "garden/wc-piranesi-tripod-altar-rp-p-ob-39-610.jpg",
+  "need": "stone",
+  "px": [
+   3840,
+   5868
+  ],
+  "background": "toned paper",
+  "notes": "Piranesi etching of a carved marble tripod altar with garlands and winged forms, text column at left. Heavy stone ornament for a sundial plinth or garden altar; paper plain and warm. Contains small carved griffin or sphinx figures, no human bodies."
+ },
+ {
+  "id": "met-156877",
+  "title": "Ribbon",
+  "creator": "Bon Marché",
+  "date": "1880–89",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/156877",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Gift of Amelia Beard Hollenback, 1966 (Open Access, CC0)",
+  "file": "garden/met-156877.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   3000,
+   4000
+  ],
+  "background": "dark",
+  "notes": "Costume Institute photograph of three silk ribbon lengths (ochre stripes, green and cream plaid, red and tan stripes) on black, 1880s. Satin sheen, saturated yet soft; keys cleanly off the black. Cut the three bands apart for cords and ties."
+ },
+ {
+  "id": "met-156638",
+  "title": "Ribbon",
+  "creator": "European",
+  "date": "1860–99",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/156638",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Gift of Adelaide Goan, 1955 (Open Access, CC0)",
+  "file": "garden/met-156638.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   3000,
+   4000
+  ],
+  "background": "dark",
+  "notes": "Photograph on black of a 19th-century woven silk ribbon with red roses and small blossoms on a green ground, folded in an S. Usable as a ribbon tie or garland; black key is easy, edges slightly frayed."
+ },
+ {
+  "id": "met-156399",
+  "title": "Ribbon",
+  "creator": "Unknown",
+  "date": "early 19th century",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/156399",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Museum Expedition 1920 & 1921, Robert B. Woodward Memorial Fund, 1921 (Open Access, CC0)",
+  "file": "garden/met-156399.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   2830,
+   4000
+  ],
+  "background": "dark",
+  "notes": "Photograph on black of an early 19th-century orange and brown patterned ribbon folded in a Z. Warm ochre ribbon for tags and plant labels; clean black ground."
+ },
+ {
+  "id": "met-819614",
+  "title": "Book Label for Mrs. Judith Hackam",
+  "creator": "Anonymous, British, 18th century",
+  "date": "19th century",
+  "institution": "The Metropolitan Museum of Art",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/819614",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "The Metropolitan Museum of Art, Gift of Bella C. Landauer, 1926 (Open Access, CC0)",
+  "file": "garden/met-819614.jpg",
+  "need": "frames-herbarium",
+  "px": [
+   2800,
+   1867
+  ],
+  "background": "toned paper",
+  "notes": "Printed book label with a typographic border of printer's flowers and a framed centre panel, 18th-century type (Mrs. Judith Hackam in manuscript, Oxford 1731). A ready plant-label or specimen-tag stock: keep the border, blank the manuscript name. Small image, crop tight."
+ },
+ {
+  "id": "wc-welcome-utah-utah-gains-statehood-back-50718307",
+  "title": "\"Welcome Utah\" statehood postcard, reverse",
+  "creator": "Unknown publisher (scan by Familypapers)",
+  "date": "early 1900s (undated)",
+  "institution": "Wikimedia Commons (Familypapers)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:%22Welcome_Utah,%22_Utah_Gains_Statehood-Back_(50718307952).jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "\"Welcome Utah\" postcard reverse, scan by Familypapers, public domain, via Wikimedia Commons",
+  "file": "garden/wc-welcome-utah-utah-gains-statehood-back-50718307.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1920,
+   1201
+  ],
+  "background": "toned paper",
+  "notes": "Reverse of an early 1900s postcard with big teal outlined POST CARD lettering, stamp box and divided back, on warm cream stock. Blank writing area, teal printing sits well with the palette."
+ },
+ {
+  "id": "wc-1909-09-rppc-souvenir-frankford-old-home-week-ye",
+  "title": "Real-photo postcard, reverse (Frankford Old Home Week souvenir)",
+  "creator": "Unknown",
+  "date": "1909",
+  "institution": "Wikimedia Commons (personal postcard collection scan)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:1909-09_RPPC_Souvenir_Frankford_Old_Home_Week_Ye_Old_Dummy_Depot_B.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "1909 RPPC postcard reverse, unknown author, public domain, via Wikimedia Commons",
+  "file": "garden/wc-1909-09-rppc-souvenir-frankford-old-home-week-ye.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1920,
+   1227
+  ],
+  "background": "toned paper",
+  "notes": "Reverse of a 1909 real-photo postcard on brown card stock with faint printed POST CARD, AZO-style stamp box and divided lines. Darker brown tone suits dusk scenes. Hand number in pencil top right."
+ },
+ {
+  "id": "wc-1925-schloss-dobrilugk-kien-r-ckseite-alter-frit",
+  "title": "Postcard reverse, Schloss Dobrilugk-Kirchhain",
+  "creator": "Albert Kien, Dobrilugk (publisher)",
+  "date": "1925",
+  "institution": "Wikimedia Commons (own collection scan)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:1925_Schloss_Dobrilugk_Kien_R%C3%BCckseite_(Alter_Fritz).jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "1925 postcard reverse, Albert Kien, public domain, via Wikimedia Commons",
+  "file": "garden/wc-1925-schloss-dobrilugk-kien-r-ckseite-alter-frit.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1920,
+   1228
+  ],
+  "background": "toned paper",
+  "notes": "Reverse of a 1925 German postcard: pale yellow stock, only fine divider and address lines, almost completely blank. Cleanest blank card back; edges are straight so no cutout needed."
+ },
+ {
+  "id": "wc-1900-circa-julius-bard-verlag-amtliche-ausgabe-d",
+  "title": "Postkarte reverse, Zeughaus Berlin series Nr. 267",
+  "creator": "Julius Bard Verlag for the Koenigliche Zeughaus-Verwaltung, Berlin",
+  "date": "circa 1900",
+  "institution": "Wikimedia Commons (scan via Delcampe listing)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:1900_circa_Julius_Bard_Verlag_Amtliche_Ausgabe_der_K%C3%B6niglichen_Zeughaus-Verwaltung_in_Berlin,_Nr._267_Adressseite,_Reichsdruckerei.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "Circa 1900 Postkarte reverse, Julius Bard Verlag, public domain, via Wikimedia Commons",
+  "file": "garden/wc-1900-circa-julius-bard-verlag-amtliche-ausgabe-d.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1280,
+   819
+  ],
+  "background": "toned paper",
+  "notes": "Reverse of a c. 1900 German Postkarte: salmon-pink card with a black eagle masthead and stamp box, blank message area. Printed text at left is real publisher text, crop or cover."
+ },
+ {
+  "id": "wc-alice-in-wonderland-1915-title-card",
+  "title": "Alice in Wonderland (1915 film), title card",
+  "creator": "Unknown (1915 silent film, Internet Archive copy)",
+  "date": "1915",
+  "institution": "Wikimedia Commons (frame from archive.org copy)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:AliceInWonderland1915.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "Alice in Wonderland (1915) title card, public domain, via Wikimedia Commons",
+  "file": "garden/wc-alice-in-wonderland-1915-title-card.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1280,
+   960
+  ],
+  "background": "dark",
+  "notes": "Title-card frame from the 1915 silent film Alice in Wonderland: sepia-toned hand-drawn lettering and small Alice and White Rabbit vignette on a dark brown card. Direct reference for intertitle style; lettering must be replaced with own text, art can be reused as a corner ornament."
+ },
+ {
+  "id": "wc-cinema-slide-advertise-lccn2012645958",
+  "title": "Cinema advertising slide: \"Advertise your business on this screen\"",
+  "creator": "Miscellaneous Items in High Demand, Prints and Photographs, Library of Congress",
+  "date": "1912",
+  "institution": "Library of Congress (LCCN 2012645958), via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Advertise_your_business_on_this_screen_and_get_results._See_the_manager_LCCN2012645958.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "Library of Congress, LCCN 2012645958, public domain, via Wikimedia Commons",
+  "file": "garden/wc-cinema-slide-advertise-lccn2012645958.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1280,
+   1056
+  ],
+  "background": "dark",
+  "notes": "Library of Congress silent-era cinema advertising slide: ornate silvered rounded frame with floral border around a horse portrait and centred text on black. The frame is a ready intertitle border; replace the text, and drop the horse for the portrait window."
+ },
+ {
+  "id": "wc-nordiska-red-band-nm-0048258a",
+  "title": "Red woven band (NM.0048258A)",
+  "creator": "Elisabeth Eriksson (photographer); object in Nordiska museet",
+  "date": "undated museum object",
+  "institution": "Nordiska museet, Stockholm",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:2_likadana_r%C3%B6dband_a-b_-_Nordiska_museet_-_NM.0048258A_(1).jpg",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Elisabeth Eriksson / Nordiska museet, CC BY 4.0, via Wikimedia Commons",
+  "file": "garden/wc-nordiska-red-band-nm-0048258a.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   3840,
+   2599
+  ],
+  "background": "photo",
+  "notes": "Museum photograph of a red woven ribbon band with patterned ends and fringe on white. Soft pure red fits the palette; background is plain white so keying is trivial. Real object, 19th-century folk textile (Nordiska museet), CC BY 4.0 attribution required."
+ },
+ {
+  "id": "wc-nordiska-patterned-band-tassels-nm-0003516b",
+  "title": "Patterned woven band with tassels (NM.0003516B)",
+  "creator": "Elisabeth Eriksson (photographer); object in Nordiska museet",
+  "date": "undated museum object",
+  "institution": "Nordiska museet, Stockholm",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:B,_M%C3%B6nsterv%C3%A4vt_band,_krusband_,_med_tofsar,_tuppor_,_i_%C3%A4ndarna_-_Nordiska_museet_-_NM.0003516B_(2).jpg",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Elisabeth Eriksson / Nordiska museet, CC BY 4.0, via Wikimedia Commons",
+  "file": "garden/wc-nordiska-patterned-band-tassels-nm-0003516b.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   3840,
+   2599
+  ],
+  "background": "photo",
+  "notes": "Museum photograph of a long red patterned woven band, coiled, with dried-flower and silk tassels at the ends, on white. Great silk-cord prop for tags and plant labels; cut out against white, tassels need soft edges. CC BY 4.0 (Nordiska museet)."
+ },
+ {
+  "id": "wc-excess-luggage-ticket-1912-nara-278330",
+  "title": "Excess luggage ticket, London and South Western Railway",
+  "creator": "Unknown (London and South Western Railway)",
+  "date": "10 April 1912",
+  "institution": "U.S. National Archives and Records Administration (NARA 278330)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Exhibit_C_is_an_Excess_Luggage_Ticket_from_a_TITANIC_passenger_who_traveled_from_London%27s_Waterloo_Station_to..._-_NARA_-_278330.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "National Archives and Records Administration, NARA 278330, public domain, via Wikimedia Commons",
+  "file": "garden/wc-excess-luggage-ticket-1912-nara-278330.jpg",
+  "need": "paper-ephemera",
+  "px": [
+   1280,
+   751
+  ],
+  "background": "toned paper",
+  "notes": "National Archives scan of a 1912 London and South Western Railway excess luggage ticket: pale green card with printed form, gold brass eyelets and pencil handwriting. Real tag-like ephemera in green that suits viridian; handwritten name should be blanked."
+ },
+ {
+  "id": "wc-thomas-morris-garden-gate-yale-b1977-14-18430",
+  "title": "Garden Gate",
+  "creator": "Thomas Morris",
+  "date": "undated",
+  "institution": "Yale Center for British Art, B1977.14.18430",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Thomas_Morris_-_Garden_Gate_-_B1977.14.18430_-_Yale_Center_for_British_Art.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "Yale Center for British Art, B1977.14.18430, public domain, via Wikimedia Commons",
+  "file": "garden/wc-thomas-morris-garden-gate-yale-b1977-14-18430.jpg",
+  "need": "gates",
+  "px": [
+   1280,
+   1389
+  ],
+  "background": "toned paper",
+  "notes": "Etching titled Garden Gate (Thomas Morris, Yale Center for British Art): a wrought-iron double gate with spiked piers and an overthrow scroll set between two big trees, plain cream sheet. Exactly the garden gate; iron tracery is fine so cut by luminance, tree canopy at the sides can be split off."
+ },
+ {
+  "id": "wc-north-side-of-garden-gate-1786",
+  "title": "North Side of Garden Gate (Xiyanglou series)",
+  "creator": "Qing court painters; engraved by the Zaobanchu workshop",
+  "date": "1786",
+  "institution": "Old Summer Palace (Xiyanglou) set of twenty copperplate engravings, via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:%27North_Side_of_Garden_Gate%27,_1786.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags",
+  "attribution": "North Side of Garden Gate, 1786, Qing court, public domain, via Wikimedia Commons",
+  "file": "garden/wc-north-side-of-garden-gate-1786.jpg",
+  "need": "gates",
+  "px": [
+   1280,
+   732
+  ],
+  "background": "toned paper",
+  "notes": "1786 drawing of a walled garden seen frontally with an ornate pavilion-gate in the centre wall and pruned trees on both sides; light line work on pale paper with a few small inscriptions at the right edge. A symmetric walled-garden gate view; delicate lines need a strong levels pass."
  }
 ]

@@ -21,11 +21,10 @@ function renderSheet(p: Project, l: Lang, s: Lookup): string {
   const latin = esc(latinOf(p, s));
   const priv = p.private === true ? `<p class="h-private">${esc(s('project.private'))}</p>` : '';
   return `<article class="h-sheet" id="p-${id}" data-flower="${id}" data-kind="${p.flower}" data-status="${p.status}" aria-labelledby="p-${id}-t">
-<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}<span class="h-mount-latin" lang="la">${latin}</span></p></div>
+<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}${latin === '' ? '' : `<span class="h-mount-latin" lang="la">${latin}</span>`}</p></div>
 <div class="h-label">
 <h4 class="h-title" id="p-${id}-t"><a class="h-open" href="#/p/${id}">${esc(p.title)}</a></h4>
-<p class="h-latin" lang="la">${latin}</p>
-<p class="h-oneliner">${text(p.oneLiner[l])}</p>
+${latin === '' ? '' : `<p class="h-latin" lang="la">${latin}</p>\n`}<p class="h-oneliner">${text(p.oneLiner[l])}</p>
 ${list(p.stack.slice(0, 4).map(text), 'h-tags')}
 <dl class="h-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="h-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div><div><dt>${esc(s('project.year'))}</dt><dd class="h-year">${text(String(p.year))}</dd></div></dl>
 ${priv}

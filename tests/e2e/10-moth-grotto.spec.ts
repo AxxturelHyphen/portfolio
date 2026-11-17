@@ -10,7 +10,7 @@ const GRUTA = {
   score: '[data-gruta-score]',
 } as const;
 
-test.fixme('flow 10 garden: the moth never blocks opening or closing a project', async ({ page, jardin }) => {
+test('flow 10 garden: the moth never blocks opening or closing a project', async ({ page, jardin }) => {
   const p = PROJECTS[0];
   if (p === undefined) return;
   await jardin.visit({ mode: 'garden' });
@@ -25,7 +25,7 @@ test.fixme('flow 10 garden: the moth never blocks opening or closing a project',
   }
 });
 
-test.fixme('flow 10 garden: the grotto game never blocks a project and scores with the mouse', async ({ page, jardin }) => {
+test('flow 10 garden: the grotto game never blocks a project and scores with the mouse', async ({ page, jardin }) => {
   const p = PROJECTS[0];
   if (p === undefined) return;
   await jardin.visit({ mode: 'garden' });
@@ -41,7 +41,7 @@ test.fixme('flow 10 garden: the grotto game never blocks a project and scores wi
   expect(await jardin.openDialogs()).toBe(0);
 });
 
-test.fixme('flow 10 garden: the grotto game scores with touch', async ({ page, jardin, isMobile }) => {
+test('flow 10 garden: the grotto game scores with touch', async ({ page, jardin, isMobile }) => {
   test.skip(!isMobile, 'touch profiles only');
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/b/gruta');

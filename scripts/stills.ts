@@ -2,7 +2,7 @@
 // npm run stills -- S01,S03 [--round NN] [--no-build]
 // Opens ?shot=<id>&tier=high&t=<frozen> on the GPU (headed when a display exists), waits for window.__jardin.ready
 // (DOM ready for the shots marked wait:'dom', i.e. S10), writes cook/stills/rNN/<shot>.png at 1920x1080 (S11 at
-// 390x844), then one contact sheet contact.jpg for every still in the round. Shot list: tests/shots.json plus the
+// 390x844), then one contact sheet _sheet.jpg for every still in the round. Shot list: tests/shots.json plus the
 // overrides in content/garden.json. ?bench=1 is added because window.__jardin exists only with it in a build.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
@@ -27,10 +27,10 @@ function contactSheet(dir: string): void {
   for (const f of pngs) args.push('-i', `${dir}/${f}`);
   const cells = pngs.map((_, i) => `[${i}:v]scale=480:270:force_original_aspect_ratio=decrease,pad=480:270:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1[v${i}]`);
   const chain = `${pngs.map((_, i) => `[v${i}]`).join('')}concat=n=${pngs.length}:v=1:a=0,tile=${cols}x${rows}:padding=4:color=black[o]`;
-  args.push('-filter_complex', [...cells, chain].join(';'), '-map', '[o]', '-frames:v', '1', '-q:v', '4', `${dir}/contact.jpg`);
+  args.push('-filter_complex', [...cells, chain].join(';'), '-map', '[o]', '-frames:v', '1', '-q:v', '4', `${dir}/_sheet.jpg`);
   const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
   if (r.status !== 0) console.log(`contact sheet failed: ${r.stderr.split('\n')[0]}`);
-  else console.log(`wrote ${dir}/contact.jpg (${pngs.length} stills)`);
+  else console.log(`wrote ${dir}/_sheet.jpg (${pngs.length} stills)`);
 }
 
 async function main(): Promise<number> {
@@ -67,7 +67,7 @@ async function main(): Promise<number> {
       const errors: string[] = [];
       page.on('pageerror', (e) => errors.push(e.message));
       try {
-        await page.goto(`${server.url}?${q.toString()}`);
+        await page.goto(`${server.url}?${q.toString()}${s.hash}`);
         if (s.wait === 'dom') {
           await page.locator('html[data-mode]').waitFor({ state: 'attached' });
           await page.locator('#herbario article').first().waitFor({ state: 'attached', timeout: 15000 });
@@ -79,6 +79,23 @@ async function main(): Promise<number> {
             await api.ready;
             await api.settled();
           });
+          // settled() can return while the target bed is still streaming (phase 'bed', intent project): wait for the real target.
+          const target = /^#\/(b|p)\/([a-z0-9-]+)$/.exec(s.hash);
+          if (target !== null) {
+            const isProject = target[1] === 'p';
+            const bed = target[2] ?? '';
+            await page
+              .waitForFunction(
+                ([proj, b]) => {
+                  const api = (window as unknown as { __jardin: { state(): { phase: string }; residency(): Record<string, string> } }).__jardin;
+                  return proj === 'p' ? api.state().phase === 'inspect' : api.residency()[b ?? ''] === 'active';
+                },
+                [isProject ? 'p' : 'b', bed],
+                { timeout: 30000, polling: 100 },
+              )
+              .catch(() => undefined);
+            await page.evaluate(() => (window as unknown as { __jardin: { settled(): Promise<void> } }).__jardin.settled());
+          }
         }
         await page.evaluate(() => new Promise<void>((ok) => requestAnimationFrame(() => requestAnimationFrame(() => ok()))));
         const out = `${dir}/${s.id}.png`;

@@ -1,0 +1,1047 @@
+[
+ {
+  "id": "moon-trouvelot-partial-eclipse",
+  "title": "Trouvelot - Partial Eclipse of the Moon",
+  "creator": "Étienne Léopold Trouvelot",
+  "date": "1882 (from The Trouvelot Astronomical Drawings, 1881-82)",
+  "institution": "https://www.raremaps.com/gallery/detail/68379/partial-eclipse-of-the-moon-trouvelot",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trouvelot_-_Partial_Eclipse_of_the_Moon.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Étienne Léopold Trouvelot (1882 (from The Trouvelot Astro), Trouvelot - Partial Eclipse of the Moon, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/moon-trouvelot-partial-eclipse.jpg",
+  "need": "moon",
+  "px": [
+   3840,
+   5189
+  ],
+  "background": "dark",
+  "notes": "Chromolithograph on a near-black ground inside a white margin; soft rust-brown shadowed disc with a pale lit crescent. Hero moon: key the black ground (luminance), the moon is one clean disc. Taken as a 3840 px wide rendition of a 17017x22995 scan (original is hundreds of MB; re-fetch from source page if a larger master is needed)."
+ },
+ {
+  "id": "moon-trouvelot-mare-humorum",
+  "title": "Trouvelot - Mare Humorum - 1875",
+  "creator": "Étienne Léopold Trouvelot",
+  "date": "1881",
+  "institution": "http://digitalgallery.nypl.org/nypldigital/id?TROUVELOT_006",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trouvelot_-_Mare_Humorum_-_1875.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Étienne Léopold Trouvelot (1881), Trouvelot - Mare Humorum - 1875, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/moon-trouvelot-mare-humorum.jpg",
+  "need": "moon",
+  "px": [
+   3840,
+   2965
+  ],
+  "background": "dark",
+  "notes": "Close-up lunar landscape (Mare Humorum), grey-brown wash with fine crater relief; colourable and re-tintable. Usable as a moon surface texture or a cropped round moon. Taken as a 3840 px wide rendition of 9321x7197."
+ },
+ {
+  "id": "moon-phases-diagram-dark",
+  "title": "Astronomy: the phases of the Moon. Coloured engraving with tracing paper by J. Emslie, c.1850.",
+  "creator": "John Emslie",
+  "date": "London (174 Strand) : James Reynolds,",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/ps6qpqk9",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "John Emslie, Astronomy: the phases of the Moon. Coloured engraving with tracing paper by J. E, Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/moon-phases-diagram-dark.jpg",
+  "need": "moon",
+  "px": [
+   2956,
+   2368
+  ],
+  "background": "dark",
+  "notes": "Phases of the Moon diagram, tinted moons on a black field with sun and earth; moon discs are clean separable circles in 8 phases. Text blocks top/bottom are cropped away."
+ },
+ {
+  "id": "moon-phases-saturn-sheet",
+  "title": "Astronomy: a diagram of the phases of the moon, and the rings of Saturn. Engraving.",
+  "creator": "Unknown",
+  "date": "London] :",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/nas5cwfs",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Astronomy: a diagram of the phases of the moon, and the rings of Saturn. Engravi, Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/moon-phases-saturn-sheet.jpg",
+  "need": "moon",
+  "px": [
+   2290,
+   3042
+  ],
+  "background": "dark",
+  "notes": "Black plate with a large crescent, small crescents and Saturn, grey engraved wash; individual crescents and Saturn cut out easily on black."
+ },
+ {
+  "id": "moon-hevelius-selenographia-map",
+  "title": "Hevelius Map of the Moon 1647",
+  "creator": "Johannes Hevelius (1611–1687)",
+  "date": "1647",
+  "institution": "http://www.e-rara.ch/zut/content/pageview/160524",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hevelius_Map_of_the_Moon_1647.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Johannes Hevelius (1611–1687) (1647), Hevelius Map of the Moon 1647, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/moon-hevelius-selenographia-map.jpg",
+  "need": "moon",
+  "px": [
+   3840,
+   3388
+  ],
+  "background": "plain paper",
+  "notes": "Hevelius' full-moon map (Selenographia, 1647), black line work on white paper with corner cherubs; ideal as a worn carved moon-disc or for the moon halo layer. Not coloured."
+ },
+ {
+  "id": "stars-cellarius-christian-posterior",
+  "title": "Coeli stellati christiani haemisphaerium posterius",
+  "creator": "Unknown",
+  "date": "1708",
+  "institution": "This file was uploaded by Biblioteca comunale di Trento .",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Coeli_stellati_christiani_haemisphaerium_posterius_-_CBT_5870364.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown (1708), Coeli stellati christiani haemisphaerium posterius, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/stars-cellarius-christian-posterior.jpg",
+  "need": "stars",
+  "px": [
+   3840,
+   3197
+  ],
+  "background": "toned paper",
+  "notes": "Cellarius Harmonia Macrocosmica 1660: hand-coloured celestial hemisphere with Christian constellation figures (reds, ochres, rose) in a gold ring on grey cloud border. Hero sky disc. Contains small figures with bodies; usable as texture or full disc."
+ },
+ {
+  "id": "stars-cellarius-boreal-ancient",
+  "title": "Haemisphaerium stellatum boreale antiquum",
+  "creator": "Unknown",
+  "date": "1708",
+  "institution": "This file was uploaded by Biblioteca comunale di Trento .",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Haemisphaerium_stellatum_boreale_antiquum_-_CBT_5870375.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown (1708), Haemisphaerium stellatum boreale antiquum, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/stars-cellarius-boreal-ancient.jpg",
+  "need": "stars",
+  "px": [
+   3840,
+   3197
+  ],
+  "background": "toned paper",
+  "notes": "Cellarius northern ancient star hemisphere, animal constellations (bear, dragon, scorpion) hand-coloured in ochre, green and rose; a more creature-led alternative for carvings."
+ },
+ {
+  "id": "stars-trouvelot-great-comet-1881",
+  "title": "Trouvelot - The Great Comet of 1881",
+  "creator": "Étienne Léopold Trouvelot",
+  "date": "1882",
+  "institution": "https://www.raremaps.com/gallery/detail/68385/the-great-comet-of-1881-trouvelot",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trouvelot_-_The_Great_Comet_of_1881.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Étienne Léopold Trouvelot (1882), Trouvelot - The Great Comet of 1881, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/stars-trouvelot-great-comet-1881.jpg",
+  "need": "stars",
+  "px": [
+   3840,
+   5183
+  ],
+  "background": "dark",
+  "notes": "Comet with long tail over an observatory dome and trees silhouette, deep blue-black chromolithograph; the comet tail can be keyed on dark. Taken as a 3840 px wide rendition of 17075x23048."
+ },
+ {
+  "id": "stars-trouvelot-milky-way",
+  "title": "Trouvelot - Part of the Milky Way",
+  "creator": "Étienne Léopold Trouvelot",
+  "date": "1881",
+  "institution": "http://digitalgallery.nypl.org/nypldigital/id?TROUVELOT_013",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trouvelot_-_Part_of_the_Milky_Way.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Étienne Léopold Trouvelot (1881), Trouvelot - Part of the Milky Way, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/stars-trouvelot-milky-way.jpg",
+  "need": "stars",
+  "px": [
+   3840,
+   5044
+  ],
+  "background": "dark",
+  "notes": "Milky Way band with scattered stars on night blue-black; good sky or additive overlay (screen blend). Taken as a 3840 px wide rendition of 6998x9193."
+ },
+ {
+  "id": "stars-encke-comet-blue-sky",
+  "title": "Astronomy: stars in the night sky, with Encke's comet. Coloured engraving by J. Basire, 1851 after C. Piazzi Smyth.",
+  "creator": "Charles Piazzi Smyth; James Basire",
+  "date": "1851",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/fp2vqzsz",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Charles Piazzi Smyth; James Basire, Astronomy: stars in the night sky, with Encke's comet. Coloured engraving by J. , Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/stars-encke-comet-blue-sky.jpg",
+  "need": "stars",
+  "px": [
+   2297,
+   2983
+  ],
+  "background": "coloured",
+  "notes": "Coloured engraving (1851) of Encke's comet in a vivid cobalt-blue starry sky; sky texture, no figures. Usable as a deep blue dusk sky layer after re-tint."
+ },
+ {
+  "id": "sigil-ancient-zodiac-of-egypt",
+  "title": "Astronomy: the twelve signs of the zodiac. Engraving by Barlow.",
+  "creator": "Barlow, Inigo; Thomas Maurice; Wilford, F. (Francis)",
+  "date": "London] :",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/uudv6zd7",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Barlow, Inigo; Thomas Maurice; Wilford, F. (Francis), Astronomy: the twelve signs of the zodiac. Engraving by Barlow., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sigil-ancient-zodiac-of-egypt.jpg",
+  "need": "sigils",
+  "px": [
+   2577,
+   3381
+  ],
+  "background": "plain paper",
+  "notes": "Engraved circular zodiac wheel with a radiant sun centre and animal sign figures on cream paper; no human bodies. Good faint gold sigil ring."
+ },
+ {
+  "id": "sigil-zodiac-etching-circle",
+  "title": "Astrology: the zodiac. Etching.",
+  "creator": "Unknown",
+  "date": "",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/hesz5zq9",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Astrology: the zodiac. Etching., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sigil-zodiac-etching-circle.jpg",
+  "need": "sigils",
+  "px": [
+   2600,
+   2600
+  ],
+  "background": "toned paper",
+  "notes": "Etched zodiac circle with constellation animals around a spiral centre on aged paper; slightly busy. Animals only, no bodies."
+ },
+ {
+  "id": "sigil-chemistry-symbols-chart",
+  "title": "Chemistry: various alchemical symbols. Engraving by A. Bell.",
+  "creator": "Andrew Bell",
+  "date": "London] :",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/s5vs9bfr",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Andrew Bell, Chemistry: various alchemical symbols. Engraving by A. Bell., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sigil-chemistry-symbols-chart.jpg",
+  "need": "sigils",
+  "px": [
+   2350,
+   2944
+  ],
+  "background": "plain paper",
+  "notes": "Engraved table of alchemical and chemical characters (Bell, Britannica plate); each glyph is a separate carvable sigil. Cut individual symbols."
+ },
+ {
+  "id": "sigil-peacock-in-alchemical-flask",
+  "title": "A peacock in a crowned alchemical flask; representing the stage in the alchemical process when the substance breaks out into many colours. Watercolour painting by E.A. Ibbs.",
+  "creator": "Ibbs, Edith A.; Salomon Trismosin",
+  "date": "1900-1909",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/pyhb4hmk",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Ibbs, Edith A.; Salomon Trismosin, A peacock in a crowned alchemical flask; representing the stage in the alchemica, Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sigil-peacock-in-alchemical-flask.jpg",
+  "need": "sigils",
+  "px": [
+   1831,
+   3818
+  ],
+  "background": "plain paper",
+  "notes": "Hand-coloured alchemical flask with crown holding a peacock (cauda pavonis): iris blue, viridian and ochre, strongly matching the lilac peacock motif. Flask plus bird cut out cleanly; hero for the alchemy corner."
+ },
+ {
+  "id": "sigil-jansson-wind-rose",
+  "title": "Tabula Anemographica seu Pyxis Nautica ventorum",
+  "creator": "Jan Jansson",
+  "date": "1650",
+  "institution": "https://www.raremaps.com/gallery/detail/74241/tabula-anemographica-seu-pyxis-nautica-ventorum-nomina-sex-l-jansson",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tabula_Anemographica_seu_Pyxis_Nautica_ventorum.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Jan Jansson (1650), Tabula Anemographica seu Pyxis Nautica ventorum, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/sigil-jansson-wind-rose.jpg",
+  "need": "sigils",
+  "px": [
+   3840,
+   3144
+  ],
+  "background": "coloured",
+  "notes": "Jansson wind rose (c.1650), hand-coloured 32-point compass wheel on a cloud ground with wind heads at the rim; rim faces can be cropped out leaving the rose. Taken as a 3840 px wide rendition of 13566x11106."
+ },
+ {
+  "id": "armillary-coloured-engraving",
+  "title": "An armillary sphere. Coloured engraving, 180-.",
+  "creator": "Unknown",
+  "date": "between 1800 and 1809?",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/sug25r8w",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, An armillary sphere. Coloured engraving, 180-., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/armillary-coloured-engraving.jpg",
+  "need": "armillary",
+  "px": [
+   2362,
+   3098
+  ],
+  "background": "plain paper",
+  "notes": "Hand-coloured engraving (c.1800s) of an armillary sphere on a turned stand, soft blue and brass tints on plain paper; hero for the garden sundial. Easy paper key."
+ },
+ {
+  "id": "armillary-sphere-system-diagrams",
+  "title": "Astronomy: an armillary sphere, with other diagrams of the heavens. Engraving by R. W. Seale.",
+  "creator": "Seale, R. W.",
+  "date": "London :",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/f23nkmw4",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Seale, R. W., Astronomy: an armillary sphere, with other diagrams of the heavens. Engraving by, Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/armillary-sphere-system-diagrams.jpg",
+  "need": "armillary",
+  "px": [
+   3070,
+   2436
+  ],
+  "background": "toned paper",
+  "notes": "Britannica-style plate with an armillary sphere in the centre and four world-system diagrams around it; sphere and the four small orreries can be cut separately. Black line engraving."
+ },
+ {
+  "id": "sundial-universal-with-compass",
+  "title": "Clocks: a universal sundial, with a compass. Engraving.",
+  "creator": "Unknown",
+  "date": "",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/cpyrw6ej",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Clocks: a universal sundial, with a compass. Engraving., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sundial-universal-with-compass.jpg",
+  "need": "armillary",
+  "px": [
+   1268,
+   2212
+  ],
+  "background": "plain paper",
+  "notes": "Engraved universal sundial with a globe, hour circle and a compass base; rendered, three-dimensional and stand-alone. Garden sundial prop."
+ },
+ {
+  "id": "sundial-dialling-diagrams-coloured",
+  "title": "Clocks: diagrams for setting-out a sundial. Coloured engraving by J. Pass, 1809.",
+  "creator": "Pass, John, active 1797-1815.",
+  "date": "20 October 1809",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/bxmpynfq",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Pass, John, active 1797-1815., Clocks: diagrams for setting-out a sundial. Coloured engraving by J. Pass, 1809., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sundial-dialling-diagrams-coloured.jpg",
+  "need": "armillary",
+  "px": [
+   1521,
+   1947
+  ],
+  "background": "plain paper",
+  "notes": "Coloured engraving (Pass, 1809) of dialling constructions: boxed sundials, armillary and dial faces in blue, rose and ochre; each shape cuts out separately, good flat sundial faces."
+ },
+ {
+  "id": "disc-mclean-birds-butterflies",
+  "title": "Optical illusion disc with birds, butterflies, and a man jumping LCCN00651165",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651165 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_illusion_disc_with_birds,_butterflies,_and_a_man_jumping_LCCN00651165.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Optical illusion disc with birds, butterflies, and a man jumping LCCN00651165, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-birds-butterflies.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3071
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Birds and butterflies around the rim with a man jumping; the bird and butterfly cycle is the best subject for the garden. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 10 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-man-frog",
+  "title": "Optical illusion disc with man and frog LCCN00651157",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651157 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_illusion_disc_with_man_and_frog_LCCN00651157.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Optical illusion disc with man and frog LCCN00651157, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-man-frog.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3082
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Men and a frog throwing a ball, around a sunburst centre. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 10 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-pump-star",
+  "title": "Optical illusion disc with man pumping water LCCN00651162",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651162 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_illusion_disc_with_man_pumping_water_LCCN00651162.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Optical illusion disc with man pumping water LCCN00651162, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-pump-star.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3060
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Water pump figures around a bold eight-point star, red and blue, strongly graphic. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-somersault-horse",
+  "title": "Optical illusion disc with somersaults and horseback riding LCCN00651161",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651161 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_illusion_disc_with_somersaults_and_horseback_riding_LCCN00651161.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Optical illusion disc with somersaults and horseback riding LCCN00651161, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-somersault-horse.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3084
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Somersaulting figures and horse riders around a golden sun. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 10 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-cakes-stars",
+  "title": "Optical illusion disc with two men throwing and catching cakes and stars LCCN00651159",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651159 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_illusion_disc_with_two_men_throwing_and_catching_cakes_and_stars_LCCN00651159.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Optical illusion disc with two men throwing and catching cakes and stars LCCN006, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-cakes-stars.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3082
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Men throwing and catching cakes and stars, small star motifs scattered. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 8 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-afraid-of-nobody",
+  "title": "Afraid of nobody LCCN00651164",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651164 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Afraid_of_nobody_LCCN00651164.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Afraid of nobody LCCN00651164, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-afraid-of-nobody.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3075
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Figures with a rose-star centre. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-bogle",
+  "title": "The bogle LCCN00651163",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651163 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_bogle_LCCN00651163.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), The bogle LCCN00651163, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-bogle.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3085
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Figures in a spiral of blue-and-yellow star pattern centre; a friendly yellow ring pattern. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-desert",
+  "title": "The desert LCCN00651167",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651167 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_desert_LCCN00651167.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), The desert LCCN00651167, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-desert.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3085
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Animals and crocodiles on a green ring with a red and blue flower centre; most garden-like, nature subject. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 10 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-mclean-politeness",
+  "title": "Politeness LCCN00651166",
+  "creator": "Miscellaneous Items in High Demand, PPOC, Library of Congress",
+  "date": "1833",
+  "institution": "Library of Congress Catalog: https://lccn.loc.gov/00651166 Image download: https://cdn.loc.gov/service/pnp/cph/3g00000/3",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Politeness_LCCN00651166.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Miscellaneous Items in High Demand, PPOC, Library of Congress (1833), Politeness LCCN00651166, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-mclean-politeness.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3079
+  ],
+  "background": "coloured",
+  "notes": "McLean's Optical Illusions (London, 1833) hand-coloured phenakistoscope disc scanned flat by the Library of Congress with a Kodak colour bar and black frame around it: Bowing figures with blue-grey bells and a radiating wheel in the centre. Disc is a complete circle on cream paper over a dark ground, so cutout by radial mask is trivial; crop away the colour card. Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-eth-dancing-man",
+  "title": "Optical Toy, Phenakistiscope Disc with Dancing Man, ca. 1835",
+  "creator": "Unknown artist Unknown artist",
+  "date": "circa 1835 date QS:P571,+1835-00-00T00:00:00Z/9,P1480,Q57279",
+  "institution": "Catalog Photo",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_Toy,_Phenakistiscope_Disc_with_Dancing_Man,_ca._1835_(CH_18607977).jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown artist Unknown artist (circa 1835 date QS:P571,+1835-), Optical Toy, Phenakistiscope Disc with Dancing Man, ca. 1835, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-eth-dancing-man.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   3803
+  ],
+  "background": "coloured",
+  "notes": "ETH-Bibliothek disc c.1835: crouching dancers in rose and green robes around a spinning sun and star centre; pale blue slots; flat scan, easy circle cutout. Frames: about 10 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "strip-eth-zoetrope-dancers",
+  "title": "Print, Zoetrope Strip, Dancers, ca. 1860",
+  "creator": "Unknown artist Unknown artist",
+  "date": "circa 1860 date QS:P571,+1860-00-00T00:00:00Z/9,P1480,Q57279",
+  "institution": "Catalog Photo",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Print,_Zoetrope_Strip,_Dancers,_ca._1860_(CH_18760339).jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown artist Unknown artist (circa 1860 date QS:P571,+1860-), Print, Zoetrope Strip, Dancers, ca. 1860, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/strip-eth-zoetrope-dancers.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   450
+  ],
+  "background": "plain paper",
+  "notes": "Zoetrope strip, c.1860, ETH-Bibliothek: a waltzing couple sequence in blue and black on ochre paper, 4094x480; one strip of continuous frames. Frames: strip for a zoetrope drum; count the repeated figures along the strip (not counted yet)."
+ },
+ {
+  "id": "strip-eth-zoetrope-dog",
+  "title": "Print, Zoetrope Strip, Dog Catching Ball, ca. 1860",
+  "creator": "Unknown artist Unknown artist",
+  "date": "circa 1860 date QS:P571,+1860-00-00T00:00:00Z/9,P1480,Q57279",
+  "institution": "Catalog Photo",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Print,_Zoetrope_Strip,_Dog_Catching_Ball,_ca._1860_(CH_18760345).jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown artist Unknown artist (circa 1860 date QS:P571,+1860-), Print, Zoetrope Strip, Dog Catching Ball, ca. 1860, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/strip-eth-zoetrope-dog.jpg",
+  "need": "discs",
+  "px": [
+   3840,
+   489
+  ],
+  "background": "plain paper",
+  "notes": "Zoetrope strip, c.1860, ETH-Bibliothek: dog jumping for a ball in black silhouette on yellow paper; 4096x522. Frames: strip for a zoetrope drum; count the repeated figures along the strip (not counted yet)."
+ },
+ {
+  "id": "disc-line-drawing-phenakistiscope",
+  "title": "Phenakistiscope",
+  "creator": "Unknown author Unknown author",
+  "date": "1832",
+  "institution": "Joseph Plateau, Corresp. Math. Phys. 1832, VII, p. 291. Reproduced in: Plateau, Joseph; Elliott, Richard George. \"On a n",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Phenakistiscope.png",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown author Unknown author (1832), Phenakistiscope, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-line-drawing-phenakistiscope.jpg",
+  "need": "discs",
+  "px": [
+   2325,
+   2351
+  ],
+  "background": "plain paper",
+  "notes": "Clean line-art phenakistiscope disc with 16 figures around and radial guides, white background; ideal as a template or a chalk-line carved version. Frames: about 16 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-optical-spinning-toy-wellcome",
+  "title": "An optical spinning toy. Coloured lithograph.",
+  "creator": "Unknown",
+  "date": "",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/xeb6a24q",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, An optical spinning toy. Coloured lithograph., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/disc-optical-spinning-toy-wellcome.jpg",
+  "need": "discs",
+  "px": [
+   2844,
+   2805
+  ],
+  "background": "dark",
+  "notes": "Coloured lithograph of a spinning optical toy: eight small coloured turning discs with ellipses around a golden gear centre on a black ground with 8 radial slits; abstract, perfect for the spinning ornament. Frames: about 10 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "kaleido-goo-hindoo-rosettes",
+  "title": "The grammar of ornament",
+  "creator": "Owen Jones",
+  "date": "",
+  "institution": "Polona Digital Library, National Library of Poland (digitised copy of The Grammar of Ornament, 1910 reprint of the 1856 work)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_grammar_of_ornament_1910_(139551365).jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Owen Jones (), The grammar of ornament, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/kaleido-goo-hindoo-rosettes.jpg",
+  "need": "kaleidoscope",
+  "px": [
+   3840,
+   5533
+  ],
+  "background": "toned paper",
+  "notes": "Grammar of Ornament 'Hindoo no.1' reprint (1910): large central rosette flanked by border and floral motifs on cream, sepia-gold; rosettes cut easily and tint to gold."
+ },
+ {
+  "id": "stars-urania-lacerta-cygnus-lyra",
+  "title": "Astrology: various constellations. Coloured engraving by S. Hall.",
+  "creator": "Sidney Hall",
+  "date": "",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/hjbpc4t9",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Sidney Hall, Astrology: various constellations. Coloured engraving by S. Hall., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/stars-urania-lacerta-cygnus-lyra.jpg",
+  "need": "stars",
+  "px": [
+   3215,
+   2268
+  ],
+  "background": "toned paper",
+  "notes": "Urania's Mirror (S. Hall, 1824) hand-coloured card on pale blue-green paper: green lizard, swan, golden lyre, red fox with star dots. Clean outlines, easy cutout, animals and lyre usable singly. No human figures."
+ },
+ {
+  "id": "stars-urania-great-bear",
+  "title": "Astrology: constellations, the Great Bear. Coloured engraving.",
+  "creator": "Unknown",
+  "date": "",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/hat2u5qz",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Astrology: constellations, the Great Bear. Coloured engraving., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/stars-urania-great-bear.jpg",
+  "need": "stars",
+  "px": [
+   3216,
+   2267
+  ],
+  "background": "toned paper",
+  "notes": "Urania's Mirror hand-coloured Great Bear (Ursa Major) in ochre with black star dots on cream paper; one big clean animal silhouette, ideal for a worn carving or a constellation prop. No human figures."
+ },
+ {
+  "id": "stars-donati-comet-studies",
+  "title": "Astronomy: various views of Donati's comet in the night sky. Process print.",
+  "creator": "Unknown",
+  "date": "London] :",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/px8k2b9c",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Astronomy: various views of Donati's comet in the night sky. Process print., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/stars-donati-comet-studies.jpg",
+  "need": "stars",
+  "px": [
+   3024,
+   2221
+  ],
+  "background": "dark",
+  "notes": "Process-print sheet of Donati's comet studies: large tail close-up plus eight small comet heads on black; grey-blue, every comet separable on black. Good for comets in the sky layer."
+ },
+ {
+  "id": "sigil-sheppard-volvelles",
+  "title": "Geography: two rotating discs (volvelles) showing the times at different places compared to London, and the constellations visible in the sky at different dates and times, fixed to a card giving details of their use, and dimensions of rivers and mountains. Coloured engraving.",
+  "creator": "Unknown",
+  "date": "1844",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/kn5jmjj5",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Geography: two rotating discs (volvelles) showing the times at different places , Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sigil-sheppard-volvelles.jpg",
+  "need": "sigils",
+  "px": [
+   3180,
+   2320
+  ],
+  "background": "toned paper",
+  "notes": "Sheppard's geographical and astronomical clock (c.1840s): two hand-coloured circular volvelles, one with a zodiac and star ring, over a mountain-height chart; the two discs cut out as astronomical wheels. Coloured in teal, ochre and rose."
+ },
+ {
+  "id": "sigil-smith-planisphere",
+  "title": "Astrology: the Oriental zodiac. Coloured engraving.",
+  "creator": "Unknown",
+  "date": "",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/z59rz286",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Unknown, Astrology: the Oriental zodiac. Coloured engraving., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sigil-smith-planisphere.jpg",
+  "need": "sigils",
+  "px": [
+   2804,
+   2796
+  ],
+  "background": "toned paper",
+  "notes": "Hand-coloured circular planisphere (star wheel with fleur-de-lis and compass points) on toned paper in a gold-brown frame; round wheel of faint constellation lines, cuts cleanly as a stone-carved sky wheel."
+ },
+ {
+  "id": "moon-28-phases-engraving",
+  "title": "Astronomy: the 28 phases of the moon in a lunar month. Engraving by P. Miotte.",
+  "creator": "Miotte, Pierre.; Athanasius Kircher",
+  "date": "1646",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/kfzjpurt",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Miotte, Pierre.; Athanasius Kircher, Astronomy: the 28 phases of the moon in a lunar month. Engraving by P. Miotte., Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/moon-28-phases-engraving.jpg",
+  "need": "moon",
+  "px": [
+   2250,
+   3134
+  ],
+  "background": "plain paper",
+  "notes": "Engraved spiral diagram with the 28 phases of the moon in a lunar month with a sun and moon face top; line engraving in grey, easy to cut and tint. Contains small faces in sun and moon discs."
+ },
+ {
+  "id": "sundial-heliostat-instruments",
+  "title": "Clocks: sundials and other helio-observational equipment. Engraving by T. Jefferys.",
+  "creator": "Thomas Jefferys",
+  "date": "London] :",
+  "institution": "Wellcome Collection",
+  "sourceUrl": "https://wellcomecollection.org/works/p4sgfkcc",
+  "license": "Public Domain Mark",
+  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+  "attribution": "Thomas Jefferys, Clocks: sundials and other helio-observational equipment. Engraving by T. Jeffer, Wellcome Collection, Public Domain Mark",
+  "file": "archive/raw/celestial/sundial-heliostat-instruments.jpg",
+  "need": "armillary",
+  "px": [
+   2125,
+   3666
+  ],
+  "background": "plain paper",
+  "notes": "Engraved plate (Jefferys) of sundials and helio-observation instruments: telescope-like heliostat, dial plates on stands, black line on cream; individual instruments cut out well."
+ },
+ {
+  "id": "moon-cellarius-lunar-phases",
+  "title": "Cellarius Harmonia Macrocosmica - Typus Selenographicus Lunae Phases",
+  "creator": "Andreas Cellarius",
+  "date": "1661",
+  "institution": "http://www.phys.uu.nl/~vgent/cellarius/cellarius_plates.htm",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cellarius_Harmonia_Macrocosmica_-_Typus_Selenographicus_Lunae_Phases.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Andreas Cellarius (1661), Cellarius Harmonia Macrocosmica - Typus Selenographicus Lunae Phases, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/moon-cellarius-lunar-phases.jpg",
+  "need": "moon",
+  "px": [
+   2857,
+   2444
+  ],
+  "background": "toned paper",
+  "notes": "Hand-coloured copper engraving (c.1660) with sun, cherubs, banners and the eight moon phases around a violet earth; moon discs and the sun face are usable parts. Cherubs are small; avoid if bodies are unwanted."
+ },
+ {
+  "id": "sigil-macrobian-planetary-wheel",
+  "title": "Macrobian Planetary Diagram",
+  "creator": "Macrobius",
+  "date": "9 th century date QS:P,+850-00-00T00:00:00Z/7",
+  "institution": "After Macrobius, Somnium Scipionis, I.xxi.3-7. Burgerbibliothek Bern, ms 347, fol. 9r (9th. century)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Macrobian_Planetary_Diagram.jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Macrobius (9 th century date QS:P,+850-00), Macrobian Planetary Diagram, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/sigil-macrobian-planetary-wheel.jpg",
+  "need": "sigils",
+  "px": [
+   3437,
+   3459
+  ],
+  "background": "plain paper",
+  "notes": "Medieval concentric planetary and zodiac wheel in red ink on cream, no figures; the cleanest carve-in-stone source (tint to faint gold). Cutout is trivial: single colour line work."
+ },
+ {
+  "id": "armillary-eb1711-engraving",
+  "title": "EB1711 Armillary Sphere",
+  "creator": "By a Society of Gentlemen in Scotland",
+  "date": "1771",
+  "institution": "Encyclopedia Britannica, Vol. II, pg. 681",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:EB1711_Armillary_Sphere.png",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "By a Society of Gentlemen in Scotland (1771), EB1711 Armillary Sphere, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/armillary-eb1711-engraving.jpg",
+  "need": "armillary",
+  "px": [
+   2096,
+   3092
+  ],
+  "background": "plain paper",
+  "notes": "Encyclopaedia Britannica 1st edition engraving of an armillary sphere with a bowl base, sharp line work on white; the easiest to cut and well suited to a metal-and-gold re-tint."
+ },
+ {
+  "id": "armillary-apianus-cosmographia",
+  "title": "Cosmographia Petri Apiani, Per Gemmam Frisivm apud Louanienses Medicum &amp; Mathematicu[m] insignem, iam demum ab omnibus vindicata mendis, ac nonnullis quoque locis aucta. Additis eiusdem argumenti libellis ipsius Gemmæ Frisij",
+  "creator": "Petrus Apianus",
+  "date": "",
+  "institution": "This file comes from Polona Digital Library and is available under the URL: https://polona.pl/item/cosmographia-petri-ap",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cosmographia_Petri_Apiani_1564_(120113780)_(cropped).jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Petrus Apianus (), Cosmographia Petri Apiani, Per Gemmam Frisivm apud Louanienses Medicum &amp; Mat, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/armillary-apianus-cosmographia.jpg",
+  "need": "armillary",
+  "px": [
+   3388,
+   4464
+  ],
+  "background": "toned paper",
+  "notes": "Woodcut armillary sphere on a stand from Apian's Cosmographia (1564) on aged paper, with a few text labels; usable for a worn carved version."
+ },
+ {
+  "id": "disc-miniwark-dancers-black-centre",
+  "title": "Disque pour le Phénakistiscope 03",
+  "creator": "Miniwark",
+  "date": "2022-03-18 18:20:33",
+  "institution": "Own work",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Disque_pour_le_Ph%C3%A9nakistiscope_03.jpg",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution": "Miniwark (2022-03-18 18:20:33), Disque pour le Phénakistiscope 03, via Wikimedia Commons, CC BY-SA 4.0",
+  "file": "archive/raw/celestial/disc-miniwark-dancers-black-centre.jpg",
+  "need": "discs",
+  "px": [
+   2700,
+   2700
+  ],
+  "background": "coloured",
+  "notes": "Phenakistiscope disc with costumed dancers on cream and a scalloped black centre (spinning pattern), photographed flat on wood; Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline). Photograph licensed CC BY-SA 4.0."
+ },
+ {
+  "id": "disc-eth-geometric-shapes",
+  "title": "Optical Toy, Phenakistiscope Disc with Geometric Shapes, ca. 1840",
+  "creator": "Unknown artist Unknown artist",
+  "date": "circa 1840 date QS:P571,+1840-00-00T00:00:00Z/9,P1480,Q57279",
+  "institution": "Catalog Photo",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Optical_Toy,_Phenakistiscope_Disc_with_Geometric_Shapes,_ca._1840_(CH_18607983).jpg",
+  "license": "Public domain",
+  "licenseUrl": "",
+  "attribution": "Unknown artist Unknown artist (circa 1840 date QS:P571,+1840-), Optical Toy, Phenakistiscope Disc with Geometric Shapes, ca. 1840, via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/disc-eth-geometric-shapes.jpg",
+  "need": "discs",
+  "px": [
+   3390,
+   3444
+  ],
+  "background": "coloured",
+  "notes": "ETH-Bibliothek disc c.1840, Josef Bermann: abstract black and ochre circles and red/white quarter discs around a blue star; purely abstract, best for a spinning pattern with no figures. Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline)."
+ },
+ {
+  "id": "disc-miniwark-cherubs-dark",
+  "title": "Disque pour le Phénakistiscope 02",
+  "creator": "Miniwark",
+  "date": "2022-03-18 18:20:06",
+  "institution": "Own work",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Disque_pour_le_Ph%C3%A9nakistiscope_02.jpg",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution": "Miniwark (2022-03-18 18:20:06), Disque pour le Phénakistiscope 02, via Wikimedia Commons, CC BY-SA 4.0",
+  "file": "archive/raw/celestial/disc-miniwark-cherubs-dark.jpg",
+  "need": "discs",
+  "px": [
+   2700,
+   2700
+  ],
+  "background": "coloured",
+  "notes": "Phenakistiscope disc with winged cherubs tumbling on a black ground, photographed flat on a wooden table; round disc easy to extract, wood background must be cut. Winged infants, a nice mystical subject. Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline). Photograph licensed CC BY-SA 4.0 (the disc itself is old)."
+ },
+ {
+  "id": "disc-miniwark-couples-spiral",
+  "title": "Disque pour le Phénakistiscope 01",
+  "creator": "Miniwark",
+  "date": "2022-03-18 18:20:01",
+  "institution": "Own work",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Disque_pour_le_Ph%C3%A9nakistiscope_01.jpg",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution": "Miniwark (2022-03-18 18:20:01), Disque pour le Phénakistiscope 01, via Wikimedia Commons, CC BY-SA 4.0",
+  "file": "archive/raw/celestial/disc-miniwark-couples-spiral.jpg",
+  "need": "discs",
+  "px": [
+   2700,
+   2700
+  ],
+  "background": "coloured",
+  "notes": "Phenakistiscope disc with couples in period dress around a black spiral-sun centre, photographed flat on wood; Frames: about 12 (visual count of slits/figures on a reduced view; confirm in the pipeline). Photograph licensed CC BY-SA 4.0."
+ },
+ {
+  "id": "disc-edinburgh-phantasmascope-dancers",
+  "title": "Phantasmascope",
+  "creator": "University of Edinburgh Heritage Collections",
+  "date": "2018-04-13",
+  "institution": "https://images.is.ed.ac.uk/luna/servlet/detail/UoEgal~5~5~163355~369237:Phantasmascope%2C-unpaginated?qvq=q:phantasmasco",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Phantasmascope.jpg",
+  "license": "CC BY 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+  "attribution": "University of Edinburgh Heritage Collections (2018-04-13), Phantasmascope, via Wikimedia Commons, CC BY 3.0",
+  "file": "archive/raw/celestial/disc-edinburgh-phantasmascope-dancers.jpg",
+  "need": "discs",
+  "px": [
+   1536,
+   1536
+  ],
+  "background": "coloured",
+  "notes": "Phantasmascope disc (University of Edinburgh collection): 20-odd tiny red-and-blue dancers on cream, with a yellow wave-pattern spinning centre; strong abstract centre. Frames: about 20 (visual count of slits/figures on a reduced view; confirm in the pipeline). CC BY 3.0, attribution required."
+ },
+ {
+  "id": "disc-edinburgh-phantasmascope-snakes",
+  "title": "Phantasmascope snakes",
+  "creator": "University of Edinburgh Heritage Collections",
+  "date": "2018-04-13",
+  "institution": "https://images.is.ed.ac.uk/luna/servlet/detail/UoEgal~5~5~163356~369236:Phantasmascope%2C-unpaginated%3Fsort%3Dwork_shel",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Phantasmascope_snakes.jpg",
+  "license": "CC BY 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+  "attribution": "University of Edinburgh Heritage Collections (2018-04-13), Phantasmascope snakes, via Wikimedia Commons, CC BY 3.0",
+  "file": "archive/raw/celestial/disc-edinburgh-phantasmascope-snakes.jpg",
+  "need": "discs",
+  "px": [
+   1508,
+   1536
+  ],
+  "background": "coloured",
+  "notes": "Phantasmascope disc: green snakes on cream radiating from a grey centre, a wavy, calm pattern (garden snakes, not frightening). Frames: about 20 (visual count of slits/figures on a reduced view; confirm in the pipeline). CC BY 3.0, attribution required."
+ },
+ {
+  "id": "kaleido-quelle-starflower-endpaper",
+  "title": "Vorsatz Papier Sternblume (Star Flower Book End Paper), plate 2, Die Quelle: Flaechen Schmuck (The Source: Ornament for Flat Surfaces)",
+  "creator": "Unknown artist",
+  "date": "1901",
+  "institution": "Cooper Hewitt, Smithsonian Design Museum (object 18670991)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Print,_Vorsatz_Papier_Sternblume_(Star_Flower_Book_End_Paper),_plate_2,_in_Die_Quelle-_Fl%C3%A4chen_Schmuck_(The_Source-_Ornament_for_Flat_Surfaces),_1901_(CH_18670991).jpg",
+  "license": "Public domain",
+  "attribution": "Unknown artist (1901), Vorsatz Papier Sternblume, plate 2 in Die Quelle: Flaechen Schmuck, Cooper Hewitt, Smithsonian Design Museum via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/kaleido-quelle-starflower-endpaper.jpg",
+  "need": "kaleidoscope",
+  "px": [
+   3840,
+   3236
+  ],
+  "background": "coloured",
+  "notes": "Best kaleidoscope source: strictly repeating hexagon and six-point star pattern in cream, olive and black on a black ground; tile it or cut a hexagonal cell. Lettered label cartouche (lower right) must be avoided or painted out. A pattern texture for carved or kaleidoscope layers, not a cutout subject. 3840 px wide rendition of a 4096 px scan.",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "id": "kaleido-quelle-zephyrus-silk",
+  "title": "Bedruckte Seide Zephyrus (Zephyrus Printed Silk), plate 10, Die Quelle: Flaechen Schmuck (The Source: Ornament for Flat Surfaces)",
+  "creator": "Unknown artist",
+  "date": "1901",
+  "institution": "Cooper Hewitt, Smithsonian Design Museum (object 18670537)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Print,_Bedruckte_Seide_Zephyrus_(Zephyrus_Printed_Silk),_plate_10,_in_Die_Quelle-_Fl%C3%A4chen_Schmuck_(The_Source-_Ornament_for_Flat_Surfaces),_1901_(CH_18670537).jpg",
+  "license": "Public domain",
+  "attribution": "Unknown artist (1901), Bedruckte Seide Zephyrus, plate 10 in Die Quelle: Flaechen Schmuck, Cooper Hewitt, Smithsonian Design Museum via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/kaleido-quelle-zephyrus-silk.jpg",
+  "need": "kaleidoscope",
+  "px": [
+   3840,
+   3232
+  ],
+  "background": "coloured",
+  "notes": "Plum, ochre and cream mirrored lozenge pattern in four vertical bands; symmetric rosettes can be cropped as ornamental medallions. Central lettered title panel must be avoided. Pattern texture, no cutout needed. 3840 px wide rendition of a 4096 px scan.",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "id": "kaleido-ornament-chinese-4",
+  "title": "Chinese No. 4, The Grammar of Ornament",
+  "creator": "Owen Jones",
+  "date": "1856 (this scan: 1910 reprint)",
+  "institution": "Polona Digital Library, National Library of Poland (digitised copy of The Grammar of Ornament, 1910 reprint of the 1856 work)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_grammar_of_ornament_1910_(139551497).jpg",
+  "license": "Public domain",
+  "attribution": "Owen Jones (1856), The Grammar of Ornament, Chinese No. 4, Polona Digital Library via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/kaleido-ornament-chinese-4.jpg",
+  "need": "kaleidoscope",
+  "px": [
+   3840,
+   5533
+  ],
+  "background": "toned paper",
+  "notes": "Cream paper plate with round rosette medallions (corners and lower centre) plus peach and blossom sprigs in rose, gold and viridian; the circular rosettes are ready kaleidoscope cells and the sprigs are cuttable garden props. Book page with a dark binding edge on the right and a page border to trim. 3840 px wide rendition of a larger scan.",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "id": "kaleido-ornament-celtic-2",
+  "title": "Celtic No. 2, The Grammar of Ornament",
+  "creator": "Owen Jones",
+  "date": "1856 (this scan: 1910 reprint)",
+  "institution": "Polona Digital Library, National Library of Poland (digitised copy of The Grammar of Ornament, 1910 reprint of the 1856 work)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_grammar_of_ornament_1910_(139551581).jpg",
+  "license": "Public domain",
+  "attribution": "Owen Jones (1856), The Grammar of Ornament, Celtic No. 2, Polona Digital Library via Wikimedia Commons, Public domain",
+  "file": "archive/raw/celestial/kaleido-ornament-celtic-2.jpg",
+  "need": "kaleidoscope",
+  "px": [
+   3840,
+   5537
+  ],
+  "background": "toned paper",
+  "notes": "Ochre plate of knotwork medallions, cross and quatrefoil rosettes in red, blue and green; good small round and four-lobed rosettes, also usable as worn carvings. Dense with many small parts, cutout is medium to hard; use as a stone relief source via luminance. Dark binding edge on the right to trim. 3840 px wide rendition of a larger scan.",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/"
+ }
+]

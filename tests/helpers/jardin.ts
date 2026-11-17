@@ -140,6 +140,17 @@ export class Jardin {
     ) as Promise<T>;
   }
 
+  /** Long tasks over `minMs` that started after the garden was ready (spec section 10: none after load). The observer is
+   * installed before any page script by the guard fixture; `readyAt` is stamped here, after api.ready resolves. */
+  async longTasksAfterReady(minMs = 100): Promise<Array<{ start: number; dur: number }>> {
+    return this.withApi(async (api, min: number) => {
+      await api.ready;
+      const w = window as unknown as { __lt?: Array<[number, number]>; __readyAt?: number };
+      w.__readyAt ??= performance.now();
+      return (w.__lt ?? []).filter(([start, dur]) => start >= (w.__readyAt as number) && dur > min).map(([start, dur]) => ({ start, dur }));
+    }, minMs);
+  }
+
   /** api.goto: resolves when every channel is settled and the bed is active. */
   goto(hash: string, instant = false): Promise<void> {
     return this.withApi((api, a: { h: string; i: boolean }) => api.goto(a.h, { instant: a.i }), { h: hash, i: instant });
@@ -162,6 +173,13 @@ export const test = base.extend<Fixtures & Options>({
   // Auto fixture: CPU throttle through CDP before any navigation, and "no console errors" as a hard end condition.
   guard: [
     async ({ page, context, jardin, cpuThrottle }, use) => {
+      await page.addInitScript(() => {
+        const w = window as unknown as { __lt: Array<[number, number]> };
+        w.__lt = [];
+        new PerformanceObserver((l) => {
+          for (const e of l.getEntries()) w.__lt.push([e.startTime, e.duration]);
+        }).observe({ type: 'longtask', buffered: true });
+      });
       if (cpuThrottle > 1) {
         const cdp = await context.newCDPSession(page);
         await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle });

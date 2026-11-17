@@ -1,0 +1,48 @@
+{
+  "id": "semillero",
+  "title": { "en": "Semillero", "es": "Semillero" },
+  "alt": {
+    "en": "Raised stone beds with strange seed pods and buds that bloom as each topic progresses.",
+    "es": "Bancales de piedra con vainas de semillas extrañas y brotes que florecen a medida que avanza cada tema."
+  },
+  "pose": { "x": 0, "y": 1.6, "z": 7, "pitch": -6, "fov": 33.4 },
+  "bounds": [-4.5, 4.5],
+  "layers": [
+    { "id": "far-wall", "z": -6.2, "minTier": "mid", "page": 0, "items": [
+      { "sprite": "semillero/far-wall", "x": -1.0, "y": 0, "scale": 1 }
+    ] },
+    { "id": "wall-ivy", "z": -5, "minTier": "low", "page": 0, "items": [
+      { "sprite": "semillero/wall", "x": -1.5, "y": 0, "scale": 1 },
+      { "sprite": "semillero/ivy-curtain", "x": 3.5, "y": 0, "scale": 1, "sway": 0.03 }
+    ] },
+    { "id": "stone-beds", "z": -2.6, "minTier": "low", "page": 1, "items": [
+      { "sprite": "semillero/stone-bed", "x": -0.4, "y": 0, "scale": 1 },
+      { "sprite": "semillero/cloche", "x": 2.6, "y": 0.6, "scale": 1 }
+    ] },
+    { "id": "pods", "z": -1.4, "minTier": "low", "page": 1, "items": [
+      { "sprite": "semillero/stalk", "x": -1.1, "y": 0.5, "scale": 1, "sway": 0.02 },
+      { "sprite": "semillero/stalk", "x": 0.4, "y": 0.5, "scale": 0.8, "sway": 0.02 },
+      { "sprite": "semillero/stalk", "x": 1.5, "y": 0.5, "scale": 0.6, "sway": 0.02 }
+    ] },
+    { "id": "stone-edge", "z": -0.8, "minTier": "mid", "page": 1, "items": [
+      { "sprite": "semillero/stone-edge", "x": 0, "y": 0, "scale": 1 }
+    ] },
+    { "id": "near", "z": 0, "minTier": "low", "page": 2, "items": [
+      { "sprite": "semillero/label-stake", "x": -4.1, "y": 0, "scale": 1 },
+      { "sprite": "semillero/fern", "x": 4.0, "y": 3.0, "scale": 1, "sway": 0.04 },
+      { "sprite": "semillero/wall-pier", "x": 6.0, "y": 0, "scale": 1 }
+    ] }
+  ],
+  "slots": [
+    { "id": "pod-a", "kind": "project", "accepts": "pod", "x": 0.4, "y": 0.9, "z": -1.4, "scale": 0.9, "bloom": "pod", "hit": [0.6, 0.8], "label": "right" },
+    { "id": "pod-b", "kind": "project", "accepts": "pod", "x": -1.1, "y": 1.1, "z": -1.4, "scale": 0.8, "bloom": "pod", "hit": [0.55, 0.75], "label": "left" },
+    { "id": "bud-a", "kind": "project", "accepts": "bud", "x": 1.5, "y": 0.75, "z": -1.4, "scale": 0.7, "bloom": "bud", "hit": [0.5, 0.6], "label": "right" },
+    { "id": "bud-b", "kind": "project", "accepts": "bud", "x": -2.3, "y": 0.7, "z": -1.4, "scale": 0.6, "bloom": "bud", "hit": [0.45, 0.55], "label": "left" },
+    { "id": "ivy", "kind": "prop", "ref": "gruta", "x": 3.5, "y": 1.2, "z": -4.9, "scale": 1, "hit": [1.1, 1.6], "label": "left",
+      "alt": { "en": "Ivy curtain on the far wall", "es": "Cortina de hiedra en el muro del fondo" } }
+  ],
+  "procedural": [
+    { "type": "sigils", "x": 0, "y": 0.3, "z": -0.79, "w": 3, "h": 0.3 },
+    { "type": "fireflies", "x": 0.5, "y": 1.6, "z": -2, "w": 3, "h": 1.2, "params": { "count": 3 } }
+  ]
+}

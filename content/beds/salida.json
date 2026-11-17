@@ -1,0 +1,46 @@
+{
+  "id": "salida",
+  "title": { "en": "La Salida", "es": "La Salida" },
+  "alt": {
+    "en": "A tree with swallows and postcards hanging on ribbons, one for each way to get in touch.",
+    "es": "Un árbol con golondrinas y postales colgadas de cintas, una por cada forma de contacto."
+  },
+  "pose": { "x": 0, "y": 1.2, "z": 7, "pitch": 6, "fov": 33.4 },
+  "bounds": [-4.5, 4.5],
+  "layers": [
+    { "id": "far-wall", "z": -7, "minTier": "mid", "page": 0, "items": [
+      { "sprite": "salida/wall", "x": 0.5, "y": 0, "scale": 1 }
+    ] },
+    { "id": "tree", "z": -3.5, "minTier": "low", "page": 0, "items": [
+      { "sprite": "salida/trunk", "x": -1.0, "y": 0, "scale": 1 },
+      { "sprite": "salida/branch", "x": 1.0, "y": 2.6, "scale": 1, "sway": 0.02 }
+    ] },
+    { "id": "swallows", "z": -2.8, "minTier": "mid", "page": 1, "items": [
+      { "sprite": "salida/swallow", "x": -2.0, "y": 3.4, "scale": 0.6 },
+      { "sprite": "salida/swallow", "x": -0.6, "y": 3.8, "scale": 0.5, "rot": -8 },
+      { "sprite": "salida/swallow", "x": 0.9, "y": 3.6, "scale": 0.45, "rot": -14 },
+      { "sprite": "salida/swallow", "x": 2.3, "y": 3.1, "scale": 0.4, "rot": -20 }
+    ] },
+    { "id": "cards", "z": -2.2, "minTier": "low", "page": 1, "items": [
+      { "sprite": "salida/ribbon", "x": -0.3, "y": 2.4, "scale": 1, "sway": 0.06 },
+      { "sprite": "salida/ribbon", "x": 1.4, "y": 2.6, "scale": 1, "sway": 0.06 },
+      { "sprite": "salida/ribbon", "x": 2.8, "y": 2.5, "scale": 1, "sway": 0.06 },
+      { "sprite": "salida/postcard", "x": -0.3, "y": 1.6, "scale": 1, "rot": -4, "sway": 0.05, "lift": 0.05 },
+      { "sprite": "salida/postcard", "x": 1.4, "y": 1.9, "scale": 1, "rot": 6, "sway": 0.05, "lift": 0.05 },
+      { "sprite": "salida/postcard", "x": 2.8, "y": 1.5, "scale": 1, "rot": -2, "sway": 0.05, "lift": 0.05 }
+    ] },
+    { "id": "near", "z": 0, "minTier": "low", "page": 2, "items": [
+      { "sprite": "salida/swallow", "x": -4.0, "y": 4.2, "scale": 1.2 },
+      { "sprite": "salida/grass", "x": 0, "y": 0, "scale": 1, "sway": 0.05 },
+      { "sprite": "salida/end-wall", "x": 4.6, "y": 0, "scale": 1 }
+    ] }
+  ],
+  "slots": [
+    { "id": "postcard-a", "kind": "link", "ref": "github", "x": -0.3, "y": 1.6, "z": -2.2, "scale": 1, "hit": [0.5, 0.35], "label": "left" },
+    { "id": "postcard-b", "kind": "link", "ref": "email", "x": 1.4, "y": 1.9, "z": -2.2, "scale": 1, "hit": [0.5, 0.35], "label": "right" },
+    { "id": "postcard-c", "kind": "link", "ref": "socials", "x": 2.8, "y": 1.5, "z": -2.2, "scale": 1, "hit": [0.5, 0.35], "label": "left" }
+  ],
+  "procedural": [
+    { "type": "fireflies", "x": 1, "y": 2, "z": -3, "w": 5, "h": 2, "params": { "count": 4 } }
+  ]
+}

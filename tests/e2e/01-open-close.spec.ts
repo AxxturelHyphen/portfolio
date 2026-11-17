@@ -63,7 +63,7 @@ test('transition budget herbario: panel open and close', async ({ page, jardin, 
   expect(checkBudget(stats, 'panel', isLow(tierOpt)), JSON.stringify(stats)).toBeNull();
 });
 
-test.fixme('flow 1 garden: open and close 20 times fast, Esc mid-iris, camera back at its pose', async ({ page, jardin }) => {
+test('flow 1 garden: open and close 20 times fast, Esc mid-iris, camera back at its pose', async ({ page, jardin }) => {
   await jardin.visit({ mode: 'garden', hash: '#/b/rosaleda' });
   await jardin.goto('#/b/rosaleda', true);
   const pose0 = await jardin.withApi((api) => api.camera());
@@ -75,14 +75,28 @@ test.fixme('flow 1 garden: open and close 20 times fast, Esc mid-iris, camera ba
     expect(await jardin.openDialogs()).toBeLessThanOrEqual(1);
   }
   await jardin.settled();
+  // Closing hands focus back to the flower that opened the panel, so the garden rests on that flower (phase 'focus');
+  // one more Esc is the documented one-level step back to the bed.
+  // The pointer moves off first: a proxy sliding under a resting cursor would hover-focus again.
+  await page.mouse.move(2, 2);
+  if ((await jardin.withApi((api) => api.state().phase)) === 'focus') {
+    await page.keyboard.press('Escape');
+    await jardin.settled();
+  }
   const end = await jardin.withApi((api) => ({ pose: api.camera(), state: api.state() }));
   expect(end.state.phase).toBe('bed');
   expect(end.state.project).toBeNull();
-  for (const k of ['x', 'y', 'z', 'pitch', 'fov'] as const) expect(end.pose[k]).toBeCloseTo(pose0[k], 3);
+  // The focus nudge of the camera is its own spring and decays a little after the channels report settled.
+  const drift = (): Promise<number> =>
+    jardin.withApi((api, p0: Record<string, number>) => {
+      const pose = api.camera() as unknown as Record<string, number>;
+      return Math.max(...['x', 'y', 'z', 'pitch', 'fov'].map((k) => Math.abs((pose[k] as number) - (p0[k] as number))));
+    }, pose0 as unknown as Record<string, number>);
+  await expect.poll(drift, { timeout: 4000, message: 'camera pose back at its pose' }).toBeLessThan(0.0005);
   expect(await jardin.openDialogs()).toBe(0);
 });
 
-test.fixme('transition budget garden: panel open and close (camera and iris)', async ({ page, jardin, tierOpt }) => {
+test('transition budget garden: panel open and close (camera and iris)', async ({ page, jardin, tierOpt }) => {
   await jardin.visit({ mode: 'garden', hash: '#/b/rosaleda' });
   await jardin.goto('#/b/rosaleda', true);
   const stats = await recordFrames(page, 'panel open and close', async () => {

@@ -13,7 +13,7 @@ test('flow 5 herbario: the toggle offers the garden while a project is open', as
   await expect(page.locator(SEL.gardenToggle).first(), 'Enter the garden stays offered').toBeVisible();
 });
 
-test.fixme('flow 5 garden: garden to herbario to garden with a project open keeps project and position', async ({ page, jardin, tierOpt }) => {
+test('flow 5 garden: garden to herbario to garden with a project open keeps project and position', async ({ page, jardin, tierOpt }) => {
   const p = projectsInDifferentBeds()[1] ?? projectsInDifferentBeds()[0];
   if (p === undefined) return;
   await jardin.visit({ mode: 'garden', hash: `#/p/${p.id}` });

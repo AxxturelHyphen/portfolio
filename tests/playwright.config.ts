@@ -21,7 +21,9 @@ const mobile = { ...base, viewport: { width: 390, height: 844 }, isMobile: true,
 
 export default defineConfig<Options>({
   testDir: '.',
-  testMatch: ['e2e/*.spec.ts', 'unit/*.spec.ts'],
+  testMatch: ['e2e/*.spec.ts', 'unit/**/*.spec.ts'],
+  /** gl-cutout runs on its own Vite page and config (tests/unit/gl-cutout/playwright.config.ts). */
+  testIgnore: ['unit/gl-cutout/**'],
   workers: 1,
   fullyParallel: false,
   retries: 0,
@@ -44,6 +46,6 @@ export default defineConfig<Options>({
     { name: 'mobile', testMatch: 'e2e/*.spec.ts', use: { ...mobile } },
     { name: 'desktop-low', testMatch: 'e2e/*.spec.ts', use: { ...desktop, tierOpt: 'low', cpuThrottle: 4 } },
     { name: 'mobile-low', testMatch: 'e2e/*.spec.ts', use: { ...mobile, tierOpt: 'low', cpuThrottle: 4 } },
-    { name: 'unit', testMatch: 'unit/*.spec.ts', use: {} },
+    { name: 'unit', testMatch: 'unit/**/*.spec.ts', use: {} },
   ],
 });

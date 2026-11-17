@@ -38,25 +38,6 @@
   ]
  },
  {
-  "id": "met-828288-fritillaria-imperialis-p131",
-  "title": "Plate 131, Fritillaria Imperialis, from \"Les Liliacées\"",
-  "creator": "Pierre Joseph Redouté",
-  "date": "1802–16",
-  "institution": "The Metropolitan Museum of Art (Open Access)",
-  "sourceUrl": "https://www.metmuseum.org/art/collection/search/828288",
-  "license": "CC0 1.0 (Met Open Access, public domain)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Pierre Joseph Redouté, Plate 131, Fritillaria Imperialis, from \"Les Liliacées\", 1802–16. Bequest of Mrs. Charles Wrightsman, 2019. The Metropolitan Museum of Art, Open Access (CC0).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "Redouté hand-coloured stipple, plate 131 Les Liliacées, alternate impression of crown imperial.",
-  "file": "archive/raw/water/met-828288-fritillaria-imperialis-p131.jpg",
-  "px": [
-   2565,
-   3714
-  ]
- },
- {
   "id": "met-385749-passiflora-alata",
   "title": "Winged passionflower (Passiflora alata)",
   "creator": "Sydenham Teak Edwards",
@@ -67,8 +48,8 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "Sydenham Teak Edwards, Winged passionflower (Passiflora alata), 1799. Edward Pearce Casey Fund, 2009. The Metropolitan Museum of Art, Open Access (CC0).",
   "need": "pods",
-  "background": "plain paper",
-  "notes": "Edwards gouache on vellum 1799, winged passionflower with strange corona; vellum toned ground; fruit and bud also shown.",
+  "background": "coloured",
+  "notes": "Edwards 1799 gouache on vellum: salmon-pink passion flower with strange corona, two buds, tendrils and a big heart leaf, against a pale sky wash with a dark deckle edge; hero for odd flowers; sky must be keyed out. Not a pod itself.",
   "file": "archive/raw/water/met-385749-passiflora-alata.jpg",
   "px": [
    2706,
@@ -95,25 +76,6 @@
   ]
  },
  {
-  "id": "cma-127485-blue-egyptian-water-lily",
-  "title": "The Temple of Flora, or Garden of Nature:  Blue Egyptian Waterlily",
-  "creator": "Robert John Thornton (British, 1768–1837)",
-  "date": "1804",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1950.166",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Robert John Thornton (British, 1768–1837), The Temple of Flora, or Garden of Nature:  Blue Egyptian Waterlily, 1804. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "lilies",
-  "background": "coloured",
-  "notes": "Thornton aquatint, blue Egyptian water lily seen side-on with buds and pads, pale blue; painted Egyptian landscape backdrop to remove.",
-  "file": "archive/raw/water/cma-127485-blue-egyptian-water-lily.jpg",
-  "px": [
-   2607,
-   3400
-  ]
- },
- {
   "id": "cma-120465-flowering-lotus-and-bud",
   "title": "Flowering Lotus and Bud",
   "creator": "Unknown",
@@ -133,25 +95,6 @@
   ]
  },
  {
-  "id": "cma-120459-lotus-blossom",
-  "title": "Lotus Blossom",
-  "creator": "Unknown",
-  "date": "1368–1644",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1941.282",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Unknown, Lotus Blossom, 1368–1644. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "lilies",
-  "background": "toned paper",
-  "notes": "Ming lotus blossom painting, single pink bloom with leaves; toned ground.",
-  "file": "archive/raw/water/cma-120459-lotus-blossom.jpg",
-  "px": [
-   3400,
-   2948
-  ]
- },
- {
   "id": "cma-679355-lotus-seeds-water-caltrops",
   "title": "Lotus Seeds and Water Caltrops",
   "creator": "Unknown",
@@ -162,8 +105,8 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "Unknown, Lotus Seeds and Water Caltrops, 1700–1750. The Cleveland Museum of Art, Open Access (CC0).",
   "need": "pods",
-  "background": "toned paper",
-  "notes": "Chinese 18th c. study of lotus seed pods and water caltrops; strange and pleasant, small separate elements, easy to cut.",
+  "background": "plain paper",
+  "notes": "Chinese 18th c. study: lotus seed heads (pale green, holes full of seeds), pink petals and grey water caltrops in a bowl on a stand, plain white ground; seed heads are the almost otherworldly pods; cut the heads and petals from the bowl.",
   "file": "archive/raw/water/cma-679355-lotus-seeds-water-caltrops.jpg",
   "px": [
    3400,
@@ -190,44 +133,6 @@
   ]
  },
  {
-  "id": "cma-130017-blue-passion-flower",
-  "title": "The Temple of Flora, or Garden of Nature:  The Blue Passion Flower",
-  "creator": "Robert John Thornton (British, 1768–1837)",
-  "date": "1800",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1952.442",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Robert John Thornton (British, 1768–1837), The Temple of Flora, or Garden of Nature:  The Blue Passion Flower, 1800. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "pods",
-  "background": "coloured",
-  "notes": "Thornton blue passion flower, odd corona geometry and fruit; dramatic painted background.",
-  "file": "archive/raw/water/cma-130017-blue-passion-flower.jpg",
-  "px": [
-   2535,
-   3400
-  ]
- },
- {
-  "id": "cma-132875-ehret-magnolia",
-  "title": "Plantae Selectae:  No. 33 - Magnolia",
-  "creator": "Georg Dionysius Ehret (German, 1708–1770)",
-  "date": "published 1750–73",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1955.333",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Georg Dionysius Ehret (German, 1708–1770), Plantae Selectae:  No. 33 - Magnolia, published 1750–73. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "Ehret Plantae Selectae no. 33 magnolia: flower, leaves, cone-like fruit with red seeds; plain paper, easy cutout.",
-  "file": "archive/raw/water/cma-132875-ehret-magnolia.jpg",
-  "px": [
-   2392,
-   3400
-  ]
- },
- {
   "id": "cma-118176-japanese-iris",
   "title": "Japanese Iris (Large Blue Iris)",
   "creator": "John Edwards (British)",
@@ -238,49 +143,11 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "John Edwards (British), Japanese Iris (Large Blue Iris), 1801. The Cleveland Museum of Art, Open Access (CC0).",
   "need": "reeds",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Edwards 1801 Japanese iris, large blue iris with sword leaves, plain paper; pond-edge plant.",
   "file": "archive/raw/water/cma-118176-japanese-iris.jpg",
   "px": [
    2443,
-   3400
-  ]
- },
- {
-  "id": "cma-118180-gold-banded-iris",
-  "title": "Gold-banded Iris",
-  "creator": "Henri Joseph Redouté (French, 1766–1853)",
-  "date": "1812",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1939.285",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Henri Joseph Redouté (French, 1766–1853), Gold-banded Iris, 1812. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "reeds",
-  "background": "plain paper",
-  "notes": "Redouté 1812 gold-banded iris (Iris/ Lilium), plain paper.",
-  "file": "archive/raw/water/cma-118180-gold-banded-iris.jpg",
-  "px": [
-   2170,
-   3400
-  ]
- },
- {
-  "id": "cma-118182-crown-imperial",
-  "title": "Crown Imperial Fritillary",
-  "creator": "Henri Joseph Redouté (French, 1766–1853)",
-  "date": "1827",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1939.287",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Henri Joseph Redouté (French, 1766–1853), Crown Imperial Fritillary, 1827. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "Redouté 1827 crown imperial fritillary with bulb; plain paper; bell flowers with crown of leaves.",
-  "file": "archive/raw/water/cma-118182-crown-imperial.jpg",
-  "px": [
-   2675,
    3400
   ]
  },
@@ -342,25 +209,6 @@
   ]
  },
  {
-  "id": "cma-132617-star-of-bethlehem",
-  "title": "The Botanical Magazine or Flower Garden Displayed:  Star of Bethlehem",
-  "creator": "William Curtis (British, 1746–1799)",
-  "date": "1794",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1955.141",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "William Curtis (British, 1746–1799), The Botanical Magazine or Flower Garden Displayed:  Star of Bethlehem, 1794. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "Curtis Botanical Magazine, Star of Bethlehem (Ornithogalum) with bulb, buds and open flowers on one plate.",
-  "file": "archive/raw/water/cma-132617-star-of-bethlehem.jpg",
-  "px": [
-   3400,
-   1994
-  ]
- },
- {
   "id": "cma-132864-crocus-sativus",
   "title": "Les Liliacées:  Crocus Sativus",
   "creator": "Henri Joseph Redouté (French, 1766–1853)",
@@ -377,25 +225,6 @@
   "px": [
    2323,
    3400
-  ]
- },
- {
-  "id": "cma-132620-orange-lily-bulb-bearing",
-  "title": "The Botanical Magazine or Flower Garden Displayed:  Umbel-Flowering Bulb-Bearing Orange-Lily",
-  "creator": "Thomas Curtis (British, 1846–1920)",
-  "date": "1807",
-  "institution": "The Cleveland Museum of Art (Open Access)",
-  "sourceUrl": "https://clevelandart.org/art/1955.144",
-  "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-  "attribution": "Thomas Curtis (British, 1846–1920), The Botanical Magazine or Flower Garden Displayed:  Umbel-Flowering Bulb-Bearing Orange-Lily, 1807. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "Curtis Botanical Magazine, umbel-flowering bulb-bearing orange lily, shows bulbils on the stem.",
-  "file": "archive/raw/water/cma-132620-orange-lily-bulb-bearing.jpg",
-  "px": [
-   3400,
-   2845
   ]
  },
  {
@@ -427,51 +256,13 @@
   "license": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution": "S. Curtis (British), The Botanical Magazine or Flower Garden Displayed:  The Mountain Lake Lily, 1827. The Cleveland Museum of Art, Open Access (CC0).",
-  "need": "lilies",
+  "need": "bulbs",
   "background": "plain paper",
-  "notes": "Curtis Botanical Magazine, the Mountain Lake Lily.",
+  "notes": "Curtis Botanical Magazine, amaryllid in rose-red with bulb base visible; plain paper, easy cutout; lily-like bloom, a land bulb (not a water lily).",
   "file": "archive/raw/water/cma-132622-mountain-lake-lily.jpg",
   "px": [
    2479,
    3400
-  ]
- },
- {
-  "id": "wel-dzbyqhte-white-waterlily-stages",
-  "title": "White waterlily (Nymphaea alba L.): leaf, flowers, fruit and seed. Coloured etching by M. Bouchard, 177-.",
-  "creator": "Bouchard, Magdalena; Bonelli, Giorgio",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/dzbyqhte",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "White waterlily (Nymphaea alba L.): leaf, flowers, fruit and seed. Coloured etching by M. Bouchard, 177-. Wellcome Collection (Public Domain Mark).",
-  "need": "lilies",
-  "background": "plain paper",
-  "notes": "Coloured etching, white water lily: leaf, flowers, fruit and seed on one sheet, so several stages are usable.",
-  "file": "archive/raw/water/wel-dzbyqhte-white-waterlily-stages.jpg",
-  "px": [
-   1173,
-   1893
-  ]
- },
- {
-  "id": "wel-j7pjy6gq-sacred-lotus-three-flowers",
-  "title": "Sacred lotus (Nelumbo nucifera): three flowers, one in bud. Watercolour.",
-  "creator": "Unknown",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/j7pjy6gq",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Sacred lotus (Nelumbo nucifera): three flowers, one in bud. Watercolour. Wellcome Collection (Public Domain Mark).",
-  "need": "lilies",
-  "background": "plain paper",
-  "notes": "Watercolour, sacred lotus with three flowers, one in bud.",
-  "file": "archive/raw/water/wel-j7pjy6gq-sacred-lotus-three-flowers.jpg",
-  "px": [
-   1444,
-   2249
   ]
  },
  {
@@ -485,7 +276,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "The flower of a giant water lily (Victoria amazonica) Coloured lithograph, c. 1850, after C. Rosenberg. Wellcome Collection (Public Domain Mark).",
   "need": "lilies",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Coloured lithograph of the flower of the giant water lily.",
   "file": "archive/raw/water/wel-humrh2kb-victoria-flower.jpg",
   "px": [
@@ -504,7 +295,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Giant water lily (Victoria amazonica): an opening flower with surrounding leaves and buds. Coloured lithograph by W. Fitch, c. 1845, after himself. Wellcome Collection (Public Domain Mark).",
   "need": "lilies",
-  "background": "plain paper",
+  "background": "coloured",
   "notes": "1845 giant water lily, an opening flower with surroundings.",
   "file": "archive/raw/water/wel-uzjjtmha-victoria-opening.jpg",
   "px": [
@@ -523,8 +314,8 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Sacred lotus (Nelumbo nucifera): one large leaf with long stalk. Watercolour. Wellcome Collection (Public Domain Mark).",
   "need": "pads",
-  "background": "plain paper",
-  "notes": "Watercolour, one large sacred lotus leaf on a long stalk.",
+  "background": "toned paper",
+  "notes": "Watercolour of one large lotus leaf on a long dotted stalk on silvery paper; drab olive-brown, so retint; leaf and stalk are one clean shape.",
   "file": "archive/raw/water/wel-r7fugtvn-sacred-lotus-leaf.jpg",
   "px": [
    1296,
@@ -542,7 +333,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Giant water lily (Victoria amazonica): entire flowering plant with floating leaves. Coloured lithograph by W. Fitch, c. 1845, after himself. Wellcome Collection (Public Domain Mark).",
   "need": "pads",
-  "background": "plain paper",
+  "background": "coloured",
   "notes": "1845 giant water lily, entire flowering plant with leaves.",
   "file": "archive/raw/water/wel-txunx8hs-victoria-entire-plant.jpg",
   "px": [
@@ -570,25 +361,6 @@
   ]
  },
  {
-  "id": "wel-fwevb57d-yellow-flag-iris",
-  "title": "Yellow flag (Iris pseudacorus): flowering stem. Watercolour, 1904.",
-  "creator": "Unknown",
-  "date": "1904",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/fwevb57d",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Yellow flag (Iris pseudacorus): flowering stem. Watercolour, 1904. Wellcome Collection (Public Domain Mark).",
-  "need": "reeds",
-  "background": "plain paper",
-  "notes": "Watercolour 1904, yellow flag iris flowering stem.",
-  "file": "archive/raw/water/wel-fwevb57d-yellow-flag-iris.jpg",
-  "px": [
-   1432,
-   2139
-  ]
- },
- {
   "id": "wel-pt2skxh3-japanese-iris",
   "title": "Japanese matsuzaki iris (Iris kaempferi cv.): mauve flowers and leaves. Watercolour.",
   "creator": "Unknown",
@@ -599,88 +371,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Japanese matsuzaki iris (Iris kaempferi cv.): mauve flowers and leaves. Watercolour. Wellcome Collection (Public Domain Mark).",
   "need": "reeds",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Japanese matsuzaki iris, mauve flowers and leaves.",
   "file": "archive/raw/water/wel-pt2skxh3-japanese-iris.jpg",
   "px": [
    1800,
    3921
-  ]
- },
- {
-  "id": "wel-eu7szcy7-blue-iris-border",
-  "title": "A flowering blue iris (Marica cærulea) with large, ornate border. Chromolithograph by O. Jones, 1845.",
-  "creator": "Owen Jones",
-  "date": "[1845]",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/eu7szcy7",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "A flowering blue iris (Marica cærulea) with large, ornate border. Chromolithograph by O. Jones, 1845. Wellcome Collection (Public Domain Mark).",
-  "need": "reeds",
-  "background": "plain paper",
-  "notes": "Chromolithograph 1845 flowering blue iris with large ornate border.",
-  "file": "archive/raw/water/wel-eu7szcy7-blue-iris-border.jpg",
-  "px": [
-   1000,
-   1900
-  ]
- },
- {
-  "id": "wel-uh9nqtrn-poppy-capsule",
-  "title": "An opium poppy (Papaver somniferum): seed capsule. Watercolour.",
-  "creator": "Unknown",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/uh9nqtrn",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "An opium poppy (Papaver somniferum): seed capsule. Watercolour. Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "Watercolour of an opium poppy seed capsule, single object on plain ground.",
-  "file": "archive/raw/water/wel-uh9nqtrn-poppy-capsule.jpg",
-  "px": [
-   1448,
-   2212
-  ]
- },
- {
-  "id": "wel-amr4uzkg-poppy-capsule-stems",
-  "title": "A poppy capsule (Papaver species), and two flowering stems. Watercolour.",
-  "creator": "Unknown",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/amr4uzkg",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "A poppy capsule (Papaver species), and two flowering stems. Watercolour. Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "Watercolour poppy capsule and two flowering stems.",
-  "file": "archive/raw/water/wel-amr4uzkg-poppy-capsule-stems.jpg",
-  "px": [
-   2350,
-   3009
-  ]
- },
- {
-  "id": "wel-y9ypj97j-chinese-lantern",
-  "title": "Chinese lantern (Physalis alkekengi L.): entire flowering and fruiting plant with separate opened calyx and berry. Coloured etching by M. Bouchard, 1774.",
-  "creator": "Bouchard, Magdalena; Bonelli, Giorgio",
-  "date": "[1774]",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/y9ypj97j",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Chinese lantern (Physalis alkekengi L.): entire flowering and fruiting plant with separate opened calyx and berry. Coloured etching by M. Bouchard, 1774. Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "1774 Chinese lantern (Physalis) entire flowering and fruiting plant, orange lantern pods.",
-  "file": "archive/raw/water/wel-y9ypj97j-chinese-lantern.jpg",
-  "px": [
-   1237,
-   1962
   ]
  },
  {
@@ -694,50 +390,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Chinese lantern (Physalis alkekengi): fruiting stem. Watercolour by B. Bird. Wellcome Collection (Public Domain Mark).",
   "need": "pods",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Watercolour Chinese lantern fruiting stem.",
   "file": "archive/raw/water/wel-zee8ph2h-chinese-lantern-watercolour.jpg",
   "px": [
    2261,
    3168
-  ]
- },
- {
-  "id": "wel-gxktdrmj-nigella-arvensis",
-  "title": "A plant (Nigella arvensis) related to black cummin: flowering and fruiting stem with seeds. Coloured etching by M. Bouchard, 177-.",
-  "creator": "Bouchard, Magdalena; Bonelli, Giorgio",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/gxktdrmj",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "A plant (Nigella arvensis) related to black cummin: flowering and fruiting stem with seeds. Coloured etching by M. Bouchard, 177-. Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "Nigella arvensis, flowering and fruiting, horned star-shaped capsules.",
-  "file": "archive/raw/water/wel-gxktdrmj-nigella-arvensis.jpg",
-  "px": [
-   1184,
-   1858
-  ]
- },
- {
-  "id": "wel-eafnsf9w-magnolia-seed-pod",
-  "title": "White magnolia blossom and seed pod, 1731",
-  "creator": "Unknown",
-  "date": "1731",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/eafnsf9w",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "White magnolia blossom and seed pod, 1731 Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "toned paper",
-  "notes": "1731 white magnolia blossom and seed pod.",
-  "file": "archive/raw/water/wel-eafnsf9w-magnolia-seed-pod.jpg",
-  "px": [
-   4014,
-   2679
   ]
  },
  {
@@ -751,50 +409,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "A Magnolia species: flowering stem with labelled floral segments, fruit and seed. Coloured etching by G. D. Ehret, c.1737, after himself. Wellcome Collection (Public Domain Mark).",
   "need": "pods",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Magnolia flowering stem with labelled floral segments and fruit.",
   "file": "archive/raw/water/wel-fkrcnr8h-magnolia-fruit.jpg",
   "px": [
    2342,
    3354
-  ]
- },
- {
-  "id": "wel-cjatb3sm-phaius-orchid",
-  "title": "An orchid (Phaius albus): flowering stem. Coloured lithograph.",
-  "creator": "Unknown",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/cjatb3sm",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "An orchid (Phaius albus): flowering stem. Coloured lithograph. Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "Coloured lithograph orchid Phaius albus, odd white form.",
-  "file": "archive/raw/water/wel-cjatb3sm-phaius-orchid.jpg",
-  "px": [
-   2454,
-   3093
-  ]
- },
- {
-  "id": "wel-s3aqbe38-cypripedium-sedeni",
-  "title": "A lady's slipper orchid (Cypripedium Sedeni): flowering stem. Watercolour.",
-  "creator": "Unknown",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/s3aqbe38",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "A lady's slipper orchid (Cypripedium Sedeni): flowering stem. Watercolour. Wellcome Collection (Public Domain Mark).",
-  "need": "pods",
-  "background": "plain paper",
-  "notes": "Watercolour lady's slipper orchid, odd pouch form.",
-  "file": "archive/raw/water/wel-s3aqbe38-cypripedium-sedeni.jpg",
-  "px": [
-   2292,
-   3186
   ]
  },
  {
@@ -808,7 +428,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "A pitcher plant (Sarracenia drummondii): two pitchers and a small depiction of an entire plant. Coloured zincograph by L. Constans, c. 1850, after himself. Wellcome Collection (Public Domain Mark).",
   "need": "pods",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Pitcher plant Sarracenia drummondii, two pitchers, chromolithograph 1850.",
   "file": "archive/raw/water/wel-vm996qc9-pitcher-plant.jpg",
   "px": [
@@ -827,7 +447,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Star of Bethlehem plant (Ornithogalum umbellatum): flowering stem, bulb and floral segments. Coloured engraving by J. Pass, c. 1820. Wellcome Collection (Public Domain Mark).",
   "need": "bulbs",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Star of Bethlehem plant flowering stem and bulb, 1820.",
   "file": "archive/raw/water/wel-dtuzrwzd-star-of-bethlehem.jpg",
   "px": [
@@ -846,69 +466,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "A crocus: entire flowering plant with separate bulb and floral segments. Watercolour. Wellcome Collection (Public Domain Mark).",
   "need": "bulbs",
-  "background": "plain paper",
+  "background": "dark",
   "notes": "Crocus entire flowering plant with separate bulb and floral segments.",
   "file": "archive/raw/water/wel-yyfzqu4n-crocus-bulb.jpg",
   "px": [
    2362,
    3293
-  ]
- },
- {
-  "id": "wel-hv6msm22-fritillaria-meleagris",
-  "title": "Snake's head or guinea flower (Fritillaria meleagris): flowering stems and bulb. Watercolour, 1904.",
-  "creator": "Unknown",
-  "date": "1904",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/hv6msm22",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Snake's head or guinea flower (Fritillaria meleagris): flowering stems and bulb. Watercolour, 1904. Wellcome Collection (Public Domain Mark).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "1904 snake's head fritillary flowering stems with bulb.",
-  "file": "archive/raw/water/wel-hv6msm22-fritillaria-meleagris.jpg",
-  "px": [
-   1449,
-   2101
-  ]
- },
- {
-  "id": "wel-cppe7e46-saffron-crocus",
-  "title": "Saffron crocus (Crocus sativus L.): flowering stem with separate floral segments and bulb and a description of the plant and its uses. Coloured line engraving by C.H.Hemerich, c.1759, after T.Sheldrake.",
-  "creator": "Sheldrake, Timothy, active 1740-1770; Hemerich, C. H., active 1759",
-  "date": "[1759]",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/cppe7e46",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Saffron crocus (Crocus sativus L.): flowering stem with separate floral segments and bulb and a description of the plant and its uses. Coloured line engraving by C.H.Hemerich, c.1759, after T.Sheldrake. Wellcome Collection (Public Domain Mark).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "1759 saffron crocus flowering stem with separate floral segments.",
-  "file": "archive/raw/water/wel-cppe7e46-saffron-crocus.jpg",
-  "px": [
-   1377,
-   2295
-  ]
- },
- {
-  "id": "wel-vcejvf6a-squill-sea-onion",
-  "title": "Squill or sea onion (Drimia maritima): flowering stem, bulb, leaf and floral segments. Coloured lithograph after M. A. Burnett, c. 1847.",
-  "creator": "Burnett, M. A., active 1850",
-  "date": "[1847]",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/vcejvf6a",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Squill or sea onion (Drimia maritima): flowering stem, bulb, leaf and floral segments. Coloured lithograph after M. A. Burnett, c. 1847. Wellcome Collection (Public Domain Mark).",
-  "need": "bulbs",
-  "background": "plain paper",
-  "notes": "Squill, flowering stem, bulb, leaf, 1847.",
-  "file": "archive/raw/water/wel-vcejvf6a-squill-sea-onion.jpg",
-  "px": [
-   1413,
-   1948
   ]
  },
  {
@@ -922,7 +485,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Four fern fronds, one of a hart's tongue fern (Asplenium species). Chromolithograph after a nature print. Wellcome Collection (Public Domain Mark).",
   "need": "ferns",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Chromolithograph of four fern fronds including hart's tongue.",
   "file": "archive/raw/water/wel-sabj375w-four-fern-fronds.jpg",
   "px": [
@@ -941,69 +504,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Three species of fern, including a maidenhair fern (Adiantum species) and a clubmoss. Colour nature print by F. Branson, 1850. Wellcome Collection (Public Domain Mark).",
   "need": "ferns",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "1850 three species of fern including maidenhair.",
   "file": "archive/raw/water/wel-xwb8cbjq-three-ferns-1850.jpg",
   "px": [
    2388,
    2868
-  ]
- },
- {
-  "id": "wel-ccfgcanx-fern-nature-print",
-  "title": "Three fern fronds. Chromolithograph after a nature print.",
-  "creator": "Unknown",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/ccfgcanx",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Three fern fronds. Chromolithograph after a nature print. Wellcome Collection (Public Domain Mark).",
-  "need": "ferns",
-  "background": "plain paper",
-  "notes": "Chromolithograph after a nature print, three fern fronds.",
-  "file": "archive/raw/water/wel-ccfgcanx-fern-nature-print.jpg",
-  "px": [
-   2257,
-   2997
-  ]
- },
- {
-  "id": "wel-ue724vgr-male-fern",
-  "title": "The male fern (Dryopteris filix-mas): fronds and part of rhizome. Colour nature print by A. Auer, c. 1853.",
-  "creator": "Alois Auer",
-  "date": "1853 [1854]",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/ue724vgr",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "The male fern (Dryopteris filix-mas): fronds and part of rhizome. Colour nature print by A. Auer, c. 1853. Wellcome Collection (Public Domain Mark).",
-  "need": "ferns",
-  "background": "plain paper",
-  "notes": "1853 male fern fronds and part of the rhizome.",
-  "file": "archive/raw/water/wel-ue724vgr-male-fern.jpg",
-  "px": [
-   2547,
-   3366
-  ]
- },
- {
-  "id": "wel-qbfsj95s-moss-bryum",
-  "title": "A moss (Bryum calcareum): single plants showing the growth cycle and a patch of moss on stone. Coloured engraving after J. Sowerby, 1794.",
-  "creator": "James Sowerby",
-  "date": "[1794]",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/qbfsj95s",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "A moss (Bryum calcareum): single plants showing the growth cycle and a patch of moss on stone. Coloured engraving after J. Sowerby, 1794. Wellcome Collection (Public Domain Mark).",
-  "need": "ferns",
-  "background": "plain paper",
-  "notes": "1794 moss Bryum calcareum single plants showing the growth cycle.",
-  "file": "archive/raw/water/wel-qbfsj95s-moss-bryum.jpg",
-  "px": [
-   1228,
-   2141
   ]
  },
  {
@@ -1017,7 +523,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Six types of haircap moss (Polytrichum species). Coloured engraving by J. Pass, c. 1825. Wellcome Collection (Public Domain Mark).",
   "need": "ferns",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "1827 six types of haircap moss, coloured engraving.",
   "file": "archive/raw/water/wel-nj88nquj-haircap-moss.jpg",
   "px": [
@@ -1036,31 +542,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Eight fungi, including the fly agaric, chanterelle, Boletus edulis, field mushroom, puff ball, morel, dry-rot and ergot. Chromolithograph. Wellcome Collection (Public Domain Mark).",
   "need": "ferns",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Eight fungi including fly agaric and chanterelle.",
   "file": "archive/raw/water/wel-yb4y8cn4-eight-fungi.jpg",
   "px": [
    2903,
    2308
-  ]
- },
- {
-  "id": "wel-p862u7gt-mushrooms-engraving",
-  "title": "Varieties of mushrooms and edible fungi. Coloured mixed method engraving by A. M. Perrot after E. Hocquart and J. C. Perrot.",
-  "creator": "Aristide-Michel Perrot",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/p862u7gt",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Varieties of mushrooms and edible fungi. Coloured mixed method engraving by A. M. Perrot after E. Hocquart and J. C. Perrot. Wellcome Collection (Public Domain Mark).",
-  "need": "ferns",
-  "background": "plain paper",
-  "notes": "Varieties of mushrooms and edible fungi, coloured engraving.",
-  "file": "archive/raw/water/wel-p862u7gt-mushrooms-engraving.jpg",
-  "px": [
-   3000,
-   2336
   ]
  },
  {
@@ -1074,7 +561,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Edible fungi: 19 species, including horse and field mushrooms (Agaricus), morels (Morchella and Helvella) and Boletus species. Coloured lithograph by A. Cornillon, ca. 1827, after Prieur. Wellcome Collection (Public Domain Mark).",
   "need": "ferns",
-  "background": "plain paper",
+  "background": "coloured",
   "notes": "1827 edible fungi, 19 species.",
   "file": "archive/raw/water/wel-dvkfqxzf-edible-fungi-1827.jpg",
   "px": [
@@ -1093,7 +580,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Bracken plants (Pteridium aquilinum): both young and old fronds. Watercolour. Wellcome Collection (Public Domain Mark).",
   "need": "ferns",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Watercolour bracken, both young (unfurling) and old fronds.",
   "file": "archive/raw/water/wel-gzgs6qm9-bracken-fiddleheads.jpg",
   "px": [
@@ -1112,7 +599,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Seven flowering plants, all named types of rush (Juncus species). Chromolithograph by W. Dickes & co., c. 1855. Wellcome Collection (Public Domain Mark).",
   "need": "reeds",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "1855 chromolithograph of seven rush species (Juncus).",
   "file": "archive/raw/water/wel-udu9s2d4-seven-rushes.jpg",
   "px": [
@@ -1131,7 +618,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Four flowering plants, including cuckoo-pint, sweet flag and two pondweeds. Chromolithograph by W. Dickes & co., c. 1855. Wellcome Collection (Public Domain Mark).",
   "need": "reeds",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "1855 four pond and marsh plants including sweet flag and pondweeds.",
   "file": "archive/raw/water/wel-d6gsbkk5-sweet-flag-pondweeds.jpg",
   "px": [
@@ -1150,31 +637,12 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Marsh marigold or kingcups (Caltha palustris): flowering stem. Watercolour. Wellcome Collection (Public Domain Mark).",
   "need": "reeds",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Watercolour marsh marigold (kingcup) flowering stem.",
   "file": "archive/raw/water/wel-a45nxv7n-marsh-marigold.jpg",
   "px": [
    1363,
    1928
-  ]
- },
- {
-  "id": "wel-wgcdzf7u-water-plantain",
-  "title": "Water plantain (Alisma flava): base of flowering stem with root and separate infructescence and floral segments. Coloured etching by M. Bouchard, 177-.",
-  "creator": "Bouchard, Magdalena; Bonelli, Giorgio",
-  "date": "n.d.",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/wgcdzf7u",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Water plantain (Alisma flava): base of flowering stem with root and separate infructescence and floral segments. Coloured etching by M. Bouchard, 177-. Wellcome Collection (Public Domain Mark).",
-  "need": "reeds",
-  "background": "plain paper",
-  "notes": "Water plantain base of flowering stem with root and seed.",
-  "file": "archive/raw/water/wel-wgcdzf7u-water-plantain.jpg",
-  "px": [
-   1191,
-   1896
   ]
  },
  {
@@ -1188,7 +656,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "A liliaceous plant: large flowering stem and clump of bulbs. Watercolour. Wellcome Collection (Public Domain Mark).",
   "need": "bulbs",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Watercolour liliaceous plant, large flowering stem and clump of bulbs.",
   "file": "archive/raw/water/wel-my97eq3j-lily-clump-of-bulbs.jpg",
   "px": [
@@ -1207,7 +675,7 @@
   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
   "attribution": "Barbados snowdrop (Zephyranthes tubispatha): flowering plant and floral segments. Coloured lithograph. Wellcome Collection (Public Domain Mark).",
   "need": "bulbs",
-  "background": "plain paper",
+  "background": "toned paper",
   "notes": "Barbados snowdrop (Zephyranthes) flowering plant and floral segments.",
   "file": "archive/raw/water/wel-nbgt3w8m-barbados-snowdrop.jpg",
   "px": [
@@ -1227,30 +695,11 @@
   "attribution": "John Fisk Allen; lithograph by William Sharp, Victoria regia, or, The great water lily of America, plate 1 (leaf growth stages), 1854. Internet Archive Book Images via Wikimedia Commons (Dutton and Wentworth, Boston). Public domain, via Wikimedia Commons.",
   "need": "pads",
   "background": "toned paper",
-  "notes": "Chromolithograph on cream ground: young Victoria leaves from tiny arrow-shaped to round pads, flat view, perfect easy cutout of each pad; weeks-of-growth stages.",
+  "notes": "Chromolithograph on cream ground: young Victoria leaves from tiny arrow-shaped to round pads, flat view, each pad is an easy separate cutout; shows weeks-of-growth stages. 1667x1269, below hero size; Wellcome Victoria plates are larger.",
   "file": "archive/raw/water/com-victoria-regia-pl1-leaf-stages.jpg",
   "px": [
    1667,
    1269
-  ]
- },
- {
-  "id": "com-victoria-regia-pl2-opening-white",
-  "title": "Victoria regia, or, The great water lily of America, plate 2 (first-night white flower)",
-  "creator": "John Fisk Allen; lithograph by William Sharp",
-  "date": "1854",
-  "institution": "Internet Archive Book Images via Wikimedia Commons (Dutton and Wentworth, Boston)",
-  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Victoria_regia%2C_or%2C_The_great_water_lily_of_America_%28Plate_2%29_%289100781610%29.jpg",
-  "license": "Public domain (Wikimedia Commons file page, PD-old)",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "John Fisk Allen; lithograph by William Sharp, Victoria regia, or, The great water lily of America, plate 2 (first-night white flower), 1854. Internet Archive Book Images via Wikimedia Commons (Dutton and Wentworth, Boston). Public domain, via Wikimedia Commons.",
-  "need": "lilies",
-  "background": "coloured",
-  "notes": "White flower from the side among pads and brown buds, water reflections painted in; paper margin; cutout needs the water wash removed.",
-  "file": "archive/raw/water/com-victoria-regia-pl2-opening-white.jpg",
-  "px": [
-   1748,
-   1342
   ]
  },
  {
@@ -1422,6 +871,215 @@
   "px": [
    2346,
    3281
+  ]
+ },
+ {
+  "id": "com-haeckel-basimycetes",
+  "title": "Basimycetes (Schwammpilze), Kunstformen der Natur",
+  "creator": "Ernst Haeckel; lithograph by Adolf Giltsch",
+  "date": "1904",
+  "institution": "Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Haeckel_Basimycetes.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Ernst Haeckel; lithograph by Adolf Giltsch, Basimycetes (Schwammpilze), Kunstformen der Natur, 1904. Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna). Public domain, via Wikimedia Commons.",
+  "need": "ferns",
+  "background": "dark",
+  "notes": "Black ground, grey-white lattice stinkhorns, egg-like pods and a veiled cap: already on dark so it can be used almost as is, or tinted; otherworldly fungi, monochrome. Downloaded as the 1920 px-wide Commons rendition because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-haeckel-basimycetes.jpg",
+  "px": [
+   1920,
+   2722
+  ]
+ },
+ {
+  "id": "com-haeckel-lichenes",
+  "title": "Lichenes (Flechten), Kunstformen der Natur",
+  "creator": "Ernst Haeckel; lithograph by Adolf Giltsch",
+  "date": "1904",
+  "institution": "Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Haeckel_Lichenes.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Ernst Haeckel; lithograph by Adolf Giltsch, Lichenes (Flechten), Kunstformen der Natur, 1904. Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna). Public domain, via Wikimedia Commons.",
+  "need": "ferns",
+  "background": "dark",
+  "notes": "Black ground, frilled lichens and cup-like fruiting bodies in grey-green: ground cover on stone, easy luminance key. Downloaded as the 1920 px-wide Commons rendition because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-haeckel-lichenes.jpg",
+  "px": [
+   1920,
+   2675
+  ]
+ },
+ {
+  "id": "com-haeckel-orchidae",
+  "title": "Orchidae, Kunstformen der Natur (plate 74)",
+  "creator": "Ernst Haeckel; lithograph by Adolf Giltsch",
+  "date": "1904",
+  "institution": "Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Haeckel_Orchidae.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Ernst Haeckel; lithograph by Adolf Giltsch, Orchidae, Kunstformen der Natur (plate 74), 1904. Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna). Public domain, via Wikimedia Commons.",
+  "need": "pods",
+  "background": "coloured",
+  "notes": "Dense colour bouquet of odd orchids (lady's slipper, cattleya) with leaves on a cream-green ground; blooms can be cut out one by one; otherworldly but pleasant. Downloaded as the 1920 px-wide Commons rendition because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-haeckel-orchidae.jpg",
+  "px": [
+   1920,
+   2704
+  ]
+ },
+ {
+  "id": "com-haeckel-nepenthaceae",
+  "title": "Nepenthaceae, Kunstformen der Natur (plate 62)",
+  "creator": "Ernst Haeckel; lithograph by Adolf Giltsch",
+  "date": "1904",
+  "institution": "Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Haeckel_Nepenthaceae.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Ernst Haeckel; lithograph by Adolf Giltsch, Nepenthaceae, Kunstformen der Natur (plate 62), 1904. Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna). Public domain, via Wikimedia Commons.",
+  "need": "pods",
+  "background": "plain paper",
+  "notes": "Pitcher plants with curling tendrils in pink, green and orange on cream paper: strange hanging pods, easy paper key, hero for the otherworldly pod need. Downloaded as the 1920 px-wide Commons rendition because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-haeckel-nepenthaceae.jpg",
+  "px": [
+   1920,
+   2752
+  ]
+ },
+ {
+  "id": "com-haeckel-filicinae",
+  "title": "Filicinae (Laubfarne), Kunstformen der Natur",
+  "creator": "Ernst Haeckel; lithograph by Adolf Giltsch",
+  "date": "1904",
+  "institution": "Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Haeckel_Filicinae.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Ernst Haeckel; lithograph by Adolf Giltsch, Filicinae (Laubfarne), Kunstformen der Natur, 1904. Wikimedia Commons (scan of Kunstformen der Natur, Bibliographisches Institut, Leipzig and Vienna). Public domain, via Wikimedia Commons.",
+  "need": "ferns",
+  "background": "toned paper",
+  "notes": "Monochrome green: a staghorn-like fern with curling fronds and sporangia clusters; pale green ground, easy luminance key, tint freely. Downloaded as the 1920 px-wide Commons rendition because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-haeckel-filicinae.jpg",
+  "px": [
+   1920,
+   2655
+  ]
+ },
+ {
+  "id": "com-florabatava-typha",
+  "title": "Typha latifolia (bulrush), Flora Batava vol. 10",
+  "creator": "Jan Kops and others, Flora Batava",
+  "date": "1800-1934 (series)",
+  "institution": "Scan of Flora Batava via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Typha_latifolia_%E2%80%94_Flora_Batava_%E2%80%94_Volume_v10.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Jan Kops and others, Flora Batava, Typha latifolia (bulrush), Flora Batava vol. 10, 1800-1934 (series). Scan of Flora Batava via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+  "need": "reeds",
+  "background": "plain paper",
+  "notes": "Hand-coloured plate: dark brown catkin, green sword leaves, pale sheath and rhizome on white paper; very easy cutout; the pond-edge hero for cattails. Downloaded as the 1920 px-wide Commons rendition (original 2136x2722) because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-florabatava-typha.jpg",
+  "px": [
+   1920,
+   2447
+  ]
+ },
+ {
+  "id": "com-florabatava-iris-pseudacorus",
+  "title": "Iris pseudacorus (yellow flag), Flora Batava vol. 5",
+  "creator": "Jan Kops and others, Flora Batava",
+  "date": "1800-1934 (series)",
+  "institution": "Scan of Flora Batava via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Iris_pseudacorus_%E2%80%94_Flora_Batava_%E2%80%94_Volume_v5.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Jan Kops and others, Flora Batava, Iris pseudacorus (yellow flag), Flora Batava vol. 5, 1800-1934 (series). Scan of Flora Batava via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+  "need": "reeds",
+  "background": "plain paper",
+  "notes": "Hand-coloured yellow flag iris with split seed pod, seeds and rhizome; saturated colour on white paper, easy cutout; also a pod source. Downloaded as the 1280 px-wide Commons rendition because the original file server was rate-limited; original is 1822x2468, so the 1920 px rendition is not available and the original is used.",
+  "file": "archive/raw/water/com-florabatava-iris-pseudacorus.jpg",
+  "px": [
+   1280,
+   1734
+  ]
+ },
+ {
+  "id": "com-florabatava-acorus",
+  "title": "Acorus calamus (sweet flag), Flora Batava vol. 7",
+  "creator": "Jan Kops and others, Flora Batava",
+  "date": "1800-1934 (series)",
+  "institution": "Scan of Flora Batava via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Acorus_calamus_%E2%80%94_Flora_Batava_%E2%80%94_Volume_v7.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Jan Kops and others, Flora Batava, Acorus calamus (sweet flag), Flora Batava vol. 7, 1800-1934 (series). Scan of Flora Batava via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+  "need": "reeds",
+  "background": "plain paper",
+  "notes": "Hand-coloured sweet flag: tall green blades, magenta leaf bases, yellow spadix and roots; clean white ground. Downloaded as the 1280 px-wide Commons rendition because the original file server was rate-limited; original is 1768x2604.",
+  "file": "archive/raw/water/com-florabatava-acorus.jpg",
+  "px": [
+   1280,
+   1885
+  ]
+ },
+ {
+  "id": "com-florabatava-nymphaea-alba",
+  "title": "Nymphaea alba (white water lily), Flora Batava vol. 7",
+  "creator": "Jan Kops and others, Flora Batava",
+  "date": "1800-1934 (series)",
+  "institution": "Scan of Flora Batava via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nymphaea_alba_%E2%80%94_Flora_Batava_%E2%80%94_Volume_v7.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Jan Kops and others, Flora Batava, Nymphaea alba (white water lily), Flora Batava vol. 7, 1800-1934 (series). Scan of Flora Batava via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+  "need": "lilies",
+  "background": "plain paper",
+  "notes": "White lily from the side with its large veined pad, petal, stamens and a seed capsule cross-section, white ground; white lily plus pod detail. Downloaded as the 1280 px-wide Commons rendition because the original file server was rate-limited; original is 1768x2604.",
+  "file": "archive/raw/water/com-florabatava-nymphaea-alba.jpg",
+  "px": [
+   1280,
+   1885
+  ]
+ },
+ {
+  "id": "com-florabatava-papaver-somniferum",
+  "title": "Papaver somniferum (opium poppy), Flora Batava vol. 12",
+  "creator": "Jan Kops and others, Flora Batava",
+  "date": "1800-1934 (series)",
+  "institution": "Scan of Flora Batava via Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Papaver_somniferum_%E2%80%94_Flora_Batava_%E2%80%94_Volume_v12.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Jan Kops and others, Flora Batava, Papaver somniferum (opium poppy), Flora Batava vol. 12, 1800-1934 (series). Scan of Flora Batava via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+  "need": "pods",
+  "background": "plain paper",
+  "notes": "Tall stem with pink poppy flower, a brown seed capsule and a cut capsule showing seeds; clean white ground; the capsule is small, crop in. Downloaded as the 1280 px-wide Commons rendition because the original file server was rate-limited; original is 1818x2822.",
+  "file": "archive/raw/water/com-florabatava-papaver-somniferum.jpg",
+  "px": [
+   1280,
+   1987
+  ]
+ },
+ {
+  "id": "com-botmag-nigella-damascena-1787",
+  "title": "Nigella damascena (love-in-a-mist), The Botanical Magazine plate 22",
+  "creator": "William Curtis (The Botanical Magazine, vol. 1)",
+  "date": "1787",
+  "institution": "Wikimedia Commons (scan of The Botanical Magazine)",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nigella_damascena_1787.jpg",
+  "license": "Public domain (Wikimedia Commons file page, PD-old)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "William Curtis (The Botanical Magazine, vol. 1), Nigella damascena (love-in-a-mist), The Botanical Magazine plate 22, 1787. Wikimedia Commons (scan of The Botanical Magazine). Public domain, via Wikimedia Commons.",
+  "need": "pods",
+  "background": "plain paper",
+  "notes": "Blue flower with feathery bracts plus a green spiky seed capsule on a tall stem, white ground; the horned capsule is the otherworldly part. Downloaded as the 1280 px-wide Commons rendition (original 1507x2935) because the original file server was rate-limited.",
+  "file": "archive/raw/water/com-botmag-nigella-damascena-1787.jpg",
+  "px": [
+   1280,
+   2493
   ]
  }
 ]

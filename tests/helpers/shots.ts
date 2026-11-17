@@ -11,6 +11,8 @@ export interface ShotDef {
   mode: 'garden' | 'herbario' | null;
   viewport: [number, number];
   t: number;
+  /** Place of the shot (garden.json shots.<id>.hash), appended to the URL; '#/' when unspecified. */
+  hash: string;
   refs: string[];
 }
 
@@ -22,7 +24,7 @@ interface Manifest {
 export function loadShots(root = resolve('.')): ShotDef[] {
   const m = JSON.parse(readFileSync(resolve(root, 'tests/shots.json'), 'utf8')) as Manifest;
   const gPath = resolve(root, 'content/garden.json');
-  const g = existsSync(gPath) ? (JSON.parse(readFileSync(gPath, 'utf8')) as { shots?: Record<string, { t?: number; viewport?: [number, number] }> }) : {};
+  const g = existsSync(gPath) ? (JSON.parse(readFileSync(gPath, 'utf8')) as { shots?: Record<string, { t?: number; hash?: string; viewport?: [number, number] }> }) : {};
   return Object.entries(m.shots).map(([id, s]) => {
     const o = g.shots?.[id];
     return {
@@ -32,6 +34,7 @@ export function loadShots(root = resolve('.')): ShotDef[] {
       mode: s.mode ?? null,
       viewport: o?.viewport ?? s.viewport ?? m.defaultViewport,
       t: o?.t ?? s.t,
+      hash: o?.hash ?? '#/',
       refs: s.refs,
     };
   });

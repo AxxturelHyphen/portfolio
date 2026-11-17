@@ -1,7 +1,8 @@
 /// <reference types="node" />
 // GPU-backed Chromium launch options, shared by the e2e config and the scripts (stills, perf, budgets).
-// Headed on the dev machine when a display exists (real GPU, real compositor), else headless with GPU flags.
-// JARDIN_HEADLESS=1 forces the headless path; JARDIN_HEADED=1 forces headed.
+// Headless with GPU flags by default (owner rule 2026-11-17: Hyprland tiles and resizes headed windows, so headed runs
+// get cropped or mis-sized; every run sets an explicit viewport). JARDIN_HEADED=1 opts into headed, and then the
+// caller must assert innerWidth and innerHeight equal the intended viewport before capturing.
 
 export type GpuMode = 'headed' | 'headless-gpu-flags';
 
@@ -19,9 +20,7 @@ export function hasDisplay(env: NodeJS.ProcessEnv = process.env): boolean {
 }
 
 export function gpuLaunch(env: NodeJS.ProcessEnv = process.env): GpuLaunch {
-  const forceHeadless = env['JARDIN_HEADLESS'] === '1';
-  const forceHeaded = env['JARDIN_HEADED'] === '1';
-  const headed = forceHeaded || (!forceHeadless && hasDisplay(env));
+  const headed = env['JARDIN_HEADED'] === '1' && env['JARDIN_HEADLESS'] !== '1' && hasDisplay(env);
   return headed
     ? { mode: 'headed', headless: false, args: ['--ignore-gpu-blocklist', '--enable-gpu-rasterization'] }
     : { mode: 'headless-gpu-flags', headless: true, args: GPU_FLAGS };

@@ -209,25 +209,6 @@
   "notes": "Wild rose with thorny cane, big arching leaves and hip; partly coloured (lower leaves line only). Thorny cane is clean. Cutout moderate."
  },
  {
-  "id": "wel_zgcw8bf4",
-  "title": "Burnet rose (Rosa spinosissima): flowering stem, fruit and seed. Coloured engraving after J. Sowerby, 1794.",
-  "creator": "James Sowerby",
-  "date": "1 July 1794",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/tsupquz8",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
-  "attribution": "James Sowerby, Burnet rose (Rosa spinosissima): flowering stem, fruit and seed. Coloured engraving after J. Sowerby, 1794. 1 July 1794. Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
-  "file": "archive/raw/roses/wel_zgcw8bf4.jpg",
-  "need": "climbing-roses",
-  "px": [
-   1164,
-   1890
-  ],
-  "background": "toned paper",
-  "notes": "Burnet rose, thorny cane with white blooms, tiny leaflets and a hip, partly coloured. Thorns very visible, good for rose wall canes. Cutout moderate."
- },
- {
   "id": "wel_etaatwun",
   "title": "English ivy (Hedera helix): stem with flowers, fruit and leaves. Coloured lithograph by W. G. Smith, c. 1863, after himself.",
   "creator": "Worthington George Smith",
@@ -321,25 +302,6 @@
   ],
   "background": "plain paper",
   "notes": "A single fern frond with fine spore dots, blue-green on plain paper. Cutout easy; ideal repeating curtain element."
- },
- {
-  "id": "wel_sm4fys3f",
-  "title": "Seven different clematis plants (Clematis species): flowering stems. Coloured lithograph.",
-  "creator": "Unknown",
-  "date": "",
-  "institution": "Wellcome Collection",
-  "sourceUrl": "https://wellcomecollection.org/works/jhz87nnq",
-  "license": "Public Domain Mark 1.0",
-  "licenseUrl": "https://creativecommons.org/share-your-work/public-domain/pdm/",
-  "attribution": "Unknown, Seven different clematis plants (Clematis species): flowering stems. Coloured lithograph. . Wellcome Collection (Wellcome Collection), Public Domain Mark 1.0.",
-  "file": "archive/raw/roses/wel_sm4fys3f.jpg",
-  "need": "ivy-climbers-ferns",
-  "px": [
-   2374,
-   3280
-  ],
-  "background": "toned paper",
-  "notes": "Seven clematis species on one plate with tendrils and hanging bells, coloured, with title lettering. Cutout moderate (dense plate, lettering)."
  },
  {
   "id": "wel_cq9tqxjj",
@@ -652,8 +614,8 @@
   "date": "1801",
   "institution": "Wikimedia Commons",
   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosa_multiflora_-_rosier_multiflore._(Rambler_Rose,_Multiflowered_Rose)_(NYPL_b14485031-1110813).tiff",
-  "license": "Public domain",
-  "licenseUrl": "",
+  "license": "Public domain (published 1801; Wikimedia Commons PD-old-100-expired)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/File:Rosa_multiflora_-_rosier_multiflore._(Rambler_Rose,_Multiflowered_Rose)_(NYPL_b14485031-1110813).tiff",
   "attribution": "Pierre-Joseph Redouté (figures), for Nouveau Duhamel (Veillard, Jaume Saint-Hilaire, Mirbel, Poiret, Loiseleur-Deslongchamps), Rosa multiflora - rosier multiflore (Rambler Rose, Multiflowered Rose), 1801. Wikimedia Commons, licensed Public domain (). Changes made: cut out and recoloured. https://commons.wikimedia.org/wiki/File:Rosa_multiflora_-_rosier_multiflore._(Rambler_Rose,_Multiflowered_Rose)_(NYPL_b14485031-1110813).tiff",
   "file": "archive/raw/roses/nypl_rosa_multiflora_rambler.jpg",
   "need": "climbing-roses",

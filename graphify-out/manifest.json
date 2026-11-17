@@ -1,0 +1,1257 @@
+{
+  "archive/sources/celestial.json": {
+    "mtime": 1794876098.544929,
+    "ast_hash": "2f73abed8b3d6391aff064526fa288a0",
+    "semantic_hash": ""
+  },
+  "archive/sources/garden.json": {
+    "mtime": 1794867488.9133496,
+    "ast_hash": "e318791fe4f345dd5333d7b576c0b56e",
+    "semantic_hash": ""
+  },
+  "archive/sources/roses.json": {
+    "mtime": 1794864967.2165053,
+    "ast_hash": "68e10db8686a41487f7b50c93c610d6d",
+    "semantic_hash": ""
+  },
+  "archive/sources/water.json": {
+    "mtime": 1794866618.2369072,
+    "ast_hash": "a0f854627abe8043ca4c907b477a5f2b",
+    "semantic_hash": ""
+  },
+  "content/profile.json": {
+    "mtime": 1794863297.6668258,
+    "ast_hash": "8e64a3ca58d764cf442f1c5168d3851a",
+    "semantic_hash": ""
+  },
+  "content/projects.json": {
+    "mtime": 1794863297.6658819,
+    "ast_hash": "0bde66dd471497b2727be67adc174902",
+    "semantic_hash": ""
+  },
+  "content/strings.json": {
+    "mtime": 1794875783.473424,
+    "ast_hash": "2d826bc955a4c26975b55e7ff15a4943",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1794865465.8029232,
+    "ast_hash": "d4a7357e64c7faa4284cc0ae7a16de3b",
+    "semantic_hash": ""
+  },
+  "scripts/assets.ts": {
+    "mtime": 1794865978.3762994,
+    "ast_hash": "cc6efb645ff3c34af2098a68a949a09d",
+    "semantic_hash": ""
+  },
+  "scripts/budgets.ts": {
+    "mtime": 1794864149.326498,
+    "ast_hash": "2df6b78a091f84488f063e4847ffcf4a",
+    "semantic_hash": ""
+  },
+  "scripts/check.mjs": {
+    "mtime": 1794863452.8995678,
+    "ast_hash": "003c9ae288b1dfd593b37effc25ec125",
+    "semantic_hash": ""
+  },
+  "scripts/compare.ts": {
+    "mtime": 1794864237.6314003,
+    "ast_hash": "690184d24a099d1ff8c61ef3d3d64232",
+    "semantic_hash": ""
+  },
+  "scripts/cvpdf.ts": {
+    "mtime": 1794864081.4428837,
+    "ast_hash": "e5dbb8cbd5615a6fb939d315be6a9dfe",
+    "semantic_hash": ""
+  },
+  "scripts/e2e.ts": {
+    "mtime": 1794863870.2705183,
+    "ast_hash": "84cf1b8c9806da41ade8cde382e05ca1",
+    "semantic_hash": ""
+  },
+  "scripts/fills.mjs": {
+    "mtime": 1794863452.8989217,
+    "ast_hash": "e223f80fddfd9a40c3f14cf46c9284ac",
+    "semantic_hash": ""
+  },
+  "scripts/licence-check.ts": {
+    "mtime": 1794902230.141241,
+    "ast_hash": "f413dc8311e9de454553d01aa53bed92",
+    "semantic_hash": ""
+  },
+  "scripts/perf.ts": {
+    "mtime": 1794896158.2807913,
+    "ast_hash": "e7d140ec3082e2c65f41b08f26fe9b59",
+    "semantic_hash": ""
+  },
+  "scripts/prerender.ts": {
+    "mtime": 1794863928.0158334,
+    "ast_hash": "45e557ad5bb64fc73c8b8cb2d4c1aba7",
+    "semantic_hash": ""
+  },
+  "scripts/stills.ts": {
+    "mtime": 1794864064.0316863,
+    "ast_hash": "b8fa87e8e30c50855c929f84ed8a52d0",
+    "semantic_hash": ""
+  },
+  "src/bench/tour.ts": {
+    "mtime": 1794895931.8313963,
+    "ast_hash": "fc312a0ebc294568cfd6151ec55797a9",
+    "semantic_hash": ""
+  },
+  "src/boot.inline.ts": {
+    "mtime": 1794863473.748844,
+    "ast_hash": "4d71a98924690ccec7de6d35f31f0376",
+    "semantic_hash": ""
+  },
+  "src/boot.ts": {
+    "mtime": 1794902092.605353,
+    "ast_hash": "6a569fa47b72fa8cf5ee45cf3ec9ba34",
+    "semantic_hash": ""
+  },
+  "src/content/herbario/case.ts": {
+    "mtime": 1794865172.9980915,
+    "ast_hash": "151dd3b56ef8ad9b5fb3b5ca12ce4aeb",
+    "semantic_hash": ""
+  },
+  "src/content/herbario/html.ts": {
+    "mtime": 1794863775.6956263,
+    "ast_hash": "240a30e9fb120c240c98c64aa14e6f2a",
+    "semantic_hash": ""
+  },
+  "src/content/herbario/template.ts": {
+    "mtime": 1794865172.9981654,
+    "ast_hash": "7cb49bd7334db5c42def74cd55016a83",
+    "semantic_hash": ""
+  },
+  "src/content/i18n.ts": {
+    "mtime": 1794863338.95772,
+    "ast_hash": "d5aa29ba16fc99aab4aaefafa141df62",
+    "semantic_hash": ""
+  },
+  "src/content/load.ts": {
+    "mtime": 1794875779.4355469,
+    "ast_hash": "6445b82de95ea48428d46b5c681e6070",
+    "semantic_hash": ""
+  },
+  "src/content/schema.ts": {
+    "mtime": 1794875802.4214933,
+    "ast_hash": "004e380a6672eef0e4519b95d6b675da",
+    "semantic_hash": ""
+  },
+  "src/core/debug.ts": {
+    "mtime": 1794865792.6526744,
+    "ast_hash": "94b0196064a5067938b83d4070a43208",
+    "semantic_hash": ""
+  },
+  "src/core/motion.ts": {
+    "mtime": 1794902202.4884381,
+    "ast_hash": "60e302e1d489334e86b5e1c99ef4a73e",
+    "semantic_hash": ""
+  },
+  "src/core/quality.ts": {
+    "mtime": 1794865738.6920877,
+    "ast_hash": "c9171d62bed16b9e50bcdf072fd825fd",
+    "semantic_hash": ""
+  },
+  "src/core/router.ts": {
+    "mtime": 1794865875.820676,
+    "ast_hash": "5af7f6517a6d75b2a66b77dcb3c3a780",
+    "semantic_hash": ""
+  },
+  "src/garden/index.ts": {
+    "mtime": 1794902216.8143828,
+    "ast_hash": "827be8e7755eab6a31d41c380c39b141",
+    "semantic_hash": ""
+  },
+  "src/types.ts": {
+    "mtime": 1794902104.161891,
+    "ast_hash": "088964f928839aa6947dc0add0dcc656",
+    "semantic_hash": ""
+  },
+  "src/ui/panel.ts": {
+    "mtime": 1794880821.3645518,
+    "ast_hash": "a4c8ca93efa21836bfef6e6a0bffb5e6",
+    "semantic_hash": ""
+  },
+  "src/ui/toggles.ts": {
+    "mtime": 1794902072.275131,
+    "ast_hash": "923d9e29924d8008ee7eb5b5f9c35294",
+    "semantic_hash": ""
+  },
+  "tests/e2e/01-open-close.spec.ts": {
+    "mtime": 1794882805.2476087,
+    "ast_hash": "b1f2d6d7d3c7a997fbcac321096bb0c3",
+    "semantic_hash": ""
+  },
+  "tests/e2e/02-deep-link.spec.ts": {
+    "mtime": 1794882715.2556198,
+    "ast_hash": "adab22385aa1a2e3dc734df194941e8d",
+    "semantic_hash": ""
+  },
+  "tests/e2e/03-history.spec.ts": {
+    "mtime": 1794882151.7604332,
+    "ast_hash": "638f932061f10d086050b5535bffdf84",
+    "semantic_hash": ""
+  },
+  "tests/e2e/04-travel.spec.ts": {
+    "mtime": 1794896083.4561398,
+    "ast_hash": "969b4a0d285129bed6a83989e8d5bd8e",
+    "semantic_hash": ""
+  },
+  "tests/e2e/05-mode-switch.spec.ts": {
+    "mtime": 1794882151.7605572,
+    "ast_hash": "b8a8a584f1dca26f2b926880cb9af3e1",
+    "semantic_hash": ""
+  },
+  "tests/e2e/06-keyboard.spec.ts": {
+    "mtime": 1794894093.0888822,
+    "ast_hash": "283521a623f3eee5c71fbb5fb6a3a5a9",
+    "semantic_hash": ""
+  },
+  "tests/e2e/07-fallbacks.spec.ts": {
+    "mtime": 1794882151.7606244,
+    "ast_hash": "140dbb714f1e462ef85c358e122c59a2",
+    "semantic_hash": ""
+  },
+  "tests/e2e/08-resize.spec.ts": {
+    "mtime": 1794894093.0887716,
+    "ast_hash": "e96cfcda15f04fc8980ad3a34b5df91e",
+    "semantic_hash": ""
+  },
+  "tests/e2e/09-soak.spec.ts": {
+    "mtime": 1794896083.456103,
+    "ast_hash": "120d9f6b295c20989d4449d378afc607",
+    "semantic_hash": ""
+  },
+  "tests/e2e/10-moth-grotto.spec.ts": {
+    "mtime": 1794882151.7607107,
+    "ast_hash": "d1063bb59809552fcf21c0e10ff4bfb4",
+    "semantic_hash": ""
+  },
+  "tests/helpers/build.ts": {
+    "mtime": 1794863691.9830847,
+    "ast_hash": "49591b93ff72605d6571fdaa0e850edb",
+    "semantic_hash": ""
+  },
+  "tests/helpers/frames.ts": {
+    "mtime": 1794863691.9837432,
+    "ast_hash": "1fc5dedb57de5e79738ac7f3e25b8a6a",
+    "semantic_hash": ""
+  },
+  "tests/helpers/gpu.ts": {
+    "mtime": 1794882844.1028945,
+    "ast_hash": "2d35f73a04db801acbd42b0d8bc138d4",
+    "semantic_hash": ""
+  },
+  "tests/helpers/jardin.ts": {
+    "mtime": 1794896083.4560199,
+    "ast_hash": "614e6a3bebc610c6512730597ce252dc",
+    "semantic_hash": ""
+  },
+  "tests/helpers/server.ts": {
+    "mtime": 1794863863.6693852,
+    "ast_hash": "7eb9ab63c133789e907482e7c609ebf8",
+    "semantic_hash": ""
+  },
+  "tests/helpers/shots.ts": {
+    "mtime": 1794863859.9136705,
+    "ast_hash": "07758ca1609f48ef3e64f41cfb887ec8",
+    "semantic_hash": ""
+  },
+  "tests/playwright.config.ts": {
+    "mtime": 1794875791.5888722,
+    "ast_hash": "415b922d41add7da8666217305c06c8c",
+    "semantic_hash": ""
+  },
+  "tests/reporter.ts": {
+    "mtime": 1794863753.0643265,
+    "ast_hash": "dd692ea9bd3e24c062221a9c7bbf1ede",
+    "semantic_hash": ""
+  },
+  "tests/shots.json": {
+    "mtime": 1794863859.9130971,
+    "ast_hash": "8ad3a993387ea3c6aabcbe13cdda3a4d",
+    "semantic_hash": ""
+  },
+  "tests/unit/frames.spec.ts": {
+    "mtime": 1794863859.914097,
+    "ast_hash": "ec49cc619631d76a1546ad26e062e74d",
+    "semantic_hash": ""
+  },
+  "tests/unit/rules.spec.ts": {
+    "mtime": 1794877604.67967,
+    "ast_hash": "edf9bf8abe8e68923a8b56dc2178fb85",
+    "semantic_hash": ""
+  },
+  "tests/unit/shots.spec.ts": {
+    "mtime": 1794863859.9146624,
+    "ast_hash": "ed8370425e9b93e554a15745ea108b13",
+    "semantic_hash": ""
+  },
+  "tests/unit/spine/motion.spec.ts": {
+    "mtime": 1794865317.2691417,
+    "ast_hash": "55bd2a4ea191fad269ccd593317a94a3",
+    "semantic_hash": ""
+  },
+  "tests/unit/tour.spec.ts": {
+    "mtime": 1794864191.5601099,
+    "ast_hash": "ab38ae382f8de880edd9747876462648",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1794863452.897538,
+    "ast_hash": "9806da5e5f2d4fc76b2132ea33d370fb",
+    "semantic_hash": ""
+  },
+  "vite.config.ts": {
+    "mtime": 1794865194.263435,
+    "ast_hash": "a2bb788356bb2a30926bd08e62a0e473",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1794865916.270123,
+    "ast_hash": "6248ea79eeaa52fcde531b103f2faa73",
+    "semantic_hash": ""
+  },
+  "public/fonts/LICENSES/Kalnia-OFL.txt": {
+    "mtime": 1794862787.3177865,
+    "ast_hash": "73a9aae4154293d5306130011bc9b019",
+    "semantic_hash": ""
+  },
+  "public/fonts/LICENSES/SchibstedGrotesk-OFL.txt": {
+    "mtime": 1794862787.3177047,
+    "ast_hash": "af34da0ad4b36b268b27c81d6248a4dc",
+    "semantic_hash": ""
+  },
+  "content/beds/estanque.json": {
+    "mtime": 1794865873.6994975,
+    "ast_hash": "200f69bf82668c846fc52e74c62f6796",
+    "semantic_hash": ""
+  },
+  "content/beds/gruta.json": {
+    "mtime": 1794865891.0169861,
+    "ast_hash": "b531dbd5c34cd1901fe087885f3d4371",
+    "semantic_hash": ""
+  },
+  "content/beds/puerta.json": {
+    "mtime": 1794865853.5001185,
+    "ast_hash": "f7c6a3fe490700721e6534ce83432282",
+    "semantic_hash": ""
+  },
+  "content/beds/rosaleda.json": {
+    "mtime": 1794865864.2497847,
+    "ast_hash": "6d180f64569828f0f6aeb871c66e53b9",
+    "semantic_hash": ""
+  },
+  "content/beds/semillero.json": {
+    "mtime": 1794865885.3341517,
+    "ast_hash": "d8600f02631b5ec2610d8701ad1abb82",
+    "semantic_hash": ""
+  },
+  "content/garden.json": {
+    "mtime": 1794865842.5124679,
+    "ast_hash": "babb821d6af7196076ff20bf55dea50e",
+    "semantic_hash": ""
+  },
+  "scripts/placeholder.ts": {
+    "mtime": 1794866110.3119223,
+    "ast_hash": "59c5ec96b0b7098d40c7c0925fde613a",
+    "semantic_hash": ""
+  },
+  "scripts/stages/common.ts": {
+    "mtime": 1794865861.402841,
+    "ast_hash": "e706ae1dbb3f064c81b405b32ddd0013",
+    "semantic_hash": ""
+  },
+  "scripts/stages/encode.ts": {
+    "mtime": 1794866310.159867,
+    "ast_hash": "0ae204a331ecdc6ae83435ba0db35fa4",
+    "semantic_hash": ""
+  },
+  "scripts/stages/merge.ts": {
+    "mtime": 1794897831.6898978,
+    "ast_hash": "6abdda44cf67d3ab7fa016693a0177c8",
+    "semantic_hash": ""
+  },
+  "scripts/stages/normal.ts": {
+    "mtime": 1794867830.3416667,
+    "ast_hash": "336520b47328ca46f723614397a5108e",
+    "semantic_hash": ""
+  },
+  "scripts/stages/pack.ts": {
+    "mtime": 1794865978.3762305,
+    "ast_hash": "60c01427e7297855f219b334509122ee",
+    "semantic_hash": ""
+  },
+  "scripts/stages/raster.ts": {
+    "mtime": 1794865736.7747164,
+    "ast_hash": "7373b3e8772846f7782801261ece879e",
+    "semantic_hash": ""
+  },
+  "scripts/stages/shapes.ts": {
+    "mtime": 1794865948.6692579,
+    "ast_hash": "98ee642ef5d05f69512a96c790f9bbd7",
+    "semantic_hash": ""
+  },
+  "src/core/clock.ts": {
+    "mtime": 1794865696.932954,
+    "ast_hash": "ecf50a114f99974915d416ff99b5160f",
+    "semantic_hash": ""
+  },
+  "src/core/input.ts": {
+    "mtime": 1794902104.161943,
+    "ast_hash": "de54d45137cd653be1ae4370b89b79dd",
+    "semantic_hash": ""
+  },
+  "src/core/loop.ts": {
+    "mtime": 1794881064.4931993,
+    "ast_hash": "ab7e308ba2a13edf5ad24fe0a65282f0",
+    "semantic_hash": ""
+  },
+  "src/core/machine.ts": {
+    "mtime": 1794897565.73674,
+    "ast_hash": "12d1e18133bca76e852fdd085907dc49",
+    "semantic_hash": ""
+  },
+  "src/core/spring.ts": {
+    "mtime": 1794879709.1821249,
+    "ast_hash": "cc27e1b9d20f0a47dff8ec10aea4c5b9",
+    "semantic_hash": ""
+  },
+  "src/core/testapi.ts": {
+    "mtime": 1794897763.550954,
+    "ast_hash": "b068349718438c84934c6ed1764c48be",
+    "semantic_hash": ""
+  },
+  "src/core/transitions.ts": {
+    "mtime": 1794902230.1367712,
+    "ast_hash": "c457b387110f27d6b97c2f5ff2bb6336",
+    "semantic_hash": ""
+  },
+  "src/gl/cutout.material.ts": {
+    "mtime": 1794865970.1846538,
+    "ast_hash": "c91e44e7d52500334d364f9fab965516",
+    "semantic_hash": ""
+  },
+  "src/gl/film.pass.ts": {
+    "mtime": 1794865872.0706625,
+    "ast_hash": "7ccbb1bb569d9f4a7889de6c425e10f6",
+    "semantic_hash": ""
+  },
+  "src/gl/halation.ts": {
+    "mtime": 1794865701.2647655,
+    "ast_hash": "636bbffb5815f71d95a993222ff11b63",
+    "semantic_hash": ""
+  },
+  "src/gl/instances.ts": {
+    "mtime": 1794865925.2828512,
+    "ast_hash": "4a3540a916c06c64cfae7d1f423dbc11",
+    "semantic_hash": ""
+  },
+  "src/gl/ktx2.ts": {
+    "mtime": 1794897668.7327263,
+    "ast_hash": "900c77f022715ca9615eebca0da0782f",
+    "semantic_hash": ""
+  },
+  "src/gl/renderer.ts": {
+    "mtime": 1794897472.9832706,
+    "ast_hash": "dce20c40ff234671319f580e7f62f27c",
+    "semantic_hash": ""
+  },
+  "src/gl/sky.ts": {
+    "mtime": 1794865925.2829125,
+    "ast_hash": "6f27da31ebd928cb6aff9a8b68dab957",
+    "semantic_hash": ""
+  },
+  "src/gl/targets.ts": {
+    "mtime": 1794865755.1885548,
+    "ast_hash": "3866df13472a8e978ee34d60b529a274",
+    "semantic_hash": ""
+  },
+  "src/ui/label.ts": {
+    "mtime": 1794865830.7327406,
+    "ast_hash": "4a1dc33ce76deca73f886f74fb4e3aee",
+    "semantic_hash": ""
+  },
+  "src/ui/proxies.ts": {
+    "mtime": 1794876685.815591,
+    "ast_hash": "4298d915d79ce810577946f270652c0f",
+    "semantic_hash": ""
+  },
+  "src/ui/xform.ts": {
+    "mtime": 1794865743.5610104,
+    "ast_hash": "74de5b2e7b72e1d2a212d851d0feace3",
+    "semantic_hash": ""
+  },
+  "src/world/behaviours/gruta.ts": {
+    "mtime": 1794897757.4709046,
+    "ast_hash": "1073050771b695b64126588a716036ff",
+    "semantic_hash": ""
+  },
+  "src/world/camera.ts": {
+    "mtime": 1794902148.0242844,
+    "ast_hash": "183781f3446aafa8ffcb222631373b4a",
+    "semantic_hash": ""
+  },
+  "src/world/flower.ts": {
+    "mtime": 1794877482.387652,
+    "ast_hash": "0859c4424166695d6d4ff300eabe1a80",
+    "semantic_hash": ""
+  },
+  "src/world/light.ts": {
+    "mtime": 1794865807.1752126,
+    "ast_hash": "6263da1c4b764072c3d90fa889e4c5ba",
+    "semantic_hash": ""
+  },
+  "src/world/moth.ts": {
+    "mtime": 1794865864.0137894,
+    "ast_hash": "bfecc889d5cf927281d44195426b69c7",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-cutout/cutout.spec.ts": {
+    "mtime": 1794865990.0188622,
+    "ast_hash": "30bc145d48e4e76ae0548cba2d727345",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-cutout/main.ts": {
+    "mtime": 1794865890.5484872,
+    "ast_hash": "bccba92c37653746e924bc24452169cd",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-cutout/placeholder.ts": {
+    "mtime": 1794865871.6045606,
+    "ast_hash": "80cb5df8064d3f0341308dffe56bfe2f",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-cutout/playwright.config.ts": {
+    "mtime": 1794865885.3776538,
+    "ast_hash": "a1d65fa753546add05b936f7b82f974e",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-cutout/vite.config.ts": {
+    "mtime": 1794865995.391528,
+    "ast_hash": "baf3864b85c1c25d44286637a1a77689",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-film/page.ts": {
+    "mtime": 1794865833.9531412,
+    "ast_hash": "2bb75d566981defb896c54442e1e6dd1",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-film/shoot.ts": {
+    "mtime": 1794865798.135965,
+    "ast_hash": "6df2e024495aea17674f00690ab6dffc",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-cutout/index.html": {
+    "mtime": 1794865925.2829568,
+    "ast_hash": "ae756c224c17d81dfe0cbdda5076b8ed",
+    "semantic_hash": ""
+  },
+  "tests/unit/gl-film/index.html": {
+    "mtime": 1794865754.0365994,
+    "ast_hash": "8846f01c224124f1671dc5c0024dd188",
+    "semantic_hash": ""
+  },
+  "content/beds/salida.json": {
+    "mtime": 1794865901.663681,
+    "ast_hash": "183d98b12e4ef17872865546e5ed9279",
+    "semantic_hash": ""
+  },
+  "public/basis/basis_transcoder.js": {
+    "mtime": 1794875927.5183058,
+    "ast_hash": "3acfda59c08cbb3875d1a4a5de3efa5a",
+    "semantic_hash": ""
+  },
+  "src/ui/mode.ts": {
+    "mtime": 1794865910.1524427,
+    "ast_hash": "9992ff974b9e58e73f9ec6ce1a651d3b",
+    "semantic_hash": ""
+  },
+  "src/world/scene.ts": {
+    "mtime": 1794866221.2860727,
+    "ast_hash": "9f25e18f5b3c0634db26b05837e07ada",
+    "semantic_hash": ""
+  },
+  "tests/unit/spine/channels.spec.ts": {
+    "mtime": 1794865938.0406904,
+    "ast_hash": "678ca58e857fa43a07f7ef9dcd516cfe",
+    "semantic_hash": ""
+  },
+  "tests/unit/spine/fixture.ts": {
+    "mtime": 1794897574.8355556,
+    "ast_hash": "be3466e409e0a6bfc0d3523fa421853c",
+    "semantic_hash": ""
+  },
+  "tests/unit/ui/toggles.spec.ts": {
+    "mtime": 1794865969.345794,
+    "ast_hash": "81bdffff18bdc140fcc5ba028b278bcf",
+    "semantic_hash": ""
+  },
+  "tests/unit/world-actors/actors.spec.ts": {
+    "mtime": 1794865952.9712214,
+    "ast_hash": "b0310730c84991f298c6a26a8173f9a3",
+    "semantic_hash": ""
+  },
+  "public/atlas/puerta.json": {
+    "mtime": 1794875935.1707814,
+    "ast_hash": "728861eee24c3181ef224c75c7280db7",
+    "semantic_hash": ""
+  },
+  "src/world/bed.ts": {
+    "mtime": 1794897757.462898,
+    "ast_hash": "9f9ddfc8b6c6f084ac497154c59cbfae",
+    "semantic_hash": ""
+  },
+  "tests/unit/spine/fuzz.spec.ts": {
+    "mtime": 1794866463.1139467,
+    "ast_hash": "fb85b75d3619b8e2f8462ecb94a8d9fe",
+    "semantic_hash": ""
+  },
+  "tests/unit/spine/machine.spec.ts": {
+    "mtime": 1794897589.506838,
+    "ast_hash": "90734bae99679eeba65a2adc5e367568",
+    "semantic_hash": ""
+  },
+  "tests/unit/spine/router.spec.ts": {
+    "mtime": 1794866323.0840476,
+    "ast_hash": "de7f67af1e2409a6055fed7534d28d14",
+    "semantic_hash": ""
+  },
+  "public/atlas/estanque.json": {
+    "mtime": 1794875935.7038145,
+    "ast_hash": "f1dd11510cdad4b998c50f9a03d9e204",
+    "semantic_hash": ""
+  },
+  "public/atlas/rosaleda.json": {
+    "mtime": 1794875935.4788003,
+    "ast_hash": "b98fb0f91e594ea350c14d661b722451",
+    "semantic_hash": ""
+  },
+  "public/atlas/semillero.json": {
+    "mtime": 1794875936.0598366,
+    "ast_hash": "0177ac701c2a58abe172150009c4c253",
+    "semantic_hash": ""
+  },
+  "tests/unit/runtime/runtime.spec.ts": {
+    "mtime": 1794865998.42921,
+    "ast_hash": "313a11422f032ffe8736f2cfb49cf958",
+    "semantic_hash": ""
+  },
+  "public/atlas/gruta.json": {
+    "mtime": 1794875936.258849,
+    "ast_hash": "9e772a31c40f2e623b29201e904d55ce",
+    "semantic_hash": ""
+  },
+  "public/atlas/overview.json": {
+    "mtime": 1794875936.6758747,
+    "ast_hash": "56678ce20f105f3b59884d100799235c",
+    "semantic_hash": ""
+  },
+  "public/atlas/salida.json": {
+    "mtime": 1794875936.644873,
+    "ast_hash": "6a2b2477832251a768c637c916a8972d",
+    "semantic_hash": ""
+  },
+  "public/atlas/shared.json": {
+    "mtime": 1794875936.6798751,
+    "ast_hash": "464934b3a01f9b9ddbfa825f5a572556",
+    "semantic_hash": ""
+  },
+  "archive/SOURCES.json": {
+    "mtime": 1794897831.8559701,
+    "ast_hash": "f85e6ff09209c79a73903abd07794320",
+    "semantic_hash": ""
+  },
+  "src/world/garden.ts": {
+    "mtime": 1794866132.5022054,
+    "ast_hash": "d6142a78bac5e39158316dbe9f18b75e",
+    "semantic_hash": ""
+  },
+  "src/world/residency.ts": {
+    "mtime": 1794902223.396953,
+    "ast_hash": "4eb99e5608d7239a9f258c57796bd332",
+    "semantic_hash": ""
+  },
+  "tests/unit/pipeline-placeholder/atlas.spec.ts": {
+    "mtime": 1794866185.1207166,
+    "ast_hash": "9b0994cf0eae257342c41d8ed3b31d6c",
+    "semantic_hash": ""
+  },
+  "tests/unit/pipeline-placeholder/stages.spec.ts": {
+    "mtime": 1794866197.9815266,
+    "ast_hash": "60b3b6faa1c62373538cfa9d356db1d4",
+    "semantic_hash": ""
+  },
+  "tests/unit/world-stream/residency.spec.ts": {
+    "mtime": 1794897688.0332277,
+    "ast_hash": "992dcfbd50a2fa3a17aae5bce1d57e99",
+    "semantic_hash": ""
+  },
+  "tests/unit/world-stream/scene.spec.ts": {
+    "mtime": 1794866186.1660483,
+    "ast_hash": "1a154e78aaedecb35ed4f243b88f6465",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/credits.json": {
+    "mtime": 1794867919.1118233,
+    "ast_hash": "add069533e9facf3487ab53ef345163e",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/report.json": {
+    "mtime": 1794868025.259452,
+    "ast_hash": "5bb27c69e85d4294451516cbe623b7a3",
+    "semantic_hash": ""
+  },
+  "archive/sources/birds.json": {
+    "mtime": 1794876386.9879253,
+    "ast_hash": "ceb6d44c1159e50d48ab5d57dd8b9b0c",
+    "semantic_hash": ""
+  },
+  "archive/sources/haeckel.json": {
+    "mtime": 1794867462.7529283,
+    "ast_hash": "becdeccc684a5e53c8242e08a552405c",
+    "semantic_hash": ""
+  },
+  "archive/sources/props.json": {
+    "mtime": 1794880597.4226284,
+    "ast_hash": "2bcca2b9ff78885bad245e2512aa78ae",
+    "semantic_hash": ""
+  },
+  "archive/sources/textures.json": {
+    "mtime": 1794867236.415794,
+    "ast_hash": "f1afca733609cc565d16e7a31f63b990",
+    "semantic_hash": ""
+  },
+  "scripts/py/matte.py": {
+    "mtime": 1794866915.6079016,
+    "ast_hash": "d0e3510267cae7a2fc9c9f185f490fe1",
+    "semantic_hash": ""
+  },
+  "scripts/stages/credits.ts": {
+    "mtime": 1794866937.3648956,
+    "ast_hash": "edeb9e1f45b5a6f284ab3c559bb2e887",
+    "semantic_hash": ""
+  },
+  "scripts/stages/cutout.ts": {
+    "mtime": 1794867507.3579543,
+    "ast_hash": "667a380cfcfe52068377dd25ab85bd1e",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/color.ts": {
+    "mtime": 1794866659.5805824,
+    "ast_hash": "bc85ff2e8cc553f21f2a83aa078f7449",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/image.ts": {
+    "mtime": 1794866958.7658734,
+    "ast_hash": "4f4d0a566399b4f1043f777b893124ee",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/matte.ts": {
+    "mtime": 1794866675.5645187,
+    "ast_hash": "ec454f1a3570df74ff081c3326d2a363",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/ml.ts": {
+    "mtime": 1794866702.463419,
+    "ast_hash": "37fb0911419c711587fcfe972961eb4f",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/morph.ts": {
+    "mtime": 1794866691.2054596,
+    "ast_hash": "b59d3f48cb8167e6e4cd3678f448e763",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/paper.ts": {
+    "mtime": 1794866641.9976566,
+    "ast_hash": "6edbb90d86e30fcedcac4667c4de103f",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/quality.ts": {
+    "mtime": 1794867678.236427,
+    "ast_hash": "796f3db65c445bf0c5374f584355b121",
+    "semantic_hash": ""
+  },
+  "scripts/stages/lib/sandbox.ts": {
+    "mtime": 1794867824.3512545,
+    "ast_hash": "88a22be59918243ab9348dc87f696f29",
+    "semantic_hash": ""
+  },
+  "scripts/stages/sprite.ts": {
+    "mtime": 1794867694.8795204,
+    "ast_hash": "112af7212730272af693958ef2f5d6ba",
+    "semantic_hash": ""
+  },
+  "scripts/stages/thumbs.ts": {
+    "mtime": 1794866927.7029066,
+    "ast_hash": "905009d30c142267e36987152cdc0e1a",
+    "semantic_hash": ""
+  },
+  "src/garden/film.ts": {
+    "mtime": 1794875865.7328598,
+    "ast_hash": "f0c6f5d09541963280fd8094134cca8d",
+    "semantic_hash": ""
+  },
+  "src/garden/label.ts": {
+    "mtime": 1794875874.3490045,
+    "ast_hash": "88bd54e113134366437a1ae150c1f6d2",
+    "semantic_hash": ""
+  },
+  "tests/unit/pipeline-stages/stages.spec.ts": {
+    "mtime": 1794867901.9418604,
+    "ast_hash": "eb4e555eeaeb760b3a597e09679d98eb",
+    "semantic_hash": ""
+  },
+  "scripts/py/requirements.txt": {
+    "mtime": 1794866919.0459173,
+    "ast_hash": "c8251950825d9a03b284bc4e2a9fdc25",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/butterfly-cramer-v1-n087.png": {
+    "mtime": 1794867973.2727618,
+    "ast_hash": "ed6c3f17c519111fdc3eda38798532bd",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/cma-118176-japanese-iris.png": {
+    "mtime": 1794867961.2421215,
+    "ast_hash": "e9188c05f7f3f824fb449d9da810e2f2",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/cma_1943_138.png": {
+    "mtime": 1794867946.213312,
+    "ast_hash": "1a4aef9a562127dd2d22230bc9b8bab1",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/cma_1959_14.png": {
+    "mtime": 1794867923.6830769,
+    "ast_hash": "be51e6f7de2872097f1db4a2e7eac438",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/cma_1965_291.png": {
+    "mtime": 1794867939.7199585,
+    "ast_hash": "7053c3bce256eced22ff553f87e2c432",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/com-paxton-nymphaea-rubra-98.png": {
+    "mtime": 1794867996.5289803,
+    "ast_hash": "4061066fbf08825fbd6a984e17fea715",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/haeckel_nepenthaceae.png": {
+    "mtime": 1794868023.400358,
+    "ast_hash": "025295e31ddcdf919e9131681842c73e",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/met-762064-fritillaria-imperialis.png": {
+    "mtime": 1794867967.1204352,
+    "ast_hash": "5b6279aba19303b14d22fa9a05a8a6a0",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/moth-huebner-v3-n014.png": {
+    "mtime": 1794867980.5901477,
+    "ast_hash": "76e3341521264816615ef51546d01e27",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/cut/wel-sabj375w-four-fern-fronds.png": {
+    "mtime": 1794868010.2096856,
+    "ast_hash": "b9844e97a0200b63d7875e7c35162216",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.0.png": {
+    "mtime": 1794867973.7587874,
+    "ast_hash": "b96070e5384880727e8f22f82425c56d",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.1.png": {
+    "mtime": 1794867973.9627984,
+    "ast_hash": "892f452584c9620a4653f9178dd43aa1",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.2.png": {
+    "mtime": 1794867974.1378076,
+    "ast_hash": "eeb65a8bd0ef4206510241e938461242",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.3.png": {
+    "mtime": 1794867974.674836,
+    "ast_hash": "25208a20a5791f119f1caa390f57d765",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.4.png": {
+    "mtime": 1794867974.9258492,
+    "ast_hash": "ab6e0a87c8ffd33d3acd0c147e4f8102",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.5.png": {
+    "mtime": 1794867975.0458555,
+    "ast_hash": "315d6f439631421fd8e6127ce4d211ec",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/butterfly-cramer-v1-n087.6.png": {
+    "mtime": 1794867975.2948687,
+    "ast_hash": "aca536ef1cf8ea140f81896ebe8cb0d4",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/cma-118176-japanese-iris.0.png": {
+    "mtime": 1794867962.092167,
+    "ast_hash": "c1e91e4f4a5f3d73206319382fb66505",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/cma_1943_138.0.png": {
+    "mtime": 1794867947.2023654,
+    "ast_hash": "b396812379045582b5b57e74e6262107",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/cma_1959_14.0.png": {
+    "mtime": 1794867924.657131,
+    "ast_hash": "6113f1bc406598ddc5f188532408e317",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/cma_1965_291.0.png": {
+    "mtime": 1794867940.7220132,
+    "ast_hash": "9e88188cb1499e7521ea7685cc18f8f2",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/com-paxton-nymphaea-rubra-98.0.png": {
+    "mtime": 1794867997.722042,
+    "ast_hash": "507d4c78863485de7feedfa35710e486",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/haeckel_nepenthaceae.0.png": {
+    "mtime": 1794868024.469412,
+    "ast_hash": "15e6c7c5d969eec76e05e341e1363609",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/met-762064-fritillaria-imperialis.0.png": {
+    "mtime": 1794867967.996482,
+    "ast_hash": "0c6151e516b01df0582b69c245f785a8",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/moth-huebner-v3-n014.0.png": {
+    "mtime": 1794867981.3011851,
+    "ast_hash": "8975bfa9bd7ba388c2bcb75f1023bdc3",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/moth-huebner-v3-n014.1.png": {
+    "mtime": 1794867981.7862108,
+    "ast_hash": "fdb0c9f12c791a038aa71769bd597e33",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/moth-huebner-v3-n014.2.png": {
+    "mtime": 1794867982.017223,
+    "ast_hash": "98b836a29855788ccb37fbfb400fd9e8",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/moth-huebner-v3-n014.3.png": {
+    "mtime": 1794867982.3582408,
+    "ast_hash": "b0a0c761fe9afac4b44d5b69c4782ea3",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/wel-sabj375w-four-fern-fronds.0.png": {
+    "mtime": 1794868010.626707,
+    "ast_hash": "a2d5b54601340dba4aec6fb1c750c1d1",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/wel-sabj375w-four-fern-fronds.1.png": {
+    "mtime": 1794868010.805716,
+    "ast_hash": "c51d11b4ee9efc0899630b00bc5242e4",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/wel-sabj375w-four-fern-fronds.2.png": {
+    "mtime": 1794868011.0307276,
+    "ast_hash": "b5d9effe32688516e26010e3cec2b896",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/normal/wel-sabj375w-four-fern-fronds.3.png": {
+    "mtime": 1794868011.1997364,
+    "ast_hash": "4565bdf2aca771e9eb3cf929699db438",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/butterfly-cramer-v1-n087.0.png": {
+    "mtime": 1794867973.864793,
+    "ast_hash": "5f1c5954291d245b511974efc57d1429",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/cma-118176-japanese-iris.0.png": {
+    "mtime": 1794867962.3041782,
+    "ast_hash": "9f815d2780a06619e1f349604fa25fb2",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/cma_1943_138.0.png": {
+    "mtime": 1794867947.4593794,
+    "ast_hash": "74e118a384eb6c21cfa647da7da3663d",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/cma_1959_14.0.png": {
+    "mtime": 1794867924.9854352,
+    "ast_hash": "423f5560a9c1dff383d0087522021141",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/cma_1965_291.0.png": {
+    "mtime": 1794867941.0370305,
+    "ast_hash": "3564f8e908ccff4a5c143dc6ad78a21e",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/com-paxton-nymphaea-rubra-98.0.png": {
+    "mtime": 1794867998.1670651,
+    "ast_hash": "09e7010e17e6dfd4ab93a28b4ba95602",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/haeckel_nepenthaceae.0.png": {
+    "mtime": 1794868024.7594268,
+    "ast_hash": "0a171d906db801efdc870e06007f9d57",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/met-762064-fritillaria-imperialis.0.png": {
+    "mtime": 1794867968.2474952,
+    "ast_hash": "e78ebecd8616454a988b9f72b99d33c0",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/moth-huebner-v3-n014.0.png": {
+    "mtime": 1794867981.5671992,
+    "ast_hash": "a5c82e01d552099b96e721bd2e063fe2",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/relit/wel-sabj375w-four-fern-fronds.0.png": {
+    "mtime": 1794868010.6837099,
+    "ast_hash": "5a22778841c270eb57c24a0780dae833",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sheet-cut.png": {
+    "mtime": 1794868025.6824734,
+    "ast_hash": "094948f3c5e9e0c3eee5c98e7bb6ac46",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sheet-edges.png": {
+    "mtime": 1794868026.0534923,
+    "ast_hash": "33001f3344ab5eedb66ef0d429baaffb",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sheet-normal.png": {
+    "mtime": 1794868026.5465171,
+    "ast_hash": "e7908d0fdc3991c68e39e0d10330c7c3",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sheet-relit.png": {
+    "mtime": 1794868027.074544,
+    "ast_hash": "7a5c525feff546f67a9be0cf87f05ab5",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.0.png": {
+    "mtime": 1794867973.6587822,
+    "ast_hash": "a2724855ee7724a55eb0e05e909b79cc",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.1.png": {
+    "mtime": 1794867973.9057953,
+    "ast_hash": "1d644e4feac453b2805f069fa134878e",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.2.png": {
+    "mtime": 1794867974.0458026,
+    "ast_hash": "71f8bd41be9f5869e4a46f137a2e00c7",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.3.png": {
+    "mtime": 1794867974.3508189,
+    "ast_hash": "6bd7490e635420dd4fbbb0471a2c3961",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.4.png": {
+    "mtime": 1794867974.7778413,
+    "ast_hash": "5dfef9570236a3f95edd98e5c1d52bc4",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.5.png": {
+    "mtime": 1794867974.9808521,
+    "ast_hash": "d7b2b598f7877ae222c1a8dc5017ae4a",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/butterfly-cramer-v1-n087.6.png": {
+    "mtime": 1794867975.1438608,
+    "ast_hash": "070bc297acd0ac45e1d5354c5504f183",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/cma-118176-japanese-iris.0.png": {
+    "mtime": 1794867961.8651547,
+    "ast_hash": "557d1b31b979aba6277b6240a27676d4",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/cma_1943_138.0.png": {
+    "mtime": 1794867946.9333508,
+    "ast_hash": "a016ab2e4742c35b57e0ae831230c209",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/cma_1959_14.0.png": {
+    "mtime": 1794867924.3131118,
+    "ast_hash": "6a0ce93cd8f0aa491b56aa7dcacb2b16",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/cma_1965_291.0.png": {
+    "mtime": 1794867940.3969955,
+    "ast_hash": "9530979f4cc2cd0ac0b1eb3d22241015",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/com-paxton-nymphaea-rubra-98.0.png": {
+    "mtime": 1794867997.2920198,
+    "ast_hash": "4f24eb0aa6669f5c88d7a686263ce18d",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/haeckel_nepenthaceae.0.png": {
+    "mtime": 1794868024.0563912,
+    "ast_hash": "0b5ecef47742ac3509705c8b6eff78bb",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/met-762064-fritillaria-imperialis.0.png": {
+    "mtime": 1794867967.734468,
+    "ast_hash": "ce0f3c484d59a8d0880bd132ec9448c4",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/moth-huebner-v3-n014.0.png": {
+    "mtime": 1794867981.0771735,
+    "ast_hash": "b1ca14e4f15001210b87c6f79710783f",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/moth-huebner-v3-n014.1.png": {
+    "mtime": 1794867981.6692045,
+    "ast_hash": "368d6b6b876de27fd043619c9f4d6e79",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/moth-huebner-v3-n014.2.png": {
+    "mtime": 1794867981.8932164,
+    "ast_hash": "387b2285bb635d00b62f9a19404df4f8",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/moth-huebner-v3-n014.3.png": {
+    "mtime": 1794867982.169231,
+    "ast_hash": "4c9661cf254bb8692b9ca17bbb332d38",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/wel-sabj375w-four-fern-fronds.0.png": {
+    "mtime": 1794868010.5667038,
+    "ast_hash": "7c70391c59226f4fcb764c0224ccb637",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/wel-sabj375w-four-fern-fronds.1.png": {
+    "mtime": 1794868010.7467132,
+    "ast_hash": "d95c6eca1861a0cf72ca238285637fac",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/wel-sabj375w-four-fern-fronds.2.png": {
+    "mtime": 1794868010.9077213,
+    "ast_hash": "ced1f42ef79da1b2ddd12203055161b5",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/sprite/wel-sabj375w-four-fern-fronds.3.png": {
+    "mtime": 1794868011.1267326,
+    "ast_hash": "48ddd3e1c9412ff7d7a400906519d9d9",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/butterfly-cramer-v1-n087.png": {
+    "mtime": 1794867975.526881,
+    "ast_hash": "f7b216ea5c7913aa16fec62e85d25e04",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/cma-118176-japanese-iris.png": {
+    "mtime": 1794867962.5351906,
+    "ast_hash": "203401b46d1fe04bfc23154a43915a21",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/cma_1943_138.png": {
+    "mtime": 1794867947.7173934,
+    "ast_hash": "e1c3a2685ff4df1650603c2f715a3ae4",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/cma_1959_14.png": {
+    "mtime": 1794867925.2391632,
+    "ast_hash": "b7596e6194bcd70005c31a29814ca653",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/cma_1965_291.png": {
+    "mtime": 1794867941.2790437,
+    "ast_hash": "89f663e10d9d3a62e4e652b6a5dbd4ad",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/com-paxton-nymphaea-rubra-98.png": {
+    "mtime": 1794867998.4600804,
+    "ast_hash": "0dd8bf19d6e4baf6403f377a6ac2ffaa",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/haeckel_nepenthaceae.png": {
+    "mtime": 1794868025.1164448,
+    "ast_hash": "6d22e0e1fc9bb129020da2eba6948358",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/met-762064-fritillaria-imperialis.png": {
+    "mtime": 1794867968.489508,
+    "ast_hash": "a6a84436d787ad8fa7cb0e2e1524646a",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/moth-huebner-v3-n014.png": {
+    "mtime": 1794867982.5482507,
+    "ast_hash": "908433cad00bea4b727722a126a4c1d0",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/view/wel-sabj375w-four-fern-fronds.png": {
+    "mtime": 1794868011.4547493,
+    "ast_hash": "3ba2b0d7f9c584de7b95d6bceb769e5d",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/butterfly-cramer-v1-n087.png": {
+    "mtime": 1794867975.6358867,
+    "ast_hash": "03a23f593ca5e256a971a36234fe846b",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/cma-118176-japanese-iris.png": {
+    "mtime": 1794867962.6581972,
+    "ast_hash": "dd37782f3a9184622e74070307d5292f",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/cma_1943_138.png": {
+    "mtime": 1794867947.8103983,
+    "ast_hash": "39fbe5ecffdf0a6aad43552d73c26591",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/cma_1959_14.png": {
+    "mtime": 1794867925.3306053,
+    "ast_hash": "e2d1145530ba22496a7e22bece7485ff",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/cma_1965_291.png": {
+    "mtime": 1794867941.3890495,
+    "ast_hash": "4e196e361cb052e474a41f9c06e54879",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/com-paxton-nymphaea-rubra-98.png": {
+    "mtime": 1794867998.6050878,
+    "ast_hash": "27731accc98f23d5879404f6a2158c02",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/haeckel_nepenthaceae.png": {
+    "mtime": 1794868025.257452,
+    "ast_hash": "6be6e78ab0b4ca6800ebb439bc8b647a",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/met-762064-fritillaria-imperialis.png": {
+    "mtime": 1794867968.5775127,
+    "ast_hash": "3619bb9e3ba79baad75db2d221ee9b9e",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/moth-huebner-v3-n014.png": {
+    "mtime": 1794867982.6392555,
+    "ast_hash": "25bece32fc3249ae0953a6656f49acfd",
+    "semantic_hash": ""
+  },
+  ".tmp/pipeline-test/zoom/wel-sabj375w-four-fern-fronds.png": {
+    "mtime": 1794868011.5487542,
+    "ast_hash": "3db46804979253ffa87a9e079d2fce2d",
+    "semantic_hash": ""
+  },
+  "archive/sources/rescout.json": {
+    "mtime": 1794897325.9088483,
+    "ast_hash": "a10dd35d48eaac00af262ae5804ef928",
+    "semantic_hash": ""
+  }
+}

@@ -2,13 +2,14 @@ import { checkBudget, recordFrames } from '../helpers/frames.ts';
 import { expect, isLow, test } from '../helpers/jardin.ts';
 
 // Flow 4: travel through every bed and back to the overview: textures stream, memory returns to baseline after
-// leaving, no new shader program after ready (ARCH section 6, risk 1). Garden only: fixme until P1 wires the garden.
+// leaving, no new shader program after ready (ARCH section 6, risk 1). Garden only.
 
 const BEDS = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'] as const;
 
-test.fixme('flow 4 garden: travel through every bed and back, streaming and memory return to baseline', async ({ page, jardin, tierOpt }) => {
+test('flow 4 garden: travel through every bed and back, streaming and memory return to baseline', async ({ page, jardin, tierOpt }) => {
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/', true);
+  await jardin.longTasksAfterReady(); // stamps the end of load
   const base = await jardin.withApi((api) => ({ tex: api.info().texBytes, programs: api.info().programs, heap: api.heapMB() }));
   const texBudgetMB = isLow(tierOpt) ? 48 : 128;
   const worst = { over25: 0, over50: 0, max: 0 };
@@ -27,5 +28,6 @@ test.fixme('flow 4 garden: travel through every bed and back, streaming and memo
   await page.waitForTimeout(2500); // dispose of neighbours is lazy
   const end = await jardin.withApi((api) => ({ tex: api.info().texBytes, res: api.residency() }));
   expect(Object.values(end.res).filter((s) => s === 'active')).toHaveLength(0);
+  expect(await jardin.longTasksAfterReady(), 'long tasks over 100 ms while streaming beds').toEqual([]);
   expect(end.tex, 'texture bytes back to baseline after leaving').toBeLessThanOrEqual(base.tex * 1.1 + 2 ** 20);
 });

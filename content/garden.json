@@ -1,0 +1,21 @@
+{
+  "order": ["puerta", "rosaleda", "estanque", "semillero", "gruta", "salida"],
+  "anchors": { "puerta": 0, "rosaleda": 10, "estanque": 20, "semillero": 30, "gruta": 33.5, "salida": 42 },
+  "grutaHost": "semillero",
+  "overview": { "x": 21, "y": 2.2, "z": 15, "pitch": -6, "fov": 46.4 },
+  "pan": [0, 42],
+  "shots": {
+    "S01": { "hash": "#/", "t": 1.1 },
+    "S02": { "hash": "#/", "t": 12.5, "pose": { "x": 21, "y": 2.2, "z": 15, "pitch": -6, "fov": 46.4 } },
+    "S03": { "hash": "#/b/rosaleda", "t": 12.5, "pose": { "x": 10.48, "y": 1.5, "z": 6.2, "pitch": 4, "fov": 16.1 } },
+    "S04": { "hash": "#/b/estanque", "t": 12.5, "pose": { "x": 19.34, "y": 0.6, "z": 1.5, "pitch": 0, "fov": 27 } },
+    "S05": { "hash": "#/b/semillero", "t": 12.5, "pose": { "x": 30.16, "y": 1.89, "z": 4.2, "pitch": -10, "fov": 13.7 } },
+    "S06": { "hash": "#/b/puerta", "t": 12.5, "pose": { "x": 0.89, "y": 1.5, "z": 1.27, "pitch": 0, "fov": 33.4 } },
+    "S07": { "hash": "#/b/salida", "t": 12.5, "pose": { "x": 42.36, "y": 1.2, "z": 2.8, "pitch": 8, "fov": 37.8 } },
+    "S08": { "hash": "#/b/rosaleda", "t": 12.5, "pose": { "x": 11.39, "y": 1.6, "z": 4.3, "pitch": 4, "fov": 16.1 } },
+    "S09": { "hash": "#/p/garagic", "t": 12.5 },
+    "S10": { "hash": "#/", "t": 12.5 },
+    "S11": { "hash": "#/b/rosaleda", "t": 12.5, "viewport": [390, 844], "pose": { "x": 11.21, "y": 1.6, "z": 5.4, "pitch": 0, "fov": 46.4 } },
+    "S12": { "hash": "#/b/gruta", "t": 12.5, "pose": { "x": 33.5, "y": 0.4, "z": -6.5, "pitch": -5, "fov": 22.6 } }
+  }
+}

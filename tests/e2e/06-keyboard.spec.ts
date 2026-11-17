@@ -1,7 +1,7 @@
 import { expect, PROJECTS, SEL, test } from '../helpers/jardin.ts';
 
 // Flow 6: keyboard only. Herbario: toggles, project, panel reachable, Esc backs out one level and focus returns.
-// Garden: overview, beds, flowers, panel, Herbario reachable (fixme until P1).
+// Garden: overview, beds, flowers, panel, Herbario reachable.
 
 test('flow 6 herbario: toggles are reachable by Tab', async ({ page, jardin }) => {
   await jardin.visit();
@@ -44,7 +44,7 @@ test('flow 6 herbario: Esc with nothing open does nothing and breaks nothing', a
   expect(await jardin.hash()).toBe('#/');
 });
 
-test.fixme('flow 6 garden: overview, beds, flowers, panel and Herbario by keyboard, Esc backs out one level', async ({ page, jardin }) => {
+test('flow 6 garden: overview, beds, flowers, panel and Herbario by keyboard, Esc backs out one level', async ({ page, jardin }) => {
   const first = PROJECTS[0];
   if (first === undefined) return;
   await jardin.visit({ mode: 'garden' });
@@ -60,7 +60,10 @@ test.fixme('flow 6 garden: overview, beds, flowers, panel and Herbario by keyboa
   await page.keyboard.press('Enter'); // View
   await jardin.settled();
   expect(await phase()).toBe('inspect');
-  await page.keyboard.press('Escape'); // one level: panel to bed
+  await page.keyboard.press('Escape'); // one level: panel to the flower (closing returns focus to it)
+  await jardin.settled();
+  expect(await phase()).toBe('focus');
+  await page.keyboard.press('Escape'); // one level: flower to bed
   await jardin.settled();
   expect(await phase()).toBe('bed');
   await page.keyboard.press('Escape'); // one level: bed to overview

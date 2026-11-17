@@ -1,0 +1,264 @@
+/**
+ * Every duration, spring constant and channel mapping of the site (cook/MOTION.md sections B and D), plus the pure
+ * easing and critically damped spring math. Seconds unless the name says otherwise. No three, no DOM, no allocation
+ * in any function meant for frame code: mappings write into caller-owned `out` objects.
+ */
+
+// Springs and easing
+
+/** Critically damped spring: time to 99 % = 6.64 / omega, to 90 % = 3.89 / omega (MOTION B). */
+export const SPRING_99 = 6.64;
+/** A spring is settled when within 0.1 % of its target and slower than 0.1 % per second (MOTION D). */
+export const SETTLE_EPS = 0.001;
+export const SETTLE_VEL = 0.001;
+
+export const omegaFor = (durationS: number): number => SPRING_99 / durationS;
+const omegaToDuration = (omega: number): number => SPRING_99 / omega;
+
+/** Mutable spring state, owned by the caller (one per channel). */
+export interface SpringState { x: number; v: number }
+
+/**
+ * Advances a critically damped spring toward `target` by `dt` in closed form (exact for any dt, no substeps):
+ * x(t) = target + (e + (v0 + w e) t) exp(-w t), with e = x0 - target. Writes into `s`; returns true when settled.
+ */
+export function springStep(s: SpringState, target: number, omega: number, dt: number): boolean {
+  const e = s.x - target;
+  const k = s.v + omega * e;
+  const decay = Math.exp(-omega * dt);
+  s.x = target + (e + k * dt) * decay;
+  s.v = (s.v - omega * k * dt) * decay;
+  if (Math.abs(s.x - target) < SETTLE_EPS && Math.abs(s.v) < SETTLE_VEL) {
+    s.x = target;
+    s.v = 0;
+    return true;
+  }
+  return false;
+}
+
+/** Exponential follower (cursor light, zoom, moth): frame-rate independent, never overshoots. */
+export const follow = (current: number, target: number, tauS: number, dt: number): number =>
+  target + (current - target) * Math.exp(-dt / tauS);
+
+export const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
+
+/** CSS-style cubic-bezier(x1, y1, x2, y2) as a function of x in 0..1. Build once at module level, call per frame. */
+export function cubicBezier(x1: number, y1: number, x2: number, y2: number): (x: number) => number {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sampleX = (t: number): number => ((ax * t + bx) * t + cx) * t;
+  const slopeX = (t: number): number => (3 * ax * t + 2 * bx) * t + cx;
+  return (x: number): number => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const d = sampleX(t) - x;
+      if (Math.abs(d) < 1e-6) break;
+      const sl = slopeX(t);
+      if (Math.abs(sl) < 1e-6) break;
+      t -= d / sl;
+    }
+    let lo = 0, hi = 1;
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
+    for (let i = 0; i < 20 && Math.abs(sampleX(t) - x) > 1e-6; i++) {
+      if (sampleX(t) < x) lo = t; else hi = t;
+      t = (lo + hi) / 2;
+    }
+    return ((ay * t + by) * t + cy) * t;
+  };
+}
+
+/** V03 settle fit: the one ease-out of the site (UI, label, panel, travel dip, scripted tours). */
+export const EASE_OUT = cubicBezier(0.27, 0.82, 0.62, 1);
+/** A critically damped spring from rest drawn as a tween (rms 0.4 %). */
+export const EASE_SPRING = cubicBezier(0.22, 0.17, 0.19, 1);
+export const linear = (x: number): number => x;
+
+// Stepped clock (content only; never camera, UI or channels)
+
+export const STEP_FPS = 12;
+export const STEP_HOLD_S = 1 / STEP_FPS;
+
+// UI (DOM: transform and opacity only)
+
+export const UI = {
+  hoverS: 0.2,
+  pressS: 0.1,
+  pressScale: 0.98,
+  chipS: 0.2,
+  chipStaggerS: 0.04,
+  chipsMax: 3,
+  labelInS: 0.32,
+  labelDelayS: 0.12,
+  labelOutS: 0.2,
+  labelRisePx: 8,
+  panelOpenS: 0.42,
+  panelCloseS: 0.3,
+  panelSectionStaggerS: 0.03,
+  flowerTurnS: 0.28,
+} as const;
+
+// Camera springs (durations; omega = omegaFor(duration))
+
+export const CAMERA = {
+  focusNudgeS: 0.6,
+  viewEaseInS: 0.9,
+  dollyS: 1.0,
+  travelS: 1.4,
+  travelPerBedS: 0.1,
+  travelMaxS: 1.6,
+  leanS: 0.25,
+  leanBedFraction: 0.02,
+  flingS: omegaToDuration(4.7),
+  rubberBandFraction: 0.04,
+  rubberBandS: omegaToDuration(11),
+  zoomTauS: 0.08,
+} as const;
+
+/** Travel over n beds: min(1.6, 1.4 + 0.1 (n - 1)) s. */
+export const travelS = (beds: number): number =>
+  Math.min(CAMERA.travelMaxS, CAMERA.travelS + CAMERA.travelPerBedS * Math.max(0, beds - 1));
+
+/** Travel accent: one slow exposure dip centred at 42 % of the move. Not flicker; off under reduced motion. */
+export const TRAVEL_DIP = { at: 0.42, downS: 0.24, upS: 0.35, depth: 0.12 } as const;
+
+/** Exposure multiplier (1 = none) at `elapsedS` into a move of `moveS`. */
+export function travelDipOf(elapsedS: number, moveS: number, reduced: boolean): number {
+  if (reduced) return 1;
+  const centre = TRAVEL_DIP.at * moveS;
+  const d = elapsedS < centre
+    ? 1 - EASE_OUT(clamp01((elapsedS - (centre - TRAVEL_DIP.downS)) / TRAVEL_DIP.downS))
+    : EASE_OUT(clamp01((elapsedS - centre) / TRAVEL_DIP.upS));
+  return 1 - TRAVEL_DIP.depth * (1 - d);
+}
+
+// Iris, open channel, push, panel
+
+/** Close / hold / open of the iris around a flower (springs omega 17.5 and 14.4). */
+export const IRIS = { closeS: 0.38, holdS: 0.08, openS: 0.46, introOutS: 0.5, openRadius: 1.2, feather: 0.015 } as const;
+
+/** The open channel: 0 garden, 0.5 iris shut (panel swap), 1 panel shown. */
+export const OPEN_HALF = 0.5;
+/** The iris counts as shut within this of OPEN_HALF (99 % of a half leg); the hold starts there. */
+export const OPEN_HALF_NEAR = 0.005;
+
+/** Anything with x, y, z, w (three's Vector4 fits). */
+export interface Vec4Out { x: number; y: number; z: number; w: number }
+
+/**
+ * uIris from ch.open: closes around the flower for open 0..0.5 and reopens for 0.5..1.
+ * cx, cy: flower centre in 0..1 of the screen (y up); aspect = width / height. Radius in screen heights.
+ */
+export function irisOf(open: number, cx: number, cy: number, aspect: number, out: Vec4Out): Vec4Out {
+  const dx = (cx > 0.5 ? cx : 1 - cx) * aspect;
+  const dy = cy > 0.5 ? cy : 1 - cy;
+  const full = Math.max(IRIS.openRadius, Math.sqrt(dx * dx + dy * dy) * 1.02);
+  const shut = open <= OPEN_HALF ? clamp01(open / OPEN_HALF) : clamp01((1 - open) / OPEN_HALF);
+  const r = full * (1 - shut);
+  out.x = cx;
+  out.y = cy;
+  out.z = r;
+  out.w = Math.max(0.002, r * IRIS.feather);
+  return out;
+}
+
+/** Camera push toward the slot, 0..1: front-loaded so the camera leads the iris, held while the panel is shown. */
+export const pushOf = (open: number): number => {
+  const u = clamp01(open / OPEN_HALF);
+  return 1 - (1 - u) * (1 - u);
+};
+
+/** Panel progress 0..1 (transform and opacity): the panel appears only on the reopening half. */
+export const panelOf = (open: number): number => EASE_OUT(clamp01((open - OPEN_HALF) / OPEN_HALF));
+
+// Film strip during travel
+
+export const STRIP = { barWidth: 0.03, sprocket: 1 } as const;
+
+/** uStrip from ch.leg over `hops` beds: frame offset -1..1 at bed boundaries, bar width, sprocket amount, enabled. */
+export function stripOf(leg: number, hops: number, out: Vec4Out): Vec4Out {
+  const moving = leg > 0 && leg < 1 && hops > 0;
+  const pos = leg * hops;
+  out.x = moving ? (pos - Math.round(pos)) * 2 : 0;
+  out.y = STRIP.barWidth;
+  out.z = moving ? STRIP.sprocket : 0;
+  out.w = moving ? 1 : 0;
+  return out;
+}
+
+// Mode switch: canvas exposure down, then the DOM cross-fade, no overlap
+
+export const MODE = { totalS: 0.45, canvasDownS: 0.2, domUpS: 0.25 } as const;
+
+/** Canvas exposure 1..0 for mode progress p (0 garden, 1 herbario) on a linear 450 ms tween. */
+export const modeCanvasOf = (p: number): number => 1 - EASE_OUT(clamp01(p * MODE.totalS / MODE.canvasDownS));
+/** Herbario layer opacity 0..1 for the same p. */
+export const modeDomOf = (p: number): number =>
+  EASE_OUT(clamp01((p * MODE.totalS - MODE.canvasDownS) / MODE.domUpS));
+
+// Content animation on the 12 fps clock
+
+/** Bloom openness per pose (u^2.6 rush plus a three-pose landing). */
+export const BLOOM_POSES: readonly number[] = [0, 0.01, 0.04, 0.11, 0.23, 0.41, 0.65, 0.87, 0.97, 1];
+export const BLOOM = { openS: 0.75, closeS: 0.375, startDelayTicks: 1 } as const;
+export const PEACOCK = { openS: 1.5, openPoses: 18, closeS: 0.9, closePoses: 11, featherStagger: 4, outerTrailPoses: 4 } as const;
+export const SUNDIAL = { spinUpS: 0.6, stepPerSector: 1.083, spinDownS: 1.1, hubOffset: 0.01 } as const;
+
+/** Bloom openness at pose index i (clamped to the table). */
+export const bloomAt = (i: number): number => BLOOM_POSES[i < 0 ? 0 : i >= BLOOM_POSES.length ? BLOOM_POSES.length - 1 : i] ?? 1;
+
+// Light, creatures
+
+export const LIGHT = { cursorTauS: 0.08, gatherInS: 0.4, gatherOutTauS: 0.35, swellSpeedPxS: 800, swell: 0.06, swellRelaxS: 0.4, idleDriftPeriodS: 20, idleDriftAmp: 0.03 } as const;
+export const MOTH = { tauS: 0.45, lead: 0.12, flapsPerS: 3, glideFlapsPerS: 1.5, posesPerFlap: 4, landAfterS: 1.2, landOpenPoses: 6, avoidPx: 96, introS: 0.5 } as const;
+export const FIREFLY = { inS: 0.4, outS: 1.1 } as const;
+
+// Intro (3 s): fade up, kaleidoscope turn, iris-out, moth
+
+export const INTRO = {
+  totalS: 3.0,
+  fadeUp: [0, 0.3],
+  turn: [0, 2.2],
+  irisOut: [2.2, 2.7],
+  moth: [2.5, 3.0],
+  beatS: 0.5,
+  turnDegPerStep: 2.5,
+  hubOrbit: 0.01,
+  skipS: 0.3,
+} as const;
+
+// Film pass motion (flicker under 3 percent and under 2.5 Hz)
+
+export const FILM = { weaveRms: 0.0003, weaveClamp: 0.001, flickerRms: 0.005, flickerClamp: 0.012, flickerMaxHz: 2.5, halationLagS: 0.1, scratchMinGapS: 6, scratchTicks: 2 } as const;
+
+// Streaming: a bed fades in after its hidden warm draw; load work runs in slices of at most sliceMs per frame
+
+/** Streaming: reveal, per-frame budget, and the retry of a failed bed (backoff doubles from retryMs, gives up after maxFails). */
+export const STREAM = { revealS: 0.4, sliceMs: 4, uploadsPerFrame: 1, retryMs: 1000, maxFails: 3 } as const;
+
+/**
+ * Label card progress 0..1 after `elapsedS` since the focus changed: in after a delay (EASE_OUT), out at once.
+ * Opacity plus a small rise; the caller restarts elapsedS on every focus change.
+ */
+export function labelOf(elapsedS: number, focused: boolean): number {
+  return focused
+    ? EASE_OUT(clamp01((elapsedS - UI.labelDelayS) / UI.labelInS))
+    : 1 - EASE_OUT(clamp01(elapsedS / UI.labelOutS));
+}
+
+// Reduced motion
+
+export const REDUCED = { travelFadeS: 0.3, bloomFadeS: 0.2 } as const;
+
+// Channel drivers (cook/ARCH.md 2.1): spring durations, or the tween length for intro and mode
+
+export const CHANNEL_S = {
+  intro: INTRO.totalS,
+  dolly: CAMERA.dollyS,
+  leg: CAMERA.travelS,
+  focus: LIGHT.gatherInS,
+  openClose: IRIS.closeS,
+  openReveal: IRIS.openS,
+  mode: MODE.totalS,
+} as const;

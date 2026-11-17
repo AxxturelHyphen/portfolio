@@ -6,7 +6,9 @@
 //  1. Owner's own file: declared in archive/OWN.json. Accepted shapes: ["path", ...], [{file, note}], {own:[...]} or
 //     {files:[...]}. A path may end with * (prefix match). Paths are repo relative; dist/x counts as public/x.
 //  2. Atlas page: named by a public/atlas/<id>.json manifest (AtlasManifest) whose sprites each list `sources`
-//     ids, and every id has an entry with a licence in archive/SOURCES.json or archive/sources/*.json.
+//     ids, and every id has an entry in archive/SOURCES.json (written by the merge stage of npm run assets, which
+//     applies the licence allowlist and SPDX normalisation), or is a 'code:<generator>' id: art drawn by our own
+//     build code. The raw archive/sources/*.json are never read: only merged entries count.
 //  3. Direct entry: a source entry whose `shipped` field (string or list) names the file, or whose id equals the
 //     file's base name without extensions.
 // An entry counts only with a non-empty `license` (or `licence`) that is not NC, ND, all rights reserved or unclear.
@@ -34,10 +36,10 @@ function walk(dir: string, out: string[] = []): string[] {
 const readJson = (p: string): unknown => JSON.parse(readFileSync(p, 'utf8'));
 const norm = (p: string): string => p.replace(/^\.?\//, '').replace(/^dist\//, 'public/');
 
-// Sources: archive/SOURCES.json (merged) and archive/sources/*.json (per category, arrays of SourceEntry).
+// Sources: archive/SOURCES.json only (the merged, allowlisted output).
 const entries = new Map<string, Json>();
 function addEntries(v: unknown, where: string): void {
-  const list = Array.isArray(v) ? v : Array.isArray((v as Json | null)?.['sources']) ? ((v as Json)['sources'] as unknown[]) : [];
+  const list = Array.isArray((v as Json | null)?.['sources']) ? ((v as Json)['sources'] as unknown[]) : [];
   for (const e of list) {
     if (typeof e !== 'object' || e === null) continue;
     const id = (e as Json)['id'];
@@ -46,11 +48,14 @@ function addEntries(v: unknown, where: string): void {
   }
 }
 if (existsSync('archive/SOURCES.json')) addEntries(readJson('archive/SOURCES.json'), 'archive/SOURCES.json');
-for (const f of walk('archive/sources').filter((f) => f.endsWith('.json'))) addEntries(readJson(f), f);
+else fail('archive/SOURCES.json', 'missing: run npm run assets');
+
+const CODE_MADE = /^code:[a-z0-9-]+$/;
 
 function licenceProblem(id: string): string | null {
+  if (CODE_MADE.test(id)) return null;
   const e = entries.get(id);
-  if (e === undefined) return `source "${id}" has no entry in archive/SOURCES.json or archive/sources/*.json`;
+  if (e === undefined) return `source "${id}" has no entry in archive/SOURCES.json`;
   const lic = e['license'] ?? e['licence'];
   if (typeof lic !== 'string' || lic.trim() === '') return `source "${id}" has no licence`;
   if (BAD_LICENCE.test(lic)) return `source "${id}" has licence "${lic}"`;
@@ -105,7 +110,7 @@ function checkMedia(file: string): void {
       return;
     }
   }
-  fail(file, 'no entry in archive/SOURCES.json, archive/sources/*.json or archive/OWN.json');
+  fail(file, 'no entry in archive/SOURCES.json or archive/OWN.json (run npm run assets)');
 }
 
 function checkFont(file: string): void {

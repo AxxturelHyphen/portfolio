@@ -1,5 +1,6 @@
-// Shared types: cook/ARCH.md section 2, verbatim. Types that need three.js (CutoutUniforms, FilmUniforms, FilmPass, Gfx)
-// are added once the three typings are settled. Changes go through the orchestrator.
+// Shared types: cook/ARCH.md section 2, verbatim, plus the factory signatures of 2.12. Frozen: changes go through the orchestrator.
+// three appears as `import type` only, so core, ui and content stay free of three at runtime.
+import type { Matrix4, Mesh, Scene, Texture, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget } from 'three';
 
 // 2.1 State machine
 export type BedId = 'puerta' | 'rosaleda' | 'estanque' | 'semillero' | 'gruta' | 'salida';
@@ -61,7 +62,7 @@ export interface ScreenPt { x: number; y: number; scale: number; visible: boolea
 export interface CameraRig {
   readonly pose: Readonly<Pose>; readonly changed: boolean;
   panBy(dxPx: number): void; fling(vxPxPerS: number): void; zoomBy(k: number, atXPx: number): void;
-  nearestBed(): BedId; project(wx: number, wy: number, wz: number, out: ScreenPt): ScreenPt; unproject(xPx: number, yPx: number, planeZ: number, out: Float32Array): void;
+  project(wx: number, wy: number, wz: number, out: ScreenPt): ScreenPt; unproject(xPx: number, yPx: number, planeZ: number, out: Float32Array): void;
   update(c: Clock, s: State, ch: Machine['ch']): void; setShot(id: ShotId): void; resize(w: number, h: number): void;
 }
 export interface LightRig {
@@ -93,7 +94,25 @@ export interface Slot { id: string; kind: 'project' | 'link' | 'prop'; accepts?:
 export type Proc = { type: 'pond' | 'sigils' | 'sundial' | 'fireflies' | 'stereoscope'; x: number; y: number; z: number; w: number; h: number; params?: Record<string, number> };
 export interface SlotView { id: SlotId; kind: Slot['kind']; project?: Project; href?: string; world: [number, number, number]; hit: [number, number]; alt: string }
 
-// 2.7 (three-free part)
+// 2.7 Cutout material, light model, film pass
+/** A uniform map as three's ShaderMaterial expects it: every field wrapped in { value }. */
+export type Uniforms<T> = { [K in keyof T]: { value: T[K] } };
+export interface CutoutUniformValues {
+  uColor: Texture; uNormal: Texture; uViewProj: Matrix4; uTime: number; uWind: Vector2; uReveal: number;
+  uCursor: Vector4; uCursorColor: Vector3; uGather: Vector4; uMoonDir: Vector3; uMoonColor: Vector3; uSkyTop: Vector3; uSkyHorizon: Vector3; uShadow: Vector3; uDepthFade: Vector4;
+}
+export type CutoutUniforms = Uniforms<CutoutUniformValues>;
+export interface FilmUniformValues {
+  uScene: Texture; uHalation: Texture; uRes: Vector2; uScale: number; uTime: number; uSeed: number;
+  uGrain: number; uWeave: Vector2; uDust: number; uFlicker: number; uVignette: Vector2; uSoft: number; uLift: Vector3; uGamma: Vector3; uGain: Vector3; uTint: Vector4[];
+  uIris: Vector4; uIrisColor: Vector3; uStrip: Vector4; uProtect: Vector3; uStatic: number; uFilmOn: number;
+}
+export type FilmUniforms = Uniforms<FilmUniformValues>;
+export interface FilmPass { readonly uniforms: FilmUniforms; resize(w: number, h: number, pixelCap: number): void; render(scene: WebGLRenderTarget): void; readonly targetBytes: number }
+export interface Gfx {
+  readonly renderer: WebGLRenderer; readonly scene: Scene; readonly film: FilmPass; render(c: Clock): void; info(out: InfoSnapshot): InfoSnapshot; onContextLost(fn: () => void): void;
+  warm(): Promise<void>;
+}
 export interface QuadParams { x: number; y: number; z: number; rot: number; w: number; h: number; px: number; py: number; uv: ArrayLike<number>; sway: number; phase: number; lift: number; facing: number; tint: ArrayLike<number> }
 export interface InstanceWriter { readonly capacity: number; count: number; set(i: number, p: QuadParams): void; commit(from: number, to: number): void }
 
@@ -166,3 +185,38 @@ export interface JardinTestAPI {
   send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
   rec: { start(label: string): void; stop(): FrameReport }; tour(): Promise<PerfLine>;
 }
+
+// 2.12 Factories (the only cross-folder entry points) and the free functions of 2.2 to 2.4 and 2.9
+export interface CutoutBatch { mesh: Mesh; writer: InstanceWriter; uniforms: CutoutUniforms; dispose(): void }
+export interface AtlasTextures { color: Texture[]; normal: Texture[]; gpuBytes: number }
+export interface GardenDeps { gfx: Gfx; machine: Machine; rig: CameraRig; light: LightRig; quality: Quality; content: Content; proxies: ProxyLayer }
+export interface GardenHandle { residency: Residency; update(c: Clock): void }
+export interface MachineEnv { mode: Mode; reduced: boolean; lang: Lang }
+
+export type ParseRoute = (href: string, c: Content) => Route;
+export type FormatRoute = (place: Place, mode: Mode, lang: Lang, keep: URLSearchParams) => string;
+export type StartRouter = (m: Machine, c: Content) => void;
+export type Step12 = (t: number) => number;
+export type SpringFactory = (durationS: number) => Channel;
+export type TweenFactory = (durationS: number, ease: (x: number) => number) => Channel;
+export type DecideMode = (env: ModeEnv) => ModeDecision;
+export type LoadContent = () => Content;
+export type ProjectsOf = (bed: BedId) => Project[];
+export type RenderHerbario = (c: Content, lang: Lang) => string;
+export type AttachLiveFlowers = (root: HTMLElement, m: Machine) => void;
+
+export type CreateMachine = (c: Content, env: MachineEnv) => Machine;
+export type CreateLoop = (q: DebugParams) => Loop;
+export type CreateQuality = (q: DebugParams) => Quality;
+export type CreateGfx = (canvas: HTMLCanvasElement, quality: Quality, loop: Loop) => Gfx;
+export type CreateCutoutBatch = (gfx: Gfx, color: Texture, normal: Texture, capacity: number) => CutoutBatch;
+export type LoadAtlas = (gfx: Gfx, m: AtlasManifest, variant: 'hi' | 'lo', signal: AbortSignal) => Promise<AtlasTextures>;
+export type CreateRig = (g: GardenLayout) => CameraRig;
+export type CreateLight = () => LightRig;
+export type CreateGarden = (d: GardenDeps) => GardenHandle;
+export type CreatePanel = (el: HTMLDialogElement, c: Content, m: Machine) => Panel;
+export type CreateLabel = (el: HTMLElement) => LabelCard;
+export type CreateProxies = (el: HTMLElement, m: Machine) => ProxyLayer;
+export type CreateToggles = (el: HTMLElement, m: Machine) => Toggles;
+export type CreateModeLayers = (canvas: HTMLElement, herbario: HTMLElement) => ModeLayers;
+export type CreateAudio = (m: Machine) => AudioBus;
