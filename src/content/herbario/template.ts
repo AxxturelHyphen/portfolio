@@ -4,11 +4,13 @@ import { projectsOf } from '../load.ts';
 import type { HerbarioContent } from '../schema.ts';
 import { latinOf, renderCaseBody } from './case.ts';
 import { esc, link, list, text } from './html.ts';
+import { loadThumbs, specimen, thumbBlock, type ThumbIndex } from './thumbs.ts';
 
 /**
  * renderHerbario: the no-WebGL CV as one pure HTML string (no DOM), used by scripts/prerender.ts at build
  * and by the browser on a language switch. Structure and class names only; styles live in herbario.css and print.css.
- * Each project is one herbarium sheet: a mount for its specimen and a label. The full case sits in a <details>
+ * Each project is one herbarium sheet: a mount with its specimen (the real plate thumbnail once public/thumbs/ has
+ * it, else an honest empty mount) and a label tipped in over the mount's corner. The full case sits in a <details>
  * so everything is readable without JS; with JS the sheet opens the project panel instead.
  */
 
@@ -16,15 +18,24 @@ type Lookup = (key: string) => string;
 
 const BEDS: readonly ProjectBed[] = ['rosaleda', 'estanque', 'semillero'];
 
-function renderSheet(p: Project, l: Lang, s: Lookup): string {
+function mountOf(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex): string {
+  const shown = specimen(thumbs.get(p.id), l);
+  if (shown !== '') return `<div class="h-mount h-mount-full" data-flower-slot>${shown}</div>`;
+  const latin = esc(latinOf(p, s));
+  return `<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}${latin === '' ? '' : `<span class="h-mount-latin" lang="la">${latin}</span>`}</p></div>`;
+}
+
+function renderSheet(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex): string {
   const id = esc(p.id);
   const latin = esc(latinOf(p, s));
+  /** With a mounted specimen its plate names the Latin; the label then does not repeat a second, vaguer one. */
+  const labelLatin = latin === '' || thumbs.has(p.id) ? '' : `<p class="h-latin" lang="la">${latin}</p>\n`;
   const priv = p.private === true ? `<p class="h-private">${esc(s('project.private'))}</p>` : '';
   return `<article class="h-sheet" id="p-${id}" data-flower="${id}" data-kind="${p.flower}" data-status="${p.status}" aria-labelledby="p-${id}-t">
-<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}${latin === '' ? '' : `<span class="h-mount-latin" lang="la">${latin}</span>`}</p></div>
+${mountOf(p, l, s, thumbs)}
 <div class="h-label">
 <h4 class="h-title" id="p-${id}-t"><a class="h-open" href="#/p/${id}">${esc(p.title)}</a></h4>
-${latin === '' ? '' : `<p class="h-latin" lang="la">${latin}</p>\n`}<p class="h-oneliner">${text(p.oneLiner[l])}</p>
+${labelLatin}<p class="h-oneliner">${text(p.oneLiner[l])}</p>
 ${list(p.stack.slice(0, 4).map(text), 'h-tags')}
 <dl class="h-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="h-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div><div><dt>${esc(s('project.year'))}</dt><dd class="h-year">${text(String(p.year))}</dd></div></dl>
 ${priv}
@@ -33,7 +44,7 @@ ${priv}
 </article>`;
 }
 
-function renderBed(c: HerbarioContent, bed: ProjectBed, l: Lang, s: Lookup): string {
+function renderBed(c: HerbarioContent, bed: ProjectBed, l: Lang, s: Lookup, thumbs: ThumbIndex): string {
   const projects = projectsOf(bed, c.projects);
   if (projects.length === 0) return '';
   const name = s(`bed.${bed}`);
@@ -41,7 +52,7 @@ function renderBed(c: HerbarioContent, bed: ProjectBed, l: Lang, s: Lookup): str
   return `<section class="h-bed" id="b-${bed}" data-bed="${bed}" aria-labelledby="b-${bed}-t">
 <header class="h-bed-head"><h3 class="h-bed-title" id="b-${bed}-t">${esc(name)}</h3>${gloss === name ? '' : `<p class="h-bed-gloss">${esc(gloss)}</p>`}</header>
 <div class="h-sheets">
-${projects.map((p) => renderSheet(p, l, s)).join('\n')}
+${projects.map((p) => renderSheet(p, l, s, thumbs)).join('\n')}
 </div>
 </section>`;
 }
@@ -52,6 +63,7 @@ function fact(cls: string, heading: string, body: string): string {
 
 export function renderHerbario(c: HerbarioContent, l: Lang): string {
   const s: Lookup = (key) => lookup(c.strings, l, key);
+  const thumbs = loadThumbs();
   const pr = c.profile;
   const education = pr.education.map(
     (e) => `<span class="h-edu-title">${text(e.title[l])}</span><span class="h-edu-place">${text(e.place)}</span><span class="h-edu-status">${text(e.status[l])}</span>`,
@@ -85,8 +97,9 @@ ${fact('h-contact', s('section.contact'), list(contact, 'h-contact-list'))}
 </div>
 <section class="h-projects" aria-labelledby="projects">
 <h2 class="h-section-title" id="projects" tabindex="-1">${esc(s('section.projects'))}</h2>
-${BEDS.map((b) => renderBed(c, b, l, s)).join('\n')}
+${BEDS.map((b) => renderBed(c, b, l, s, thumbs)).join('\n')}
 </section>
 </main>
-<footer class="h-footer"><p>${esc(s('footer.type'))}</p></footer>`;
+<footer class="h-footer"><p>${esc(s('footer.type'))}</p></footer>
+${thumbBlock(thumbs)}`;
 }

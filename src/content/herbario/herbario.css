@@ -1,13 +1,17 @@
 /*
- * Herbario: the CV as a pressed-flower album, made modern. Each project is a herbarium sheet:
- * a mount for its specimen (empty and labelled as such until the live flowers arrive) and a label.
- * Flower names in the display serif, Latin names in italic, everything else in the UI sans.
+ * Herbario: the CV as a pressed-flower album. One calm page: the name set large like an album's title page, the
+ * profile and the facts as labels tipped in at deliberate, uneven places, then one spread per bed with its sheets
+ * staggered. Kalnia for names, Schibsted Grotesk for text, Latin in italic. Zero layout shift: every box is sized
+ * by CSS before images or fonts arrive.
  */
 
 #herbario {
+  --tip: #fbf6ec;
+  --tip-line: rgb(29 27 24 / 0.28);
+  --shadow-tip: 0 1px 1px rgb(29 27 24 / 0.08), 0 8px 18px -12px rgb(29 27 24 / 0.35);
   max-width: var(--page);
   margin: 0 auto;
-  padding: 0 var(--gutter) 4rem;
+  padding: 0 var(--gutter) 5rem;
 }
 
 .h-skip {
@@ -17,9 +21,9 @@
   left: var(--gutter);
   padding: 0.5rem 0.875rem;
   font-size: var(--text-sm);
-  background: var(--ink);
-  color: var(--sheet);
-  border-radius: var(--radius);
+  background: var(--sheet);
+  color: var(--ink);
+  border: 1px solid var(--ink);
   transform: translate3d(0, -200%, 0);
 }
 
@@ -27,16 +31,15 @@
   transform: none;
 }
 
-/* Header */
-
+/* Title page */
 .h-header {
-  padding-top: 1.125rem;
+  padding-top: 1.25rem;
 }
 
 .h-site {
   display: flex;
   align-items: center;
-  min-height: 2.375rem;
+  min-height: 2.75rem;
   font-family: var(--font-display);
   font-synthesis: none;
   font-size: var(--text-lg);
@@ -45,10 +48,13 @@
 
 .h-hero {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: 2rem 4rem;
-  align-items: end;
-  padding-block: clamp(3rem, 2rem + 4vw, 6.5rem) clamp(2.5rem, 2rem + 2vw, 4rem);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 1.5rem;
+  padding-block: clamp(3.5rem, 2rem + 6vw, 8rem) 0;
+}
+
+.h-id {
+  grid-column: 1 / span 10;
 }
 
 .h-name {
@@ -69,49 +75,73 @@
 }
 
 .h-intro {
+  grid-column: 6 / span 6;
   display: grid;
   gap: 1rem;
-  max-width: var(--measure);
-  padding-bottom: 0.5rem;
+  margin-top: clamp(2rem, 1rem + 3vw, 3.5rem);
 }
 
 .h-role {
-  font-size: var(--text-lg);
-  line-height: 1.5;
+  max-width: var(--measure);
+  font-size: 1.25rem;
+  line-height: 1.55;
   text-wrap: pretty;
 }
 
 .h-location {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--ink-2);
 }
 
 .h-about {
   display: grid;
-  gap: 0.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--rule);
+  gap: 0.5rem;
+  max-width: 28rem;
+  margin-top: 1.25rem;
+  margin-left: -1.5rem;
 }
 
-/* Facts: the CV at a glance */
-
+/* Facts: four labels tipped in across the page, each at its own height. */
 .h-facts {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 2rem 3rem;
-  padding-block: 1.75rem 0;
-  border-top: 1px solid var(--rule-strong);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2rem 1.5rem;
+  align-items: start;
+  padding-top: clamp(3rem, 2rem + 3vw, 5rem);
+}
+
+.h-education {
+  grid-column: 1 / span 4;
+}
+
+.h-languages {
+  grid-column: 5 / span 3;
+  margin-top: 3.5rem;
+}
+
+.h-stack {
+  grid-column: 8 / span 3;
+  margin-top: 1rem;
+}
+
+.h-contact {
+  grid-column: 9 / span 4;
+  grid-row: 2;
+  margin-top: -0.5rem;
 }
 
 .h-fact-title {
-  margin-bottom: 0.625rem;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--ink-2);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: var(--ink);
 }
 
 .h-fact {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   line-height: 1.5;
 }
 
@@ -123,7 +153,7 @@
 
 .h-edu > li + li,
 .h-langs > li + li {
-  margin-top: 0.625rem;
+  margin-top: 0.75rem;
 }
 
 .h-edu-title {
@@ -143,7 +173,7 @@
 }
 
 .h-contact-list > li + li {
-  margin-top: 0.375rem;
+  margin-top: 0.5rem;
 }
 
 .h-contact-link {
@@ -154,10 +184,9 @@ a.h-contact-link:hover {
   color: var(--rose);
 }
 
-/* Projects */
-
+/* Projects: one spread per bed */
 .h-projects {
-  margin-top: clamp(4rem, 3rem + 4vw, 7rem);
+  margin-top: clamp(5rem, 3rem + 6vw, 9rem);
 }
 
 .h-section-title {
@@ -166,8 +195,6 @@ a.h-contact-link:hover {
   font-weight: 400;
   font-size: var(--display-md);
   line-height: 1.15;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--rule-strong);
 }
 
 .h-section-title:focus {
@@ -176,42 +203,64 @@ a.h-contact-link:hover {
 
 .h-bed {
   display: grid;
-  grid-template-columns: 12rem minmax(0, 1fr);
-  gap: 1.5rem 3rem;
-  padding-block: 2.5rem;
-  border-bottom: 1px solid var(--rule);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 1.5rem;
+  padding-block: clamp(3rem, 2rem + 3vw, 5rem) 0;
 }
 
 .h-bed + .h-bed {
   content-visibility: auto;
-  contain-intrinsic-size: auto 46rem;
+  contain-intrinsic-size: auto 52rem;
 }
 
 .h-bed-head {
+  grid-column: 1 / span 3;
   align-self: start;
-  position: sticky;
-  top: 4.5rem;
+  padding-top: 2.5rem;
+}
+
+.h-bed:nth-of-type(even) .h-bed-head {
+  grid-column: 10 / span 3;
+  grid-row: 1;
+  text-align: right;
 }
 
 .h-bed-title {
   font-family: var(--font-display);
   font-synthesis: none;
   font-weight: 400;
-  font-size: var(--display-sm);
+  font-size: 1.75rem;
   line-height: 1.2;
 }
 
 .h-bed-gloss {
   margin-top: 0.25rem;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-style: italic;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 
 .h-sheets {
+  grid-column: 4 / span 9;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3rem clamp(2rem, 1rem + 3vw, 4.5rem);
+  align-items: start;
+}
+
+.h-bed:nth-of-type(even) .h-sheets {
+  grid-column: 1 / span 9;
+  grid-row: 1;
+}
+
+.h-sheets > :nth-child(even) {
+  margin-top: 6rem;
+}
+
+.h-sheets > :only-child {
+  grid-column: 1 / -1;
+  width: min(100%, 26rem);
+  margin-left: 18%;
 }
 
 /* The full case, for readers without JS. With JS the panel shows it instead. */
@@ -230,54 +279,113 @@ a.h-contact-link:hover {
 }
 
 .h-footer {
-  padding-top: 2rem;
-  font-size: var(--text-xs);
-  color: var(--ink-3);
+  margin-top: clamp(4rem, 3rem + 3vw, 6rem);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
 }
 
 @media (max-width: 64rem) {
-  .h-facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .h-intro {
+    grid-column: 3 / span 10;
   }
 
-  .h-bed {
-    grid-template-columns: minmax(0, 1fr);
+  .h-education {
+    grid-column: 1 / span 6;
   }
 
-  .h-bed-head {
-    position: static;
+  .h-languages {
+    grid-column: 7 / span 5;
+  }
+
+  .h-stack {
+    grid-column: 2 / span 5;
+    margin-top: 0;
+  }
+
+  .h-contact {
+    grid-column: 7 / span 6;
+    margin-top: 2rem;
+  }
+
+  .h-bed-head,
+  .h-bed:nth-of-type(even) .h-bed-head {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    padding: 0 0 2rem;
+    text-align: left;
+  }
+
+  .h-sheets,
+  .h-bed:nth-of-type(even) .h-sheets {
+    grid-column: 1 / -1;
+    grid-row: auto;
   }
 }
 
 @media (max-width: 44.99rem) {
   #herbario {
-    padding-top: 3.5rem;
+    padding-top: 4.5rem;
   }
 
   .h-site {
     display: none;
   }
 
-  .h-hero {
+  .h-hero,
+  .h-facts,
+  .h-bed {
     grid-template-columns: minmax(0, 1fr);
-    padding-block: 2rem 2rem;
+  }
+
+  .h-hero {
+    padding-top: 1.5rem;
+  }
+
+  .h-id,
+  .h-intro,
+  .h-facts > .h-fact {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 0;
+  }
+
+  .h-intro {
+    margin-top: 1.5rem;
+  }
+
+  .h-about {
+    margin-left: 0;
   }
 
   .h-facts {
-    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
+    padding-top: 2.5rem;
+  }
+
+  .h-languages,
+  .h-contact {
+    margin-left: 1.5rem;
   }
 
   .h-projects {
-    margin-top: 3rem;
+    margin-top: 4rem;
   }
 
   .h-bed {
-    padding-block: 2rem;
+    padding-top: 3rem;
   }
 
   .h-sheets {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
+    gap: 2.5rem;
+  }
+
+  .h-sheets > :nth-child(even) {
+    margin-top: 0;
+  }
+
+  .h-sheets > :only-child {
+    margin-left: 0;
+    width: 100%;
   }
 }

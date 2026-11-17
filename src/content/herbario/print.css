@@ -226,6 +226,67 @@
     display: none;
   }
 
+  /* The screen album's placements, tipped-in slips and tape give way to the plain one-page grid. */
+  .h-id,
+  .h-intro,
+  .h-facts > .h-fact,
+  .h-bed-head,
+  .h-bed:nth-of-type(even) .h-bed-head,
+  .h-sheets,
+  .h-bed:nth-of-type(even) .h-sheets,
+  .h-sheets > :only-child,
+  .h-sheets > :nth-child(even) {
+    grid-column: auto;
+    grid-row: auto;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .h-about,
+  .h-fact,
+  .h-label {
+    margin: 0;
+    padding: 0;
+    width: auto;
+    background: none;
+    box-shadow: none;
+  }
+
+  .h-about::before,
+  .h-fact::before,
+  .h-label::before,
+  .h-mount-full::before,
+  .h-mount-full::after,
+  .h-specimen-cap {
+    display: none;
+  }
+
+  .h-about {
+    max-width: none;
+  }
+
+  .h-fact-title {
+    font-family: var(--font-ui);
+    font-weight: 600;
+  }
+
+  .h-mount-full {
+    aspect-ratio: auto;
+  }
+
+  .h-sheet,
+  [data-mode] .h-sheet:hover {
+    transform: none;
+  }
+
+  [data-status]:is(.h-status, .c-status) {
+    padding: 0 0.4em;
+    border-width: 2.5pt;
+    transform: none;
+  }
+
   a {
     text-decoration: none;
   }

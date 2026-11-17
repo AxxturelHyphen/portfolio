@@ -57,7 +57,6 @@ export function renderCaseHead(p: Project, l: Lang, s: Lookup, titleId: string):
   const latin = latinOf(p, s);
   const role = `<div><dt>${esc(s('project.role'))}</dt><dd>${text(p.role[l])}</dd></div>`;
   return `<header class="c-head">
-<p class="c-bed">${esc(s(`bed.${p.bed}`))}</p>
 <h2 class="c-title" id="${titleId}" tabindex="-1">${esc(p.title)}</h2>
 ${latin === '' ? '' : `<p class="c-latin" lang="la">${esc(latin)}</p>\n`}<p class="c-oneliner">${text(p.oneLiner[l])}</p>
 <dl class="c-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="c-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div><div><dt>${esc(s('project.year'))}</dt><dd>${text(String(p.year))}</dd></div>${role}</dl>
