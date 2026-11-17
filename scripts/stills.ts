@@ -21,11 +21,11 @@ export function currentRound(base = 'cook/stills'): string {
 function contactSheet(dir: string): void {
   const pngs = readdirSync(dir).filter((f) => /^S\d\d\.png$/.test(f)).sort();
   if (pngs.length === 0) return;
-  const cols = Math.min(4, pngs.length);
+  const cols = Math.min(3, pngs.length);
   const rows = Math.ceil(pngs.length / cols);
   const args = ['-hide_banner', '-loglevel', 'error', '-y'];
   for (const f of pngs) args.push('-i', `${dir}/${f}`);
-  const cells = pngs.map((_, i) => `[${i}:v]scale=480:270:force_original_aspect_ratio=decrease,pad=480:270:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1[v${i}]`);
+  const cells = pngs.map((f, i) => `[${i}:v]scale=480:270:force_original_aspect_ratio=decrease,pad=480:270:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,drawtext=text='${f.slice(0, 3)}':x=8:y=8:fontsize=22:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=4[v${i}]`);
   const chain = `${pngs.map((_, i) => `[v${i}]`).join('')}concat=n=${pngs.length}:v=1:a=0,tile=${cols}x${rows}:padding=4:color=black[o]`;
   args.push('-filter_complex', [...cells, chain].join(';'), '-map', '[o]', '-frames:v', '1', '-q:v', '4', `${dir}/_sheet.jpg`);
   const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
@@ -98,6 +98,16 @@ async function main(): Promise<number> {
           }
         }
         await page.evaluate(() => new Promise<void>((ok) => requestAnimationFrame(() => requestAnimationFrame(() => ok()))));
+        // Owner rule: the canvas fills the whole viewport. Assert it before every capture (S10 is the DOM-only Herbario).
+        const view = await page.evaluate(() => {
+          const c = document.getElementById('garden');
+          const r = c?.getBoundingClientRect();
+          return { iw: innerWidth, ih: innerHeight, cw: r?.width ?? 0, ch: r?.height ?? 0, ox: document.documentElement.scrollWidth - innerWidth, oy: document.documentElement.scrollHeight - innerHeight, hidden: getComputedStyle(document.documentElement).overflowY === 'hidden', gutter: innerWidth - document.documentElement.clientWidth };
+        });
+        if (view.iw !== w || view.ih !== h) throw new Error(`viewport mismatch: inner ${view.iw}x${view.ih}, wanted ${w}x${h}`);
+        if (s.wait !== 'dom' && (Math.abs(view.cw - w) > 1 || Math.abs(view.ch - h) > 1)) throw new Error(`canvas ${view.cw}x${view.ch} does not fill ${w}x${h}`);
+        // The garden page clips overflow on <html> (the hidden Herbario DOM is taller), so only a visible scrollbar gutter or a scrollable overflow counts. S10 is the Herbario and scrolls by design.
+        if (s.wait !== 'dom' && (view.gutter > 0 || view.ox > 1 || (view.oy > 1 && !view.hidden))) throw new Error(`page scrolls (${view.ox},${view.oy}, gutter ${view.gutter})`);
         const out = `${dir}/${s.id}.png`;
         rmSync(out, { force: true });
         await page.screenshot({ path: out, type: 'png' });
