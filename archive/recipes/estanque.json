@@ -1,0 +1,1259 @@
+{
+ "atlas": "estanque",
+ "plates": {
+  "peacock-rijks-white-on-branch": {
+   "method": "raw",
+   "why": "white bird on a dark lithograph ground: ML matte on the crop plus a hand garbage matte that drops the branch"
+  },
+  "com-victoria-regia-pl5-flower-from-above": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "com-victoria-regia-pl6-bud-opening": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "com-victoria-regia-pl4-opening-stages": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "com-haeckel-lichenes": {
+   "method": "raw",
+   "why": "pale lichens on a black ground: luminance key"
+  },
+  "com-florabatava-typha": {
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma-118176-japanese-iris": {
+   "drop": [
+    [
+     0,
+     0.93,
+     1,
+     1
+    ]
+   ]
+  },
+  "feather-rijks-bernard-pencil-feather": {
+   "drop": [
+    [
+     0.86,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel-b33k8vnw-goldfish": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "wel-ckmupyea-frog-shore": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "wel-zjhtrdjh-bull-frog": {
+   "method": "raw",
+   "why": "frog on a printed page: ML matte on the crop, then a flat silhouette"
+  },
+  "wel-r7fugtvn-sacred-lotus-leaf": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "disc-mclean-birds-butterflies": {
+   "method": "raw",
+   "why": "disc photographed on a dark ground with a colour chart: ML matte on the crop"
+  },
+  "sundial-universal-with-compass": {
+   "method": "raw",
+   "why": "engraving on a printed text page: ML matte on the crop"
+  }
+ },
+ "pages": [
+  {
+   "band": "far bank and the hero on its pier",
+   "jobs": [
+    {
+     "id": "es/peacock",
+     "source": "peacock-rijks-white-on-branch",
+     "crop": [
+      0.17,
+      0.04,
+      0.93,
+      0.935
+     ],
+     "size": 1536,
+     "h": 2.4,
+     "pivot": [
+      0.5,
+      0.0
+     ],
+     "remove": [
+      {
+       "box": [
+        0.385,
+        0.03,
+        0.495,
+        0.112
+       ]
+      }
+     ],
+     "ml": true,
+     "matte": [
+      [
+       0.3,
+       0.08
+      ],
+      [
+       0.38,
+       0.09
+      ],
+      [
+       0.41,
+       0.045
+      ],
+      [
+       0.48,
+       0.045
+      ],
+      [
+       0.5,
+       0.1
+      ],
+      [
+       0.56,
+       0.09
+      ],
+      [
+       0.64,
+       0.085
+      ],
+      [
+       0.76,
+       0.09
+      ],
+      [
+       0.86,
+       0.12
+      ],
+      [
+       0.905,
+       0.17
+      ],
+      [
+       0.895,
+       0.23
+      ],
+      [
+       0.85,
+       0.27
+      ],
+      [
+       0.83,
+       0.34
+      ],
+      [
+       0.845,
+       0.46
+      ],
+      [
+       0.875,
+       0.55
+      ],
+      [
+       0.91,
+       0.62
+      ],
+      [
+       0.915,
+       0.76
+      ],
+      [
+       0.9,
+       0.86
+      ],
+      [
+       0.88,
+       0.935
+      ],
+      [
+       0.37,
+       0.935
+      ],
+      [
+       0.355,
+       0.8
+      ],
+      [
+       0.355,
+       0.64
+      ],
+      [
+       0.37,
+       0.52
+      ],
+      [
+       0.355,
+       0.44
+      ],
+      [
+       0.3,
+       0.385
+      ],
+      [
+       0.24,
+       0.33
+      ],
+      [
+       0.19,
+       0.26
+      ],
+      [
+       0.18,
+       0.17
+      ],
+      [
+       0.2,
+       0.115
+      ],
+      [
+       0.25,
+       0.085
+      ]
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#746583",
+        "#a294a8",
+        "#ddd4cb"
+       ],
+       "amount": 0.9,
+       "value": 0.65
+      }
+     ]
+    },
+    {
+     "id": "es/peacock-crest",
+     "source": "peacock-rijks-white-on-branch",
+     "crop": [
+      0.385,
+      0.03,
+      0.495,
+      0.115
+     ],
+     "size": "small",
+     "w": 0.16,
+     "pivot": [
+      0.5,
+      0.0
+     ],
+     "ml": true,
+     "matte": [
+      [
+       0.3,
+       0.08
+      ],
+      [
+       0.38,
+       0.09
+      ],
+      [
+       0.41,
+       0.045
+      ],
+      [
+       0.48,
+       0.045
+      ],
+      [
+       0.5,
+       0.1
+      ],
+      [
+       0.56,
+       0.09
+      ],
+      [
+       0.64,
+       0.085
+      ],
+      [
+       0.76,
+       0.09
+      ],
+      [
+       0.86,
+       0.12
+      ],
+      [
+       0.905,
+       0.17
+      ],
+      [
+       0.895,
+       0.23
+      ],
+      [
+       0.85,
+       0.27
+      ],
+      [
+       0.83,
+       0.34
+      ],
+      [
+       0.845,
+       0.46
+      ],
+      [
+       0.875,
+       0.55
+      ],
+      [
+       0.91,
+       0.62
+      ],
+      [
+       0.915,
+       0.76
+      ],
+      [
+       0.9,
+       0.86
+      ],
+      [
+       0.88,
+       0.935
+      ],
+      [
+       0.37,
+       0.935
+      ],
+      [
+       0.355,
+       0.8
+      ],
+      [
+       0.355,
+       0.64
+      ],
+      [
+       0.37,
+       0.52
+      ],
+      [
+       0.355,
+       0.44
+      ],
+      [
+       0.3,
+       0.385
+      ],
+      [
+       0.24,
+       0.33
+      ],
+      [
+       0.19,
+       0.26
+      ],
+      [
+       0.18,
+       0.17
+      ],
+      [
+       0.2,
+       0.115
+      ],
+      [
+       0.25,
+       0.085
+      ]
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#746583",
+        "#a294a8",
+        "#ddd4cb"
+       ],
+       "amount": 0.9,
+       "value": 0.65
+      }
+     ]
+    },
+    {
+     "id": "es/plume-1",
+     "source": "feather-rijks-bernard-pencil-feather",
+     "crop": [
+      0.06,
+      0.4,
+      0.93,
+      0.9
+     ],
+     "size": 960,
+     "w": 1.9,
+     "pivot": [
+      0.99,
+      0.06
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#91809a",
+        "#b6a9b9",
+        "#ddd4cb"
+       ],
+       "amount": 1,
+       "value": 0.6
+      }
+     ]
+    },
+    {
+     "id": "es/plume-2",
+     "source": "feather-rijks-bernard-pencil-feather",
+     "crop": [
+      0.06,
+      0.4,
+      0.93,
+      0.9
+     ],
+     "size": 960,
+     "w": 1.75,
+     "pivot": [
+      0.99,
+      0.06
+     ],
+     "largest": true,
+     "warp": [
+      0.14,
+      0.1
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#91809a",
+        "#b6a9b9",
+        "#ddd4cb"
+       ],
+       "amount": 1,
+       "value": 0.6
+      }
+     ]
+    },
+    {
+     "id": "es/papyrus",
+     "source": "wel-nqq9tnvg-papyrus-reeds",
+     "crop": [
+      0.15,
+      0.15,
+      0.85,
+      0.82
+     ],
+     "size": "medium",
+     "h": 2.2,
+     "treat": "INK",
+     "ink": {
+      "line": "#1b1a3a",
+      "wash": "#1b1a3a",
+      "washAlpha": 0.85
+     }
+    }
+   ]
+  },
+  {
+   "band": "water, lily and the near bank",
+   "jobs": [
+    {
+     "id": "es/lily-a",
+     "source": "com-victoria-regia-pl5-flower-from-above",
+     "crop": [
+      0.04,
+      0.23,
+      0.34,
+      0.57
+     ],
+     "size": "medium",
+     "w": 0.3,
+     "ml": true,
+     "largest": true,
+     "matte": [
+      [
+       0.06,
+       0.3
+      ],
+      [
+       0.14,
+       0.25
+      ],
+      [
+       0.25,
+       0.27
+      ],
+      [
+       0.3,
+       0.36
+      ],
+      [
+       0.28,
+       0.5
+      ],
+      [
+       0.2,
+       0.55
+      ],
+      [
+       0.1,
+       0.53
+      ],
+      [
+       0.05,
+       0.42
+      ]
+     ],
+     "pivot": [
+      0.5,
+      0.1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#c56966",
+       "amount": 0.55
+      },
+      {
+       "hue": "pale",
+       "toward": "#ddd4cb",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "es/lily-b",
+     "source": "com-victoria-regia-pl6-bud-opening",
+     "crop": [
+      0.35,
+      0.19,
+      0.67,
+      0.64
+     ],
+     "size": "medium",
+     "w": 0.36,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#c56966",
+       "amount": 0.55
+      },
+      {
+       "hue": "pale",
+       "toward": "#ddd4cb",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "es/lily-c",
+     "source": "com-victoria-regia-pl4-opening-stages",
+     "crop": [
+      0.12,
+      0.33,
+      0.62,
+      0.84
+     ],
+     "size": "medium",
+     "w": 0.5,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#c56966",
+       "amount": 0.55
+      },
+      {
+       "hue": "pale",
+       "toward": "#ddd4cb",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "es/lily-d",
+     "source": "com-victoria-regia-pl4-opening-stages",
+     "crop": [
+      0.38,
+      0.14,
+      0.87,
+      0.56
+     ],
+     "size": "medium",
+     "w": 0.5,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#c56966",
+       "amount": 0.55
+      },
+      {
+       "hue": "pale",
+       "toward": "#ddd4cb",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "es/lily-e",
+     "source": "com-victoria-regia-pl5-flower-from-above",
+     "crop": [
+      0.27,
+      0.2,
+      0.8,
+      0.82
+     ],
+     "size": "medium",
+     "w": 0.5,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#c56966",
+       "amount": 0.55
+      },
+      {
+       "hue": "pale",
+       "toward": "#ddd4cb",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "es/pad-1",
+     "source": "com-victoria-regia-pl1-leaf-stages",
+     "crop": [
+      0.25,
+      0.27,
+      0.48,
+      0.52
+     ],
+     "size": "small",
+     "w": 0.9,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.85
+      }
+     ]
+    },
+    {
+     "id": "es/pad-2",
+     "source": "com-victoria-regia-pl1-leaf-stages",
+     "crop": [
+      0.53,
+      0.18,
+      0.68,
+      0.36
+     ],
+     "size": "small",
+     "w": 0.55,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.85
+      }
+     ]
+    },
+    {
+     "id": "es/pad-3",
+     "source": "com-victoria-regia-pl1-leaf-stages",
+     "crop": [
+      0.65,
+      0.15,
+      0.93,
+      0.48
+     ],
+     "size": "small",
+     "w": 1.1,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.85
+      }
+     ]
+    },
+    {
+     "id": "es/pad-4",
+     "source": "com-victoria-regia-pl1-leaf-stages",
+     "crop": [
+      0.39,
+      0.53,
+      0.53,
+      0.71
+     ],
+     "size": "small",
+     "w": 0.5,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.85
+      }
+     ]
+    },
+    {
+     "id": "es/pad-5",
+     "source": "com-victoria-regia-pl1-leaf-stages",
+     "crop": [
+      0.58,
+      0.52,
+      0.78,
+      0.76
+     ],
+     "size": "small",
+     "w": 0.8,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.85
+      }
+     ]
+    },
+    {
+     "id": "es/pad-6",
+     "source": "com-victoria-regia-pl1-leaf-stages",
+     "crop": [
+      0.26,
+      0.54,
+      0.4,
+      0.65
+     ],
+     "size": "small",
+     "w": 0.4,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.85
+      }
+     ]
+    },
+    {
+     "id": "es/frog",
+     "source": "wel-ckmupyea-frog-shore",
+     "crop": [
+      0.28,
+      0.22,
+      0.72,
+      0.72
+     ],
+     "size": "small",
+     "h": 0.26,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#3b614c",
+       "amount": 0.4
+      }
+     ]
+    },
+    {
+     "id": "es/frog-swim",
+     "source": "wel-zjhtrdjh-bull-frog",
+     "crop": [
+      0.02,
+      0.08,
+      0.98,
+      0.98
+     ],
+     "size": "small",
+     "w": 0.3,
+     "ml": true,
+     "treat": "MASK",
+     "mask": {
+      "color": "#101338",
+      "blur": 2
+     },
+     "largest": true
+    },
+    {
+     "id": "es/fish-1",
+     "source": "wel-b33k8vnw-goldfish",
+     "crop": [
+      0.19,
+      0.04,
+      0.94,
+      0.44
+     ],
+     "size": "small",
+     "w": 0.3,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#b86f52",
+       "amount": 0.5,
+       "sat": 0.45
+      }
+     ]
+    },
+    {
+     "id": "es/fish-2",
+     "source": "wel-b33k8vnw-goldfish",
+     "crop": [
+      0.26,
+      0.46,
+      0.91,
+      0.84
+     ],
+     "size": "small",
+     "w": 0.28,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#b86f52",
+       "amount": 0.6,
+       "sat": 0.45
+      }
+     ]
+    },
+    {
+     "id": "es/dragonfly",
+     "source": "dragonfly-rijks-etching-libel",
+     "crop": [
+      0.25,
+      0.2,
+      0.8,
+      0.8
+     ],
+     "size": "small",
+     "w": 0.15,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "treat": "INK",
+     "ink": {
+      "line": "#2a2440",
+      "wash": "#a294a8",
+      "washAlpha": 0.45
+     }
+    },
+    {
+     "id": "es/iris-wing",
+     "source": "cma-118176-japanese-iris",
+     "crop": [
+      0.18,
+      0.05,
+      0.82,
+      0.92
+     ],
+     "size": "small",
+     "h": 1.2,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 4
+     }
+    },
+    {
+     "id": "es/lichen-1",
+     "source": "com-haeckel-lichenes",
+     "crop": [
+      0.01,
+      0.0,
+      0.28,
+      0.19
+     ],
+     "size": "small",
+     "w": 0.3,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d816d",
+       "amount": 0.6
+      }
+     ]
+    },
+    {
+     "id": "es/lichen-2",
+     "source": "com-haeckel-lichenes",
+     "crop": [
+      0.69,
+      0.0,
+      0.98,
+      0.18
+     ],
+     "size": "small",
+     "w": 0.3,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d816d",
+       "amount": 0.6
+      }
+     ]
+    },
+    {
+     "id": "es/lichen-3",
+     "source": "com-haeckel-lichenes",
+     "crop": [
+      0.0,
+      0.73,
+      0.26,
+      0.98
+     ],
+     "size": "small",
+     "w": 0.28,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d816d",
+       "amount": 0.6
+      }
+     ]
+    },
+    {
+     "id": "es/lichen-4",
+     "source": "com-haeckel-lichenes",
+     "crop": [
+      0.72,
+      0.73,
+      0.99,
+      0.98
+     ],
+     "size": "small",
+     "w": 0.28,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d816d",
+       "amount": 0.6
+      }
+     ]
+    }
+   ],
+   "sequences": [
+    {
+     "id": "lily",
+     "kind": "lily",
+     "frames": [
+      "es/lily-a",
+      "es/lily-a",
+      "es/lily-a",
+      "es/lily-b",
+      "es/lily-b",
+      "es/lily-c",
+      "es/lily-c",
+      "es/lily-d",
+      "es/lily-d",
+      "es/lily-d"
+     ],
+     "rest": {
+      "idea": 0.1111,
+      "wip": 0.7778,
+      "shipped": 1
+     }
+    }
+   ]
+  },
+  {
+   "band": "sundial, urn and the reed margins",
+   "jobs": [
+    {
+     "id": "es/urn",
+     "source": "wc-piranesi-vase-rp-p-ob-39-601",
+     "crop": [
+      0.15,
+      0.12,
+      0.88,
+      0.72
+     ],
+     "size": "medium",
+     "h": 1.2,
+     "treat": "INK",
+     "ink": {
+      "line": "#1d1a2e",
+      "wash": "#5e506d",
+      "washAlpha": 0.5
+     }
+    },
+    {
+     "id": "es/lotus-leaf",
+     "source": "wel-r7fugtvn-sacred-lotus-leaf",
+     "crop": [
+      0.05,
+      0.01,
+      0.99,
+      0.62
+     ],
+     "size": "medium",
+     "h": 1.1,
+     "lumaKey": [
+      0.62,
+      0.42
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#14281d",
+        "#21422f",
+        "#3b614c"
+       ],
+       "amount": 0.7
+      }
+     ]
+    },
+    {
+     "id": "es/typha",
+     "source": "com-florabatava-typha",
+     "crop": [
+      0.06,
+      0.24,
+      0.2,
+      0.92
+     ],
+     "size": "medium",
+     "h": 1.6
+    },
+    {
+     "id": "es/typha-blade-1",
+     "source": "com-florabatava-typha",
+     "crop": [
+      0.6,
+      0.22,
+      0.72,
+      0.85
+     ],
+     "size": "medium",
+     "h": 1.4,
+     "largest": true
+    },
+    {
+     "id": "es/typha-blade-2",
+     "source": "com-florabatava-typha",
+     "crop": [
+      0.74,
+      0.1,
+      0.82,
+      0.82
+     ],
+     "size": "medium",
+     "h": 1.5,
+     "largest": true
+    },
+    {
+     "id": "es/typha-blade-3",
+     "source": "com-florabatava-typha",
+     "crop": [
+      0.86,
+      0.06,
+      0.94,
+      0.95
+     ],
+     "size": "medium",
+     "h": 1.6,
+     "largest": true
+    },
+    {
+     "id": "es/disc",
+     "source": "disc-mclean-birds-butterflies",
+     "crop": [
+      0.17,
+      0.05,
+      0.82,
+      0.95
+     ],
+     "size": 768,
+     "w": 0.8,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ]
+    },
+    {
+     "id": "es/armillary",
+     "source": "armillary-coloured-engraving",
+     "crop": [
+      0.15,
+      0.08,
+      0.85,
+      0.82
+     ],
+     "size": "medium",
+     "h": 1.0,
+     "treat": "INK",
+     "ink": {
+      "line": "#2a2218",
+      "wash": "#8b663a",
+      "washAlpha": 0.45
+     }
+    },
+    {
+     "id": "es/drum-base",
+     "source": "sundial-universal-with-compass",
+     "crop": [
+      0.08,
+      0.6,
+      0.97,
+      0.97
+     ],
+     "size": "small",
+     "w": 0.9,
+     "ml": true,
+     "largest": true,
+     "treat": "INK",
+     "ink": {
+      "line": "#2a2218",
+      "wash": "#7b6648",
+      "washAlpha": 0.5
+     }
+    }
+   ]
+  }
+ ]
+}

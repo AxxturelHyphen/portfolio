@@ -1,40 +1,53 @@
 /// <reference types="node" />
-// Thumbs stage: AVIF images for the DOM (Herbario, label card). Per project a static thumbnail at two widths,
-// <id>.avif and <id>@2x.avif, plus <id>.strip.avif with the bloom frames in one row. Encoding goes through the
-// system ImageMagick with its AVIF (libheif/aom) coder, build time only.
+// Thumbs stage (npm run assets thumbs): one static specimen per project flower for the Herbario, cut from the same
+// plates as the garden sprites, on a transparent ground, as AVIF in public/thumbs/, plus public/thumbs/manifest.json
+// (project id, file, source id, plate title, Latin name) for the UI. The plate title is the source entry's title
+// verbatim; the Latin name is kept only when it appears literally in that entry's title or notes, else it is empty. Encoding goes through the system ImageMagick
+// with its AVIF coder, build time only.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { readJson, writeJson } from './common.ts';
+import { REAL_CATALOG, realPng, type RealCatalog } from './sprites.ts';
 
-export const THUMB_OUT = 'public/thumb';
-/** CSS width of the static thumbnail; the @2x file is twice this. */
-export const THUMB_WIDTH = 160;
-/** Height of one frame in the bloom strip, px. */
-export const STRIP_HEIGHT = 160;
-const QUALITY = '60';
+export const THUMB_OUT = 'public/thumbs';
+/** Long side of a specimen thumbnail, px (never upscaled). */
+const THUMB_PX = 480;
+const QUALITY = '62';
 
-/** One AVIF of a sprite PNG at the given width (never upscaled), alpha kept. */
-export function thumb(spritePng: string, out: string, width: number): void {
+/** The specimen sprite per project, and the binomial to look for in its source entry (never inferred). */
+const SPECIMENS: readonly { project: string; sprite: string; latin?: string }[] = [
+  { project: 'garagic', sprite: 'ro/a-bloom-9' },
+  { project: 'php-playground', sprite: 'ro/b-bloom-9' },
+  { project: 'adhd-guija', sprite: 'es/lily-e', latin: 'Victoria regia' },
+  { project: 'ml-math', sprite: 'se/pod-3' },
+  { project: 'ai-engineering', sprite: 'se/bud-a', latin: 'Ornithogalum longibracteatum' },
+];
+
+/** One AVIF of a sprite PNG fitted into size x size (never upscaled), alpha kept. */
+export function thumb(spritePng: string, out: string, size: number): void {
   mkdirSync(dirname(out), { recursive: true });
-  execFileSync('magick', [spritePng, '-filter', 'Triangle', '-resize', `${width}x>`, '-quality', QUALITY, out]);
+  execFileSync('magick', [spritePng, '-filter', 'Triangle', '-resize', `${size}x${size}>`, '-quality', QUALITY, out]);
 }
 
-/** Bloom frames side by side, each scaled to STRIP_HEIGHT and centred in a square cell, alpha kept. */
-export function strip(framePngs: readonly string[], out: string): void {
-  mkdirSync(dirname(out), { recursive: true });
-  const cell = `${STRIP_HEIGHT}x${STRIP_HEIGHT}`;
-  const cells = framePngs.flatMap((f) => ['(', f, '-filter', 'Triangle', '-resize', cell, '-background', 'none', '-gravity', 'center', '-extent', cell, ')']);
-  execFileSync('magick', [...cells, '+append', '-quality', QUALITY, out]);
-}
+export interface ThumbEntry { project: string; file: string; source: string; plateTitle: string; latin: string }
+interface SourceInfo { id: string; title: string; notes?: string }
 
-/** Every DOM image of one project: both static widths and, with frames, the bloom strip. Returns the files written. */
-export function projectThumbs(projectId: string, spritePng: string, framePngs: readonly string[] = []): string[] {
-  const files = [join(THUMB_OUT, `${projectId}.avif`), join(THUMB_OUT, `${projectId}@2x.avif`)];
-  thumb(spritePng, files[0]!, THUMB_WIDTH);
-  thumb(spritePng, files[1]!, THUMB_WIDTH * 2);
-  if (framePngs.length > 0) {
-    files.push(join(THUMB_OUT, `${projectId}.strip.avif`));
-    strip(framePngs, files[2]!);
-  }
-  return files;
+export function runThumbs(sources: readonly SourceInfo[]): string {
+  if (!existsSync(REAL_CATALOG)) return 'thumbs: no real sprites yet';
+  const cat = readJson<RealCatalog>(REAL_CATALOG);
+  const byId = new Map(sources.map((s) => [s.id, s]));
+  const entries: ThumbEntry[] = SPECIMENS.map(({ project, sprite, latin }) => {
+    const meta = cat.sprites[sprite];
+    if (meta === undefined) throw new Error(`thumbs: sprite ${sprite} for ${project} is not built`);
+    const source = meta.sources[0]!;
+    const file = `${project}.avif`;
+    thumb(realPng(sprite, 'sprite'), join(THUMB_OUT, file), THUMB_PX);
+    const entry = byId.get(source);
+    if (entry === undefined) throw new Error(`thumbs: source ${source} of ${project} has no entry`);
+    const literal = latin !== undefined && `${entry.title} ${entry.notes ?? ''}`.includes(latin);
+    return { project, file, source, plateTitle: entry.title, latin: literal ? latin : '' };
+  });
+  writeJson(join(THUMB_OUT, 'manifest.json'), { size: THUMB_PX, thumbs: entries });
+  return `thumbs: ${entries.length} specimens in ${THUMB_OUT}/ with manifest.json`;
 }

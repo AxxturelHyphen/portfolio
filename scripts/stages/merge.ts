@@ -9,9 +9,10 @@ import { basename, join } from 'node:path';
 import type { AtlasManifest } from '../../src/types.ts';
 import { ATLAS_OUT, readJson, sha256, writeJson, type Cache } from './common.ts';
 import { EDITS, type Edit } from './sprites.ts';
+import { THUMB_OUT, type ThumbEntry } from './thumbs.ts';
 
 export interface SourceEntry { id: string; title: string; creator: string; date: string; institution: string; sourceUrl: string; license: string; licenseUrl: string; attribution: string; file: string; need: string }
-export interface MergedSource extends SourceEntry { category: string; sha256: string; usedIn: string[]; edits: { stage: string; tool: string; note: string }[] }
+export interface MergedSource extends SourceEntry { category: string; sha256: string; usedIn: string[]; shipped?: string[]; edits: { stage: string; tool: string; note: string }[] }
 export interface SourcesFile { generated: string; sources: MergedSource[]; own: { file: string; note: string }[] }
 
 export const SOURCES_DIR = 'archive/sources';
@@ -48,6 +49,15 @@ function shipUse(): Map<string, Set<string>> {
   return use;
 }
 
+/** Herbario thumbnails per source id (public/thumbs/manifest.json, written by the thumbs stage). */
+function thumbUse(): Map<string, string[]> {
+  const use = new Map<string, string[]>();
+  const manifest = join(THUMB_OUT, 'manifest.json');
+  if (!existsSync(manifest)) return use;
+  for (const t of readJson<{ thumbs: ThumbEntry[] }>(manifest).thumbs) use.set(t.source, [...(use.get(t.source) ?? []), join(THUMB_OUT, t.file)]);
+  return use;
+}
+
 function readOwn(): { file: string; note: string }[] {
   if (!existsSync('archive/OWN.json')) return [];
   const v = readJson<unknown>('archive/OWN.json');
@@ -62,6 +72,7 @@ export function runMerge(cache: Cache): string {
   const seen = new Set<string>();
   const sources: MergedSource[] = [];
   const use = shipUse();
+  const thumbs = thumbUse();
   const edits = existsSync(EDITS) ? readJson<Record<string, Edit[]>>(EDITS) : {};
   const files = existsSync(SOURCES_DIR) ? readdirSync(SOURCES_DIR).filter((f) => f.endsWith('.json')).sort() : [];
   for (const f of files) {
@@ -105,7 +116,8 @@ export function runMerge(cache: Cache): string {
         cache.set(key, stamp);
         cache.set(`${key}:v`, digest);
       }
-      sources.push({ ...e, license, file, category, sha256: digest, usedIn: [...(use.get(e.id) ?? [])].sort(), edits: use.has(e.id) ? (edits[e.id] ?? []) : [] });
+      const shipped = thumbs.get(e.id);
+      sources.push({ ...e, license, file, category, sha256: digest, usedIn: [...(use.get(e.id) ?? [])].sort(), ...(shipped === undefined ? {} : { shipped }), edits: use.has(e.id) ? (edits[e.id] ?? []) : [] });
     }
   }
   if (problems.length > 0) throw new Error(`merge: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`);

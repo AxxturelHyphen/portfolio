@@ -1,0 +1,177 @@
+{
+ "atlas": "intro",
+ "plates": {
+  "feather-rijks-bernard-pencil-feather": {
+   "drop": [
+    [
+     0.86,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "swallow-boraston-1909-pl59": {
+   "method": "ml",
+   "why": "bird on a blue painted ground"
+  },
+  "haeckel_acanthometra": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  }
+ },
+ "pages": [
+  {
+   "band": "the kaleidoscope: four inks on one page",
+   "jobs": [
+    {
+     "id": "in/hub",
+     "source": "haeckel_acanthometra",
+     "crop": [
+      0.13,
+      0.255,
+      0.865,
+      0.76
+     ],
+     "size": "medium",
+     "w": 1,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1b1a3a",
+        "#c29f5b",
+        "#e0c77c"
+       ],
+       "amount": 1,
+       "value": 0.85
+      }
+     ]
+    },
+    {
+     "id": "in/rose",
+     "source": "cma_1959_14",
+     "crop": [
+      0.41,
+      0.21,
+      0.77,
+      0.47
+     ],
+     "size": "small",
+     "w": 1,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1b1a3a",
+        "#b38783",
+        "#e6cfc8"
+       ],
+       "amount": 1,
+       "value": 0.85
+      }
+     ]
+    },
+    {
+     "id": "in/leaf",
+     "source": "cma_1959_14",
+     "crop": [
+      0.15,
+      0.5,
+      0.88,
+      0.82
+     ],
+     "size": "small",
+     "w": 1,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1b1a3a",
+        "#3b614c",
+        "#a9bfa6"
+       ],
+       "amount": 1,
+       "value": 0.85
+      }
+     ]
+    },
+    {
+     "id": "in/plume",
+     "source": "feather-rijks-bernard-pencil-feather",
+     "crop": [
+      0.06,
+      0.4,
+      0.93,
+      0.9
+     ],
+     "size": 512,
+     "w": 1,
+     "pivot": [
+      0.99,
+      0.06
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1b1a3a",
+        "#91809a",
+        "#d6cddb"
+       ],
+       "amount": 1,
+       "value": 0.85
+      }
+     ]
+    },
+    {
+     "id": "in/swallow",
+     "source": "swallow-boraston-1909-pl59",
+     "crop": [
+      0.2,
+      0.26,
+      0.86,
+      0.72
+     ],
+     "size": 320,
+     "w": 1,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "largest": true,
+     "rotate": 35,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1b1a3a",
+        "#91809a",
+        "#d6cddb"
+       ],
+       "amount": 1,
+       "value": 0.85
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

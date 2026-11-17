@@ -157,7 +157,7 @@ export function bedPages(bed: BedScene, cat: Catalog, warnings: string[], recipe
   };
   for (const l of bed.layers) for (const it of l.items) put(it.sprite, l.page, `layer ${l.id}`);
   const blooms: AtlasManifest['blooms'] = {};
-  for (const r of recipe?.pages ?? []) for (const b of r.blooms ?? []) if (cat.blooms[b.id] !== undefined) blooms[b.id] = cat.blooms[b.id]!;
+  for (const r of recipe?.pages ?? []) for (const id of [...(r.blooms ?? []), ...(r.sequences ?? [])].map((b) => b.id)) if (cat.blooms[id] !== undefined) blooms[id] = cat.blooms[id]!;
   for (const s of bed.slots) {
     if (s.bloom === undefined) continue;
     const def = cat.blooms[s.bloom];
@@ -218,6 +218,12 @@ export function runPack(beds: readonly BedScene[], warnings: string[]): AtlasMan
     overview.push(overviewItem(bed, item));
   }
   if (overview.length > 0) atlases.push(writeAtlas('overview', [overview], {}));
+  // A recipe for no bed and not the shared atlas is a standalone page set (the kaleidoscope intro), packed as written.
+  const bedIds = new Set<string>(beds.map((b) => b.id));
+  for (const r of recipes.values()) {
+    if (r.atlas === 'shared' || bedIds.has(r.atlas)) continue;
+    atlases.push(writeAtlas(r.atlas, recipePageIds(r).map((ids) => ids.map(item)), {}));
+  }
   const shared = recipes.get('shared');
   const bands = shared === undefined ? [[]] : recipePageIds(shared);
   const extra = SHARED_SPRITES.filter((id) => !bands.some((ids) => ids.includes(id)));

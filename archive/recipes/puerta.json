@@ -1,0 +1,335 @@
+{
+ "atlas": "puerta",
+ "plates": {
+  "met-362366": {
+   "method": "raw",
+   "why": "pale wash drawing: ML matte on each pier crop for a solid stone silhouette"
+  },
+  "met-705858": {
+   "method": "raw",
+   "why": "pale ironwork drawing: the dark lines are keyed by luminance so the bars stay alpha"
+  },
+  "swallow-naumann-taf145": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "nga-24833-door-plate": {
+   "drop": [
+    [
+     0.6,
+     0.85,
+     1,
+     1
+    ]
+   ]
+  }
+ },
+ "pages": [
+  {
+   "band": "piers and gate leaves",
+   "jobs": [
+    {
+     "id": "pu/pier-l",
+     "source": "met-362366",
+     "crop": [
+      0.17,
+      0.07,
+      0.385,
+      0.95
+     ],
+     "size": 1536,
+     "h": 3.2,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#7b6648",
+        "#c29f5b"
+       ],
+       "amount": 0.9,
+       "value": 0.6
+      }
+     ]
+    },
+    {
+     "id": "pu/pier-r",
+     "source": "met-362366",
+     "crop": [
+      0.615,
+      0.07,
+      0.83,
+      0.95
+     ],
+     "size": 1536,
+     "h": 3.2,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#7b6648",
+        "#c29f5b"
+       ],
+       "amount": 0.9,
+       "value": 0.6
+      }
+     ]
+    },
+    {
+     "id": "pu/leaf-l",
+     "source": "met-705858",
+     "crop": [
+      0.325,
+      0.36,
+      0.515,
+      0.69
+     ],
+     "size": "large",
+     "h": 2.6,
+     "bevel": 1,
+     "lumaKey": [
+      0.82,
+      0.6
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#544732",
+        "#a59174"
+       ],
+       "amount": 1,
+       "value": 0.5
+      }
+     ]
+    },
+    {
+     "id": "pu/leaf-r",
+     "source": "met-705858",
+     "crop": [
+      0.505,
+      0.36,
+      0.695,
+      0.69
+     ],
+     "size": "large",
+     "h": 2.6,
+     "bevel": 1,
+     "lumaKey": [
+      0.82,
+      0.6
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#544732",
+        "#a59174"
+       ],
+       "amount": 1,
+       "value": 0.5
+      }
+     ]
+    },
+    {
+     "id": "pu/urn",
+     "source": "met-705858",
+     "crop": [
+      0.22,
+      0.19,
+      0.32,
+      0.3
+     ],
+     "size": "small",
+     "h": 0.45,
+     "lumaKey": [
+      0.82,
+      0.6
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#544732",
+        "#a59174"
+       ],
+       "amount": 1,
+       "value": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "band": "dressing on the wall and the path",
+   "jobs": [
+    {
+     "id": "pu/plate",
+     "source": "nga-24833-door-plate",
+     "crop": [
+      0.2,
+      0.33,
+      0.78,
+      0.66
+     ],
+     "size": "small",
+     "w": 0.5,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "remove": [
+      {
+       "box": [
+        0.3,
+        0.41,
+        0.72,
+        0.58
+       ],
+       "fill": "#3a3431"
+      }
+     ]
+    },
+    {
+     "id": "pu/clematis",
+     "source": "wel_fryp428j",
+     "crop": [
+      0.08,
+      0.05,
+      0.92,
+      0.8
+     ],
+     "size": "medium",
+     "h": 1.3,
+     "tint": [
+      {
+       "hue": "pale",
+       "toward": "#d3c9c4",
+       "amount": 0.6
+      },
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "pu/vine",
+     "source": "wel_wm8trukn",
+     "crop": [
+      0.08,
+      0.06,
+      0.92,
+      0.88
+     ],
+     "size": "medium",
+     "h": 1.2,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.45
+      }
+     ]
+    },
+    {
+     "id": "pu/vine-2",
+     "source": "wel_wm8trukn",
+     "crop": [
+      0.08,
+      0.06,
+      0.92,
+      0.47
+     ],
+     "size": "small",
+     "h": 0.6,
+     "whole": 6,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.45
+      }
+     ]
+    },
+    {
+     "id": "pu/vine-3",
+     "source": "wel_wm8trukn",
+     "crop": [
+      0.08,
+      0.47,
+      0.92,
+      0.88
+     ],
+     "size": "small",
+     "h": 0.6,
+     "whole": 6,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.45
+      }
+     ]
+    },
+    {
+     "id": "pu/martin",
+     "source": "swallow-naumann-taf145",
+     "crop": [
+      0.44,
+      0.1,
+      0.82,
+      0.5
+     ],
+     "size": "small",
+     "w": 0.2,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d6c71",
+       "amount": 0.35
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "tiles": [
+  {
+   "id": "pu/plaster",
+   "source": "ph-damaged-plaster",
+   "size": 512,
+   "metres": 2,
+   "gm": [
+    "#544732",
+    "#b4947f",
+    "#e7dec0"
+   ],
+   "pitchMm": 14,
+   "soft": 2
+  }
+ ]
+}

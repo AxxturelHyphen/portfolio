@@ -1,0 +1,587 @@
+{
+ "atlas": "gruta",
+ "plates": {
+  "met-641334": {
+   "method": "raw",
+   "why": "wash drawing of a rock arch: dark rock kept by luminance, sky and doorway to alpha"
+  },
+  "haeckel_diatomea": {
+   "method": "raw",
+   "why": "white drawings on a black ground: luminance key"
+  },
+  "met_285342": {
+   "method": "raw",
+   "why": "seeds on a grey photographic ground: inverse luminance key"
+  }
+ },
+ "pages": [
+  {
+   "band": "the three flats and the rock door",
+   "jobs": [
+    {
+     "id": "gr/door",
+     "source": "met-641334",
+     "crop": [
+      0.0,
+      0.05,
+      1,
+      0.98
+     ],
+     "size": "large",
+     "w": 3.2,
+     "lumaKey": [
+      0.72,
+      0.5
+     ],
+     "remove": [
+      {
+       "box": [
+        0.46,
+        0.56,
+        0.66,
+        0.98
+       ],
+       "arch": true
+      }
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#544732",
+        "#a59174"
+       ],
+       "amount": 0.9,
+       "value": 0.6
+      }
+     ]
+    },
+    {
+     "id": "gr/wall",
+     "source": "haeckel_hexacoralla_69",
+     "crop": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "size": "large",
+     "h": 2.6,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#1d1710",
+        "#544732",
+        "#7b6648"
+       ],
+       "amount": 0.9,
+       "value": 0.6
+      }
+     ]
+    },
+    {
+     "id": "gr/shell-1",
+     "source": "met_824890",
+     "crop": [
+      0.36,
+      0.08,
+      0.62,
+      0.26
+     ],
+     "size": "small",
+     "w": 0.25,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "gr/shell-2",
+     "source": "met_824890",
+     "crop": [
+      0.34,
+      0.36,
+      0.62,
+      0.56
+     ],
+     "size": "small",
+     "w": 0.25,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "gr/shell-3",
+     "source": "met_824893",
+     "crop": [
+      0.42,
+      0.12,
+      0.68,
+      0.38
+     ],
+     "size": "small",
+     "w": 0.22,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "gr/seafan",
+     "source": "met_824901",
+     "crop": [
+      0.05,
+      0.08,
+      0.85,
+      0.85
+     ],
+     "size": "medium",
+     "h": 0.9,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#794747",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "gr/coral-1",
+     "source": "haeckel_florideae",
+     "crop": [
+      0.0,
+      0.43,
+      0.25,
+      0.88
+     ],
+     "size": "small",
+     "h": 0.5,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#794747",
+       "amount": 0.7
+      }
+     ]
+    },
+    {
+     "id": "gr/coral-2",
+     "source": "haeckel_florideae",
+     "crop": [
+      0.72,
+      0.48,
+      0.98,
+      0.85
+     ],
+     "size": "small",
+     "h": 0.45,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#794747",
+       "amount": 0.7
+      }
+     ]
+    },
+    {
+     "id": "gr/rosette-1",
+     "source": "haeckel_diatomea",
+     "crop": [
+      0.0,
+      0.0,
+      0.33,
+      0.225
+     ],
+     "size": "small",
+     "w": 0.2,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#544732",
+        "#8b663a",
+        "#c29f5b"
+       ],
+       "amount": 0.9
+      }
+     ]
+    },
+    {
+     "id": "gr/rosette-2",
+     "source": "haeckel_diatomea",
+     "crop": [
+      0.67,
+      0.0,
+      1.0,
+      0.225
+     ],
+     "size": "small",
+     "w": 0.2,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#544732",
+        "#8b663a",
+        "#c29f5b"
+       ],
+       "amount": 0.9
+      }
+     ]
+    },
+    {
+     "id": "gr/rosette-3",
+     "source": "haeckel_diatomea",
+     "crop": [
+      0.3,
+      0.25,
+      0.7,
+      0.54
+     ],
+     "size": "small",
+     "w": 0.24,
+     "lumaKey": [
+      0.12,
+      0.32
+     ],
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#544732",
+        "#8b663a",
+        "#c29f5b"
+       ],
+       "amount": 0.9
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "band": "floor, the seed ball, the car and the frame",
+   "jobs": [
+    {
+     "id": "gr/crystal-1",
+     "source": "wellcome_xgwhxufg",
+     "crop": [
+      0.08,
+      0.22,
+      0.58,
+      0.42
+     ],
+     "size": "medium",
+     "w": 0.3,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#b6a9b9",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "gr/crystal-2",
+     "source": "wellcome_xgwhxufg",
+     "crop": [
+      0.1,
+      0.58,
+      0.42,
+      0.86
+     ],
+     "size": "medium",
+     "w": 0.25,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#b6a9b9",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "gr/agate-1",
+     "source": "wellcome_rehdyr6t",
+     "crop": [
+      0.02,
+      0.26,
+      0.48,
+      0.55
+     ],
+     "size": "small",
+     "w": 0.16,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "gr/agate-2",
+     "source": "wellcome_rehdyr6t",
+     "crop": [
+      0.72,
+      0.53,
+      0.96,
+      0.66
+     ],
+     "size": "small",
+     "w": 0.1,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "gr/agate-3",
+     "source": "wellcome_rehdyr6t",
+     "crop": [
+      0.58,
+      0.69,
+      0.76,
+      0.81
+     ],
+     "size": "small",
+     "w": 0.09,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "gr/azurite",
+     "source": "wellcome_r2zuy7wu",
+     "crop": [
+      0.3,
+      0.02,
+      0.75,
+      0.3
+     ],
+     "size": "small",
+     "w": 0.1,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#3ea091",
+       "amount": 0.4
+      }
+     ]
+    },
+    {
+     "id": "gr/fern-a",
+     "source": "wel-sabj375w-four-fern-fronds",
+     "crop": [
+      0.5,
+      0.1,
+      0.7,
+      0.8
+     ],
+     "size": "small",
+     "h": 0.5,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "gr/fern-b",
+     "source": "wel-xwb8cbjq-three-ferns-1850",
+     "crop": [
+      0.45,
+      0.03,
+      0.95,
+      0.35
+     ],
+     "size": "small",
+     "h": 0.4,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "gr/frond",
+     "source": "wel_n7tudz7v",
+     "crop": [
+      0.2,
+      0.05,
+      0.8,
+      0.85
+     ],
+     "size": "medium",
+     "h": 2.0,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.55
+      }
+     ]
+    },
+    {
+     "id": "gr/frond-pair",
+     "source": "wel_nucvbqwp",
+     "crop": [
+      0.08,
+      0.03,
+      0.95,
+      0.85
+     ],
+     "size": "large",
+     "h": 1.8,
+     "tint": [
+      {
+       "hue": "green",
+       "gm": [
+        "#21422f",
+        "#3b614c",
+        "#5d816d"
+       ],
+       "amount": 0.55
+      }
+     ]
+    },
+    {
+     "id": "gr/fern-wing",
+     "source": "cma_1993_45",
+     "crop": [
+      0.2,
+      0.08,
+      0.95,
+      0.6
+     ],
+     "size": "medium",
+     "h": 1.5,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 4
+     }
+    },
+    {
+     "id": "gr/ball",
+     "source": "wel_tawc3fgb",
+     "crop": [
+      0.38,
+      0.15,
+      0.53,
+      0.37
+     ],
+     "size": "small",
+     "w": 0.16,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#ddd4cb",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "gr/car",
+     "source": "acg-cardboard002",
+     "crop": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "size": "medium",
+     "w": 0.42,
+     "drawn": "paper-car"
+    }
+   ]
+  }
+ ]
+}

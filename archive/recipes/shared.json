@@ -200,6 +200,10 @@
   "met-671072": {
    "method": "raw",
    "why": "red chalk hatching off the paper: keyed by luminance as a wing silhouette"
+  },
+  "peacock-rijks-barbiers-side-trail": {
+   "method": "ml",
+   "why": "bird on a printed ground; only its outline is kept"
   }
  },
  "pages": [
@@ -528,6 +532,60 @@
       ],
       "close": 8
      }
+    },
+    {
+     "id": "sh/lantern-cage",
+     "source": "nga-24353-cage-hand-lantern",
+     "crop": [
+      0.15,
+      0.15,
+      0.85,
+      0.92
+     ],
+     "size": "medium",
+     "h": 0.45
+    },
+    {
+     "id": "sh/lantern-tin",
+     "source": "nga-24317-pierced-tin-lantern",
+     "crop": [
+      0.28,
+      0.05,
+      0.78,
+      0.92
+     ],
+     "size": "medium",
+     "h": 0.4
+    },
+    {
+     "id": "sh/lantern-globe",
+     "source": "nga-24425-globe-lantern",
+     "crop": [
+      0.28,
+      0.12,
+      0.72,
+      0.82
+     ],
+     "size": "medium",
+     "h": 0.4
+    },
+    {
+     "id": "sh/peacock-stroll-1",
+     "source": "peacock-rijks-barbiers-side-trail",
+     "crop": [
+      0.03,
+      0.1,
+      0.97,
+      0.8
+     ],
+     "size": "small",
+     "h": 0.75,
+     "treat": "MASK",
+     "mask": {
+      "color": "#b6a9b9",
+      "blur": 1
+     },
+     "largest": true
     }
    ],
    "flags": {
@@ -712,6 +770,61 @@
      ],
      "size": "medium",
      "h": 1.1
+    },
+    {
+     "id": "v/skep",
+     "source": "nga-20836-straw-bee-skep",
+     "crop": [
+      0.08,
+      0.08,
+      0.92,
+      0.92
+     ],
+     "size": "medium",
+     "h": 0.6
+    },
+    {
+     "id": "v/stand",
+     "source": "wel-jvrhsteu-beehives-engraving",
+     "crop": [
+      0.72,
+      0.6,
+      0.92,
+      0.82
+     ],
+     "size": "small",
+     "h": 0.7,
+     "largest": true
+    },
+    {
+     "id": "v/barrow",
+     "source": "enc-1-079-wheelbarrow-hoes",
+     "crop": [
+      0.08,
+      0.66,
+      0.52,
+      0.88
+     ],
+     "size": "medium",
+     "w": 1.1,
+     "largest": true
+    },
+    {
+     "id": "v/cypress",
+     "source": "cma-117931",
+     "crop": [
+      0.08,
+      0.05,
+      0.5,
+      0.88
+     ],
+     "size": "medium",
+     "h": 3.0,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 4
+     }
     }
    ]
   },
@@ -813,9 +926,9 @@
    "size": 1024,
    "metres": 2.5,
    "gm": [
-    "#181634",
-    "#3a3550",
-    "#746583"
+    "#383732",
+    "#6a6a66",
+    "#9c978b"
    ],
    "pitchMm": 20
   },
@@ -826,9 +939,9 @@
    "size": 512,
    "metres": 2.5,
    "gm": [
-    "#181634",
-    "#2e3b3a",
-    "#5d6f66"
+    "#2e312c",
+    "#585e55",
+    "#878b7d"
    ],
    "pitchMm": 20,
    "soft": 2
@@ -840,8 +953,8 @@
    "size": 512,
    "metres": 1.5,
    "gm": [
-    "#2b2130",
-    "#5e506d",
+    "#3b362e",
+    "#76705f",
     "#a59174"
    ],
    "pitchMm": 12,
@@ -867,9 +980,9 @@
    "size": 512,
    "metres": 1.5,
    "gm": [
-    "#1c2a26",
-    "#3a4048",
-    "#6c6a78"
+    "#2e2e2b",
+    "#5c5b55",
+    "#8b887e"
    ],
    "pitchMm": 12
   },
@@ -880,9 +993,9 @@
    "size": 512,
    "metres": 1.5,
    "gm": [
-    "#16201d",
-    "#2f3d44",
-    "#5d6d66"
+    "#2a2f2a",
+    "#4f5a52",
+    "#7d867a"
    ],
    "pitchMm": 12
   },

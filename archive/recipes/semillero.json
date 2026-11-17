@@ -1,0 +1,708 @@
+{
+ "atlas": "semillero",
+ "plates": {
+  "haeckel_mycetozoa": {
+   "method": "raw",
+   "why": "white drawings on a black ground: luminance key"
+  },
+  "haeckel_tubulariae": {
+   "method": "raw",
+   "why": "tinted ground and crowded figures: ML matte per crop"
+  },
+  "haeckel_nepenthaceae": {
+   "method": "raw",
+   "why": "crowded figures: ML matte per crop"
+  },
+  "cma-132868-ornithogalum": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "cma-132619-garden-hyacinth": {
+   "drop": [
+    [
+     0,
+     0.9,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel-fkrcnr8h-magnolia-fruit": {
+   "drop": [
+    [
+     0,
+     0,
+     1,
+     0.06
+    ],
+    [
+     0,
+     0.88,
+     1,
+     1
+    ]
+   ]
+  },
+  "cm-burpee-1895-sweetpea-cover": {
+   "method": "ml",
+   "why": "printed cover on a coloured ground; only the flower art is kept"
+  },
+  "cm-burpee-1897-violet-cover": {
+   "method": "ml",
+   "why": "printed cover on a coloured ground; only the flower art is kept"
+  }
+ },
+ "pages": [
+  {
+   "band": "bed A, pitcher arch and the rock door",
+   "jobs": [
+    {
+     "id": "se/hydroid-1",
+     "source": "haeckel_tubulariae",
+     "crop": [
+      0.0,
+      0.3,
+      0.17,
+      0.95
+     ],
+     "size": "medium",
+     "h": 1.3,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "se/hydroid-2",
+     "source": "haeckel_tubulariae",
+     "crop": [
+      0.42,
+      0.4,
+      0.64,
+      0.97
+     ],
+     "size": "medium",
+     "h": 1.0,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "se/hydroid-3",
+     "source": "haeckel_tubulariae",
+     "crop": [
+      0.8,
+      0.32,
+      1.0,
+      0.97
+     ],
+     "size": "medium",
+     "h": 1.2,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "se/pitcher-1",
+     "source": "haeckel_nepenthaceae",
+     "crop": [
+      0.4,
+      0.22,
+      0.62,
+      0.55
+     ],
+     "size": "small",
+     "h": 0.3,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#b38783",
+       "amount": 0.5
+      },
+      {
+       "hue": "warm",
+       "toward": "#bba373",
+       "amount": 0.4
+      }
+     ]
+    },
+    {
+     "id": "se/pitcher-2",
+     "source": "haeckel_nepenthaceae",
+     "crop": [
+      0.62,
+      0.08,
+      0.84,
+      0.36
+     ],
+     "size": "small",
+     "h": 0.3,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#b38783",
+       "amount": 0.5
+      },
+      {
+       "hue": "warm",
+       "toward": "#bba373",
+       "amount": 0.4
+      }
+     ]
+    },
+    {
+     "id": "se/pitcher-3",
+     "source": "haeckel_nepenthaceae",
+     "crop": [
+      0.1,
+      0.45,
+      0.36,
+      0.72
+     ],
+     "size": "small",
+     "h": 0.3,
+     "ml": true,
+     "largest": true,
+     "pivot": [
+      0.5,
+      1
+     ],
+     "tint": [
+      {
+       "hue": "pink",
+       "toward": "#b38783",
+       "amount": 0.5
+      },
+      {
+       "hue": "warm",
+       "toward": "#bba373",
+       "amount": 0.4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "band": "bed B: the pod, the buds and the drawer",
+   "jobs": [
+    {
+     "id": "se/pod-0",
+     "source": "haeckel_mycetozoa",
+     "crop": [
+      0.11,
+      0.52,
+      0.28,
+      0.82
+     ],
+     "size": "medium",
+     "h": 0.75,
+     "lumaKey": [
+      0.1,
+      0.3
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#7b6648",
+        "#bba373",
+        "#fcf9db"
+       ],
+       "amount": 0.9,
+       "value": 0.7
+      }
+     ]
+    },
+    {
+     "id": "se/pod-1",
+     "source": "haeckel_mycetozoa",
+     "crop": [
+      0.27,
+      0.27,
+      0.48,
+      0.66
+     ],
+     "size": 768,
+     "h": 0.85,
+     "matte": [
+      [
+       0.29,
+       0.27
+      ],
+      [
+       0.48,
+       0.27
+      ],
+      [
+       0.48,
+       0.43
+      ],
+      [
+       0.35,
+       0.43
+      ],
+      [
+       0.34,
+       0.66
+      ],
+      [
+       0.27,
+       0.66
+      ]
+     ],
+     "lumaKey": [
+      0.1,
+      0.3
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#7b6648",
+        "#bba373",
+        "#fcf9db"
+       ],
+       "amount": 0.9,
+       "value": 0.7
+      }
+     ]
+    },
+    {
+     "id": "se/pod-2",
+     "source": "haeckel_mycetozoa",
+     "crop": [
+      0.5,
+      0.27,
+      0.73,
+      0.66
+     ],
+     "size": 768,
+     "h": 0.95,
+     "matte": [
+      [
+       0.51,
+       0.26
+      ],
+      [
+       0.74,
+       0.26
+      ],
+      [
+       0.74,
+       0.66
+      ],
+      [
+       0.61,
+       0.66
+      ],
+      [
+       0.61,
+       0.44
+      ],
+      [
+       0.51,
+       0.44
+      ]
+     ],
+     "lumaKey": [
+      0.1,
+      0.3
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#7b6648",
+        "#bba373",
+        "#fcf9db"
+       ],
+       "amount": 0.9,
+       "value": 0.7
+      }
+     ]
+    },
+    {
+     "id": "se/pod-3",
+     "source": "haeckel_mycetozoa",
+     "crop": [
+      0.34,
+      0.41,
+      0.64,
+      0.97
+     ],
+     "size": 768,
+     "h": 1.1,
+     "matte": [
+      [
+       0.34,
+       0.41
+      ],
+      [
+       0.65,
+       0.41
+      ],
+      [
+       0.65,
+       0.62
+      ],
+      [
+       0.53,
+       0.64
+      ],
+      [
+       0.52,
+       0.97
+      ],
+      [
+       0.46,
+       0.97
+      ],
+      [
+       0.46,
+       0.64
+      ],
+      [
+       0.34,
+       0.62
+      ]
+     ],
+     "lumaKey": [
+      0.1,
+      0.3
+     ],
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "gm": [
+        "#7b6648",
+        "#bba373",
+        "#fcf9db"
+       ],
+       "amount": 0.9,
+       "value": 0.7
+      }
+     ]
+    },
+    {
+     "id": "se/pod-b",
+     "source": "haeckel_basimycetes",
+     "crop": [
+      0.03,
+      0.03,
+      0.25,
+      0.3
+     ],
+     "size": "medium",
+     "h": 0.7,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#cdc7a0",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "se/bud-a",
+     "source": "cma-132868-ornithogalum",
+     "crop": [
+      0.1,
+      0.03,
+      0.92,
+      0.92
+     ],
+     "size": 768,
+     "h": 1.1
+    },
+    {
+     "id": "se/bud-a-half",
+     "source": "cma-132868-ornithogalum",
+     "crop": [
+      0.1,
+      0.03,
+      0.92,
+      0.92
+     ],
+     "size": 768,
+     "h": 1.1,
+     "remove": [
+      {
+       "box": [
+        0.25,
+        0.14,
+        0.51,
+        0.31
+       ],
+       "keep": "green"
+      }
+     ]
+    },
+    {
+     "id": "se/bud-a-closed",
+     "source": "cma-132868-ornithogalum",
+     "crop": [
+      0.1,
+      0.03,
+      0.92,
+      0.92
+     ],
+     "size": 768,
+     "h": 1.1,
+     "remove": [
+      {
+       "box": [
+        0.25,
+        0.14,
+        0.51,
+        0.46
+       ],
+       "keep": "green"
+      }
+     ]
+    },
+    {
+     "id": "se/bud-b",
+     "source": "cma-132619-garden-hyacinth",
+     "crop": [
+      0.12,
+      0.04,
+      0.88,
+      0.95
+     ],
+     "size": "medium",
+     "h": 0.5,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#a294a8",
+       "amount": 0.45
+      }
+     ]
+    },
+    {
+     "id": "se/physalis",
+     "source": "wel-zee8ph2h-chinese-lantern-watercolour",
+     "crop": [
+      0.1,
+      0.05,
+      0.98,
+      0.82
+     ],
+     "size": "medium",
+     "h": 1.1,
+     "tint": [
+      {
+       "hue": "warm",
+       "toward": "#b86f52",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "se/drawer-1",
+     "source": "wel-fkrcnr8h-magnolia-fruit",
+     "crop": [
+      0.02,
+      0.68,
+      0.26,
+      0.9
+     ],
+     "size": "small",
+     "w": 0.14,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#bba373",
+       "amount": 0.35
+      }
+     ]
+    },
+    {
+     "id": "se/drawer-4",
+     "source": "haeckel_coniferae",
+     "crop": [
+      0.36,
+      0.21,
+      0.62,
+      0.51
+     ],
+     "size": "small",
+     "w": 0.12,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#bba373",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "se/drawer-5",
+     "source": "haeckel_coniferae",
+     "crop": [
+      0.35,
+      0.61,
+      0.64,
+      0.98
+     ],
+     "size": "small",
+     "w": 0.12,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#bba373",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "se/drawer-6",
+     "source": "haeckel_coniferae",
+     "crop": [
+      0.7,
+      0.78,
+      0.99,
+      0.99
+     ],
+     "size": "small",
+     "w": 0.1,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#bba373",
+       "amount": 0.5
+      }
+     ]
+    },
+    {
+     "id": "se/packet-a",
+     "source": "cm-burpee-1895-sweetpea-cover",
+     "crop": [
+      0.35,
+      0.18,
+      0.98,
+      0.62
+     ],
+     "size": "small",
+     "h": 0.25,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "se/packet-b",
+     "source": "cm-burpee-1897-violet-cover",
+     "crop": [
+      0.05,
+      0.02,
+      0.75,
+      0.55
+     ],
+     "size": "small",
+     "h": 0.25,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "sequences": [
+    {
+     "id": "pod",
+     "kind": "pod",
+     "frames": [
+      "se/pod-0",
+      "se/pod-0",
+      "se/pod-0",
+      "se/pod-1",
+      "se/pod-1",
+      "se/pod-2",
+      "se/pod-2",
+      "se/pod-2",
+      "se/pod-3",
+      "se/pod-3"
+     ],
+     "rest": {
+      "idea": 0.1111,
+      "wip": 0.7778,
+      "shipped": 1
+     }
+    },
+    {
+     "id": "bud",
+     "kind": "bud",
+     "frames": [
+      "se/bud-a-closed",
+      "se/bud-a-closed",
+      "se/bud-a-closed",
+      "se/bud-a-closed",
+      "se/bud-a-half",
+      "se/bud-a-half",
+      "se/bud-a-half",
+      "se/bud-a",
+      "se/bud-a",
+      "se/bud-a"
+     ],
+     "rest": {
+      "idea": 0.1111,
+      "wip": 0.7778,
+      "shipped": 1
+     }
+    }
+   ]
+  }
+ ]
+}

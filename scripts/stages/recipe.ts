@@ -6,6 +6,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AtlasManifest, BloomDef, SpriteId } from '../../src/types.ts';
 import { readJson } from './common.ts';
+import type { Polygon } from './jobmatte.ts';
 
 /** x0, y0, x1, y1 as fractions of the plate (ART crop convention). */
 export type Box4 = [number, number, number, number];
@@ -69,7 +70,18 @@ export interface Job {
   rotate?: number;
   /** Mild warp for petal variants: horizontal shear and vertical squash, both small. */
   warp?: [number, number];
+  /** Salient-object ML matte on this crop alone (plates on a painted ground; the plate's method is 'raw'). */
+  ml?: boolean;
+  /** Hand garbage matte: keep only what lies inside this polygon of plate fractions (feathered). */
+  matte?: Polygon;
+  /** LK: light figure on a dark ground, alpha from luminance lo (gone) to hi (opaque). */
+  lumaKey?: [number, number];
+  /** Code-drawn instead of cut: the source only supplies the stock texture (the [FILL] paper-cut Coupé). */
+  drawn?: 'paper-car';
 }
+
+/** A bloom whose poses are separate drawings (lily, pod, bud): frames listed by pose, duplicates are held poses. */
+export interface Sequence { id: string; kind: BloomDef['kind']; frames: SpriteId[]; rest: BloomDef['rest'] }
 
 /** Bloom frames composited from nested layers of one drawing (cook/ART.md section 3.5). */
 export interface BloomLayers {
@@ -102,7 +114,7 @@ export interface PlateOpts {
 export interface Recipe {
   atlas: AtlasManifest['id'];
   plates: Record<string, PlateOpts>;
-  pages: { band: string; jobs: Job[]; blooms?: BloomLayers[]; flags?: FlagJob }[];
+  pages: { band: string; jobs: Job[]; blooms?: BloomLayers[]; sequences?: Sequence[]; flags?: FlagJob }[];
   /** Repeat-wrapped textures, each packed as a page of its own after the band pages. */
   tiles?: TileJob[];
 }

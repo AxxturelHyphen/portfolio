@@ -1,0 +1,635 @@
+{
+ "atlas": "salida",
+ "plates": {
+  "met-671072": {
+   "method": "raw",
+   "why": "red chalk hatching off the paper: keyed by luminance as a wing silhouette"
+  },
+  "wc-1925-schloss-dobrilugk-kien-r-ckseite-alter-frit": {
+   "method": "raw",
+   "why": "the whole card is the sprite: no key, printed lines painted out"
+  },
+  "wc-a-wish-postcard-1913-reverse": {
+   "method": "raw",
+   "why": "the whole card is the sprite: no key, printed lines painted out"
+  },
+  "wc-welcome-utah-utah-gains-statehood-back-50718307": {
+   "method": "raw",
+   "why": "the whole card is the sprite: no key, printed lines painted out"
+  },
+  "cm-roty-semeuse-1921-stamp": {
+   "method": "raw",
+   "why": "the stamp is opaque: cropped to the figure inside its lettering"
+  },
+  "swallow-boraston-1909-pl59": {
+   "method": "ml",
+   "why": "bird on a blue painted ground"
+  },
+  "nga-19892-tavern-sign-hanging": {
+   "drop": [
+    [
+     0,
+     0.95,
+     1,
+     1
+    ]
+   ]
+  },
+  "wel-cyjn4htg": {
+   "method": "raw",
+   "why": "crown drawn in dense hatching: keyed by luminance as a flat mass"
+  },
+  "swallow-sharpe-1896-pl28": {
+   "method": "raw",
+   "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  }
+ },
+ "pages": [
+  {
+   "band": "tree, branch and the far wall",
+   "jobs": [
+    {
+     "id": "sa/trunk",
+     "source": "met-671072",
+     "crop": [
+      0.26,
+      0.02,
+      0.72,
+      0.97
+     ],
+     "size": 1536,
+     "h": 4.6,
+     "ml": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#4a2f2a",
+       "amount": 0.6
+      }
+     ]
+    },
+    {
+     "id": "sa/branch",
+     "source": "cma-117931",
+     "crop": [
+      0.52,
+      0.1,
+      0.88,
+      0.85
+     ],
+     "size": "large",
+     "h": 2.4,
+     "treat": "INK",
+     "ink": {
+      "line": "#1b1528",
+      "wash": "#2a2033",
+      "washAlpha": 0.7
+     }
+    },
+    {
+     "id": "sa/canopy",
+     "source": "wel-cyjn4htg",
+     "crop": [
+      0.18,
+      0.08,
+      0.95,
+      0.62
+     ],
+     "size": "medium",
+     "h": 3.2,
+     "ml": true,
+     "treat": "MASK",
+     "mask": {
+      "color": "#1b1528",
+      "blur": 3
+     }
+    },
+    {
+     "id": "sa/dovecote",
+     "source": "rijks-farmyard-dovecote-posts",
+     "crop": [
+      0.3,
+      0.22,
+      0.62,
+      0.75
+     ],
+     "size": "medium",
+     "h": 3.0,
+     "treat": "INK",
+     "ink": {
+      "line": "#1b1a3a",
+      "wash": "#1b1a3a",
+      "washAlpha": 0.85
+     }
+    },
+    {
+     "id": "sa/sign",
+     "source": "nga-19892-tavern-sign-hanging",
+     "crop": [
+      0.22,
+      0.08,
+      0.8,
+      0.98
+     ],
+     "size": "medium",
+     "h": 1.0,
+     "remove": [
+      {
+       "box": [
+        0.3,
+        0.69,
+        0.7,
+        0.775
+       ],
+       "fill": "#4e5146"
+      }
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.3,
+       "amount": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "band": "what hangs from the branch",
+   "jobs": [
+    {
+     "id": "sa/swallow-hero",
+     "source": "swallow-sharpe-1896-pl28",
+     "crop": [
+      0.03,
+      0.24,
+      0.98,
+      0.94
+     ],
+     "size": "medium",
+     "w": 0.5,
+     "ml": true,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d6c71",
+       "amount": 0.35
+      }
+     ]
+    },
+    {
+     "id": "sa/swallow-dive",
+     "source": "swallow-boraston-1909-pl59",
+     "crop": [
+      0.2,
+      0.26,
+      0.86,
+      0.72
+     ],
+     "size": 320,
+     "w": 0.4,
+     "largest": true,
+     "rotate": 35,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d6c71",
+       "amount": 0.35
+      }
+     ]
+    },
+    {
+     "id": "sa/swallow-pair",
+     "source": "swallow-gould-birds-of-europe-chimney-swallow",
+     "crop": [
+      0.3,
+      0.3,
+      0.8,
+      0.62
+     ],
+     "size": "small",
+     "w": 0.5,
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d6c71",
+       "amount": 0.35
+      }
+     ]
+    },
+    {
+     "id": "sa/swallow-glide",
+     "source": "swallow-boraston-1909-pl59",
+     "crop": [
+      0.2,
+      0.26,
+      0.86,
+      0.72
+     ],
+     "size": "small",
+     "w": 0.4,
+     "largest": true,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#5d6c71",
+       "amount": 0.35
+      }
+     ]
+    },
+    {
+     "id": "sa/swallow-near",
+     "source": "swallow-swaysland-1883-pl2",
+     "crop": [
+      0.3,
+      0.18,
+      0.92,
+      0.86
+     ],
+     "size": "medium",
+     "w": 0.9,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 6
+     }
+    },
+    {
+     "id": "sa/nightingale",
+     "source": "nightingale-swaysland-1883-pl31",
+     "crop": [
+      0.22,
+      0.16,
+      0.8,
+      0.74
+     ],
+     "size": "small",
+     "w": 0.25,
+     "largest": true,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "sa/birdhouse",
+     "source": "nga-16077-zoar-bird-cage",
+     "crop": [
+      0.22,
+      0.18,
+      0.82,
+      0.8
+     ],
+     "size": "small",
+     "h": 0.4,
+     "tint": [
+      {
+       "hue": "green",
+       "toward": "#21422f",
+       "amount": 0.6
+      }
+     ]
+    },
+    {
+     "id": "sa/card-a",
+     "source": "wc-1925-schloss-dobrilugk-kien-r-ckseite-alter-frit",
+     "crop": [
+      0.01,
+      0.01,
+      0.99,
+      0.99
+     ],
+     "size": "medium",
+     "pivot": [
+      0.5,
+      1
+     ],
+     "remove": [
+      {
+       "box": [
+        0.42,
+        0.06,
+        0.48,
+        0.96
+       ],
+       "clone": [
+        -0.1,
+        0
+       ]
+      },
+      {
+       "box": [
+        0.48,
+        0.36,
+        0.97,
+        0.6
+       ],
+       "clone": [
+        0,
+        -0.3
+       ]
+      },
+      {
+       "box": [
+        0.48,
+        0.6,
+        0.97,
+        0.84
+       ],
+       "clone": [
+        0,
+        -0.5
+       ]
+      },
+      {
+       "box": [
+        0.86,
+        0.86,
+        0.99,
+        0.97
+       ],
+       "clone": [
+        -0.2,
+        0
+       ]
+      }
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#c3bbb2",
+       "amount": 0.6
+      }
+     ],
+     "w": 0.42
+    },
+    {
+     "id": "sa/card-b",
+     "source": "wc-a-wish-postcard-1913-reverse",
+     "crop": [
+      0.01,
+      0.01,
+      0.99,
+      0.99
+     ],
+     "size": "medium",
+     "pivot": [
+      0.5,
+      1
+     ],
+     "remove": [
+      {
+       "box": [
+        0.425,
+        0.07,
+        0.455,
+        0.99
+       ],
+       "clone": [
+        0.05,
+        0
+       ]
+      },
+      {
+       "box": [
+        0.05,
+        0.01,
+        0.425,
+        0.31
+       ],
+       "clone": [
+        0,
+        0.4
+       ]
+      },
+      {
+       "box": [
+        0.455,
+        0.01,
+        0.78,
+        0.31
+       ],
+       "clone": [
+        0,
+        0.4
+       ]
+      },
+      {
+       "box": [
+        0.78,
+        0.01,
+        0.99,
+        0.4
+       ],
+       "clone": [
+        0,
+        0.45
+       ]
+      },
+      {
+       "box": [
+        0.0,
+        0.25,
+        0.09,
+        0.8
+       ],
+       "clone": [
+        0.1,
+        0
+       ]
+      },
+      {
+       "box": [
+        0.0,
+        0.78,
+        0.13,
+        0.99
+       ],
+       "clone": [
+        0.15,
+        0
+       ]
+      }
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#c3bbb2",
+       "amount": 0.5
+      }
+     ],
+     "w": 0.42
+    },
+    {
+     "id": "sa/card-c",
+     "source": "wc-welcome-utah-utah-gains-statehood-back-50718307",
+     "crop": [
+      0.01,
+      0.01,
+      0.99,
+      0.99
+     ],
+     "size": "medium",
+     "pivot": [
+      0.5,
+      1
+     ],
+     "remove": [
+      {
+       "box": [
+        0.05,
+        0.01,
+        0.42,
+        0.31
+       ],
+       "clone": [
+        0,
+        0.45
+       ]
+      },
+      {
+       "box": [
+        0.0,
+        0.2,
+        0.05,
+        0.99
+       ],
+       "clone": [
+        0.06,
+        0
+       ]
+      },
+      {
+       "box": [
+        0.42,
+        0.32,
+        0.47,
+        0.83
+       ],
+       "clone": [
+        0.06,
+        0
+       ]
+      },
+      {
+       "box": [
+        0.47,
+        0.01,
+        0.8,
+        0.37
+       ],
+       "clone": [
+        0,
+        0.45
+       ]
+      },
+      {
+       "box": [
+        0.47,
+        0.37,
+        0.84,
+        0.5
+       ],
+       "clone": [
+        0,
+        0.3
+       ]
+      },
+      {
+       "box": [
+        0.8,
+        0.01,
+        0.99,
+        0.4
+       ],
+       "clone": [
+        0,
+        0.45
+       ]
+      },
+      {
+       "box": [
+        0.34,
+        0.91,
+        0.46,
+        0.99
+       ],
+       "clone": [
+        -0.12,
+        0
+       ]
+      }
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#c3bbb2",
+       "amount": 0.6
+      }
+     ],
+     "w": 0.42
+    },
+    {
+     "id": "sa/stamp",
+     "source": "cm-roty-semeuse-1921-stamp",
+     "crop": [
+      0.08,
+      0.16,
+      0.8,
+      0.7
+     ],
+     "size": "small",
+     "w": 0.05,
+     "tint": [
+      {
+       "hue": "all",
+       "sat": 0.35,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "sa/daisy",
+     "source": "wel_cq9tqxjj",
+     "crop": [
+      0.05,
+      0.1,
+      0.75,
+      0.9
+     ],
+     "size": "medium",
+     "h": 0.5
+    },
+    {
+     "id": "sa/grass-heads",
+     "source": "wel_qkbs7qjg",
+     "crop": [
+      0.2,
+      0.1,
+      0.75,
+      0.95
+     ],
+     "size": "medium",
+     "h": 0.8,
+     "treat": "MASK",
+     "mask": {
+      "color": "#141228",
+      "blur": 3
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -17,6 +17,8 @@ import { CLASS_PX, readRecipes, type Box4, type Job, type PlateOpts, type Recipe
 import { cropPart, fitLong, lowestPoint, transform } from './shape.ts';
 import { applyInk, applyMask, applyPaperRim, applyRemovals, applyTint, keepLargest, keepWhole } from './treat.ts';
 import { alphaBounds } from './sprite.ts';
+import { drawPaperCar } from './papercar.ts';
+import { applyCropMl, applyLumaKey, applyPolygon, defringe } from './jobmatte.ts';
 import { buildFlags, buildTile } from './tiles.ts';
 
 export const REAL = `${WORK}/real`;
@@ -28,7 +30,8 @@ export interface Edit { stage: string; tool: string; note: string }
 export interface RealCatalog extends Catalog { methods: Record<string, { method: string; tool: string; reason: string }>; tiles: SpriteId[] }
 
 const CUT_CODE = ['scripts/stages/cutout.ts', ...['color', 'image', 'matte', 'ml', 'morph', 'paper', 'quality'].map((f) => `scripts/stages/lib/${f}.ts`)];
-const JOB_CODE = ['scripts/stages/sprites.ts', 'scripts/stages/treat.ts', 'scripts/stages/shape.ts', 'scripts/stages/bloom.ts', 'scripts/stages/normal.ts', 'scripts/stages/tiles.ts', 'scripts/stages/recipe.ts'];
+const JOB_CODE = ['scripts/stages/sprites.ts', 'scripts/stages/treat.ts', 'scripts/stages/shape.ts', 'scripts/stages/bloom.ts', 'scripts/stages/normal.ts', 'scripts/stages/tiles.ts', 'scripts/stages/recipe.ts', 'scripts/stages/jobmatte.ts', 'scripts/stages/papercar.ts'];
+const FEATHER_SHARE = 1 / 400;
 export const SPRITE_PAD = 4;
 
 interface SourceRec { id: string; file: string }
@@ -93,6 +96,10 @@ const longOf = (j: Job, w: number, h: number): number => (j.size === 'native' ? 
 export function jobRaster(j: Job, cut: Raster, plate: PlateOpts): { color: Raster; meta: Omit<SpriteMeta, 'sources'> } {
   let part = cropPart(cut, j.crop);
   const toLocal = (fx: number, fy: number): [number, number] => [fx * cut.w - Math.round(j.crop[0] * cut.w), fy * cut.h - Math.round(j.crop[1] * cut.h)];
+  if (j.ml === true) applyCropMl(part);
+  if (j.matte !== undefined) applyPolygon(part, j.matte, toLocal, Math.max(1, Math.round(Math.max(part.w, part.h) * FEATHER_SHARE)));
+  if (j.lumaKey !== undefined) applyLumaKey(part, j.lumaKey);
+  if (j.ml === true || j.matte !== undefined || j.lumaKey !== undefined) defringe(part);
   applyRemovals(part, j.remove ?? [], toLocal);
   if (j.whole !== undefined) keepWhole(part, j.whole);
   if (j.largest === true) keepLargest(part, 0.5);
@@ -180,6 +187,11 @@ export function runSprites(cache: Cache, sources: readonly (SourceRec & { catego
         log(b.full.source, { stage: 'bloom', tool: 'nested layers cut along petal edges (polar edge path)', note: `${ids.join(', ')}: heart and middle ring, guards tucked, the plate (ring ${b.ring})` });
         cat.blooms[b.id] = { kind: b.kind, mode: 'frames', steps: b.stages.length + 3, frames: [...b.stages, ...ids], rest: b.rest };
       }
+      for (const q of page.sequences ?? []) {
+        const missing = q.frames.filter((id) => !page.jobs.some((j) => j.id === id));
+        if (missing.length > 0) throw new Error(`sprites: sequence ${q.id} names frames no job on its page makes: ${missing.join(', ')}`);
+        cat.blooms[q.id] = { kind: q.kind, mode: 'frames', steps: q.frames.length, frames: q.frames, rest: q.rest };
+      }
       if (page.flags !== undefined) {
         const f = page.flags;
         const ids = Array.from({ length: f.count }, (_, k) => `${f.prefix}-${k + 1}`);
@@ -214,7 +226,7 @@ export function runSprites(cache: Cache, sources: readonly (SourceRec & { catego
 
   function runJob(r: Recipe, j: Job): void {
     const plate = r.plates[j.source] ?? {};
-    const cut = plateCut(cache, j.source, plate, mem);
+    const cut: CutOut = j.drawn === 'paper-car' ? { image: drawPaperCar(sourceFile(j.source)), method: 'drawn', tool: 'code-drawn paper cut on the card stock (ImageMagick)', reason: '' } : plateCut(cache, j.source, plate, mem);
     const hash = hashInputs([], [code, JSON.stringify(j), JSON.stringify(plate.plateH ?? null), cache.get(`cut:${j.source}`) ?? '']);
     let meta: SpriteMeta | null = null;
     keep(j.id, `job:${j.id}`, hash, { size: [0, 0], pivot: [0, 0], sources: [j.source] }, () => {
@@ -227,6 +239,9 @@ export function runSprites(cache: Cache, sources: readonly (SourceRec & { catego
     log(j.source, { stage: 'cutout', tool: cut.tool, note: `${j.id}: ${cut.method}${cut.reason ? ` (${cut.reason})` : ''}, crop ${j.crop.join(',')}` });
     if ((j.remove ?? []).length > 0) log(j.source, { stage: 'sprite', tool: 'painted out', note: `${j.id}: ${(j.remove ?? []).map((m) => `${m.box.join(',')}${m.keep ? ` keeping ${m.keep}` : ''}`).join('; ')}` });
     for (const t of j.tint ?? []) log(j.source, { stage: 'tint', tool: 'OKLab hue-selected re-tint', note: `${j.id}: ${t.hue ?? 'all'} ${t.gm ? `GM ${t.gm.join('/')}` : ''}${t.toward ? `toward ${t.toward}` : ''}${t.sat !== undefined ? ` S under ${t.sat}` : ''}, amount ${t.amount ?? 0.6}` });
+    if (j.ml === true) log(j.source, { stage: 'cutout', tool: 'local ML matte on the crop (rembg birefnet-general), edge defringed', note: `${j.id}: painted ground, paper key cannot separate it` });
+    if (j.matte !== undefined) log(j.source, { stage: 'cutout', tool: 'hand garbage matte', note: `${j.id}: polygon of ${j.matte.length} points` });
+    if (j.lumaKey !== undefined) log(j.source, { stage: 'cutout', tool: 'luminance key (LK)', note: `${j.id}: ${j.lumaKey.join(' to ')}` });
     if (j.treat === 'INK' || j.treat === 'MASK') log(j.source, { stage: 'sprite', tool: j.treat, note: `${j.id}: ${JSON.stringify(j.ink ?? j.mask ?? {})}` });
   }
 
