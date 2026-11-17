@@ -1,6 +1,6 @@
 {
  "id": "overview",
- "hash": "95ac31e56e5f9da5",
+ "hash": "ddeda2b347700c99",
  "pages": [
   {
    "w": 512,
@@ -14,47 +14,142 @@
     "lo": "overview.0.n.lo.ktx2"
    },
    "fileBytes": {
-    "hi": 25828,
-    "lo": 11024
+    "hi": 28841,
+    "lo": 11189
    }
   }
  ],
  "sprites": {
-  "puerta": {
+  "semillero": {
    "page": 0,
    "uv": [
     0.015625,
-    0.625,
-    0.296875,
+    0.62109375,
+    0.21875,
     0.96875
    ],
    "size": [
-    9,
-    5.5
+    6.5,
+    5.51030068
    ],
    "pivot": [
-    0.5,
-    0
+    -4.153846153846154,
+    0.0018693498954398253
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "code:placeholder",
+    "nga-19941-tavern-sign-brown"
+   ]
+  },
+  "salida": {
+   "page": 0,
+   "uv": [
+    0.25,
+    0.65234375,
+    0.484375,
+    0.96875
+   ],
+   "size": [
+    7.5,
+    5.01030068
+   ],
+   "pivot": [
+    -5.133333333333334,
+    0.0020559005652331427
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder",
+    "nga-19941-tavern-sign-brown"
    ]
   },
   "rosaleda": {
    "page": 0,
    "uv": [
-    0.328125,
-    0.625,
-    0.609375,
+    0.515625,
+    0.70703125,
+    0.751953125,
     0.96875
    ],
    "size": [
-    9,
-    5.5
+    7.500000000000001,
+    4.13582172
    ],
    "pivot": [
-    0.5,
+    -0.8399999999999999,
+    0.2232204535160669
+   ],
+   "pad": 8,
+   "sources": [
+    "sigil-macrobian-planetary-wheel",
+    "nypl_rosa_multiflora_rambler",
+    "cma_1965_295",
+    "cma_1955_469",
+    "cma_1943_142",
+    "cma_1965_291",
+    "cma_1965_293",
+    "nga-16209-moravian-bench",
+    "wel-r6ssyh25-sleeping-cat",
+    "nga-27263-toleware-water-can",
+    "wel_etaatwun",
+    "wel_kbzakfgk",
+    "wel_r9zz3hu7",
+    "wel-gzgs6qm9-bracken-fiddleheads",
+    "cma_1955_471",
+    "cma_1965_294",
+    "wel-yb4y8cn4-eight-fungi",
+    "cma_1943_141",
+    "cma_1943_138",
+    "wel-easdhj2q-edible-snail",
+    "nga-18277-clay-flower-pot-red-rim",
+    "nga-24386-candle-lantern",
+    "nga-19941-tavern-sign-brown",
+    "met-344561",
+    "enc-1-081-garden-tools-ladder",
+    "nga-25799-trimming-shears",
+    "nga-25899-wooden-spade",
+    "wel_kmsvg748"
+   ]
+  },
+  "puerta": {
+   "page": 0,
+   "uv": [
+    0.515625,
+    0.38671875,
+    0.734375,
+    0.64453125
+   ],
+   "size": [
+    7,
+    4.11743222
+   ],
+   "pivot": [
+    0.42857142857142855,
+    0.004233760039892047
+   ],
+   "pad": 8,
+   "sources": [
+    "code:placeholder",
+    "wel_etaatwun",
+    "nga-19941-tavern-sign-brown",
+    "met-671072"
+   ]
+  },
+  "gruta": {
+   "page": 0,
+   "uv": [
+    0.783203125,
+    0.8046875,
+    0.884765625,
+    0.96875
+   ],
+   "size": [
+    3.200000000000003,
+    2.6
+   ],
+   "pivot": [
+    -9.968749999999991,
     0
    ],
    "pad": 8,
@@ -65,85 +160,23 @@
   "estanque": {
    "page": 0,
    "uv": [
-    0.640625,
-    0.65625,
-    0.921875,
-    0.96875
-   ],
-   "size": [
-    9,
-    5
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "salida": {
-   "page": 0,
-   "uv": [
-    0.015625,
     0.25,
-    0.296875,
-    0.5625
+    0.44921875,
+    0.482421875,
+    0.58984375
    ],
    "size": [
-    9,
-    5
+    7.399999999999999,
+    2.25
    ],
    "pivot": [
-    0.5,
-    0
+    -2.297297297297298,
+    0.06666666666666667
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
-   ]
-  },
-  "semillero": {
-   "page": 0,
-   "uv": [
-    0.328125,
-    0.31640625,
-    0.609375,
-    0.5625
-   ],
-   "size": [
-    9,
-    3.9
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "gruta": {
-   "page": 0,
-   "uv": [
-    0.640625,
-    0.34375,
-    0.7421875,
-    0.5625
-   ],
-   "size": [
-    3.2,
-    3.5
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
+    "code:placeholder",
+    "nga-19941-tavern-sign-brown"
    ]
   }
  },
