@@ -84,7 +84,7 @@ export interface Residency {
   want(active: BedId | null, heading: BedId | null, hover: BedId | null): void; stateOf(b: BedId): BedState; whenReady(b: BedId): Promise<void>;
   tick(c: Clock): void; readonly bytes: { beds: number; shared: number; targets: number; total: number; budget: number };
 }
-export interface AtlasManifest { id: BedId | 'overview' | 'shared'; hash: string; pages: AtlasPage[]; sprites: Record<SpriteId, SpriteRect>; blooms: Record<string, BloomDef> }
+export interface AtlasManifest { id: BedId | 'overview' | 'shared' | 'intro'; hash: string; pages: AtlasPage[]; sprites: Record<SpriteId, SpriteRect>; blooms: Record<string, BloomDef> }
 export interface AtlasPage { w: number; h: number; color: { hi: string; lo: string }; normal: { hi: string; lo: string }; fileBytes: { hi: number; lo: number } }
 export interface SpriteRect { page: number; uv: [number, number, number, number]; size: [number, number]; pivot: [number, number]; pad: number; sources: string[] }
 export interface BedScene { id: BedId; title: I18n; alt: I18n; pose: Pose; bounds: [number, number]; layers: Layer[]; slots: Slot[]; procedural: Proc[]; behaviour?: string }
