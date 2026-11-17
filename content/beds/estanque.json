@@ -1,34 +1,271 @@
 {
   "id": "estanque",
-  "title": {"en": "Estanque de la Luna", "es": "Estanque de la Luna"},
-  "alt": {"en": "A moon pond with a white peacock, a water lily for the album and a mandala sundial.", "es": "Un estanque de luna con un pavo real blanco, un nenúfar para el álbum y un reloj de sol mandala."},
-  "pose": {"x": 20.8, "y": 2.8, "z": 5.4, "pitch": -18, "fov": 35},
-  "bounds": [17, 24.4],
+  "title": {
+    "en": "Estanque de la Luna",
+    "es": "Estanque de la Luna"
+  },
+  "alt": {
+    "en": "A moon pond with a white peacock, a water lily for the album and a mandala sundial.",
+    "es": "Un estanque de luna con un pavo real blanco, un nenúfar para el álbum y un reloj de sol mandala."
+  },
+  "pose": {
+    "x": 20.8,
+    "y": 2.8,
+    "z": 5.4,
+    "pitch": -18,
+    "fov": 35
+  },
+  "bounds": [
+    17,
+    24.4
+  ],
   "shade": "#16163d",
   "layers": [
     {
       "id": "far",
-      "z": -4.22,
+      "z": -4.6,
       "minTier": "low",
       "page": 0,
       "items": [
-        {"sprite": "es/urn", "x": 17.6, "y": 1.2, "z": -5.4, "scale": 1, "h": 1.2, "hinge": 8, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/papyrus", "x": 24, "y": 0, "z": -4.5, "scale": 1, "h": 2.2, "hinge": -10, "lean": 8, "size": "large", "group": "D", "foot": "none", "shadow": true, "react": false, "sway": 0.02},
-        {"sprite": "sh/peacock-stroll-1", "x": 21, "y": 0, "z": -4.6, "scale": 1, "h": 0.75, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/lotus-leaf", "x": 22.6, "y": 0, "z": -3.6, "scale": 1, "h": 1, "hinge": -15, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/lotus-leaf", "x": 23, "y": 0, "z": -3.6, "scale": 1, "h": 1.3, "hinge": 0, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/lotus-leaf", "x": 23.4, "y": 0, "z": -3.6, "scale": 1, "h": 0.9, "hinge": 18, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false}
+        {
+          "sprite": "es/urn",
+          "x": 17.6,
+          "y": 1.2,
+          "z": -5.4,
+          "scale": 1,
+          "h": 1.2,
+          "hinge": 8,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false
+        },
+        {
+          "sprite": "es/lichen-1",
+          "x": 19.1,
+          "y": 0.55,
+          "z": -5.94,
+          "scale": 1,
+          "w": 0.3,
+          "hinge": 0,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": false
+        },
+        {
+          "sprite": "es/lichen-3",
+          "x": 22.9,
+          "y": 0.8,
+          "z": -5.94,
+          "scale": 1,
+          "w": 0.24,
+          "hinge": 0,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false
+        },
+        {
+          "sprite": "es/papyrus",
+          "x": 24.1,
+          "y": 0,
+          "z": -4.5,
+          "scale": 1,
+          "h": 2.2,
+          "hinge": -10,
+          "lean": 8,
+          "size": "large",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "sway": 0.02,
+          "reflect": {
+            "w": 1.3,
+            "colour": [
+              0.16,
+              0.18,
+              0.22
+            ]
+          }
+        }
       ]
     },
     {
       "id": "hero",
-      "z": -1.47,
+      "z": -3.4,
       "minTier": "low",
       "page": 0,
       "items": [
-        {"sprite": "es/peacock", "x": 20, "y": 0.05, "z": -3.4, "scale": 1, "h": 2.4, "hinge": -6, "lean": 0, "size": "hero", "group": "L", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/frog", "x": 21.2, "y": 0.02, "z": -0.4, "scale": 1, "h": 0.26, "hinge": 20, "lean": 8, "size": "small", "group": "M", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/dragonfly", "x": 22.6, "y": 0.7, "z": -0.6, "scale": 1, "w": 0.15, "hinge": 0, "lean": 0, "size": "small", "group": "D", "foot": "none", "shadow": false, "react": false}
+        {
+          "sprite": "es/peacock",
+          "x": 20,
+          "y": 0.05,
+          "z": -3.4,
+          "scale": 1,
+          "h": 2.4,
+          "hinge": -6,
+          "lean": 0,
+          "size": "hero",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "reflect": {
+            "w": 1.5,
+            "colour": [
+              0.78,
+              0.76,
+              0.84
+            ]
+          }
+        },
+        {
+          "sprite": "es/peacock-crest",
+          "x": 19.77,
+          "y": 2.22,
+          "z": -3.39,
+          "scale": 1,
+          "w": 0.16,
+          "hinge": -6,
+          "lean": 0,
+          "size": "small",
+          "group": "L",
+          "foot": "none",
+          "shadow": false,
+          "react": false
+        }
+      ]
+    },
+    {
+      "id": "water",
+      "z": -1.6,
+      "minTier": "low",
+      "page": 1,
+      "items": [
+        {
+          "sprite": "es/pad-3",
+          "x": 20.7,
+          "y": 0.01,
+          "z": -2.6,
+          "scale": 1,
+          "w": 1.0,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "rot": 24
+        },
+        {
+          "sprite": "es/pad-5",
+          "x": 23.1,
+          "y": 0.01,
+          "z": -2.5,
+          "scale": 1,
+          "w": 0.75,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "rot": -38
+        },
+        {
+          "sprite": "es/pad-1",
+          "x": 22.25,
+          "y": 0.01,
+          "z": -1.55,
+          "scale": 1,
+          "w": 0.9,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "rot": -8
+        },
+        {
+          "sprite": "es/pad-5",
+          "x": 21.25,
+          "y": 0.01,
+          "z": -0.45,
+          "scale": 1,
+          "w": 0.62,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "rot": 71
+        },
+        {
+          "sprite": "es/pad-3",
+          "x": 19.4,
+          "y": 0.01,
+          "z": -1.3,
+          "scale": 1,
+          "w": 0.55,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "rot": -112
+        },
+        {
+          "sprite": "es/frog",
+          "x": 21.2,
+          "y": 0.02,
+          "z": -0.42,
+          "scale": 1,
+          "h": 0.26,
+          "hinge": 20,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false
+        },
+        {
+          "sprite": "es/dragonfly",
+          "x": 22.7,
+          "y": 0.72,
+          "z": -0.6,
+          "scale": 1,
+          "w": 0.15,
+          "hinge": 0,
+          "lean": 0,
+          "size": "small",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false
+        }
       ]
     },
     {
@@ -37,19 +274,224 @@
       "minTier": "low",
       "page": 1,
       "items": [
-        {"sprite": "es/typha", "x": 23.9, "y": 0, "z": -1, "scale": 1, "h": 1.6, "hinge": 0, "lean": 8, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": true, "sway": 0.03},
-        {"sprite": "es/drum-base", "x": 18.3, "y": 0, "z": 0.1, "scale": 1, "h": 0.9, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "es/armillary", "x": 18.3, "y": 0.9, "z": 0.1, "scale": 1, "h": 1, "hinge": -6, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": true, "react": false},
-        {"sprite": "sh/board", "x": 17.9, "y": 0, "z": 0.6, "scale": 1, "h": 1.3, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "clump", "shadow": true, "react": false},
-        {"sprite": "sh/board", "x": 23.3, "y": 0, "z": 0.2, "scale": 1, "h": 1.3, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "clump", "shadow": true, "react": false}
+        {
+          "sprite": "es/typha",
+          "x": 23.9,
+          "y": 0,
+          "z": -1.0,
+          "scale": 1,
+          "h": 1.6,
+          "hinge": -4,
+          "lean": 8,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": true,
+          "sway": 0.03,
+          "reflect": {
+            "w": 0.45,
+            "colour": [
+              0.28,
+              0.3,
+              0.22
+            ]
+          }
+        },
+        {
+          "sprite": "es/typha-blade-2",
+          "x": 24.15,
+          "y": 0,
+          "z": -0.85,
+          "scale": 1,
+          "h": 1.35,
+          "hinge": 14,
+          "lean": 8,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": true,
+          "sway": 0.04
+        },
+        {
+          "sprite": "es/drum-base",
+          "x": 18.3,
+          "y": 0,
+          "z": 0.1,
+          "scale": 1,
+          "w": 0.9,
+          "hinge": 0,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false
+        },
+        {
+          "sprite": "es/armillary",
+          "x": 18.32,
+          "y": 0.82,
+          "z": 0.1,
+          "scale": 1,
+          "h": 1.0,
+          "hinge": -6,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false
+        },
+        {
+          "sprite": "es/plume-2",
+          "x": 21.6,
+          "y": 0.01,
+          "z": 1.1,
+          "scale": 1,
+          "w": 0.5,
+          "hinge": 0,
+          "lean": 8,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "rot": -17
+        },
+        {
+          "sprite": "sh/board",
+          "x": 17.9,
+          "y": 0,
+          "z": 0.6,
+          "scale": 1,
+          "h": 1.3,
+          "hinge": 0,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "clump",
+          "shadow": true,
+          "react": false
+        },
+        {
+          "sprite": "sh/board",
+          "x": 23.9,
+          "y": 0,
+          "z": 0.5,
+          "scale": 1,
+          "h": 1.3,
+          "hinge": 0,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "clump",
+          "shadow": true,
+          "react": false
+        }
       ]
     },
-    {"id": "wings", "z": 2.4, "minTier": "low", "page": 1, "items": [{"sprite": "es/iris-wing", "x": 19.2, "y": 0, "z": 2.4, "scale": 1, "h": 1.2, "hinge": 0, "lean": 0, "size": "medium", "group": "D", "foot": "none", "shadow": false, "react": false, "wing": true}]}
+    {
+      "id": "wings",
+      "z": 2.4,
+      "minTier": "low",
+      "page": 1,
+      "items": [
+        {
+          "sprite": "es/iris-wing",
+          "x": 19.2,
+          "y": 0,
+          "z": 2.4,
+          "scale": 1,
+          "h": 1.2,
+          "hinge": 0,
+          "lean": 0,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "wing": true
+        }
+      ]
+    }
   ],
   "slots": [
-    {"id": "lily-a", "kind": "project", "accepts": "lily", "x": 22.2, "y": 0.08, "z": -1.6, "scale": 1, "hinge": 0, "bloom": "lily", "hit": [0.8, 0.5], "label": "left"},
-    {"id": "lily-b", "kind": "project", "accepts": "lily", "x": 23, "y": 0.08, "z": -2.4, "scale": 0.7, "hinge": 0, "bloom": "lily", "hit": [0.6, 0.4], "label": "left"},
-    {"id": "sundial", "kind": "prop", "ref": "sundial", "x": 18.3, "y": 1.1, "z": 0.1, "scale": 0.8, "hinge": -6, "hit": [0.9, 0.9], "label": "right", "alt": {"en": "Mandala sundial", "es": "Reloj de sol mandala"}}
+    {
+      "id": "lily-a",
+      "kind": "project",
+      "accepts": "lily",
+      "x": 22.2,
+      "y": 0.02,
+      "z": -1.5,
+      "scale": 1,
+      "hinge": 0,
+      "bloom": "lily",
+      "hit": [
+        0.8,
+        0.5
+      ],
+      "label": "left"
+    },
+    {
+      "id": "lily-b",
+      "kind": "project",
+      "accepts": "lily",
+      "x": 23.1,
+      "y": 0.02,
+      "z": -2.45,
+      "scale": 0.7,
+      "hinge": 0,
+      "bloom": "lily",
+      "hit": [
+        0.6,
+        0.4
+      ],
+      "label": "left"
+    },
+    {
+      "id": "sundial",
+      "kind": "prop",
+      "ref": "sundial",
+      "x": 18.3,
+      "y": 1.1,
+      "z": 0.1,
+      "scale": 0.8,
+      "hinge": -6,
+      "hit": [
+        0.9,
+        0.9
+      ],
+      "label": "right",
+      "alt": {
+        "en": "Mandala sundial",
+        "es": "Reloj de sol mandala"
+      }
+    }
   ],
-  "procedural": [{"type": "pond", "x": 21, "y": 0, "z": -1.8, "w": 7.2, "h": 4.8},{"type": "sundial", "x": 18.3, "y": 1, "z": 0.12, "w": 0.8, "h": 0.8},{"type": "fireflies", "x": 19.5, "y": 1.4, "z": -3.2, "w": 4, "h": 1.6, "params": {"count": 5}}]
+  "procedural": [
+    {
+      "type": "pond",
+      "x": 21,
+      "y": 0,
+      "z": -1.8,
+      "w": 7.2,
+      "h": 4.8
+    },
+    {
+      "type": "fireflies",
+      "x": 19.5,
+      "y": 1.4,
+      "z": -3.2,
+      "w": 4,
+      "h": 1.6,
+      "params": {
+        "count": 5
+      }
+    }
+  ],
+  "actorSprite": "es/plume-1",
+  "behaviour": "estanque"
 }
