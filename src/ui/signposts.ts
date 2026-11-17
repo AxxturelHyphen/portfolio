@@ -10,7 +10,7 @@ import { createMover, type Mover } from './xform.ts';
  * Where world supplies sign anchors (setAnchors), the label sits on its canvas board: projected each frame in stage
  * 'dom' (only when the rig moved), snapped to whole pixels, and docked to the nearest screen edge at the same height
  * when the board leaves the view, so a sign never disappears. Without anchors both signs dock at the screen edges
- * at mid height; on phones they sit under the fixed controls, clear of the hero and the tag strip.
+ * in the bottom third; on phones they stand above the folded plan, clear of the fixed controls and the hero.
  */
 
 /** One canvas board: shown while `bed` is the current place; it points `dir` toward `to`. World point of the label. */
@@ -28,6 +28,9 @@ export interface Signposts {
 
 const EDGE_PX = 16;
 const TOP_PX = 76;
+/** The board's stake below it (signs.css) stays on screen; a docked board stands with its foot at this height. */
+const STAKE_PX = 58;
+const DOCK_FOOT = 0.76;
 const NARROW = '(max-width: 44.99rem)';
 const SHOWN: readonly State['phase'][] = ['bed', 'focus'];
 const ARROW = 'M1 6H17M12 1.5L17 6L12 10.5';
@@ -131,12 +134,12 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     if (a === undefined) return;
     rig.project(a.at[0], a.at[1], a.at[2], pt);
     const maxX = vw - EDGE_PX - s.w;
-    const maxY = vh - EDGE_PX - s.h;
+    const maxY = vh - EDGE_PX - s.h - STAKE_PX;
     let x = pt.x - s.w / 2;
     let y = pt.y - s.h;
     if (!pt.visible) {
       x = s.dir < 0 ? EDGE_PX : maxX;
-      y = vh / 2 - s.h / 2;
+      y = vh * DOCK_FOOT - s.h;
     }
     s.mover.move(Math.round(x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x), Math.round(y < TOP_PX ? TOP_PX : y > maxY ? maxY : y), 1);
   }

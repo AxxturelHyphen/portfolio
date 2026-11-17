@@ -1,7 +1,8 @@
 /*
- * Signposts (cook/ART.md section 4): the place name in Kalnia and one drawn arrow on a night plate. Anchored signs
- * are moved by transform in stage 'dom'; docked signs (no anchor yet, and every phone) sit at the screen edges at
- * mid height. Hover nudges the plate 4 px the way it points. Shown only while a bed is the current place.
+ * Signposts (cook/ART.md section 4): a japanned zinc board on a stake, the place name engraved in Kalnia and one
+ * drawn arrow. The board leans a little the way it points and its stake runs down toward the ground. Anchored signs
+ * are moved by transform in stage 'dom'; docked signs (no anchor yet, and every phone) stand in the bottom third at
+ * the screen edges, never in the fixed controls' row. Hover nudges the board 4 px the way it points.
  */
 
 .px-signs {
@@ -52,8 +53,30 @@
   display: none;
 }
 
+/* The stake: zinc, 5 px, from under the board down toward the ground line, with a pale keyline on its lit side. */
+.px-sign::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 6px);
+  left: calc(50% - 2.5px);
+  width: 5px;
+  height: 52px;
+  background: var(--zinc);
+  border-left: 1px solid rgb(243 230 207 / 0.3);
+  pointer-events: none;
+}
+
+.px-sign-name {
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
+}
+
 .px-sign[data-dir="prev"] {
   flex-direction: row-reverse;
+  rotate: -2deg;
+}
+
+.px-sign[data-dir="next"] {
+  rotate: 2deg;
 }
 
 .px-sign-arrow {
@@ -85,8 +108,8 @@
 }
 
 .px-sign[data-docked] {
-  top: 50%;
-  margin-top: calc(var(--target) / -2);
+  top: auto;
+  bottom: 24vh;
 }
 
 .px-sign[data-docked][data-dir="prev"] {
@@ -98,11 +121,11 @@
   right: max(var(--edge), env(safe-area-inset-right, 0px));
 }
 
-/* Phones: both signs dock under the fixed controls, clear of the hero (centre) and the tag strip (bottom). */
+/* Phones: both boards stand in the bottom third, their stakes ending above the folded plan, far from the controls. */
 @media (max-width: 44.99rem) {
   .px-signs .px-sign {
-    top: calc(max(10px, env(safe-area-inset-top, 0px)) + var(--target) + 10px);
-    margin-top: 0;
+    top: auto;
+    bottom: calc(max(10px, env(safe-area-inset-bottom, 0px)) + var(--target) + 76px);
     max-width: 38vw;
     padding: 4px 0.5rem;
     gap: 6px;
