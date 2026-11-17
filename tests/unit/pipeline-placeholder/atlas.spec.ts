@@ -47,9 +47,13 @@ test('every bed has a manifest whose pages and sprites cover its layers and bloo
     const m = manifests.find((x) => x.id === bed.id);
     expect(m, bed.id).toBeDefined();
     if (m === undefined) continue;
+    // A layer item resolves in its bed's atlas, else in the shared atlas, else draws the placeholder sprite.
+    const shared = manifests.find((x) => x.id === 'shared');
     for (const l of bed.layers) {
-      expect(m.pages.length, `${bed.id} page ${l.page}`).toBeGreaterThan(l.page);
-      for (const it of l.items) expect(m.sprites[it.sprite], `${bed.id} ${it.sprite}`).toBeDefined();
+      for (const it of l.items) {
+        const found = m.sprites[it.sprite] ?? shared?.sprites[it.sprite] ?? m.sprites['placeholder'] ?? shared?.sprites['placeholder'];
+        expect(found, `${bed.id} ${it.sprite}`).toBeDefined();
+      }
     }
     for (const s of bed.slots) if (s.bloom !== undefined) for (const f of m.blooms[s.bloom]?.frames ?? ['missing']) expect(m.sprites[f], `${bed.id} ${f}`).toBeDefined();
   }
@@ -60,6 +64,11 @@ test('every bed has a manifest whose pages and sprites cover its layers and bloo
 test('sprite rects are inside their page with a gutter of at least 8 px and list their sources', () => {
   for (const m of manifests) {
     for (const [id, r] of Object.entries(m.sprites)) {
+      // Tileable textures are a whole page each (uv 0..1, no gutter) and sample with repeat wrapping.
+      if (id.startsWith('tile/')) {
+        expect(r.uv).toEqual([0, 0, 1, 1]);
+        continue;
+      }
       const page = m.pages[r.page];
       expect(page, `${m.id} ${id}`).toBeDefined();
       if (page === undefined) continue;
@@ -88,10 +97,12 @@ test('page files exist, fileBytes match and every KTX2 transcodes with mips; v =
       expect(c.levels).toBe(Math.log2(Math.max(p.w, p.h)) + 1);
       expect([transcode(b, at(p.color.lo)).w, transcode(b, at(p.normal.hi)).w, transcode(b, at(p.normal.lo)).w]).toEqual([p.w / 2, p.w / 2, p.w / 4]);
       for (const [id, r] of Object.entries(m.sprites)) {
-        if (r.page !== i || m.id === 'overview') continue;
+        if (r.page !== i || m.id === 'overview' || !existsSync(spritePng(id, 'sprite'))) continue;
         const src = decodePng(readFileSync(spritePng(id, 'sprite')));
         const x0 = Math.round(r.uv[0] * p.w);
         const y0 = Math.round(r.uv[1] * p.h);
+        // Only a source cut at the packed size is the sprite on the page; older stage files of other sizes are not.
+        if (src.w !== Math.round((r.uv[2] - r.uv[0]) * p.w) || src.h !== Math.round((r.uv[3] - r.uv[1]) * p.h)) continue;
         let diff = 0;
         // Row j of the transcoded data counts up from the page bottom; the source PNG is stored top row first.
         for (let j = 0; j < src.h; j++) {

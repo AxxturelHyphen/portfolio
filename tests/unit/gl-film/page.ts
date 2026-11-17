@@ -69,7 +69,7 @@ function apply(s: Shot): FilmDriver {
   const u = pass.uniforms;
   const [fx, fy] = s.flower ?? [0.62, 0.42];
   irisOf(s.open ?? 0, fx, fy, W / H, u.uIris.value);
-  if (s.leg !== undefined) stripOf(s.leg, 1, u.uStrip.value);
+  if (s.leg !== undefined) stripOf(s.leg, 2, u.uStrip.value);
   else if (s.stripX !== undefined) u.uStrip.value.set(s.stripX, 0.03, 1, 1);
   else u.uStrip.value.set(0, 0, 0, 0);
   pass.tick(clock, s.reduced ?? false, 1);

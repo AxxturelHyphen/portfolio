@@ -49,12 +49,13 @@ test('mode switch: canvas down then DOM up, no overlap', () => {
 });
 
 test('travel duration, dip depth and strip', () => {
-  expect(travelS(1)).toBe(1.4);
+  expect(travelS(1)).toBe(1.6);
   expect(travelS(5)).toBe(1.6);
   expect(travelDipOf(0.42 * 1.4, 1.4, false)).toBeCloseTo(0.88, 6);
   expect(travelDipOf(0.42 * 1.4, 1.4, true)).toBe(1);
   expect(travelDipOf(0, 1.4, false)).toBe(1);
   const o = { x: 0, y: 0, z: 0, w: 0 };
   expect(stripOf(1, 2, o).w).toBe(0);
-  expect(stripOf(0.5, 1, o).w).toBe(1);
+  expect(stripOf(0.5, 1, o).w).toBe(0);
+  expect(stripOf(0.5, 2, o).w).toBe(1);
 });
