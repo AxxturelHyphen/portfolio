@@ -27,7 +27,8 @@ export interface Signposts {
 }
 
 const EDGE_PX = 16;
-const TOP_PX = 76;
+/** Below the fixed labels and the exit hint that hangs under them. */
+const TOP_PX = 120;
 /** The board's stake below it (signs.css) stays on screen; a docked board stands with its foot at this height. */
 const STAKE_PX = 58;
 const DOCK_FOOT = 0.76;

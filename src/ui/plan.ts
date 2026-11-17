@@ -4,11 +4,11 @@ import './styles/plan.css';
 import type { BedSign } from './signposts.ts';
 
 /**
- * The garden plan (cook/ART.md section 4), bottom left. Folded: a night plate with the garden's own 8-point rose.
+ * The garden plan (cook/ART.md section 4), bottom left. Folded: a zinc plant label that reads "Plan", text only.
  * Open (click, or M): a strip plan drawn in pale engraved line (hatched wall, winding path, pond, beds, tree) with
  * one button per place, and a small moth in pale rose over the place where the visitor is. A place button travels
  * there (GOTO). Esc folds the plan first (the garden's own Esc then waits for the next press), and focus returns to
- * the rose. No visited marks and no grotto.
+ * the label. No visited marks and no grotto.
  */
 
 export interface Plan {
@@ -19,7 +19,6 @@ export interface Plan {
 const SVG = 'http://www.w3.org/2000/svg';
 const W = 360;
 const H = 104;
-const ROSE = 'M12 1L13.6 10.4L23 12L13.6 13.6L12 23L10.4 13.6L1 12L10.4 10.4ZM12 5.2L14.6 9.4L18.8 12L14.6 14.6L12 18.8L9.4 14.6L5.2 12L9.4 9.4Z';
 const MOTH = 'M7 3.6C5.6 1 2 0.6 1 2.2C0.2 3.8 2.4 5.6 5.6 5.4C3 6.2 2.2 8.4 3.6 9.2C5 9.8 6.4 7.8 7 5.8C7.6 7.8 9 9.8 10.4 9.2C11.8 8.4 11 6.2 8.4 5.4C11.6 5.6 13.8 3.8 13 2.2C12 0.6 8.4 1 7 3.6Z';
 
 /** The engraved strip: wall with hatching along the back, the winding path, then one small motif per place. */
@@ -50,13 +49,12 @@ function svg(cls: string, box: string, paths: readonly string[]): SVGSVGElement 
 export function createPlan(parent: HTMLElement, m: Machine): Plan {
   const root = document.createElement('div');
   root.className = 'pl';
-  const rose = document.createElement('button');
-  rose.type = 'button';
-  rose.className = 'pl-rose';
-  rose.setAttribute('aria-expanded', 'false');
-  rose.setAttribute('aria-controls', 'pl-sheet');
-  rose.setAttribute('aria-keyshortcuts', 'M');
-  rose.append(svg('pl-rose-mark', '0 0 24 24', [ROSE]));
+  const tag = document.createElement('button');
+  tag.type = 'button';
+  tag.className = 'pl-tag';
+  tag.setAttribute('aria-expanded', 'false');
+  tag.setAttribute('aria-controls', 'pl-sheet');
+  tag.setAttribute('aria-keyshortcuts', 'M');
   const sheet = document.createElement('section');
   sheet.className = 'pl-sheet';
   sheet.id = 'pl-sheet';
@@ -73,7 +71,7 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   places.className = 'pl-places';
   map.append(drawing, moth, places);
   sheet.append(title, map);
-  root.append(sheet, rose);
+  root.append(sheet, tag);
   parent.append(root);
 
   let beds: readonly BedSign[] = [];
@@ -81,9 +79,9 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
 
   function setOpen(open: boolean, refocus: boolean): void {
     root.toggleAttribute('data-open', open);
-    rose.setAttribute('aria-expanded', String(open));
+    tag.setAttribute('aria-expanded', String(open));
     sheet.inert = !open;
-    if (!open && refocus && sheet.contains(document.activeElement)) rose.focus({ preventScroll: true });
+    if (!open && refocus && sheet.contains(document.activeElement)) tag.focus({ preventScroll: true });
   }
   const isOpen = (): boolean => root.hasAttribute('data-open');
 
@@ -97,7 +95,7 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     }
   }
 
-  rose.addEventListener('click', () => setOpen(!isOpen(), false));
+  tag.addEventListener('click', () => setOpen(!isOpen(), false));
   places.addEventListener('click', (e) => {
     const bed = e.target instanceof Element ? e.target.closest<HTMLElement>('[data-bed]')?.dataset.bed : undefined;
     const target = beds.find((b) => b.id === bed);
@@ -122,7 +120,8 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       const lang = m.state.lang;
       const label = uiText(null, lang, 'plan.title');
       title.textContent = label;
-      rose.setAttribute('aria-label', label);
+      tag.textContent = uiText(null, lang, 'plan.tag');
+      tag.setAttribute('aria-label', label);
       places.style.setProperty('--cols', String(next.length));
       places.replaceChildren(...next.map((b) => {
         const li = document.createElement('li');

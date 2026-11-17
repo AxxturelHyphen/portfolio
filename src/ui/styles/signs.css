@@ -1,8 +1,9 @@
 /*
  * Signposts (cook/ART.md section 4): a japanned zinc board on a stake, the place name engraved in Kalnia and one
- * drawn arrow. The board leans a little the way it points and its stake runs down toward the ground. Anchored signs
- * are moved by transform in stage 'dom'; docked signs (no anchor yet, and every phone) stand in the bottom third at
- * the screen edges, never in the fixed controls' row. Hover nudges the board 4 px the way it points.
+ * drawn arrow, large enough to read at a glance, with a drop shadow cast on the scene. The board leans a little the
+ * way it points and its stake runs down toward the ground. Anchored signs are moved by transform in stage 'dom';
+ * docked signs (no anchor yet, and every phone) stand in the bottom third at the screen edges, never in the fixed
+ * controls' row. Hover nudges the board 4 px the way it points.
  */
 
 .px-signs {
@@ -30,9 +31,9 @@
   left: 0;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: var(--target);
-  padding: 0 0.75rem;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0.25rem 1.125rem;
   border: 6px solid transparent;
   border-image: var(--plate-night) 8 fill / 8px stretch;
   background: none;
@@ -40,9 +41,10 @@
   font-family: var(--font-display);
   font-synthesis: none;
   font-weight: 400;
-  font-size: 1.0625rem;
+  font-size: 1.375rem;
   line-height: 1.1;
   white-space: nowrap;
+  filter: drop-shadow(4px 8px 5px rgb(8 6 14 / 0.6));
   pointer-events: auto;
   cursor: pointer;
   will-change: transform;
@@ -59,7 +61,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: calc(50% - 2.5px);
-  width: 5px;
+  width: 6px;
   height: 52px;
   background: var(--zinc);
   border-left: 1px solid rgb(243 230 207 / 0.3);
@@ -80,12 +82,12 @@
 }
 
 .px-sign-arrow {
-  width: 18px;
-  height: 12px;
+  width: 24px;
+  height: 16px;
   flex: none;
   fill: none;
   stroke: var(--zinc-rose);
-  stroke-width: 1.25;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -126,10 +128,11 @@
   .px-signs .px-sign {
     top: auto;
     bottom: calc(max(10px, env(safe-area-inset-bottom, 0px)) + var(--target) + 76px);
-    max-width: 38vw;
-    padding: 4px 0.5rem;
-    gap: 6px;
-    font-size: 0.9375rem;
+    max-width: 44vw;
+    min-height: 52px;
+    padding: 4px 0.625rem;
+    gap: 8px;
+    font-size: 1.125rem;
     white-space: normal;
     text-wrap: balance;
     transform: none !important;
