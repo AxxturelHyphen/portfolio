@@ -1,10 +1,10 @@
 {
  "id": "estanque",
- "hash": "475ef320ded41be7",
+ "hash": "822ca136d509921b",
  "pages": [
   {
-   "w": 512,
-   "h": 512,
+   "w": 2048,
+   "h": 2048,
    "color": {
     "hi": "estanque.0.c.ktx2",
     "lo": "estanque.0.c.lo.ktx2"
@@ -14,13 +14,13 @@
     "lo": "estanque.0.n.lo.ktx2"
    },
    "fileBytes": {
-    "hi": 45853,
-    "lo": 20526
+    "hi": 456660,
+    "lo": 141879
    }
   },
   {
-   "w": 512,
-   "h": 512,
+   "w": 2048,
+   "h": 2048,
    "color": {
     "hi": "estanque.1.c.ktx2",
     "lo": "estanque.1.c.lo.ktx2"
@@ -30,23 +30,39 @@
     "lo": "estanque.1.n.lo.ktx2"
    },
    "fileBytes": {
-    "hi": 16838,
-    "lo": 8377
+    "hi": 474948,
+    "lo": 155310
+   }
+  },
+  {
+   "w": 1024,
+   "h": 2048,
+   "color": {
+    "hi": "estanque.2.c.ktx2",
+    "lo": "estanque.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "estanque.2.n.ktx2",
+    "lo": "estanque.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 343562,
+    "lo": 116461
    }
   }
  ],
  "sprites": {
-  "es/lotus-leaf": {
+  "es/peacock": {
    "page": 0,
    "uv": [
-    0.015625,
-    0.734375,
-    0.365234375,
-    0.984375
+    0.00390625,
+    0.24609375,
+    0.49560546875,
+    0.99609375
    ],
    "size": [
-    1.4,
-    1
+    1.5817,
+    2.4126
    ],
    "pivot": [
     0.5,
@@ -54,20 +70,83 @@
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "peacock-rijks-white-on-branch"
    ]
   },
   "es/papyrus": {
    "page": 0,
    "uv": [
-    0.396484375,
-    0.734375,
-    0.646484375,
-    0.984375
+    0.50341796875,
+    0.74609375,
+    0.673828125,
+    0.99609375
    ],
    "size": [
-    1,
-    1
+    1.5234,
+    2.2349
+   ],
+   "pivot": [
+    0.4875,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "wel-nqq9tnvg-papyrus-reeds"
+   ]
+  },
+  "es/plume-1": {
+   "page": 0,
+   "uv": [
+    0.50341796875,
+    0.595703125,
+    0.97216796875,
+    0.73828125
+   ],
+   "size": [
+    1.916,
+    0.5828
+   ],
+   "pivot": [
+    0.99,
+    0.06
+   ],
+   "pad": 8,
+   "sources": [
+    "feather-rijks-bernard-pencil-feather"
+   ]
+  },
+  "es/plume-2": {
+   "page": 0,
+   "uv": [
+    0.50341796875,
+    0.46142578125,
+    0.97216796875,
+    0.587890625
+   ],
+   "size": [
+    1.7647,
+    0.4761
+   ],
+   "pivot": [
+    0.99,
+    0.06
+   ],
+   "pad": 8,
+   "sources": [
+    "feather-rijks-bernard-pencil-feather"
+   ]
+  },
+  "es/peacock-crest": {
+   "page": 0,
+   "uv": [
+    0.50341796875,
+    0.38916015625,
+    0.59716796875,
+    0.45361328125
+   ],
+   "size": [
+    0.167,
+    0.1148
    ],
    "pivot": [
     0.5,
@@ -75,209 +154,41 @@
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "peacock-rijks-white-on-branch"
    ]
   },
-  "es/frog": {
-   "page": 0,
+  "es/lily-b": {
+   "page": 1,
    "uv": [
-    0.677734375,
-    0.734375,
-    0.927734375,
-    0.984375
+    0.00390625,
+    0.75048828125,
+    0.25390625,
+    0.99609375
    ],
    "size": [
-    1,
-    1
+    0.3657,
+    0.3593
    ],
    "pivot": [
     0.5,
-    0
+    0.1
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "com-victoria-regia-pl6-bud-opening"
    ]
   },
-  "es/dragonfly": {
-   "page": 0,
+  "es/lily-e": {
+   "page": 1,
    "uv": [
-    0.015625,
-    0.453125,
-    0.265625,
-    0.703125
+    0.26171875,
+    0.78076171875,
+    0.51171875,
+    0.99609375
    ],
    "size": [
-    1,
-    1
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "es/urn": {
-   "page": 0,
-   "uv": [
-    0.296875,
-    0.478515625,
-    0.646484375,
-    0.703125
-   ],
-   "size": [
-    1.4,
-    0.9
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "lily.f0": {
-   "page": 0,
-   "uv": [
-    0.677734375,
-    0.552734375,
-    0.876953125,
-    0.703125
-   ],
-   "size": [
-    0.8,
-    0.6
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "lily.f1": {
-   "page": 0,
-   "uv": [
-    0.677734375,
-    0.37109375,
-    0.876953125,
-    0.521484375
-   ],
-   "size": [
-    0.8,
-    0.6
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "lily.f2": {
-   "page": 0,
-   "uv": [
-    0.296875,
-    0.296875,
-    0.49609375,
-    0.447265625
-   ],
-   "size": [
-    0.8,
-    0.6
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "lily.f3": {
-   "page": 0,
-   "uv": [
-    0.015625,
-    0.271484375,
-    0.21484375,
-    0.421875
-   ],
-   "size": [
-    0.8,
-    0.6
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "lily.f4": {
-   "page": 0,
-   "uv": [
-    0.52734375,
-    0.189453125,
-    0.7265625,
-    0.33984375
-   ],
-   "size": [
-    0.8,
-    0.6
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "lily.f5": {
-   "page": 0,
-   "uv": [
-    0.7578125,
-    0.189453125,
-    0.95703125,
-    0.33984375
-   ],
-   "size": [
-    0.8,
-    0.6
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "sh/peacock-stroll-1": {
-   "page": 0,
-   "uv": [
-    0.24609375,
-    0.19140625,
-    0.37109375,
-    0.265625
-   ],
-   "size": [
-    0.5,
-    0.3
+    0.5079,
+    0.4375
    ],
    "pivot": [
     0.5,
@@ -285,20 +196,83 @@
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "com-victoria-regia-pl5-flower-from-above"
    ]
   },
-  "es/peacock": {
-   "page": 0,
+  "es/lily-a": {
+   "page": 1,
    "uv": [
-    0.015625,
-    0.166015625,
-    0.140625,
-    0.240234375
+    0.51953125,
+    0.7958984375,
+    0.72412109375,
+    0.99609375
    ],
    "size": [
+    0.3058,
+    0.2993
+   ],
+   "pivot": [
     0.5,
-    0.3
+    0.1
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl5-flower-from-above"
+   ]
+  },
+  "es/lily-c": {
+   "page": 1,
+   "uv": [
+    0.73193359375,
+    0.7978515625,
+    0.98193359375,
+    0.99609375
+   ],
+   "size": [
+    0.5079,
+    0.4028
+   ],
+   "pivot": [
+    0.5,
+    0.1
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl4-opening-stages"
+   ]
+  },
+  "es/lily-d": {
+   "page": 1,
+   "uv": [
+    0.73193359375,
+    0.6318359375,
+    0.98193359375,
+    0.7900390625
+   ],
+   "size": [
+    0.5079,
+    0.3214
+   ],
+   "pivot": [
+    0.5,
+    0.1
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl4-opening-stages"
+   ]
+  },
+  "es/lichen-4": {
+   "page": 1,
+   "uv": [
+    0.51953125,
+    0.6630859375,
+    0.61572265625,
+    0.7880859375
+   ],
+   "size": [
+    0.2919,
+    0.3793
    ],
    "pivot": [
     0.5,
@@ -306,91 +280,511 @@
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "com-haeckel-lichenes"
    ]
   },
-  "es/typha": {
+  "es/lichen-3": {
    "page": 1,
    "uv": [
-    0.015625,
-    0.734375,
-    0.265625,
-    0.984375
+    0.62353515625,
+    0.6630859375,
+    0.7119140625,
+    0.7880859375
    ],
    "size": [
-    1,
-    1
+    0.2929,
+    0.4143
    ],
    "pivot": [
     0.5,
-    0
+    0.5
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
-   ]
-  },
-  "es/drum-base": {
-   "page": 1,
-   "uv": [
-    0.296875,
-    0.734375,
-    0.546875,
-    0.984375
-   ],
-   "size": [
-    1,
-    1
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
-   ]
-  },
-  "es/armillary": {
-   "page": 1,
-   "uv": [
-    0.578125,
-    0.734375,
-    0.828125,
-    0.984375
-   ],
-   "size": [
-    1,
-    1
-   ],
-   "pivot": [
-    0.5,
-    0
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder"
+    "com-haeckel-lichenes"
    ]
   },
   "es/iris-wing": {
    "page": 1,
    "uv": [
-    0.015625,
-    0.453125,
-    0.265625,
-    0.703125
+    0.26171875,
+    0.64794921875,
+    0.33056640625,
+    0.77294921875
    ],
    "size": [
-    1,
-    1
+    0.6823,
+    1.2387
    ],
    "pivot": [
-    0.5,
-    0
+    0.3174,
+    0.0156
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "cma-118176-japanese-iris"
+   ]
+  },
+  "es/pad-5": {
+   "page": 1,
+   "uv": [
+    0.33837890625,
+    0.65087890625,
+    0.46337890625,
+    0.77294921875
+   ],
+   "size": [
+    0.8258,
+    0.8065
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl1-leaf-stages"
+   ]
+  },
+  "es/lichen-1": {
+   "page": 1,
+   "uv": [
+    0.00390625,
+    0.62158203125,
+    0.12890625,
+    0.74267578125
+   ],
+   "size": [
+    0.3097,
+    0.3
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-haeckel-lichenes"
+   ]
+  },
+  "es/pad-4": {
+   "page": 1,
+   "uv": [
+    0.13671875,
+    0.62744140625,
+    0.24560546875,
+    0.74267578125
+   ],
+   "size": [
+    0.5186,
+    0.5488
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl1-leaf-stages"
+   ]
+  },
+  "es/pad-2": {
+   "page": 1,
+   "uv": [
+    0.47119140625,
+    0.54638671875,
+    0.57470703125,
+    0.6552734375
+   ],
+   "size": [
+    0.5716,
+    0.6012
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl1-leaf-stages"
+   ]
+  },
+  "es/pad-3": {
+   "page": 1,
+   "uv": [
+    0.58251953125,
+    0.5478515625,
+    0.70751953125,
+    0.6552734375
+   ],
+   "size": [
+    1.1355,
+    0.9758
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl1-leaf-stages"
+   ]
+  },
+  "es/pad-1": {
+   "page": 1,
+   "uv": [
+    0.33837890625,
+    0.5361328125,
+    0.46337890625,
+    0.64306640625
+   ],
+   "size": [
+    0.929,
+    0.7948
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl1-leaf-stages"
+   ]
+  },
+  "es/frog": {
+   "page": 1,
+   "uv": [
+    0.71533203125,
+    0.52001953125,
+    0.84033203125,
+    0.6240234375
+   ],
+   "size": [
+    0.3247,
+    0.2701
+   ],
+   "pivot": [
+    0.36,
+    0.0188
+   ],
+   "pad": 8,
+   "sources": [
+    "wel-ckmupyea-frog-shore"
+   ]
+  },
+  "es/lichen-2": {
+   "page": 1,
+   "uv": [
+    0.84814453125,
+    0.52783203125,
+    0.97314453125,
+    0.6240234375
+   ],
+   "size": [
+    0.3097,
+    0.2383
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-haeckel-lichenes"
+   ]
+  },
+  "es/dragonfly": {
+   "page": 1,
+   "uv": [
+    0.13671875,
+    0.53173828125,
+    0.26171875,
+    0.61962890625
+   ],
+   "size": [
+    0.1548,
+    0.1089
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "dragonfly-rijks-etching-libel"
+   ]
+  },
+  "es/frog-swim": {
+   "page": 1,
+   "uv": [
+    0.00390625,
+    0.52880859375,
+    0.12890625,
+    0.61376953125
+   ],
+   "size": [
+    0.3097,
+    0.2105
+   ],
+   "pivot": [
+    0.9557,
+    0.023
+   ],
+   "pad": 8,
+   "sources": [
+    "wel-zjhtrdjh-bull-frog"
+   ]
+  },
+  "es/pad-6": {
+   "page": 1,
+   "uv": [
+    0.58251953125,
+    0.4765625,
+    0.666015625,
+    0.5400390625
+   ],
+   "size": [
+    0.4196,
+    0.319
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "com-victoria-regia-pl1-leaf-stages"
+   ]
+  },
+  "es/fish-2": {
+   "page": 1,
+   "uv": [
+    0.26953125,
+    0.47509765625,
+    0.39453125,
+    0.5283203125
+   ],
+   "size": [
+    0.289,
+    0.1231
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "wel-b33k8vnw-goldfish"
+   ]
+  },
+  "es/fish-1": {
+   "page": 1,
+   "uv": [
+    0.40234375,
+    0.478515625,
+    0.52734375,
+    0.5283203125
+   ],
+   "size": [
+    0.3097,
+    0.1234
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "wel-b33k8vnw-goldfish"
+   ]
+  },
+  "es/disc": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.6220703125,
+    0.7578125,
+    0.99609375
+   ],
+   "size": [
+    0.8084,
+    0.8063
+   ],
+   "pivot": [
+    0.5,
+    0.5
+   ],
+   "pad": 8,
+   "sources": [
+    "disc-mclean-birds-butterflies"
+   ]
+  },
+  "es/lotus-leaf": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.3642578125,
+    0.4921875,
+    0.6142578125
+   ],
+   "size": [
+    1.0825,
+    1.1175
+   ],
+   "pivot": [
+    0.6078,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "wel-r7fugtvn-sacred-lotus-leaf"
+   ]
+  },
+  "es/urn": {
+   "page": 2,
+   "uv": [
+    0.5078125,
+    0.3642578125,
+    0.900390625,
+    0.6142578125
+   ],
+   "size": [
+    0.9571,
+    1.219
+   ],
+   "pivot": [
+    0.5022,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-piranesi-vase-rp-p-ob-39-601"
+   ]
+  },
+  "es/armillary": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.1064453125,
+    0.373046875,
+    0.3564453125
+   ],
+   "size": [
+    0.7421,
+    1.0159
+   ],
+   "pivot": [
+    0.5196,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "armillary-coloured-engraving"
+   ]
+  },
+  "es/typha": {
+   "page": 2,
+   "uv": [
+    0.388671875,
+    0.1064453125,
+    0.4775390625,
+    0.3564453125
+   ],
+   "size": [
+    0.2889,
+    1.6254
+   ],
+   "pivot": [
+    0.5543,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "com-florabatava-typha"
+   ]
+  },
+  "es/typha-blade-1": {
+   "page": 2,
+   "uv": [
+    0.4931640625,
+    0.1064453125,
+    0.57421875,
+    0.3564453125
+   ],
+   "size": [
+    0.2306,
+    1.4222
+   ],
+   "pivot": [
+    0.5,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "com-florabatava-typha"
+   ]
+  },
+  "es/typha-blade-2": {
+   "page": 2,
+   "uv": [
+    0.916015625,
+    0.74609375,
+    0.96875,
+    0.99609375
+   ],
+   "size": [
+    0.1607,
+    1.5238
+   ],
+   "pivot": [
+    0.3372,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "com-florabatava-typha"
+   ]
+  },
+  "es/typha-blade-3": {
+   "page": 2,
+   "uv": [
+    0.916015625,
+    0.48828125,
+    0.958984375,
+    0.73828125
+   ],
+   "size": [
+    0.1397,
+    1.6254
+   ],
+   "pivot": [
+    0.4856,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "com-florabatava-typha"
+   ]
+  },
+  "es/drum-base": {
+   "page": 2,
+   "uv": [
+    0.58984375,
+    0.25439453125,
+    0.83984375,
+    0.3564453125
+   ],
+   "size": [
+    0.929,
+    0.7585
+   ],
+   "pivot": [
+    0.4956,
+    0.0191
+   ],
+   "pad": 8,
+   "sources": [
+    "sundial-universal-with-compass"
    ]
   }
  },
@@ -398,18 +792,22 @@
   "lily": {
    "kind": "lily",
    "mode": "frames",
-   "steps": 6,
+   "steps": 10,
    "frames": [
-    "lily.f0",
-    "lily.f1",
-    "lily.f2",
-    "lily.f3",
-    "lily.f4",
-    "lily.f5"
+    "es/lily-a",
+    "es/lily-a",
+    "es/lily-a",
+    "es/lily-b",
+    "es/lily-b",
+    "es/lily-c",
+    "es/lily-c",
+    "es/lily-d",
+    "es/lily-d",
+    "es/lily-d"
    ],
    "rest": {
-    "idea": 0.4,
-    "wip": 0.7,
+    "idea": 0.1111,
+    "wip": 0.7778,
     "shipped": 1
    }
   }

@@ -1,6 +1,6 @@
 {
  "id": "overview",
- "hash": "1b1162e56ed43687",
+ "hash": "0463aedbc88e96a8",
  "pages": [
   {
    "w": 1024,
@@ -14,63 +14,55 @@
     "lo": "overview.0.n.lo.ktx2"
    },
    "fileBytes": {
-    "hi": 121157,
-    "lo": 52816
+    "hi": 169492,
+    "lo": 66735
    }
   }
  ],
  "sprites": {
-  "semillero": {
-   "page": 0,
-   "uv": [
-    0.0078125,
-    0.6474609375,
-    0.4140625,
-    0.9921875
-   ],
-   "size": [
-    6.5,
-    5.51030068
-   ],
-   "pivot": [
-    -4.153846153846154,
-    0.0018693498954398253
-   ],
-   "pad": 8,
-   "sources": [
-    "code:placeholder",
-    "nga-19941-tavern-sign-brown"
-   ]
-  },
   "salida": {
    "page": 0,
    "uv": [
-    0.4296875,
-    0.6787109375,
-    0.8984375,
+    0.0078125,
+    0.6142578125,
+    0.4765625,
     0.9921875
    ],
    "size": [
     7.5,
-    5.01030068
+    6.0414648500000006
    ],
    "pivot": [
     -5.133333333333334,
-    0.0020559005652331427
+    0.0019900239922773033
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder",
-    "nga-19941-tavern-sign-brown"
+    "nga-19892-tavern-sign-hanging",
+    "wel-cyjn4htg",
+    "met-671072",
+    "cma-117931",
+    "swallow-sharpe-1896-pl28",
+    "swallow-gould-birds-of-europe-chimney-swallow",
+    "nga-24425-globe-lantern",
+    "nga-16077-zoar-bird-cage",
+    "nightingale-swaysland-1883-pl31",
+    "wc-1925-schloss-dobrilugk-kien-r-ckseite-alter-frit",
+    "wc-a-wish-postcard-1913-reverse",
+    "wc-welcome-utah-utah-gains-statehood-back-50718307",
+    "wel_cq9tqxjj",
+    "nga-19941-tavern-sign-brown",
+    "cm-roty-semeuse-1921-stamp",
+    "wel_qkbs7qjg"
    ]
   },
   "rosaleda": {
    "page": 0,
    "uv": [
-    0.4296875,
-    0.404296875,
-    0.8994140625,
-    0.6630859375
+    0.4921875,
+    0.7333984375,
+    0.9619140625,
+    0.9921875
    ],
    "size": [
     7.500000000000001,
@@ -115,23 +107,29 @@
   "puerta": {
    "page": 0,
    "uv": [
-    0.0078125,
-    0.130859375,
-    0.4453125,
-    0.388671875
+    0.4921875,
+    0.4873046875,
+    0.9296875,
+    0.7177734375
    ],
    "size": [
     7,
-    4.11743222
+    3.6748419
    ],
    "pivot": [
     0.42857142857142855,
-    0.004233760039892047
+    0.004743665298907145
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder",
+    "met-362366",
+    "met-705858",
+    "wel_wm8trukn",
+    "nga-24833-door-plate",
+    "wel_fryp428j",
+    "swallow-naumann-taf145",
     "wel_etaatwun",
+    "nga-24353-cage-hand-lantern",
     "nga-19941-tavern-sign-brown",
     "met-671072"
    ]
@@ -139,44 +137,109 @@
   "gruta": {
    "page": 0,
    "uv": [
-    0.4609375,
-    0.2255859375,
-    0.6611328125,
-    0.388671875
+    0.0078125,
+    0.3896484375,
+    0.2080078125,
+    0.5986328125
    ],
    "size": [
     3.200000000000003,
-    2.6
+    3.3292027400000004
    ],
    "pivot": [
     -9.968749999999991,
-    0
+    0.06408441199348526
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder"
+    "haeckel_hexacoralla_69",
+    "code:placeholder",
+    "met_824890",
+    "met_824893",
+    "met_824901",
+    "haeckel_florideae",
+    "wellcome_xgwhxufg",
+    "wellcome_r2zuy7wu",
+    "haeckel_diatomea",
+    "wellcome_rehdyr6t",
+    "wel_tawc3fgb",
+    "acg-cardboard002",
+    "wel-sabj375w-four-fern-fronds",
+    "wel-xwb8cbjq-three-ferns-1850",
+    "wel_nucvbqwp",
+    "wel_n7tudz7v"
+   ]
+  },
+  "semillero": {
+   "page": 0,
+   "uv": [
+    0.2236328125,
+    0.2802734375,
+    0.6298828125,
+    0.4716796875
+   ],
+   "size": [
+    6.5,
+    3.0476
+   ],
+   "pivot": [
+    -4.153846153846154,
+    0.0078
+   ],
+   "pad": 8,
+   "sources": [
+    "haeckel_tubulariae",
+    "code:placeholder",
+    "wel_etaatwun",
+    "nga-20836-straw-bee-skep",
+    "wel-jvrhsteu-beehives-engraving",
+    "enc-1-079-wheelbarrow-hoes",
+    "cma-117931",
+    "haeckel_nepenthaceae",
+    "haeckel_basimycetes",
+    "cma-132619-garden-hyacinth",
+    "wel-zee8ph2h-chinese-lantern-watercolour",
+    "wel-fkrcnr8h-magnolia-fruit",
+    "haeckel_coniferae",
+    "cm-burpee-1895-sweetpea-cover",
+    "cm-burpee-1897-violet-cover",
+    "nga-24317-pierced-tin-lantern",
+    "nga-19941-tavern-sign-brown",
+    "cma-118176-japanese-iris"
    ]
   },
   "estanque": {
    "page": 0,
    "uv": [
-    0.4609375,
-    0.0693359375,
-    0.923828125,
-    0.2099609375
+    0.0078125,
+    0.080078125,
+    0.470703125,
+    0.2646484375
    ],
    "size": [
     7.399999999999999,
-    2.25
+    2.9404999999999997
    ],
    "pivot": [
     -2.297297297297298,
-    0.06666666666666667
+    0.16252338037748684
    ],
    "pad": 8,
    "sources": [
-    "code:placeholder",
-    "nga-19941-tavern-sign-brown"
+    "wc-piranesi-vase-rp-p-ob-39-601",
+    "com-haeckel-lichenes",
+    "wel-nqq9tnvg-papyrus-reeds",
+    "wel-r7fugtvn-sacred-lotus-leaf",
+    "peacock-rijks-white-on-branch",
+    "com-victoria-regia-pl1-leaf-stages",
+    "wel-ckmupyea-frog-shore",
+    "dragonfly-rijks-etching-libel",
+    "com-florabatava-typha",
+    "sundial-universal-with-compass",
+    "armillary-coloured-engraving",
+    "feather-rijks-bernard-pencil-feather",
+    "nga-19941-tavern-sign-brown",
+    "cma-118176-japanese-iris"
    ]
   }
  },

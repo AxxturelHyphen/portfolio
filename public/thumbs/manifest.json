@@ -1,0 +1,40 @@
+{
+ "size": 480,
+ "thumbs": [
+  {
+   "project": "garagic",
+   "file": "garagic.avif",
+   "source": "cma_1943_138",
+   "plateTitle": "The Roses: China or Bengal Rose",
+   "latin": ""
+  },
+  {
+   "project": "php-playground",
+   "file": "php-playground.avif",
+   "source": "cma_1943_141",
+   "plateTitle": "Moss Rose",
+   "latin": ""
+  },
+  {
+   "project": "adhd-guija",
+   "file": "adhd-guija.avif",
+   "source": "com-victoria-regia-pl5-flower-from-above",
+   "plateTitle": "Victoria regia, or, The great water lily of America, plate 5 (flower seen from above)",
+   "latin": "Victoria regia"
+  },
+  {
+   "project": "ml-math",
+   "file": "ml-math.avif",
+   "source": "haeckel_mycetozoa",
+   "plateTitle": "Kunstformen der Natur: Mycetozoa (slime moulds)",
+   "latin": ""
+  },
+  {
+   "project": "ai-engineering",
+   "file": "ai-engineering.avif",
+   "source": "cma-132868-ornithogalum",
+   "plateTitle": "Les Liliacées:  Ornithogalum longibracteatum",
+   "latin": "Ornithogalum longibracteatum"
+  }
+ ]
+}
