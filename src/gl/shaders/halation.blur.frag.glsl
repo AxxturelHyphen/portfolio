@@ -11,26 +11,23 @@ out vec4 fragColor;
 
 const int RADIUS = 12;
 const float STEP = 2.0;
-const float INV_TIGHT = 1.0 / (2.0 * 3.0 * 3.0);
-const float INV_WIDE = 1.0 / (2.0 * 11.0 * 11.0);
-// Share of the tight lobe: the wide lobe carries the 45 px half-strength radius at 1080p.
-const float TIGHT_SHARE = 0.12;
+// Weight of tap |i| (offset i * STEP texels): 0.12 of the normalised tight lobe exp(-o^2 / (2 * 3^2)) plus 0.88 of the
+// normalised wide lobe exp(-o^2 / (2 * 11^2)), both summed over the 25 taps. The wide lobe carries the 45 px
+// half-strength radius at 1080p. Folded into constants so the loop is reads and multiply-adds only.
+const float WEIGHT[RADIUS + 1] = float[RADIUS + 1](
+  0.097239071, 0.089808673, 0.074265252, 0.060613640, 0.051055331, 0.043335960, 0.036039319,
+  0.029062767, 0.022680475, 0.017124527, 0.012509173, 0.008840600, 0.006044746
+);
 
 void main() {
   vec2 texel = 1.0 / vec2(textureSize(uSrc, 0));
   vec2 half_ = 0.5 * texel;
   vec2 uv = vUv * uScale;
-  vec3 tight = vec3(0.0), wide = vec3(0.0);
-  float tightSum = 0.0, wideSum = 0.0;
+  vec2 stride = uDir * texel * STEP;
+  vec2 hi = uScale - half_;
+  vec3 sum = vec3(0.0);
   for (int i = -RADIUS; i <= RADIUS; i++) {
-    float o = float(i) * STEP;
-    vec3 c = texture(uSrc, clamp(uv + uDir * texel * o, half_, uScale - half_)).rgb;
-    float wt = exp(-o * o * INV_TIGHT);
-    float ww = exp(-o * o * INV_WIDE);
-    tight += c * wt;
-    wide += c * ww;
-    tightSum += wt;
-    wideSum += ww;
+    sum += texture(uSrc, clamp(uv + stride * float(i), half_, hi)).rgb * WEIGHT[abs(i)];
   }
-  fragColor = vec4(TIGHT_SHARE * tight / tightSum + (1.0 - TIGHT_SHARE) * wide / wideSum, 1.0);
+  fragColor = vec4(sum, 1.0);
 }

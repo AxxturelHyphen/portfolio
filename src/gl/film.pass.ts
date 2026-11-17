@@ -118,7 +118,9 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
     uniforms.uScene.value = target.texture;
     renderer.getDrawingBufferSize(buffer);
     uniforms.uRes.value.set(buffer.x * quality.cfg.filmScale, buffer.y * quality.cfg.filmScale);
-    if (halation.allocated && quality.cfg.halation && uniforms.uFilmOn.value > 0.5) {
+    // A fully shut iris (radius 0) covers every pixel, so the halation would never be read.
+    const seen = uniforms.uFilmOn.value > 0.5 && uniforms.uIris.value.z > 0;
+    if (halation.allocated && quality.cfg.halation && seen) {
       halation.render(target.texture, uniforms.uScale.value);
       uniforms.uHalation.value = halation.texture;
     } else {

@@ -123,7 +123,8 @@ vec2 clampUV(sampler2D tex, vec2 uv) {
   vec2 half_ = 0.5 / vec2(textureSize(tex, 0));
   return clamp(uv * uScale, half_, uScale - half_);
 }
-vec3 tap(vec2 uv) { return texture(uScene, clampUV(uScene, uv)).rgb; }
+// Explicit level 0: the scene and halation targets have no mipmaps, and these reads sit in branches.
+vec3 tap(vec2 uv) { return textureLod(uScene, clampUV(uScene, uv), 0.0).rgb; }
 
 float roundBox(vec2 p, vec2 b, float r) {
   vec2 q = abs(p) - b + r;
@@ -179,6 +180,41 @@ vec3 kaleido(vec2 uv, float aspect) {
   return c * smoothstep(0.0, 0.1, uIntro);
 }
 
+// The graded picture at uv: lens, halation, flicker, encode, vignette, grade and hand tint, lifted black.
+vec3 picture(vec2 uv, float k1080) {
+  vec3 lin = lens(uv, k1080);
+  // Halation glows around a light, not on it: the moon core keeps its paper white, the warm ring sits on its edge.
+  // Over the cool sky it mostly stays away, so red over blue never turns the moon's halo magenta.
+  float overCool = sat((lin.b - lin.r) / max(lin.b, 1e-3) * HAL_COOL_SLOPE);
+  lin += uHalGain * HALATION_TINT * textureLod(uHalation, clampUV(uHalation, uv), 0.0).rgb * (1.0 - smoothstep(0.55, 0.95, luma(lin)))
+    * (1.0 - HAL_COOL_CUT * overCool);
+  lin *= 1.0 + uFlicker;
+  vec3 col = encodeSRGB(lin);
+
+  vec2 fromCentre = (vUv - 0.5) * 1.41421356;
+  col *= 1.0 - uVignette.x * smoothstep(uVignette.y, 1.0, length(fromCentre));
+
+  col = max(col - IN_BLACK, 0.0) * (1.0 / (1.0 - IN_BLACK));
+  col = pow(max(col * uGain, 0.0), 1.0 / uGamma);
+  col = col * col / (col + TOE) * (1.0 + TOE);
+  col = tint(col);
+  float y = luma(col);
+  float rolled = y < SHOULDER ? y : SHOULDER + (WHITE - SHOULDER) * (1.0 - exp(-(y - SHOULDER) / (WHITE - SHOULDER)));
+  col *= rolled / max(y, 1e-4);
+  col *= min(1.0, MAX_CHANNEL / max(max(col.r, col.g), max(col.b, 1e-4)));   // keep the hue of saturated reds: no salmon clip
+  col = mix(col, col * uHighlight / luma(uHighlight), smoothstep(0.45, 0.9, rolled) * 0.35);
+  float hue = 0.0;
+  for (int i = 0; i < 3; i++) {
+    vec4 t = uTint[i];
+    float d = (vUv.x - t.x) / max(t.y, 1e-3);
+    hue += t.w * t.z * exp(-d * d);
+  }
+  if (abs(hue) > 1e-4) col = hueRotate(col, hue);
+  col = uLift + col * (1.0 - uLift);
+
+  return col;
+}
+
 void main() {
   vec2 film = (floor(vUv * uRes) + 0.5);
   if (uFilmOn < 0.5) {
@@ -205,41 +241,11 @@ void main() {
     vec2 hp = vec2(mod(xs * aspect, PERF_PERIOD) - 0.5 * PERF_PERIOD, min(vUv.y, 1.0 - vUv.y) - 0.5 * PERF_BAND);
     perfHole = 1.0 - smoothstep(-1.0 / uRes.y, 1.0 / uRes.y, roundBox(hp, PERF_HOLE, 0.003));
   }
-  uv += uWeave;
-
-  vec3 lin = lens(uv, k1080);
-  // Halation glows around a light, not on it: the moon core keeps its paper white, the warm ring sits on its edge.
-  // Over the cool sky it mostly stays away, so red over blue never turns the moon's halo magenta.
-  float overCool = sat((lin.b - lin.r) / max(lin.b, 1e-3) * HAL_COOL_SLOPE);
-  lin += uHalGain * HALATION_TINT * texture(uHalation, clampUV(uHalation, uv)).rgb * (1.0 - smoothstep(0.55, 0.95, luma(lin)))
-    * (1.0 - HAL_COOL_CUT * overCool);
-  lin *= 1.0 + uFlicker;
-  vec3 col = encodeSRGB(lin);
-
-  vec2 fromCentre = (vUv - 0.5) * 1.41421356;
-  col *= 1.0 - uVignette.x * smoothstep(uVignette.y, 1.0, length(fromCentre));
-
-  col = max(col - IN_BLACK, 0.0) * (1.0 / (1.0 - IN_BLACK));
-  col = pow(max(col * uGain, 0.0), 1.0 / uGamma);
-  col = col * col / (col + TOE) * (1.0 + TOE);
-  col = tint(col);
-  float y = luma(col);
-  float rolled = y < SHOULDER ? y : SHOULDER + (WHITE - SHOULDER) * (1.0 - exp(-(y - SHOULDER) / (WHITE - SHOULDER)));
-  col *= rolled / max(y, 1e-4);
-  col *= min(1.0, MAX_CHANNEL / max(max(col.r, col.g), max(col.b, 1e-4)));   // keep the hue of saturated reds: no salmon clip
-  col = mix(col, col * uHighlight / luma(uHighlight), smoothstep(0.45, 0.9, rolled) * 0.35);
-  float hue = 0.0;
-  for (int i = 0; i < 3; i++) {
-    vec4 t = uTint[i];
-    float d = (vUv.x - t.x) / max(t.y, 1e-3);
-    hue += t.w * t.z * exp(-d * d);
-  }
-  if (abs(hue) > 1e-4) col = hueRotate(col, hue);
-  col = uLift + col * (1.0 - uLift);
-
   float irisD = length((vUv - uIris.xy) * vec2(aspect, 1.0));
+  float shut = smoothstep(uIris.z - 2.0 * uIris.w, uIris.z, irisD);
   vec3 irisCol = uIntro < 1.0 ? uLift + kaleido(vUv, aspect) * (1.0 - uLift) : uIrisColor;
-  col = mix(col, irisCol, smoothstep(uIris.z - 2.0 * uIris.w, uIris.z, irisD));
+  // Behind the closed blades the picture is never seen: skip the scene reads, halation and grade there.
+  vec3 col = shut < 1.0 ? mix(picture(uv + uWeave, k1080), irisCol, shut) : irisCol;
   col = mix(col, BAR_COLOR, barMask);
   col = mix(col, BAR_EDGE, barEdge);
   col = mix(col, mix(BAR_COLOR, PERF_LIGHT, perfHole), perf);
