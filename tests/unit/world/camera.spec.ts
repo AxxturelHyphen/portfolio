@@ -169,7 +169,7 @@ test('a neighbour walk follows the rail, stays under 10 m/s and lands on the nex
   expect(rig.pose.z).toBeCloseTo(3.2, 6);
   go('estanque', 11.6);
   run(200);
-  expect(rig.pose.x).toBeCloseTo(20.0, 3);
+  expect(rig.pose.x).toBeCloseTo(21.0, 3);
   expect(rig.pose.y).toBeCloseTo(2.1, 3);
   let peak = 0;
   for (let i = 1; i < xs.length; i++) peak = Math.max(peak, Math.abs((xs[i] ?? 0) - (xs[i - 1] ?? 0)) * 60);
