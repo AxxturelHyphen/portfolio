@@ -78,10 +78,14 @@
     content: none;
   }
 
+  /* The profile runs to about 70 characters, so it reaches toward the frontispiece instead of stopping short. */
+  #herbario :is(.h-role, .h-about) {
+    max-width: 45rem;
+  }
+
   .h-about {
     display: grid;
     gap: 0.5rem;
-    max-width: var(--measure);
     margin-top: 1.5rem;
   }
 
@@ -210,8 +214,11 @@
     mix-blend-mode: multiply;
   }
 
-  /* The collection label: Latin and plate on a hand-ruled line at the foot of the mount. */
+  /* The collection label: Latin and plate on a hand-ruled line at the foot of the mount. Every label holds three
+     lines and sets from the top, so the first lines and the rules share one baseline across the row. */
   #herbario .h-specimen-cap {
+    align-content: start;
+    min-height: 4.5rem;
     max-width: none;
     margin: 0;
     padding: 0.5rem 0 0.375rem;
@@ -226,6 +233,32 @@
 
   #herbario .h-title {
     font-size: 1.5rem;
+  }
+
+  /* Status and year as one quiet line of small text; their labels stay for screen readers only. */
+  #herbario .h-meta {
+    gap: 0 0.5rem;
+  }
+
+  #herbario .h-meta dt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  #herbario .h-meta > div + div::before {
+    content: "\00B7";
+    color: var(--ink-3);
+  }
+
+  #herbario [data-status].h-status {
+    padding: 0;
+    border: 0;
+    font-weight: 500;
+    transform: none;
   }
 
   @media (max-width: 64rem) {
