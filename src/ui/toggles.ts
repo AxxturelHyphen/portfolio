@@ -3,8 +3,9 @@ import { uiText } from './copy.ts';
 
 /**
  * The three fixed controls, top right in every mode (cook/ART.md section 4): language, Download CV, and one way-out
- * button that leads to the other mode ("Exit to CV" in the garden, "Enter the garden" in the Herbario). Night zinc
- * plates, text only. The panel renders the same controls in its dialog (renderToggles with its own id prefix, bound
+ * button that leads to the other mode ("Exit" in the garden, named "Exit to the CV album" and showing a short hint on
+ * hover and focus; "Enter the garden" in the Herbario). Text-first plant labels hung on a short wire: japanned zinc
+ * in the garden, ink on paper in the Herbario. The panel renders the same controls in its dialog (renderToggles with its own id prefix, bound
  * with bindToggles) at the same spot, so they stay usable while the modal makes the rest of the page inert.
  * renderToggles is pure (scripts/prerender.ts puts it in index.html, so the controls exist without JS): there the
  * garden button is disabled, because without JS there is no garden.
@@ -35,6 +36,7 @@ export function renderToggles(strings: Strings, lang: Lang, cv: string, prefix =
 <a class="tg-cv" href="${esc(cv)}" download aria-label="${s('cv.download')}" data-label-key="cv.download"><span class="tg-long" data-key="cv.download">${s('cv.download')}</span><span class="tg-short" aria-hidden="true" data-key="cv.short">${s('cv.short')}</span></a>
 <div class="tg-mode">
 <button type="button" class="tg-exit" data-mode="garden" aria-disabled="true" aria-describedby="${note}">${s('mode.garden')}</button>
+<span class="tg-hint" aria-hidden="true" hidden></span>
 <p class="tg-note" id="${note}" data-key="mode.gardenNote">${s('mode.gardenNote')}</p>
 </div>
 </nav>`;
@@ -66,6 +68,11 @@ export function paintMode(root: HTMLElement, mode: Mode, pending: boolean, strin
   exit.textContent = uiText(strings, lang, toGarden ? 'mode.garden' : 'mode.exit');
   if (toGarden) exit.removeAttribute('aria-label');
   else exit.setAttribute('aria-label', uiText(strings, lang, 'mode.exitLabel'));
+  const hint = root.querySelector<HTMLElement>('.tg-hint');
+  if (hint !== null) {
+    hint.hidden = toGarden;
+    hint.textContent = toGarden ? '' : uiText(strings, lang, 'mode.exitHint');
+  }
   if (toGarden && !canGarden) exit.setAttribute('aria-disabled', 'true');
   else exit.removeAttribute('aria-disabled');
   if (pending) exit.setAttribute('aria-busy', 'true');

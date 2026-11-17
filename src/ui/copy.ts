@@ -6,16 +6,20 @@ import type { Lang, Strings } from '../types.ts';
  */
 const COPY: Strings = {
   en: {
-    'mode.exit': 'Exit to CV',
-    'mode.exitLabel': 'Exit to CV, Herbario',
+    'mode.exit': 'Exit',
+    'mode.exitLabel': 'Exit to the CV album',
+    'mode.exitHint': 'To the CV album',
+    'plan.tag': 'Plan',
     'cv.short': 'CV',
     'plan.title': 'Plan of the garden',
     'sign.go': 'Go to',
     'sign.cv': 'To the CV',
   },
   es: {
-    'mode.exit': 'Salir al CV',
-    'mode.exitLabel': 'Salir al CV, Herbario',
+    'mode.exit': 'Salir',
+    'mode.exitLabel': 'Salir al álbum del CV',
+    'mode.exitHint': 'Al álbum del CV',
+    'plan.tag': 'Plano',
     'cv.short': 'CV',
     'plan.title': 'Plano del jardín',
     'sign.go': 'Ir a',
