@@ -74,11 +74,15 @@ async function main(): Promise<number> {
           await page.evaluate(() => document.fonts.ready.then(() => undefined));
         } else {
           await page.waitForFunction(() => (window as unknown as { __jardin?: unknown }).__jardin !== undefined, undefined, { timeout: 30000 });
-          await page.evaluate(async () => {
+          // S01 holds the intro channel mid-turn on purpose (garden/index.ts introShot), so the machine never rests: settled() would never
+          // resolve. Wait for ready, then a fixed beat for the intro atlas to transcode and upload.
+          const held = s.id === 'S01';
+          await page.evaluate(async (hold) => {
             const api = (window as unknown as { __jardin: { ready: Promise<void>; settled(): Promise<void> } }).__jardin;
             await api.ready;
-            await api.settled();
-          });
+            if (!hold) await api.settled();
+          }, held);
+          if (held) await page.waitForTimeout(2500);
           // settled() can return while the target bed is still streaming (phase 'bed', intent project): wait for the real target.
           const target = /^#\/(b|p)\/([a-z0-9-]+)$/.exec(s.hash);
           if (target !== null) {
