@@ -1,3 +1,4 @@
+import { GESTURE } from '../core/input.ts';
 import type { BedId, CameraRig, Machine, ProxyLayer, ScreenPt, SlotView } from '../types.ts';
 import { LABEL_ID } from './label.ts';
 import { createPlan } from './plan.ts';
@@ -56,6 +57,37 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     lastPointer = e.pointerType;
   }, { capture: true });
 
+  /**
+   * Touch on a slot proxy: the touch is implicitly captured by the button, so the garden's canvas input never sees it.
+   * Within the tap slop it stays a tap (focus, then open). Past the slop the gesture is handed to the surface under
+   * the proxy with a pointerdown at the touch's start point; the surface takes pointer capture, so the rest of the same
+   * touch pans exactly as a drag begun on the canvas, and the button gets no click. #world sets touch-action: none.
+   */
+  let touchId = -1;
+  let touchX = 0;
+  let touchY = 0;
+
+  function onSlotDown(e: PointerEvent): void {
+    if (e.pointerType !== 'touch' || touchId !== -1) return;
+    touchId = e.pointerId;
+    touchX = e.clientX;
+    touchY = e.clientY;
+  }
+
+  function onSlotMove(e: PointerEvent): void {
+    if (e.pointerId !== touchId || Math.hypot(e.clientX - touchX, e.clientY - touchY) < GESTURE.tapPx) return;
+    touchId = -1;
+    const surface = document.elementsFromPoint(touchX, touchY).find((n) => !el.contains(n));
+    surface?.dispatchEvent(new PointerEvent('pointerdown', {
+      pointerId: e.pointerId, pointerType: 'touch', isPrimary: e.isPrimary, clientX: touchX, clientY: touchY,
+      screenX: touchX, screenY: touchY, button: 0, buttons: 1, bubbles: true, cancelable: true, composed: true,
+    }));
+  }
+
+  function onSlotEnd(e: PointerEvent): void {
+    if (e.pointerId === touchId) touchId = -1;
+  }
+
   const isFocused = (slot: string): boolean => m.state.phase === 'focus' && m.state.slot === slot;
   const canFocus = (): boolean => m.state.phase === 'bed' || m.state.phase === 'focus';
 
@@ -102,6 +134,10 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     n.addEventListener('pointerleave', (e) => {
       if (e.pointerType !== 'touch') blurSlot(v.id, n);
     });
+    n.addEventListener('pointerdown', onSlotDown);
+    n.addEventListener('pointermove', onSlotMove);
+    n.addEventListener('pointerup', onSlotEnd);
+    n.addEventListener('pointercancel', onSlotEnd);
     /** A touch tap also focuses the button: the click handler decides there (first tap focuses, second opens). */
     n.addEventListener('focus', () => {
       if (lastPointer !== 'touch') focusSlot(v.id);
