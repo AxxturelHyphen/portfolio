@@ -37,11 +37,14 @@ export interface GardenFlower extends Flower {
   setVisited(on: boolean): void;
 }
 
-/** Bloom stage at rest for a status, as the first pose at least that open. */
+/** Bloom pose at rest for a status: rest values are pose fractions (cook/ART.md 3.5: idea 1, wip 7, shipped 9). */
 export function restPose(bloom: BloomDef, status: Project['status']): number {
-  const stage = clamp01(bloom.rest[status]);
-  for (let i = 0; i <= LAST_POSE; i++) if (bloomAt(i) >= stage - 1e-6) return i;
-  return LAST_POSE;
+  return Math.round(clamp01(bloom.rest[status]) * LAST_POSE);
+}
+
+/** The drawing shown at a pose: frames are replaced by pose, never chosen by openness (no frame skipped or scaled). */
+export function frameAt(pose: number, frames: number): number {
+  return frames <= 1 ? 0 : Math.round((pose * (frames - 1)) / LAST_POSE);
 }
 
 /** Openness quantised to `steps` levels (steps < 2 means open or closed). */
@@ -60,6 +63,7 @@ export function createFlower(o: FlowerOptions): GardenFlower {
   let focused = false;
   let visited = false;
   let pose = rest;
+  let shownPose = -1;
   let lastTick = -1;
   let turn = 0;
   let openness = quantise(bloomAt(rest), bloom.steps);
@@ -103,15 +107,15 @@ export function createFlower(o: FlowerOptions): GardenFlower {
       lastTick = tick;
       const nextOpen = quantise(bloomAt(pose), bloom.steps);
       const nextTurn = clamp01(turn + ((focused ? 1 : -1) * c.dt) / UI.flowerTurnS);
-      if (nextOpen !== openness || nextTurn !== turn) dirty = true;
+      if (pose !== shownPose || nextOpen !== openness || nextTurn !== turn) dirty = true;
       openness = nextOpen;
       turn = nextTurn;
     },
     write(w: InstanceWriter, at: number) {
       dirty = false;
+      shownPose = pose;
       if (bloom.mode === 'frames') {
-        const i = Math.round(openness * Math.max(0, frames.length - 1));
-        const id = frames[i];
+        const id = frames[frameAt(pose, frames.length)];
         setQuad(id === undefined ? undefined : sprites[id], slot.world[2], 0, 1);
         w.set(at, quad);
         return 1;
