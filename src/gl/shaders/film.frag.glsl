@@ -67,6 +67,7 @@ const float PERF_PERIOD = 0.06;
 const vec2 PERF_HOLE = vec2(0.014, 0.008);
 const vec3 PERF_LIGHT = vec3(0.353, 0.290, 0.227);
 const vec2 DUST_CELLS = vec2(8.0, 5.0);
+const float DUST_SALT = 24.0;         // levels of the scene value (square root of luma) under a cell that re-key its speck
 const vec3 DUST_DARK = vec3(0.16, 0.12, 0.10);
 const vec3 DUST_LIGHT = vec3(0.86, 0.80, 0.68);
 const vec3 SCRATCH = vec3(0.84, 0.78, 0.66);
@@ -149,11 +150,13 @@ vec3 lens(vec2 uv, float k1080) {
 }
 
 // Dust: at most one speck per screen cell, new set every second film frame, 60 % dark with a light rim, never inside
-// the protected circle around the focal flower.
+// the protected circle around the focal flower. The picture under the cell salts the key, so a held frame (frozen time,
+// reduced motion) still gets dust of its own instead of one speck fixed on the lens in every shot.
 vec3 dust(vec3 col, vec2 film, float k1080, float aspect, uint seed) {
   vec2 cellSize = uRes / DUST_CELLS;
   vec2 cell = floor(film / cellSize);
-  uvec3 key = uvec3(uvec2(cell), seed);
+  uint salt = uint(sqrt(luma(tap((cell + 0.5) * cellSize / uRes))) * DUST_SALT);
+  uvec3 key = uvec3(uvec2(cell), seed + salt * 7919u);
   if (hashU(key) + 0.5 > uDust / (DUST_CELLS.x * DUST_CELLS.y)) return col;
   vec2 centre = (cell + 0.5 + 0.5 * vec2(hashU(key + uvec3(1u, 0u, 0u)), hashU(key + uvec3(0u, 1u, 0u)))) * cellSize;
   vec2 cuv = centre / uRes;
