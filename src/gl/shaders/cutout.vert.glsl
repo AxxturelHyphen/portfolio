@@ -23,6 +23,7 @@ out vec4 vOrient;   // cos and sin of the yaw, lean (radians), flat 0/1
 out float vLift;
 out float vDecal;   // 0 at the foot, 1 at the far end of the decal
 out float vDepth;
+out float vSilhouette; // 1: the tint is the colour, uncapped (overview cards of beds not loaded)
 
 const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the camera pitch)
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
@@ -81,6 +82,7 @@ void main() {
   vRect = vec4(min(aUV.x, aUV.z), min(aUV.y, aUV.w), max(aUV.x, aUV.z), max(aUV.y, aUV.w));
   vWorld = world;
   vTint = aTint;
+  vSilhouette = bit(flags, 16.0);
   vFrame = vec4(cos(aPos.w), sin(aPos.w), aUV.z < aUV.x ? -1.0 : 1.0, kind);
   vOrient = vec4(cy, sy, lean, flat_);
   vLift = aAnim.z;

@@ -11,7 +11,7 @@ import fragmentBody from './shaders/cutout.frag.glsl?raw';
 export { sharedUniforms } from './lights.ts';
 
 /** Drop shadow onto the paper behind (uv offset per unit lift, mip bias, strength) and the depth haze toward the wall. */
-const SHADOW = { offset: 0.012, softness: 2.5, strength: 0.5 } as const;
+const SHADOW = { offset: 0.02, softness: 2.5, strength: 0.7 } as const;
 const VERTEX = common + vertexBody;
 const FRAGMENT = common + lights + fragmentBody;
 
