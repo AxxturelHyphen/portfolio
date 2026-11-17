@@ -18,6 +18,8 @@ in float vLift;
 in float vDecal;
 in float vDepth;
 in float vMirror;
+in float vPlaneDepth;
+in float vFocusDepth;
 
 out vec4 outColor;
 
@@ -39,6 +41,17 @@ const float AMBIENT_GAIN = 1.6;                       // the moonlit dusk fill: 
 // lit crimson stays crimson instead of washing to coral and no paper passes about luma 215 after the grade.
 const float KNEE = 0.22;
 const float CEIL = 0.36;
+// Cool moon rim on the moon-facing edge: a band about RIM_PX wide from moon white at the edge into lilac shade, strongest
+// on dark forms (cook/SHOTS.md: rim band 10 to 20 px, here in moon white #ddd4cb and lilac #91809a).
+const float RIM_PX = 14.0;
+const float RIM_SOFT_BIAS = 1.5;
+const vec3 RIM_MOON = vec3(0.723, 0.658, 0.597);
+const vec3 RIM_LILAC = vec3(0.283, 0.216, 0.323);
+const float RIM_STRENGTH = 0.12;
+const float RIM_DARK_LUMA = 0.08;                     // forms darker than this take the full rim
+// Behind a focused flower the far layers fall back: softer (mip bias) and darker, on the gather light's follower.
+const vec2 FOCUS_BACK = vec2(0.35, 1.6);              // metres behind the flower where the fall-off starts and is full
+const float FOCUS_BLUR = 3.0;
 
 vec3 paperShoulder(vec3 c) {
   float m = max(max(c.r, c.g), max(c.b, 1e-4));
@@ -55,6 +68,12 @@ float rectAlpha(vec2 uv, float bias) {
 float edgeAlpha(vec2 uv, float here) {
   vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
   return inside.x * inside.y > 0.5 ? texture(uColor, uv, 0.0).a : here;
+}
+
+// Soft alpha beside a pixel for the moon rim; past the sprite's rect it repeats `here`, like edgeAlpha.
+float rimAlpha(vec2 uv, float here) {
+  vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
+  return inside.x * inside.y > 0.5 ? texture(uColor, uv, RIM_SOFT_BIAS).a : here;
 }
 
 // Direction in the sprite's uv frame of a world-space xy direction (undoes rotation and flip).
@@ -80,8 +99,11 @@ void main() {
     outColor = decal();
     return;
   }
-  vec4 tex = texture(uColor, vUV);
-  vec2 nxy = texture(uNormal, vUV).xy * 2.0 - 1.0;
+  float back = uGather.w * smoothstep(FOCUS_BACK.x, FOCUS_BACK.y, vDepth - vFocusDepth);
+  float blur = back * FOCUS_BLUR;
+  // The colour softens behind the focus; the alpha stays sharp so tiled flats never open a seam.
+  vec4 tex = vec4(texture(uColor, vUV, blur).rgb, texture(uColor, vUV).a);
+  vec2 nxy = texture(uNormal, vUV, blur).xy * 2.0 - 1.0;
   nxy.x *= vFrame.z * (vMirror > 0.5 ? -1.0 : 1.0);
   nxy = vec2(vFrame.x * nxy.x - vFrame.y * nxy.y, vFrame.y * nxy.x + vFrame.x * nxy.y);
   vec3 n = vec3(nxy, sqrt(max(1.0 - dot(nxy, nxy), 0.05)));
@@ -107,7 +129,7 @@ void main() {
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n);
-  vec3 lit = paperShoulder(albedo * (ambient + key + rim + hand));
+  vec3 lit = paperShoulder(albedo * (ambient + key + rim) + keyLit(albedo, hand));
 
   // The light that moves the edges and shadows: the hand where it reaches, else the key.
   float reach = handReach(vWorld);
@@ -124,7 +146,17 @@ void main() {
   lit += towardLight * mix(PAPER_RIM * PAPER_RIM_STRENGTH * sat(reach * 2.0), COOL_RIM * 0.3, shaded);
   lit *= 1.0 - EDGE_DARK * awayLight;
 
+  // Moon rim: inside the paper, where the soft alpha toward the moon runs out (two taps make the gradient).
+  vec2 moonUV = toSpriteUV(uMoonBack.xy + vec2(0.0, 0.2));
+  float rw = RIM_PX * length(fwidth(vUV));
+  float edgeNear = 1.0 - rimAlpha(vUV + moonUV * rw * 0.4, tex.a);
+  float edgeFar = 1.0 - rimAlpha(vUV + moonUV * rw, tex.a);
+  float rimBand = sat(0.6 * edgeNear + 0.4 * edgeFar) * (1.0 - shaded * 0.5);
+  float dark = 1.0 - smoothstep(0.0, RIM_DARK_LUMA, luma(lit));
+  lit += mix(RIM_LILAC, RIM_MOON, edgeNear) * rimBand * RIM_STRENGTH * (0.35 + 0.65 * dark) * (1.0 - back);
+
   lit = mix(lit, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w));
+  lit = layerAir(lit, vDepth - vPlaneDepth, back);
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);

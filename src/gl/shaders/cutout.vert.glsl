@@ -5,6 +5,7 @@ uniform mat4 uViewProj;
 uniform float uTime;
 uniform vec2 uWind;        // x: steady lean in radians, y: gust gain 0..1
 uniform vec4 uCursor;
+uniform vec4 uGather;      // focused flower xyz, amount
 uniform vec4 uShadowDir;   // decal direction x, z on the ground; length per unit of height; opacity
 
 in vec3 position;   // corner x, y; kind
@@ -25,6 +26,8 @@ out float vDecal;   // 0 at the foot, 1 at the far end of the decal
 out float vDepth;
 out float vMirror;     // 1: mirrored by a negative width (winding reversed)
 out float vSilhouette; // 1: the tint is the colour, uncapped (overview cards of beds not loaded)
+out float vPlaneDepth; // view depth of the hand light's plane
+out float vFocusDepth; // view depth of the focused flower
 
 const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the camera pitch)
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
@@ -90,4 +93,6 @@ void main() {
   vLift = aAnim.z;
   vDecal = corner.y;
   vDepth = gl_Position.w;
+  vPlaneDepth = (uViewProj * vec4(uCursor.xyz, 1.0)).w;
+  vFocusDepth = (uViewProj * vec4(uGather.xyz, 1.0)).w;
 }
