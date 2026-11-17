@@ -11,9 +11,11 @@ import { createMover, type Mover } from './xform.ts';
  * switch for the CV.
  * Where world supplies sign anchors (setAnchors), the label sits on its canvas board: projected each frame in stage
  * 'dom' (only when the rig moved), snapped to whole pixels, and docked to the nearest screen edge at the same height
- * when the board leaves the view, so a sign never disappears. Without anchors both signs dock at the screen edges
- * in the lower half; on phones they stand above the folded plan, clear of the fixed controls and the hero. The way back
- * always stands higher than the way on, so the pair never reads as one row.
+ * when the board leaves the view, so a sign never disappears. The label's CSS tilt turns the per-frame translate too
+ * (read once per retarget): where that turn would carry the label nearer a side than SIDE_PX, the offset is pulled in.
+ * Without anchors both signs dock at the screen edges in the lower half; on phones the way back stands above the
+ * folded plan and the way on at the foot of the screen, clear of the fixed controls and the hero. The way back always
+ * stands higher than the way on, so the pair never reads as one row.
  */
 
 /** One canvas board: shown while `bed` is the current place; it points `dir` toward `to`. World point of the label. */
@@ -30,6 +32,8 @@ export interface Signposts {
 }
 
 const EDGE_PX = 16;
+/** Least room between a label's turned box and the left or right edge of the screen. */
+const SIDE_PX = 40;
 /** Below the fixed labels and the exit hint that hangs under them. */
 const TOP_PX = 120;
 /** Room kept under a label so its cane shows before it leaves the screen; docked labels stand with their foot here. */
@@ -60,6 +64,9 @@ interface Sign {
   anchor: number;
   w: number;
   h: number;
+  /** Cosine and sine of the label's CSS tilt. */
+  cos: number;
+  sin: number;
 }
 
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
@@ -75,6 +82,13 @@ function drawing(cls: string, box: string, d: string): SVGSVGElement {
   return svg;
 }
 
+/** `rotate` applies before `transform`, so the translate is turned by the tilt: keep its angle to undo that. */
+function readTilt(s: Sign): void {
+  const rad = (Number.parseFloat(getComputedStyle(s.el).rotate) || 0) * (Math.PI / 180);
+  s.cos = Math.cos(rad);
+  s.sin = Math.sin(rad);
+}
+
 function makeSign(dir: -1 | 1, m: Machine): Sign {
   const el = document.createElement('button');
   el.type = 'button';
@@ -86,7 +100,7 @@ function makeSign(dir: -1 | 1, m: Machine): Sign {
   cane.className = 'px-sign-cane';
   cane.setAttribute('aria-hidden', 'true');
   el.append(cane, drawing('px-sign-lash', '0 0 26 26', LASH), name, drawing('px-sign-hand', '0 0 48 24', HAND));
-  const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44 };
+  const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44, cos: 1, sin: 0 };
   el.addEventListener('click', () => {
     if (sign.to === 'cv') m.send({ type: 'SET_MODE', mode: 'herbario' });
     else if (sign.to !== null) m.send({ type: 'GOTO', place: { k: 'bed', bed: sign.to } });
@@ -148,6 +162,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       s.el.toggleAttribute('data-docked', s.anchor < 0);
       s.mover.reset();
       if (s.anchor < 0) s.el.style.removeProperty('transform');
+      else readTilt(s);
     }
   }
 
@@ -164,7 +179,15 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       y = vh * DOCK_FOOT - s.h;
     }
     y += s.dir * STEP_PX;
-    s.mover.move(Math.round(x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x), Math.round(y < TOP_PX ? TOP_PX : y > maxY ? maxY : y), 1);
+    x = x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x;
+    y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
+    // Where the tilt turns (x, y) to on screen; only a label nearer a side than SIDE_PX is pulled in.
+    const vy = x * s.sin + y * s.cos;
+    let vx = x * s.cos - y * s.sin;
+    const inset = SIDE_PX + Math.ceil(s.h * Math.abs(s.sin));
+    const maxVx = vw - inset - s.w;
+    vx = vx < inset ? inset : vx > maxVx ? maxVx : vx;
+    s.mover.move(Math.round(vx * s.cos + vy * s.sin), Math.round(vy * s.cos - vx * s.sin), 1);
   }
 
   return {
