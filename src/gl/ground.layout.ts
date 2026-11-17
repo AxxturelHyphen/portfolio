@@ -5,6 +5,8 @@
 export interface GroundLayout {
   /** World rectangle of the ground plane: x from x0 to x1, z from z0 (far) to z1 (near). */
   x0: number; x1: number; z0: number; z1: number;
+  /** World z of the wall foot (content/garden.json ground.wall.z): the ground darkens toward it and mists past it. */
+  wallZ: number;
   /** Catmull-Rom knots as x, z pairs. */
   path: readonly number[];
   /** Puddle centres as x, z pairs (at most MAX_PUDDLES). */
@@ -14,7 +16,7 @@ export interface GroundLayout {
 export const MAX_PUDDLES = 12;
 
 export const ART_LAYOUT: GroundLayout = {
-  x0: -8, x1: 56, z0: -16, z1: 12,
+  x0: -8, x1: 56, z0: -16, z1: 12, wallZ: -6,
   path: [
     -0.2, -4.6, 0.2, -2, 2, 0.6, 5, 1.2, 8, 0.2, 10, -0.6, 13, 0.4, 15, 0.9, 17.4, 1.3, 20.8, 1.2, 23.6, 1.0, 26, 0,
     28.5, -0.9, 30.3, -1.9, 32.2, -3.0, 33.5, -4.2, 35, -2.4, 36.5, -0.4, 39.5, 0.8, 42, 0.2, 44.2, -2.4, 45.2, -6,

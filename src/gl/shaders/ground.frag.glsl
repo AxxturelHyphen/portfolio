@@ -20,9 +20,14 @@ in vec3 vWorld;
 in float vDepth;
 out vec4 outColor;
 
-const vec3 EARTH_NEAR = vec3(0.011, 0.023, 0.019);   // #1c2a26
-const vec3 EARTH_MID = vec3(0.028, 0.047, 0.058);    // #2f3d44 at z -3
-const vec3 EARTH_WALL = vec3(0.062, 0.066, 0.107);   // #46495c at the wall foot
+const vec3 EARTH = vec3(0.031, 0.025, 0.012);        // #312c1c bare earth
+const vec3 MOSS_FLOOR = vec3(0.025, 0.042, 0.034);   // #2c3a33 moss patches, 1.5 to 3 m across
+const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
+const float PATCH_CONTRAST = 0.25;
+uniform float uWallZ;                                 // content/garden.json ground.wall.z
+const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
+const float POOL_SPREAD = 1.25;                       // the hand's pool on the ground, in cursor radii
+const float POOL = 0.9;
 const vec3 STONE = vec3(0.060, 0.055, 0.052);
 const vec3 MOSS_SHADE = vec3(0.016, 0.054, 0.028);   // #21422f
 const vec3 MOSS_MID = vec3(0.044, 0.118, 0.073);     // #3b614c
@@ -32,6 +37,8 @@ const float CELL = 0.42;                              // flagstone size
 const float PITCH = 0.012;                            // line screen on the ground: 12 mm
 const float LINE_CONTRAST = 0.22;
 const float GLINT_AZ = 0.1047;                        // 6 degrees
+const float GLINT = 0.16;                             // the moon streak in a puddle, broken into dashes
+const float WET_CEILING = 0.3;                        // nothing in the water above display luma about 150
 const float HAZE_START = 3.0;
 const float GROUND_ALBEDO = 3.2;                     // night ramp to what the warm lights see (keeps the texture)
 
@@ -81,10 +88,13 @@ void main() {
   vec2 p = vWorld.xz;
   float z = p.y;
   float grain = fbm3(p * 1.7);
-  vec3 base = z > -3.0 ? mix(EARTH_NEAR, EARTH_MID, sat((-z) / 3.0)) : mix(EARTH_MID, EARTH_WALL, sat((-z - 3.0) / 3.0));
+  float patchN = fbm3(p * PATCH_SCALE + 3.0);
+  vec3 base = mix(EARTH, MOSS_FLOOR, smoothstep(0.38, 0.62, patchN));
+  base *= 1.0 + PATCH_CONTRAST * (2.0 * fbm3(p * PATCH_SCALE * 1.9 + 11.0) - 1.0);
   vec4 clod = voronoi(p * 9.0);
   float pebble = smoothstep(0.22, 0.1, clod.x + 0.08 * valueNoise(p * 40.0)) * step(0.88, hash12(clod.zw));
-  base *= (0.72 + 0.56 * grain) * (0.85 + 0.3 * valueNoise(p * 23.0)) * (1.0 + 0.5 * pebble) * mix(0.85, 0.18, sat((z + 1.0) / 4.5));
+  base *= (0.72 + 0.56 * grain) * (0.85 + 0.3 * valueNoise(p * 23.0)) * (1.0 + 0.5 * pebble) * mix(1.0, 0.32, sat((z + 1.0) / 4.5));
+  base *= mix(0.45, 1.0, smoothstep(uWallZ, uWallZ + WALL_FADE, z + 0.08 * valueNoise(p * 7.0)));
   vec3 n = vec3(0.0, 1.0, 0.0);
 
   // Moss at the wall foot.
@@ -117,17 +127,24 @@ void main() {
 
   // Puddles: dark wet ground that mirrors the sky; the hand rings the water under the cursor.
   float wet = 0.0;
+  vec2 q0 = vec2(0.0);
   for (int i = 0; i < 12; i++) {
     if (i >= uPuddles) break;
     vec4 q = uPuddle[i];
     vec2 e = (p - q.xy) / q.zw;
     float r = length(e) * (1.0 + 0.18 * (valueNoise(e * 3.0 + float(i) * 5.0) - 0.5));
-    wet = max(wet, smoothstep(1.0, 0.85, r));
+    float w = smoothstep(1.0, 0.85, r);
+    if (w > wet) { wet = w; q0 = q.xy; }
   }
 
   // The ramp colours are the ground as seen under the place's ambient; the key adds relief, the hand its warm pool.
   float key = luma(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.3);
   vec3 hand = handLights(vWorld, n);
+  // The hand's pool: its light thrown down onto the ground below the paper plane, diffuse and warm.
+  vec2 dp = p - uCursor.xz;
+  float pr = uCursor.w * POOL_SPREAD;
+  float pool = sat(1.0 - dot(dp, dp) / (pr * pr));
+  hand += uCursorColor * (pool * pool * POOL);
   vec3 albedo = base * GROUND_ALBEDO;
   vec3 col = base * (0.5 + 1.6 * key) + albedo * hand;
 
@@ -138,19 +155,21 @@ void main() {
     vec3 wn = normalize(vec3(normalize(toC + 1e-4) * ring * 0.05 + (vec2(valueNoise(p * 9.0 + uTime * 0.3), valueNoise(p * 9.0 - uTime * 0.3)) - 0.5) * 0.04, 1.0).xzy);
     vec3 view = normalize(vWorld - uCamPos);
     vec3 refl = reflect(view, wn);
-    vec3 mirror = skyColour(refl.y) * 0.45;
+    vec3 mirror = col * 0.55 + skyColour(refl.y) * 0.1;
     // The moon streak: a moon-wide band at the moon's azimuth, broken by the ripples (elevation ignored on purpose).
     float dAz = atan(refl.x, -refl.z) - atan(uMoonBack.x, -uMoonBack.z);
     float near = step(abs(atan(view.x, -view.z) - atan(uMoonBack.x, -uMoonBack.z)), GLINT_AZ);
-    float glint = near * exp(-sq(dAz / 0.012)) * (0.35 + 0.65 * valueNoise(vec2(p.x * 6.0, p.y * 55.0 + ring * 6.0)));
-    mirror += uMoonBody * glint * 0.9;
+    float dashes = smoothstep(0.45, 0.6, valueNoise(vec2(q0.x * 3.0, (p.y + ring * 0.05) * 9.0)));
+    float glint = near * exp(-sq(dAz / 0.012)) * dashes;
+    mirror += uMoonBody / max(luma(uMoonBody), 1e-3) * glint * GLINT;
     vec3 toLight = normalize(uCursor.xyz - vWorld);
     mirror += uCursorColor * pow(max(dot(refl, toLight), 0.0), 24.0) * handReach(vWorld) * 0.35;
-    col = mix(col * 0.55, mirror, wet * 0.85);
+    col = mix(col, min(mirror, vec3(WET_CEILING)), wet);
   }
 
   float tone = sat(luma(col) / 0.22);
   col *= 1.0 - LINE_CONTRAST * lineScreen(p, tone) * (1.0 - wet);
   col = mix(col, uHaze.rgb, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
+  col = mix(col, uHaze.rgb, smoothstep(uWallZ - 0.5, uWallZ - 6.0, z) * 0.8);   // past the wall: mist, not a slab
   outColor = vec4(col, 1.0);
 }

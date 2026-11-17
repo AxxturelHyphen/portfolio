@@ -41,6 +41,7 @@ export function createGround(moonBody: Vector3): Ground {
   const uniforms = {
     ...sharedUniforms,
     uBounds: { value: new Vector4() },
+    uWallZ: { value: ART_LAYOUT.wallZ },
     uPath: { value: path as Texture },
     uPathRange: { value: PATH_RANGE_M },
     uStone: { value: neutral as Texture },
@@ -67,6 +68,7 @@ export function createGround(moonBody: Vector3): Ground {
 
   const setLayout = (l: GroundLayout): void => {
     uniforms.uBounds.value.set(l.x0, l.z0, l.x1, l.z1);
+    uniforms.uWallZ.value = l.wallZ;
     const field = bakePathField(l);
     path.dispose();
     path = new DataTexture(field.data, field.w, field.h, RedFormat);
