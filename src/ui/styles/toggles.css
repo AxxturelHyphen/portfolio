@@ -288,6 +288,23 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   }
 }
 
+/*
+ * Herbario below desktop width: the album runs under the tags as it scrolls, so the row becomes one strip of page
+ * paper across the screen. The tags keep the exact spot they hang at in the garden, so a mode switch never moves them.
+ */
+@media (max-width: 64rem) {
+  html:not([data-mode="garden"]) #toggles {
+    inset: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    height: 4.75rem;
+    padding: var(--tg-top) max(var(--edge), env(safe-area-inset-right, 0px)) 0 0;
+    background: var(--paper);
+    box-shadow: 0 1px 0 rgb(29 27 24 / 0.1);
+    pointer-events: auto;
+  }
+}
+
 /* Phones: smaller tags tucked close under the top edge; "Download CV" becomes "CV" and keeps its full name for assistive tech. */
 @media (max-width: 44.99rem) {
   #toggles,
@@ -332,5 +349,10 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   .tg-lang-link {
     height: var(--target);
     padding-top: 8px;
+  }
+
+  html:not([data-mode="garden"]) #toggles {
+    height: 4.25rem;
+    padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
 }
