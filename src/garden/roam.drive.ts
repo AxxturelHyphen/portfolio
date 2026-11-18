@@ -9,7 +9,7 @@ import type { GardenRig } from '../world/camera.ts';
 import { createFitter, type Fit, type Subject } from '../world/fit.ts';
 import { createFollower, moonElevation, viewLimitsOf } from '../world/follow.ts';
 import { SCENES } from '../world/garden.ts';
-import { occluderBlocks } from '../world/occluders.ts';
+import { occluderBlocks, propBlocks } from '../world/occluders.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
 import type { GardenLight } from '../world/light.ts';
 import { builtIn } from '../world/mode.ts';
@@ -63,6 +63,8 @@ export interface RoamDrive extends RoamControl {
   holdApproach(k: number | null): void;
   /** The bed ahead in the walking direction once the visitor is near it (streaming), else null. */
   heading(): BedId | null;
+  /** The bed the visitor stands in or is nearest to, even mid-walk (streaming keeps it while it is in view). */
+  here(): BedId | null;
   /**
    * No assisted walk runs and the visitor stands inside the bed's x range or is nearest to it (between two beds), so
    * travel ends; always true while the garden is hidden.
@@ -108,7 +110,11 @@ function subjectOf(v: SlotView, scene: BedScene3 | undefined): Subject {
 export function createRoamDrive(d: RoamDeps): RoamDrive {
   const { machine, rig, light, loop, world } = d;
   const ground = world.ground;
-  const blocks = occluderBlocks(ground.enclosure, SCENES);
+  const cards = occluderBlocks(ground.enclosure, SCENES);
+  const props = propBlocks(SCENES);
+  const blocks = new Float32Array(cards.length + props.length);
+  blocks.set(cards);
+  blocks.set(props, cards.length);
   const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks };
   const limits = viewLimitsOf(ground.enclosure, ground.wall.z);
   const beds = world.rail.keys.flatMap((k) => (k.bed === undefined ? [] : [k.bed]));
@@ -137,6 +143,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   let shown: SlotId | null = null;
   let dir = 0;
   let ahead: BedId | null = null;
+  let here: BedId | null = start;
   const boundsOf = (b: BedId): readonly [number, number] => SCENES[b].bounds;
   const approach = createApproach();
   const fitter = createFitter(limits);
@@ -320,6 +327,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       loop.wake();
     },
     heading: () => ahead,
+    here: () => here,
     arrived,
     frame(c) {
       if (walk.active && !visitor.assisted) walk.cancel();
@@ -330,6 +338,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
         if (visitor.busy && seeking === null) armed = true;
       }
       keepBed();
+      here = nearestBed(visitor.pos[0]!, here, beds, anchorOf);
       look();
       steer();
       const s = machine.state;

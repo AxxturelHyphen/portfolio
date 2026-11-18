@@ -64,7 +64,7 @@ quad.phase = packPhase(0, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
 const CLOSED_ORDER = { crowns: RENDER_ORDER.overview - 5, hedge: RENDER_ORDER.overview - 4, base: RENDER_ORDER.overview - 3, wall: RENDER_ORDER.overview - 2, coping: RENDER_ORDER.overview - 1 } as const;
 
 /** Free roam hands the garden the bed ahead of the walking visitor (cook/ROAM_PLAN.md section 3, Streaming). */
-export interface RoamStreaming { heading(): BedId | null }
+export interface RoamStreaming { heading(): BedId | null; here(): BedId | null }
 
 export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; roam?: RoamStreaming }): StreamGarden {
   const { gfx, machine, content, proxies } = d;
@@ -87,6 +87,11 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
   let origin: BedId | null = null;
   let active: BedId | null = null;
   let heading: BedId | null = null;
+  /**
+   * Free roam: the bed the visitor stands in while the garden is walked (not over the overview), kept while they walk
+   * out of it, so its cutouts never give way mid-view.
+   */
+  let here: BedId | null = null;
   let hovered: BedId | null = null;
   let entered: StreamBed | null = null;
 
@@ -103,6 +108,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     if (roam !== null) {
       active = s.phase === 'travel' || SETTLED.includes(s.phase) ? s.bed : null;
       heading = roam.heading();
+      here = active === null ? null : roam.here();
     } else if (s.phase === 'travel') {
       heading = s.intent.k === 'overview' ? null : s.bed;
       active = origin;
@@ -115,6 +121,15 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
       origin = null;
       heading = null;
     }
+  };
+
+  /**
+   * The beds to keep. Free roam keeps the visitor's own bed and, on an assisted walk, its goal (else the bed ahead): the
+   * bed being left stays drawn as its own cutouts until it is out of view, never as its overview card.
+   */
+  const want = (): void => {
+    if (roam === null) residency.want(active, heading, hovered);
+    else residency.want(here ?? active, machine.state.phase === 'travel' ? active : heading ?? active, hovered);
   };
 
   /** Enters the bed the camera has settled on as soon as it is ready; leaves it the moment the camera moves on. */
@@ -151,8 +166,10 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     }
     const wasActive = active;
     const wasHeading = heading;
+    const wasHere = here;
     place(s);
-    if (active !== wasActive || heading !== wasHeading) residency.want(active, heading, hovered);
+    const travelled = roam !== null && (s.phase === 'travel') !== (prev.phase === 'travel');
+    if (active !== wasActive || heading !== wasHeading || here !== wasHere || travelled) want();
     if (s.lang !== prev.lang) {
       for (const bed of list) bed.setLang(s.lang);
       mountBeds();
@@ -258,7 +275,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
 
   mountBeds();
   place(machine.state);
-  residency.want(active, heading, hovered);
+  want();
 
   return {
     residency,
@@ -270,12 +287,12 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     hover(bed) {
       if (bed === hovered) return;
       hovered = bed;
-      residency.want(active, heading, hovered);
+      want();
     },
     update(c: Clock) {
-      if (roam !== null && roam.heading() !== heading) {
+      if (roam !== null && (roam.heading() !== heading || (active !== null && roam.here() !== here))) {
         place(machine.state);
-        residency.want(active, heading, hovered);
+        want();
       }
       residency.tick(c);
       if (entered === null) syncEntered();
