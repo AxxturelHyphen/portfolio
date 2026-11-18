@@ -318,6 +318,7 @@
       "items": [
         {
           "sprite": "es/typha",
+          "fade": true,
           "x": 23.9,
           "y": 0,
           "z": -1,
