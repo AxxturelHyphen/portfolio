@@ -1473,8 +1473,7 @@
    "category": "birds",
    "sha256": "1ee8d50b143aa5915b62511917386fbe7d1a73c6842fb2c0ec9e2037c5468aee",
    "usedIn": [
-    "sa/swallow-hero",
-    "salida"
+    "sa/swallow-hero"
    ],
    "edits": [
     {
@@ -1592,8 +1591,7 @@
    "category": "birds",
    "sha256": "3a7e78a4a7fd38a04cefa16b9129aeeaebfc15ff9ce86f13707c763f89a12cd6",
    "usedIn": [
-    "sa/nightingale",
-    "salida"
+    "sa/nightingale"
    ],
    "edits": [
     {
@@ -1861,8 +1859,7 @@
    "category": "birds",
    "sha256": "5a05cdd0c37b743f155d8b1bb8e04dbfa83751196cf8ca3a9aaa52b762dd1dd7",
    "usedIn": [
-    "sa/swallow-pair",
-    "salida"
+    "sa/swallow-pair"
    ],
    "edits": [
     {
@@ -2903,138 +2900,8 @@
    "need": "roam figure parts",
    "category": "figure",
    "sha256": "b38afcd2a2eb1f7a5d41c0296e134b5bd9de58b2ae379b43941dd14218e7fe9b",
-   "usedIn": [
-    "fg/arm",
-    "fg/hand",
-    "fg/head",
-    "fg/shin-l",
-    "fg/shin-r",
-    "fg/thigh-l",
-    "fg/thigh-r",
-    "fg/torso"
-   ],
-   "edits": [
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/torso: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.3875,0.333647,0.524167,0.450298"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/torso: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/torso: polygon of 94 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/head: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.443333,0.313578,0.504583,0.35058"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/head: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/head: polygon of 28 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/arm: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.49625,0.352462,0.59,0.45312"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/arm: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/arm: polygon of 68 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/hand: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.568333,0.415804,0.617083,0.445908"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/hand: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/hand: polygon of 20 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/thigh-l: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.38625,0.430856,0.45375,0.566008"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/thigh-l: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/thigh-l: polygon of 84 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/shin-l: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.39,0.544058,0.449167,0.628097"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/shin-l: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/shin-l: polygon of 55 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/thigh-r: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.446667,0.430856,0.5275,0.568517"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/thigh-r: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/thigh-r: polygon of 90 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/shin-r: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.450417,0.544058,0.555833,0.619316"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/shin-r: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/shin-r: polygon of 64 points"
-    }
-   ]
+   "usedIn": [],
+   "edits": []
   },
   {
    "id": "fig-rijks-jardinier-1825-front",
@@ -3052,25 +2919,9 @@
    "sha256": "bda9088cf21325ec089655ca7a390029ac95af369a65ccd082c5cda32f43f94d",
    "usedIn": [
     "fg/crook",
-    "fg/hat",
     "fg/void"
    ],
    "edits": [
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/hat: raw (forced: crayon lithograph hat over a face and a spade: alpha from the hand matte round crown and brim), crop 0.439167,0.266645,0.56375,0.308298"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "fg/hat: all GM #1b1a3a/#3a2f2a/#7d6a55, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "fg/hat: polygon of 48 points"
-    },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
@@ -3090,6 +2941,135 @@
      "stage": "sprite",
      "tool": "painted out",
      "note": "fg/void: 0.1625,0.127911,0.175,0.13775"
+    }
+   ]
+  },
+  {
+   "id": "fig-figure2-sheet",
+   "title": "Walker parts retouch sheet (second cut)",
+   "creator": "Jacques Van Gingelen (etching); Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
+   "date": "1842; 1825-1835",
+   "institution": "Rijksmuseum, Amsterdam",
+   "sourceUrl": "https://id.rijksmuseum.nl/200196889",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Retouched from Jacques Van Gingelen, Jongen op de rug gezien, 1842, Rijksmuseum, Amsterdam (RP-P-OB-49.053), and Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835, Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
+   "file": "archive/raw/figure/fig-figure2-sheet.png",
+   "need": "roam figure parts, second cut",
+   "category": "figure",
+   "sha256": "df02a0414c20661ddcd7bc886e27ba845a1d0fe82292ee461d11de4279dd8311",
+   "usedIn": [
+    "fg/arm",
+    "fg/arm-bent",
+    "fg/hand",
+    "fg/hat",
+    "fg/head",
+    "fg/shin-l",
+    "fg/shin-r",
+    "fg/thigh-l",
+    "fg/thigh-r",
+    "fg/torso"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/torso: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.015455,0.066536,0.159545,0.76908"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/torso: all GM #1b1a3a/#6c6a64/#b3ad9f, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/head: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.172273,0.066536,0.225455,0.315068"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/head: all GM #14141f/#25232a/#45403c, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/hat: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.238182,0.066536,0.372727,0.342466"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/hat: all GM #14141f/#25232a/#45403c, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/arm: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.385455,0.066536,0.444091,0.780822"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/arm: all GM #1b1a3a/#6c6a64/#b3ad9f, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/arm-bent: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.456818,0.066536,0.513636,0.64775"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/arm-bent: all GM #1b1a3a/#6c6a64/#b3ad9f, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/hand: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.526364,0.066536,0.564091,0.25636"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/hand: all GM #1b1a3a/#5f5c56/#9c968a, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/thigh-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.576818,0.066536,0.644545,0.917808"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/thigh-l: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/thigh-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.657273,0.066536,0.740455,0.933464"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/thigh-r: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/shin-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.753182,0.066536,0.814545,0.579256"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/shin-l: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/shin-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.827273,0.066536,0.901364,0.559687"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/shin-r: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
     }
    ]
   },
@@ -3176,7 +3156,8 @@
    "category": "garden",
    "sha256": "c8d44ed8b7bf6efc4378a2f85dbcbf7a810aaefa4638a349947c71a658f17722",
    "usedIn": [
-    "gr/door"
+    "gr/door",
+    "gruta"
    ],
    "edits": [
     {
@@ -3656,8 +3637,7 @@
    "category": "garden",
    "sha256": "4b4bc5b890724c2192827e6e1350cfafcbbd82c8fc9944db652511c45ba3e230",
    "usedIn": [
-    "sa/canopy",
-    "salida"
+    "sa/canopy"
    ],
    "edits": [
     {
@@ -3693,7 +3673,6 @@
    "sha256": "fb14d2e78466bed216547b0c4a95834884d2451b4b5969e6864d09436f6516e2",
    "usedIn": [
     "sa/branch",
-    "salida",
     "semillero",
     "v/cypress"
    ],
@@ -5163,8 +5142,7 @@
    "usedIn": [
     "gr/rosette-1",
     "gr/rosette-2",
-    "gr/rosette-3",
-    "gruta"
+    "gr/rosette-3"
    ],
    "edits": [
     {
@@ -5894,7 +5872,6 @@
    "category": "props",
    "sha256": "54fcb3437aa9592809aef177318f5d55c5ad2d950b04be2c5b2845af1c34de46",
    "usedIn": [
-    "salida",
     "sh/lantern-globe"
    ],
    "edits": [
@@ -6714,8 +6691,7 @@
    "category": "props",
    "sha256": "d3aef76e18e1de9c01f4a23cee97f47fd74758a1460098da107ad99946a4e4c6",
    "usedIn": [
-    "sa/sign",
-    "salida"
+    "sa/sign"
    ],
    "edits": [
     {
@@ -9987,8 +9963,7 @@
    "category": "water",
    "sha256": "79eaa118c8a015a9d1959c2f9142a3151cf59b3f8a57aa854a7a12f18afa1da8",
    "usedIn": [
-    "es/lotus-leaf",
-    "estanque"
+    "es/lotus-leaf"
    ],
    "edits": [
     {

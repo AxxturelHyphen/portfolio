@@ -98,8 +98,7 @@
      "attribution": "W. Swaysland, Familiar wild birds (Plate 31) (6032355301). Biodiversity Heritage Library, via Wikimedia Commons. Public domain (per Wikimedia Commons file page).",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File%3AFamiliar_wild_birds_%28Plate_31%29_%286032355301%29.jpg",
      "usedIn": [
-      "sa/nightingale",
-      "salida"
+      "sa/nightingale"
      ]
     },
     {
@@ -141,8 +140,7 @@
      "attribution": "Richard Bowdler Sharpe, A hand-book to the birds of Great Britain (Plate XXVIII) (6898668904). Biodiversity Heritage Library, via Wikimedia Commons. Public domain (per Wikimedia Commons file page).",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File%3AA_hand-book_to_the_birds_of_Great_Britain_%28Plate_XXVIII%29_%286898668904%29.jpg",
      "usedIn": [
-      "sa/swallow-hero",
-      "salida"
+      "sa/swallow-hero"
      ]
     },
     {
@@ -331,8 +329,7 @@
      "attribution": "Alfred Parys, Tavern Sign, 1935/1942. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Alfred_Parys,_Tavern_Sign,_1935-1942,_NGA_19892.jpg",
      "usedIn": [
-      "sa/sign",
-      "salida"
+      "sa/sign"
      ]
     },
     {
@@ -420,7 +417,6 @@
      "attribution": "E.J. Gilsleider, Lantern, 1935/1942. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File:E.J._Gilsleider,_Lantern,_1935-1942,_NGA_24425.jpg",
      "usedIn": [
-      "salida",
       "sh/lantern-globe"
      ]
     },
@@ -638,6 +634,28 @@
      ]
     },
     {
+     "id": "fig-figure2-sheet",
+     "title": "Walker parts retouch sheet (second cut)",
+     "creator": "Jacques Van Gingelen (etching); Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
+     "date": "1842; 1825-1835",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Retouched from Jacques Van Gingelen, Jongen op de rug gezien, 1842, Rijksmuseum, Amsterdam (RP-P-OB-49.053), and Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835, Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
+     "sourceUrl": "https://id.rijksmuseum.nl/200196889",
+     "usedIn": [
+      "fg/arm",
+      "fg/arm-bent",
+      "fg/hand",
+      "fg/hat",
+      "fg/head",
+      "fg/shin-l",
+      "fg/shin-r",
+      "fg/thigh-l",
+      "fg/thigh-r",
+      "fg/torso"
+     ]
+    },
+    {
      "id": "fig-rijks-jardinier-1825-front",
      "title": "Tuinman met schep over zijn schouder / Jardinier, Middelbourg",
      "creator": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
@@ -648,28 +666,7 @@
      "sourceUrl": "https://id.rijksmuseum.nl/200228151",
      "usedIn": [
       "fg/crook",
-      "fg/hat",
       "fg/void"
-     ]
-    },
-    {
-     "id": "fig-rijks-jongen-rug-1842",
-     "title": "Jongen op de rug gezien",
-     "creator": "Jacques Van Gingelen",
-     "date": "1842",
-     "license": "PD",
-     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-     "attribution": "Jacques Van Gingelen, Jongen op de rug gezien, 1842. Rijksmuseum, Amsterdam (RP-P-OB-49.053). Public domain.",
-     "sourceUrl": "https://id.rijksmuseum.nl/200196889",
-     "usedIn": [
-      "fg/arm",
-      "fg/hand",
-      "fg/head",
-      "fg/shin-l",
-      "fg/shin-r",
-      "fg/thigh-l",
-      "fg/thigh-r",
-      "fg/torso"
      ]
     },
     {
@@ -939,7 +936,6 @@
      "sourceUrl": "https://clevelandart.org/art/1938.81",
      "usedIn": [
       "sa/branch",
-      "salida",
       "semillero",
       "v/cypress"
      ]
@@ -1107,7 +1103,8 @@
      "attribution": "The Metropolitan Museum of Art, Purchase, Jeffrey L. Berenson and Raymond Lifchez Living Trust Gifts, 2014 (Open Access, CC0)",
      "sourceUrl": "https://www.metmuseum.org/art/collection/search/641334",
      "usedIn": [
-      "gr/door"
+      "gr/door",
+      "gruta"
      ]
     },
     {
@@ -1400,8 +1397,7 @@
      "attribution": "Wellcome Collection, Public Domain Mark 1.0",
      "sourceUrl": "https://wellcomecollection.org/works/cyjn4htg",
      "usedIn": [
-      "sa/canopy",
-      "salida"
+      "sa/canopy"
      ]
     },
     {
@@ -1499,8 +1495,7 @@
      "attribution": "Sacred lotus (Nelumbo nucifera): one large leaf with long stalk. Watercolour. Wellcome Collection (Public Domain Mark).",
      "sourceUrl": "https://wellcomecollection.org/works/r7fugtvn",
      "usedIn": [
-      "es/lotus-leaf",
-      "estanque"
+      "es/lotus-leaf"
      ]
     },
     {
@@ -1647,8 +1642,7 @@
      "attribution": "John Gould, J. and E. Gould, Edward Lear, GouldBirdsEuropeIIChimney Swallow. Wikimedia Commons. Public domain (per Wikimedia Commons file page).",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File%3AGouldBirdsEuropeIIChimney_Swallow.jpg",
      "usedIn": [
-      "sa/swallow-pair",
-      "salida"
+      "sa/swallow-pair"
      ]
     }
    ]
@@ -1711,8 +1705,7 @@
      "usedIn": [
       "gr/rosette-1",
       "gr/rosette-2",
-      "gr/rosette-3",
-      "gruta"
+      "gr/rosette-3"
      ]
     },
     {

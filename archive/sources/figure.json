@@ -1,260 +1,643 @@
 [
- {
-  "id": "fig-rijks-jongen-rug-1842",
-  "title": "Jongen op de rug gezien",
-  "creator": "Jacques Van Gingelen",
-  "date": "1842",
-  "institution": "Rijksmuseum, Amsterdam",
-  "sourceUrl": "https://id.rijksmuseum.nl/200196889",
-  "license": "Public domain",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Jacques Van Gingelen, Jongen op de rug gezien, 1842. Rijksmuseum, Amsterdam (RP-P-OB-49.053). Public domain.",
-  "file": "archive/raw/figure/fig-rijks-jongen-rug-1842.jpg",
-  "need": "roam figure parts",
-  "px": [
-   2400,
-   3189
-  ],
-  "background": "pale pink-beige paper, etched line, unhatched smock",
-  "notes": "Etching of a youth seen from behind in a smock and wide trousers. Body, sleeve, hand and both legs of the roam walker puppet are cut from it (archive/recipes/roam.json); the raised left arm and the cap are left out.",
-  "parts": [
-   {
-    "sprite": "fg/torso",
-    "plateBox": [
-     930,
-     1064,
-     1258,
-     1436
+  {
+    "id": "fig-rijks-jongen-rug-1842",
+    "title": "Jongen op de rug gezien",
+    "creator": "Jacques Van Gingelen",
+    "date": "1842",
+    "institution": "Rijksmuseum, Amsterdam",
+    "sourceUrl": "https://id.rijksmuseum.nl/200196889",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "attribution": "Jacques Van Gingelen, Jongen op de rug gezien, 1842. Rijksmuseum, Amsterdam (RP-P-OB-49.053). Public domain.",
+    "file": "archive/raw/figure/fig-rijks-jongen-rug-1842.jpg",
+    "need": "roam figure parts",
+    "px": [
+      2400,
+      3189
     ],
-    "pinPlatePx": [
-     1085,
-     1392
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "sleeve seam cut on the left just outside its ink line (raised arm left out, covered by the mirrored arm), back seam on the right along its ink line, so a hanging arm never bares an unlined edge, bottom along the smock hem, just under the sash (the trouser seat goes to the thighs, so the trouser ink stays on the trouser parts)",
-    "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     134,
-     151
-    ],
-    "pinSpritePx": [
-     63.4,
-     131.6
+    "background": "pale pink-beige paper, etched line, unhatched smock",
+    "notes": "Etching of a youth seen from behind in a smock and wide trousers. Body, sleeve, hand and both legs of the roam walker puppet are cut from it (archive/recipes/roam.json); the raised left arm and the cap are left out. Second cut: the parts now come through fig-figure2-sheet (retouched from this plate).",
+    "parts": [
+      {
+        "sprite": "fg/torso",
+        "plateBox": [
+          930,
+          1064,
+          1258,
+          1436
+        ],
+        "pinPlatePx": [
+          1085,
+          1392
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "sleeve seam cut on the left just outside its ink line (raised arm left out, covered by the mirrored arm), back seam on the right along its ink line, so a hanging arm never bares an unlined edge, bottom along the smock hem, just under the sash (the trouser seat goes to the thighs, so the trouser ink stays on the trouser parts)",
+        "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          134,
+          151
+        ],
+        "pinSpritePx": [
+          63.4,
+          131.6
+        ]
+      },
+      {
+        "sprite": "fg/head",
+        "plateBox": [
+          1064,
+          1000,
+          1211,
+          1118
+        ],
+        "pinPlatePx": [
+          1150,
+          1090
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "cut under the 1842 cap band; neck runs 18 px past the pin into the collar",
+        "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          61,
+          50
+        ],
+        "pinSpritePx": [
+          35.3,
+          37.0
+        ]
+      },
+      {
+        "sprite": "fg/arm",
+        "plateBox": [
+          1191,
+          1124,
+          1416,
+          1445
+        ],
+        "pinPlatePx": [
+          1218,
+          1160
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "right sleeve; shoulder cap a half disc of 18 px round the pin, cuff end rounded 22 px under the hand",
+        "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          93,
+          131
+        ],
+        "pinSpritePx": [
+          12.3,
+          15.9
+        ]
+      },
+      {
+        "sprite": "fg/hand",
+        "plateBox": [
+          1364,
+          1326,
+          1481,
+          1422
+        ],
+        "pinPlatePx": [
+          1388,
+          1362
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "open right hand; wrist end a half disc of 16 px round the cuff pin",
+        "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          49,
+          41
+        ],
+        "pinSpritePx": [
+          11.3,
+          15.9
+        ]
+      },
+      {
+        "sprite": "fg/thigh-l",
+        "plateBox": [
+          927,
+          1374,
+          1089,
+          1805
+        ],
+        "pinPlatePx": [
+          1010,
+          1392
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "left trouser leg, waistband to knee; top runs 9 px above the hip pin under the smock, knee end rounded past the pin",
+        "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          68,
+          175
+        ],
+        "pinSpritePx": [
+          34.6,
+          9.2
+        ]
+      },
+      {
+        "sprite": "fg/shin-l",
+        "plateBox": [
+          936,
+          1735,
+          1078,
+          2003
+        ],
+        "pinPlatePx": [
+          1005,
+          1765
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "left trouser leg and foot; the matte runs inside the heel so the signature V (x under 950) and \"an\" (y over 1998) stay out, no paint-out needed",
+        "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          60,
+          109
+        ],
+        "pinSpritePx": [
+          29.4,
+          13.4
+        ]
+      },
+      {
+        "sprite": "fg/thigh-r",
+        "plateBox": [
+          1072,
+          1374,
+          1266,
+          1813
+        ],
+        "pinPlatePx": [
+          1160,
+          1392
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "right trouser leg, waistband to knee; top runs 9 px above the hip pin under the smock, knee end rounded past the pin",
+        "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          81,
+          178
+        ],
+        "pinSpritePx": [
+          36.7,
+          9.2
+        ]
+      },
+      {
+        "sprite": "fg/shin-r",
+        "plateBox": [
+          1081,
+          1735,
+          1334,
+          1975
+        ],
+        "pinPlatePx": [
+          1165,
+          1765
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "right trouser leg and the profile foot pointing out",
+        "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          103,
+          98
+        ],
+        "pinSpritePx": [
+          34.9,
+          13.8
+        ]
+      }
     ]
-   },
-   {
-    "sprite": "fg/head",
-    "plateBox": [
-     1064,
-     1000,
-     1211,
-     1118
+  },
+  {
+    "id": "fig-rijks-jardinier-1825-front",
+    "title": "Tuinman met schep over zijn schouder / Jardinier, Middelbourg",
+    "creator": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
+    "date": "1825-1835",
+    "institution": "Rijksmuseum, Amsterdam",
+    "sourceUrl": "https://id.rijksmuseum.nl/200228151",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "attribution": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835. Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
+    "file": "archive/raw/figure/fig-rijks-jardinier-1825-front.jpg",
+    "need": "roam figure parts",
+    "px": [
+      2400,
+      3049
     ],
-    "pinPlatePx": [
-     1150,
-     1090
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "cut under the 1842 cap band; neck runs 18 px past the pin into the collar",
-    "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     61,
-     50
-    ],
-    "pinSpritePx": [
-     35.3,
-     37.0
+    "background": "buff paper, crayon lithograph",
+    "notes": "Lithograph of a gardener with a spade. Only the dark round felt hat (crown and brim) is cut, for the roam walker; the face below the brim and the spade blade are left out. Second cut: the hat comes through fig-figure2-sheet; the crook and void patches still cut here.",
+    "parts": [
+      {
+        "sprite": "fg/hat",
+        "plateBox": [
+          1054,
+          813,
+          1353,
+          940
+        ],
+        "pinPlatePx": [
+          1205,
+          905
+        ],
+        "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
+        "retouch": "crown and brim along the lower brim edge; face (below y 906) and spade blade (x over 1290, y over 896) left out",
+        "tint": "gradient map #1b1a3a/#3a2f2a/#7d6a55, amount 1, value 0.9; bevel 2",
+        "spritePx": [
+          111,
+          50
+        ],
+        "pinSpritePx": [
+          56.0,
+          35.2
+        ]
+      }
     ]
-   },
-   {
-    "sprite": "fg/arm",
-    "plateBox": [
-     1191,
-     1124,
-     1416,
-     1445
+  },
+  {
+    "id": "fig-figure2-sheet",
+    "title": "Walker parts retouch sheet (second cut)",
+    "creator": "Jacques Van Gingelen (etching); Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
+    "date": "1842; 1825-1835",
+    "institution": "Rijksmuseum, Amsterdam",
+    "sourceUrl": "https://id.rijksmuseum.nl/200196889",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "attribution": "Retouched from Jacques Van Gingelen, Jongen op de rug gezien, 1842, Rijksmuseum, Amsterdam (RP-P-OB-49.053), and Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835, Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
+    "file": "archive/raw/figure/fig-figure2-sheet.png",
+    "need": "roam figure parts, second cut",
+    "px": [
+      2200,
+      511
     ],
-    "pinPlatePx": [
-     1218,
-     1160
+    "background": "transparent",
+    "derivedFrom": [
+      "fig-rijks-jongen-rug-1842",
+      "fig-rijks-jardinier-1825-front"
     ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "right sleeve; shoulder cap a half disc of 18 px round the pin, cuff end rounded 22 px under the hand",
-    "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     93,
-     131
-    ],
-    "pinSpritePx": [
-     12.3,
-     15.9
+    "notes": "Made by scripts/py/figure2_sheet.py from the two plates (https://id.rijksmuseum.nl/200196889, https://id.rijksmuseum.nl/200228151): parts cut, paper flattened to one tone per garment, outlines closed with ruled strokes; nape, under-brim mass, fists and heels drawn in code. No image generator.",
+    "parts": [
+      {
+        "sprite": "fg/torso",
+        "sheetCell": [
+          40,
+          40,
+          305,
+          347
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            189,
+            366
+          ],
+          "neck": [
+            266,
+            70
+          ],
+          "shoulderL": [
+            93,
+            121
+          ],
+          "shoulderR": [
+            322,
+            142
+          ],
+          "hipL": [
+            111,
+            370
+          ],
+          "hipR": [
+            266,
+            370
+          ]
+        },
+        "spritePx": [
+          126,
+          142
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            61.5,
+            129.9
+          ],
+          "neck": [
+            91.3,
+            15.6
+          ],
+          "shoulderL": [
+            24.5,
+            35.3
+          ],
+          "shoulderR": [
+            112.9,
+            43.4
+          ],
+          "hipL": [
+            31.4,
+            131.4
+          ],
+          "hipR": [
+            91.3,
+            131.4
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#6c6a64/#b3ad9f, amount 1, value 0.9; bevel 2",
+        "retouch": "smock from the 1842 back view; paper lifted to one flat tone, hatching thinned, contour ruled; hem trimmed straight under the sash, no flare"
+      },
+      {
+        "sprite": "fg/head",
+        "sheetCell": [
+          385,
+          40,
+          105,
+          115
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            437,
+            138
+          ],
+          "hatSeat": [
+            437,
+            60
+          ]
+        },
+        "spritePx": [
+          41,
+          44
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            20.3,
+            34.7
+          ],
+          "hatSeat": [
+            20.3,
+            10.3
+          ]
+        },
+        "tint": "gradient map #14141f/#25232a/#45403c, amount 1, value 0.9; bevel 2",
+        "retouch": "replaced: small dark nape (hair under the hat) drawn in code, no face, no pale oval"
+      },
+      {
+        "sprite": "fg/hat",
+        "sheetCell": [
+          530,
+          40,
+          284,
+          129
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            673,
+            124
+          ]
+        },
+        "spritePx": [
+          118,
+          58
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            59.4,
+            36.5
+          ]
+        },
+        "tint": "gradient map #14141f/#25232a/#45403c, amount 1, value 0.9; bevel 2",
+        "retouch": "1825 crown and brim on the first-cut outline; the face below the brim replaced by a dark rounded back-of-head mass, so the hat alone covers the head"
+      },
+      {
+        "sprite": "fg/arm",
+        "sheetCell": [
+          854,
+          40,
+          117,
+          353
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            912.0,
+            98.0
+          ],
+          "cuff": [
+            912.0,
+            376.7
+          ]
+        },
+        "spritePx": [
+          53,
+          144
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            26.3,
+            26.3
+          ],
+          "cuff": [
+            26.3,
+            133.7
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#6c6a64/#b3ad9f, amount 1, value 0.9; bevel 2",
+        "retouch": "1842 right sleeve rotated to hang straight from the shoulder pin, ballooning underside trimmed, shoulder cap and cuff closed with a ruled line"
+      },
+      {
+        "sprite": "fg/arm-bent",
+        "sheetCell": [
+          1011,
+          40,
+          113,
+          285
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            1067.0,
+            105.0
+          ],
+          "cuff": [
+            1067.0,
+            298.6
+          ]
+        },
+        "spritePx": [
+          52,
+          118
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            25.6,
+            29.1
+          ],
+          "cuff": [
+            25.6,
+            103.8
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#6c6a64/#b3ad9f, amount 1, value 0.9; bevel 2",
+        "retouch": "new: the same sleeve cut at the elbow (forearm forward, foreshortened from behind), rounded and lined end"
+      },
+      {
+        "sprite": "fg/hand",
+        "sheetCell": [
+          1164,
+          40,
+          71,
+          85
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            1198,
+            48
+          ],
+          "grip": [
+            1198,
+            90
+          ]
+        },
+        "spritePx": [
+          26,
+          30
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            12.8,
+            6.1
+          ],
+          "grip": [
+            12.8,
+            16.9
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#5f5c56/#9c968a, amount 1, value 0.9; bevel 2",
+        "retouch": "replaced: small closed fist drawn in code in the smock shade (curled fingers, thumb over)"
+      },
+      {
+        "sprite": "fg/thigh-l",
+        "sheetCell": [
+          1275,
+          40,
+          137,
+          423
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            1345,
+            52
+          ],
+          "knee": [
+            1338,
+            431
+          ]
+        },
+        "spritePx": [
+          61,
+          171
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            31.0,
+            8.6
+          ],
+          "knee": [
+            28.3,
+            154.7
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#3f3c3a/#6e665c, amount 1, value 0.9; bevel 2",
+        "retouch": "tidy trouser leg, outline tightened, inner edge lined"
+      },
+      {
+        "sprite": "fg/thigh-r",
+        "sheetCell": [
+          1452,
+          40,
+          171,
+          431
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            1542,
+            52
+          ],
+          "knee": [
+            1548,
+            432
+          ]
+        },
+        "spritePx": [
+          74,
+          174
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            38.7,
+            8.6
+          ],
+          "knee": [
+            41.0,
+            155.0
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#3f3c3a/#6e665c, amount 1, value 0.9; bevel 2",
+        "retouch": "tidy trouser leg, outline tightened, inner edge lined"
+      },
+      {
+        "sprite": "fg/shin-l",
+        "sheetCell": [
+          1663,
+          40,
+          123,
+          250
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            1722,
+            65
+          ]
+        },
+        "spritePx": [
+          55,
+          104
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            26.7,
+            13.6
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#3f3c3a/#6e665c, amount 1, value 0.9; bevel 2",
+        "retouch": "trouser leg to the hem, heel and sole edge of a plain shoe drawn below"
+      },
+      {
+        "sprite": "fg/shin-r",
+        "sheetCell": [
+          1826,
+          40,
+          151,
+          240
+        ],
+        "pinsSheetPx": {
+          "pin": [
+            1901,
+            63
+          ]
+        },
+        "spritePx": [
+          66,
+          100
+        ],
+        "pinsSpritePx": {
+          "pin": [
+            32.8,
+            12.8
+          ]
+        },
+        "tint": "gradient map #1b1a3a/#3f3c3a/#6e665c, amount 1, value 0.9; bevel 2",
+        "retouch": "trouser leg to the hem, profile foot dropped, heel and sole edge drawn below"
+      }
     ]
-   },
-   {
-    "sprite": "fg/hand",
-    "plateBox": [
-     1364,
-     1326,
-     1481,
-     1422
-    ],
-    "pinPlatePx": [
-     1388,
-     1362
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "open right hand; wrist end a half disc of 16 px round the cuff pin",
-    "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     49,
-     41
-    ],
-    "pinSpritePx": [
-     11.3,
-     15.9
-    ]
-   },
-   {
-    "sprite": "fg/thigh-l",
-    "plateBox": [
-     927,
-     1374,
-     1089,
-     1805
-    ],
-    "pinPlatePx": [
-     1010,
-     1392
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "left trouser leg, waistband to knee; top runs 9 px above the hip pin under the smock, knee end rounded past the pin",
-    "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     68,
-     175
-    ],
-    "pinSpritePx": [
-     34.6,
-     9.2
-    ]
-   },
-   {
-    "sprite": "fg/shin-l",
-    "plateBox": [
-     936,
-     1735,
-     1078,
-     2003
-    ],
-    "pinPlatePx": [
-     1005,
-     1765
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "left trouser leg and foot; the matte runs inside the heel so the signature V (x under 950) and \"an\" (y over 1998) stay out, no paint-out needed",
-    "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     60,
-     109
-    ],
-    "pinSpritePx": [
-     29.4,
-     13.4
-    ]
-   },
-   {
-    "sprite": "fg/thigh-r",
-    "plateBox": [
-     1072,
-     1374,
-     1266,
-     1813
-    ],
-    "pinPlatePx": [
-     1160,
-     1392
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "right trouser leg, waistband to knee; top runs 9 px above the hip pin under the smock, knee end rounded past the pin",
-    "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     81,
-     178
-    ],
-    "pinSpritePx": [
-     36.7,
-     9.2
-    ]
-   },
-   {
-    "sprite": "fg/shin-r",
-    "plateBox": [
-     1081,
-     1735,
-     1334,
-     1975
-    ],
-    "pinPlatePx": [
-     1165,
-     1765
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "right trouser leg and the profile foot pointing out",
-    "tint": "gradient map #1b1a3a/#5e5446/#b4a487, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     103,
-     98
-    ],
-    "pinSpritePx": [
-     34.9,
-     13.8
-    ]
-   }
-  ]
- },
- {
-  "id": "fig-rijks-jardinier-1825-front",
-  "title": "Tuinman met schep over zijn schouder / Jardinier, Middelbourg",
-  "creator": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
-  "date": "1825-1835",
-  "institution": "Rijksmuseum, Amsterdam",
-  "sourceUrl": "https://id.rijksmuseum.nl/200228151",
-  "license": "Public domain",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "attribution": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835. Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
-  "file": "archive/raw/figure/fig-rijks-jardinier-1825-front.jpg",
-  "need": "roam figure parts",
-  "px": [
-   2400,
-   3049
-  ],
-  "background": "buff paper, crayon lithograph",
-  "notes": "Lithograph of a gardener with a spade. Only the dark round felt hat (crown and brim) is cut, for the roam walker; the face below the brim and the spade blade are left out.",
-  "parts": [
-   {
-    "sprite": "fg/hat",
-    "plateBox": [
-     1054,
-     813,
-     1353,
-     940
-    ],
-    "pinPlatePx": [
-     1205,
-     905
-    ],
-    "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-    "retouch": "crown and brim along the lower brim edge; face (below y 906) and spade blade (x over 1290, y over 896) left out",
-    "tint": "gradient map #1b1a3a/#3a2f2a/#7d6a55, amount 1, value 0.9; bevel 2",
-    "spritePx": [
-     111,
-     50
-    ],
-    "pinSpritePx": [
-     56.0,
-     35.2
-    ]
-   }
-  ]
- }
+  }
 ]
