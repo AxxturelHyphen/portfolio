@@ -21,7 +21,7 @@ import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
 import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode, worldModeOf } from '../world/mode.ts';
-import { createVisitorLantern, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
+import { createVisitorLantern, HELD, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
 import { fetchManifest } from '../world/bed.ts';
 import { FIGURE_SPRITES, type FigureRects } from '../world/puppet.ts';
 import { createFilmDrive } from './film.ts';
@@ -293,7 +293,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     const color = atlas.tex.color[rect.page];
     const normal = atlas.tex.normal[rect.page];
     if (color === undefined || normal === undefined) return null;
-    const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS);
+    const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS, HELD.carriedLight);
     gfx.scene.add(batch.mesh);
     lantern.attach(batch.writer, rect);
     return batch;
