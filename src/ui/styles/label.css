@@ -176,7 +176,7 @@
     right: max(10px, env(safe-area-inset-right, 0px));
     bottom: max(10px, env(safe-area-inset-bottom, 0px));
     width: auto;
-    padding: 14px 18px 4px;
+    padding: 10px 16px 2px;
   }
 
   #label .lb,
@@ -199,8 +199,18 @@
     display: none;
   }
 
+  /* A lower strip on phones: tighter title and gaps, the body type and the 44 px line of "View" unchanged. */
   .lb-title {
-    font-size: 1.5rem;
-    line-height: 1.75rem;
+    margin-top: 0;
+    font-size: 1.375rem;
+    line-height: 1.625rem;
+  }
+
+  .lb-oneliner {
+    margin-top: 6px;
+  }
+
+  .lb-stack {
+    margin-top: 4px;
   }
 }
