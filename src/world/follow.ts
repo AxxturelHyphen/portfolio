@@ -32,7 +32,7 @@ const SIDE_SAMPLES = 64;
  */
 export const WALL_SHARE = { landscape: 0.18, portrait: 0.25 } as const;
 /** The visitor keeps at least this share of the width from either edge before a near wall may grow past its share. */
-const KEEP = 0.2;
+const KEEP = 0.22;
 const SHARE_GRID = { cols: 32, rows: 18, steps: 12, far: 20 } as const;
 
 /** The follow framing for one aspect: camera height and back offset (m), pitch (radians), vertical fov (degrees), and

@@ -149,6 +149,24 @@ function cameraOf(p: RigPose, aspect: number): PerspectiveCamera {
   return cam;
 }
 
+test('the clamp keeps the visitor 22 to 78 percent across a landscape frame anywhere in the walk area', () => {
+  for (const aspect of [16 / 9, 21 / 9]) {
+    const f = framingFor(aspect, {} as Framing);
+    const pose = blankPose();
+    let lo = 1;
+    let hi = 0;
+    for (let x = enc.walk.minX + r; x <= enc.walk.maxX - r + 1e-6; x += 0.1) {
+      for (let z = enc.walk.minZ + r; z <= enc.walk.maxZ - r + 1e-6; z += 0.25) {
+        const s = (new Vector3(x, 0, z).project(cameraOf(followPose(x, z, f, limits, pose), aspect)).x + 1) / 2;
+        lo = Math.min(lo, s);
+        hi = Math.max(hi, s);
+      }
+    }
+    expect(lo, `${aspect.toFixed(2)}`).toBeGreaterThanOrEqual(0.22 - 1e-3);
+    expect(hi, `${aspect.toFixed(2)}`).toBeLessThanOrEqual(0.78 + 1e-3);
+  }
+});
+
 test('each framing puts the visitor at 60 to 65 percent of the height and the moon in view over the wall', () => {
   const cases = [...LANDSCAPE.map((n) => [n, 1920 / 1080] as const), ['phone', 390 / 844] as const, ['phone', 800 / 1200] as const];
   for (const [name, aspect] of cases) {
