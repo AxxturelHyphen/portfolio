@@ -123,7 +123,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   if (roam !== null) carryVisitor(roam.pos);
   const film = createFilmDrive(machine, rig, content.garden, roam?.travel ?? null);
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
-  const labels = createLabelDrive(label, rig);
+  const labels = createLabelDrive(label, rig, roam?.pos ?? null);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
   prepareGl(gfx, world, SCENES, worldMode());
   const placeLight = createPlaceLighting();

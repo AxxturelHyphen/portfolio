@@ -15,9 +15,12 @@ export interface LabelDrive {
 
 /** The card goes on the side of the flower that has more room. */
 const LEFT_OF = 0.6;
+/** Height (m) of the visitor's middle: under free roam the card goes on the flower's side away from the figure. */
+const VISITOR_MID_M = 0.9;
 
-export function createLabelDrive(label: LabelCard, rig: GardenRig): LabelDrive {
+export function createLabelDrive(label: LabelCard, rig: GardenRig, visitor: Float32Array | null = null): LabelDrive {
   const pt: ScreenPt = { x: 0, y: 0, scale: 0, visible: false };
+  const at: ScreenPt = { x: 0, y: 0, scale: 0, visible: false };
   let view: SlotView | null = null;
   let focused = false;
   let elapsedS = 0;
@@ -50,7 +53,12 @@ export function createLabelDrive(label: LabelCard, rig: GardenRig): LabelDrive {
         return;
       }
       rig.project(view.world[0], view.world[1], view.world[2], pt);
-      label.place(pt, pt.x > rig.width * LEFT_OF ? 'left' : 'right');
+      if (visitor === null) {
+        label.place(pt, pt.x > rig.width * LEFT_OF ? 'left' : 'right');
+      } else {
+        rig.project(visitor[0]!, VISITOR_MID_M, visitor[1]!, at);
+        label.place(pt, pt.x < at.x ? 'left' : 'right');
+      }
       label.setProgress(p);
     },
   };

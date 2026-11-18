@@ -1,10 +1,13 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../helpers/jardin.ts';
 import { enterRoam, roamAt } from '../helpers/roam.ts';
+import estanque from '../../content/beds/estanque.json' with { type: 'json' };
 
 // Assisted walking in free roam (cook/ROAM_PLAN.md P6): a signpost walks the visitor along the path to the next bed's
 // stand point at up to about 6 m/s and the arrival is said once; any steering cancels a walk at once; frozen time lands
 // it in the first frame; Tab walks the visitor to a flower out of reach; the plan's moth follows the visitor.
+
+const LILY_STAND = (estanque.slots.find((s) => s.id === 'lily-a')?.stand ?? [0, 0]) as [number, number];
 
 type Sample = { t: number; x: number; z: number; strip: number; phase: string };
 
@@ -109,7 +112,7 @@ test('Tab onto a flower out of reach walks the visitor there, it is focused on a
   await expect.poll(() => jardin.withApi((api) => api.state().slot), { timeout: 10000, message: 'focused on arrival' }).toBe('estanque/lily-a');
   const at = await roamAt(jardin);
   expect(Math.hypot(at.x - start.x, at.z - start.z), 'the visitor walked').toBeGreaterThan(1);
-  expect(Math.hypot(at.x - 22.2, at.z - 0.95), 'to the lily\'s stand point on the bank').toBeLessThan(0.3);
+  expect(Math.hypot(at.x - LILY_STAND[0], at.z - LILY_STAND[1]), 'to the lily\'s stand point on the bank').toBeLessThan(0.3);
   const name = await page.locator('#proxies [data-slot="estanque/lily-a"]').textContent();
   await expect(page.locator('#proxies .px-live')).toHaveText(name ?? '');
   await page.keyboard.press('Enter');
