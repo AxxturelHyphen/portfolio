@@ -245,11 +245,32 @@ export function stripOf(leg: number, hops: number, out: Vec4Out): Vec4Out {
 export const ROAM = { speed: 3.2, toSpeedS: 0.15, toStopS: 0.1, radius: 0.3, arriveM: 0.05, passes: 2, maxStepS: 0.05, bedHysteresisM: 1 } as const;
 
 /**
- * The follow camera: offset from the visitor (up, back toward +z), pitch and vertical fov on landscape; on portrait a
- * higher, steeper camera whose fov widens until `acrossM` of ground shows across at the visitor, who sits at `at` of
- * the screen height from the top. tauS: the critically damped follower on the visitor (omega = 1 / tauS).
+ * One follow framing: camera height over the ground (m), pitch below the horizon and vertical fov (degrees), and where
+ * the moon hangs, as a share of the screen height from the top (in the band of sky over the wall).
  */
-export const FOLLOW = { up: 6, back: 10, pitchDeg: -28, fov: 36, portraitUp: 7.5, portraitPitchDeg: -34, acrossM: 9, at: 0.6, tauS: 0.25 } as const;
+export interface FollowFraming { readonly up: number; readonly downDeg: number; readonly fov: number; readonly moonAt: number }
+
+/**
+ * The follow framings. Landscape uses the one FOLLOW.framing names; `low`, `mid` and `high` are the candidates compared
+ * blind (closer and lower to farther and steeper, each with a band of sky over the wall). Portrait always uses `phone`:
+ * a vertical fov under 55 degrees, so the visitor and the nearest flowers read large and the wall does not shrink.
+ */
+export const FOLLOW_FRAMINGS = {
+  low: { up: 3.8, downDeg: 21, fov: 48, moonAt: 0.07 },
+  mid: { up: 5, downDeg: 26, fov: 48, moonAt: 0.07 },
+  high: { up: 6.4, downDeg: 31, fov: 48, moonAt: 0.07 },
+  phone: { up: 4.4, downDeg: 24, fov: 52, moonAt: 0.12 },
+} as const satisfies Record<string, FollowFraming>;
+
+export type LandscapeFraming = Exclude<keyof typeof FOLLOW_FRAMINGS, 'phone'>;
+
+/**
+ * The follow camera: the landscape framing in use (`low`: its band of real sky shows the moon over the wall, where the
+ * higher two show the ground behind the wall until the garden is closed); the visitor sits at `at` of the screen height
+ * from the top (the back offset follows from it). tauS: the critically damped follower on the visitor (omega = 1 / tauS)
+ * trails a 3.2 m/s walk by 2 * tauS * speed (0.64 m) and settles in 6.64 * tauS (0.66 s).
+ */
+export const FOLLOW: Readonly<{ framing: LandscapeFraming; at: number; tauS: number }> = { framing: 'low', at: 0.62, tauS: 0.1 };
 
 // Mode switch: canvas exposure down, then the DOM cross-fade, no overlap
 

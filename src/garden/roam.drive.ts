@@ -2,7 +2,7 @@ import type { RoamControl } from '../core/input.ts';
 import { walkOf } from '../core/motion.ts';
 import type { BedId, Clock, Loop, Machine, ProjectId } from '../types.ts';
 import type { GardenRig } from '../world/camera.ts';
-import { createFollower, type ViewLimits } from '../world/follow.ts';
+import { createFollower, moonElevation, type ViewLimits } from '../world/follow.ts';
 import type { WorldLayout } from '../world/layout.ts';
 import type { GardenLight } from '../world/light.ts';
 import { createVisitor, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
@@ -33,6 +33,8 @@ export interface RoamDrive extends RoamControl {
   /** Stage 'camera', before the rig: steps the follow pose the rig mixes in. */
   follow(c: Clock): void;
   resize(w: number, h: number): void;
+  /** Elevation (degrees) that hangs the moon in the follow frame's band of sky over the wall, for the current aspect. */
+  moonElevation(): number;
   /** [x, z] of the visitor (read only). */
   readonly pos: Float32Array;
 }
@@ -105,5 +107,6 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
     resize(w, h) {
       follower.resize(w, h);
     },
+    moonElevation: () => moonElevation(follower.framing),
   };
 }

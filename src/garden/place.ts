@@ -56,6 +56,8 @@ interface LinearLight { skyTop: Vector3; skyHorizon: Vector3; ambient: Vector3; 
 export interface PlaceLighting {
   /** The place the camera is heading to; the overview keeps the Rosaleda night. */
   set(bed: BedId | null): void;
+  /** Free roam: hangs the moon at this elevation (degrees) over every bed, in the follow frame's sky; null lets go. */
+  holdMoon(elevationDeg: number | null): void;
   /** Stage 'world': eases the shared light uniforms toward the place; `snap` (frozen time) lands on it. No allocation. */
   frame(dt: number, snap: boolean): void;
 }
@@ -75,14 +77,18 @@ export function createPlaceLighting(): PlaceLighting {
   }
   const u = sharedUniforms;
   let goal = parsed.get('rosaleda') as LinearLight;
-  let moonGoal: readonly [number, number] = OVERVIEW_MOON;
-  let az = moonGoal[0];
-  let el = moonGoal[1];
+  let atBed = false;
+  let held: number | null = null;
+  let az = OVERVIEW_MOON[0];
+  let el = OVERVIEW_MOON[1];
   let first = true;
   return {
     set(bed) {
       goal = parsed.get(bed ?? 'rosaleda') ?? goal;
-      moonGoal = bed === null ? OVERVIEW_MOON : goal.moon;
+      atBed = bed !== null;
+    },
+    holdMoon(elevationDeg) {
+      held = elevationDeg;
     },
     frame(dt, snap) {
       const k = first || snap ? 1 : 1 - Math.exp(-dt / LIGHT_TAU_S);
@@ -92,8 +98,9 @@ export function createPlaceLighting(): PlaceLighting {
       u.uAmbient.value.lerp(goal.ambient, k);
       u.uShadowColor.value.lerp(goal.shadow, k);
       u.uShadowDir.value.z += (goal.shadowLength - u.uShadowDir.value.z) * k;
-      az += (moonGoal[0] - az) * k;
-      el += (moonGoal[1] - el) * k;
+      const moon = atBed ? goal.moon : OVERVIEW_MOON;
+      az += (moon[0] - az) * k;
+      el += ((atBed ? (held ?? moon[1]) : moon[1]) - el) * k;
       setMoon(az, el);
     },
   };

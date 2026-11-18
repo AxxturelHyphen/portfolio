@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { PerspectiveCamera, Vector3 } from 'three';
-import { FOLLOW, ROAM } from '../../../src/core/motion.ts';
+import { FOLLOW, FOLLOW_FRAMINGS, ROAM, SPRING_99, type LandscapeFraming } from '../../../src/core/motion.ts';
 import { createRig } from '../../../src/world/camera.ts';
-import { createFollower, followPose, framingFor, type Framing, type ViewLimits } from '../../../src/world/follow.ts';
+import { createFollower, followPose, framingFor, moonElevation, type Framing, type ViewLimits } from '../../../src/world/follow.ts';
 import type { RigPose } from '../../../src/world/rail.ts';
 import { createVisitor, HOLD, nearestBed, type Visitor, type WalkArea } from '../../../src/world/roam.ts';
 import { traceLayout, traceRig } from './rig.trace.ts';
@@ -137,12 +137,7 @@ test('the nearest bed changes only 1 m past the halfway line', () => {
 
 /** Where the four frustum corner rays first meet the ground (y 0) or the back wall plane. */
 function cornerHits(p: RigPose, aspect: number): Vector3[] {
-  const cam = new PerspectiveCamera(p.fov, aspect, 0.05, 400);
-  cam.rotation.order = 'YXZ';
-  cam.position.set(p.x, p.y, p.z);
-  cam.rotation.set(p.pitch, -p.yaw, 0);
-  cam.updateMatrixWorld();
-  cam.updateProjectionMatrix();
+  const cam = cameraOf(p, aspect);
   return [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => {
     const d = new Vector3(sx, sy, 0.5).unproject(cam).sub(cam.position);
     const toGround = d.y < 0 ? -p.y / d.y : Infinity;
@@ -151,50 +146,78 @@ function cornerHits(p: RigPose, aspect: number): Vector3[] {
   });
 }
 
-test('the follow camera never shows past the wall ends or south of the limit', () => {
-  for (const [w, h] of [[1920, 1080], [2560, 1080], [390, 844]] as const) {
-    const f = framingFor(w / h, {} as Framing);
-    const pose = { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 };
-    for (let x = area.minX + r; x <= area.maxX - r; x += 1.6) {
-      for (let z = area.minZ + r; z <= area.maxZ - r; z += 0.79) {
-        followPose(x, z, f, limits, pose);
-        for (const c of cornerHits(pose, w / h)) {
-          expect(c.x, `${w}x${h} at ${x},${z}`).toBeGreaterThanOrEqual(limits.minX - 1e-6);
-          expect(c.x, `${w}x${h} at ${x},${z}`).toBeLessThanOrEqual(limits.maxX + 1e-6);
-          expect(c.z, `${w}x${h} at ${x},${z}`).toBeLessThanOrEqual(limits.maxZ + 1e-6);
+const LANDSCAPE: readonly LandscapeFraming[] = ['low', 'mid', 'high'];
+const blankPose = (): RigPose => ({ x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
+
+function cameraOf(p: RigPose, aspect: number): PerspectiveCamera {
+  const cam = new PerspectiveCamera(p.fov, aspect, 0.05, 400);
+  cam.rotation.order = 'YXZ';
+  cam.position.set(p.x, p.y, p.z);
+  cam.rotation.set(p.pitch, -p.yaw, 0);
+  cam.updateMatrixWorld();
+  cam.updateProjectionMatrix();
+  return cam;
+}
+
+test('the follow camera never shows past the wall ends or south of the limit, every framing', () => {
+  const outside: string[] = [];
+  for (const name of LANDSCAPE) {
+    for (const [w, h] of [[1920, 1080], [2560, 1080], [800, 1200], [390, 844]] as const) {
+      const f = framingFor(w / h, {} as Framing, name);
+      const pose = blankPose();
+      for (let x = area.minX + r; x <= area.maxX - r; x += 1.6) {
+        for (let z = area.minZ + r; z <= area.maxZ - r; z += 0.79) {
+          followPose(x, z, f, limits, pose);
+          for (const c of cornerHits(pose, w / h)) {
+            const out = c.x < limits.minX - 1e-6 || c.x > limits.maxX + 1e-6 || c.z > limits.maxZ + 1e-6;
+            if (out) outside.push(`${name} ${w}x${h} at ${x.toFixed(1)},${z.toFixed(2)}: ${c.x.toFixed(2)},${c.z.toFixed(2)}`);
+          }
         }
       }
     }
   }
+  expect(outside).toEqual([]);
 });
 
-test('portrait framing shows 9 m across at the visitor, who sits at 60 percent of the height', () => {
-  const aspect = 390 / 844;
-  const f = framingFor(aspect, {} as Framing);
-  expect(f.up).toBe(FOLLOW.portraitUp);
-  const pose = followPose(20, -1, f, limits, { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
-  const cam = new PerspectiveCamera(pose.fov, aspect, 0.05, 400);
-  cam.rotation.order = 'YXZ';
-  cam.position.set(pose.x, pose.y, pose.z);
-  cam.rotation.set(pose.pitch, 0, 0);
-  cam.updateMatrixWorld();
-  cam.updateProjectionMatrix();
-  const ndc = new Vector3(20, 0, -1).project(cam);
-  expect((1 - ndc.y) / 2).toBeCloseTo(FOLLOW.at, 2);
-  const right = new Vector3(20 + FOLLOW.acrossM / 2, 0, -1).project(cam);
-  expect(right.x).toBeLessThanOrEqual(1 + 1e-6);
+test('each framing puts the visitor at 60 to 65 percent of the height and the moon in view over the wall', () => {
+  const cases = [...LANDSCAPE.map((n) => [n, 1920 / 1080] as const), ['phone', 390 / 844] as const, ['phone', 800 / 1200] as const];
+  for (const [name, aspect] of cases) {
+    const f = framingFor(aspect, {} as Framing, name === 'phone' ? FOLLOW.framing : name);
+    expect(f.fov, name).toBe(FOLLOW_FRAMINGS[name].fov);
+    expect(f.fov, name).toBeLessThan(55);
+    const pose = followPose(20, -1, f, limits, blankPose());
+    const cam = cameraOf(pose, aspect);
+    const at = (1 - new Vector3(20, 0, -1).project(cam).y) / 2;
+    expect(at, name).toBeGreaterThanOrEqual(0.6);
+    expect(at, name).toBeLessThanOrEqual(0.65);
+    const el = moonElevation(f) * (Math.PI / 180);
+    const moon = new Vector3(pose.x, pose.y + Math.sin(el) * 100, pose.z - Math.cos(el) * 100).project(cam);
+    expect((1 - moon.y) / 2, name).toBeCloseTo(f.moonAt, 5);
+    const wallTop = new Vector3(20, ground.wall.h, ground.wall.z).project(cam);
+    expect(moon.y, `${name}: the moon stands over the wall top`).toBeGreaterThan(wallTop.y);
+  }
 });
 
-test('the follower lags while walking and lands on the pose without lag under reduced motion', () => {
+test('the follower trails a walk by under a metre, settles within a second, and has no lag under reduced motion', () => {
   const f = createFollower(limits);
   f.resize(1920, 1080);
-  f.step(10, 0, 1 / 60, false);
-  f.step(12, 0, 1 / 60, false);
-  expect(f.pose.x).toBeGreaterThan(10);
-  expect(f.pose.x).toBeLessThan(12);
-  f.step(14, 0, 1 / 60, true);
-  const want = followPose(14, 0, framingFor(1920 / 1080, {} as Framing), limits, { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
-  expect(f.pose).toEqual(want);
+  const dt = 1 / 60;
+  let x = 10;
+  f.step(x, 0, dt, false);
+  for (let i = 0; i < 180; i++) f.step((x += ROAM.speed * dt), 0, dt, false);
+  const behind = x - f.pose.x;
+  expect(behind).toBeGreaterThan(0.3);
+  expect(behind).toBeLessThan(0.7);
+  const want = followPose(x, 0, framingFor(1920 / 1080, {} as Framing), limits, blankPose());
+  let t = 0;
+  while (Math.abs(f.pose.x - want.x) > 0.01 * behind) {
+    f.step(x, 0, dt, false);
+    t += dt;
+  }
+  expect(t).toBeLessThan(1);
+  expect(SPRING_99 * FOLLOW.tauS).toBeLessThan(1);
+  f.step(x + 2, 0, dt, true);
+  expect(f.pose).toEqual(followPose(x + 2, 0, framingFor(1920 / 1080, {} as Framing), limits, blankPose()));
 });
 
 /** Rail poses recorded from the rig before free roam existed (tests/unit/world/rig.trace.ts). */
