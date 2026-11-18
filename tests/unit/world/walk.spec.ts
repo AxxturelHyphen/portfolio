@@ -66,5 +66,6 @@ test('the rail passes through its keys and eases between them; portrait sets one
 
 test('world packs instance flags exactly as gl reads them', () => {
   expect(QUAD_FLAG).toEqual(GL_FLAG);
-  for (const f of [0, 1, 4, 8, 13]) expect(packPhase(7.5, f)).toBe(glPack(7.5, f));
+  for (const f of [0, 1, 4, 8, 13, 32, 44, 63]) expect(packPhase(7.5, f)).toBe(glPack(7.5, f));
+  expect(QUAD_FLAG.turn).toBe(32);
 });
