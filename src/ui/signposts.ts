@@ -1,6 +1,6 @@
 import type { BedId, CameraRig, Machine, ScreenPt, State } from '../types.ts';
 import { uiText } from './copy.ts';
-import { clearOfVisitor, createStake, SIGN_M, type Stake } from './signs.stake.ts';
+import { clearOfVisitor, createStake, crossesVisitor, SIGN_M, type Stake } from './signs.stake.ts';
 import './styles/signs.css';
 import { createMover, type Mover } from './xform.ts';
 
@@ -197,27 +197,27 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     return vx;
   }
 
-  /** Free roam: the label on its cane at the board, or docked at the edge while the board's foot is off screen or the
-   * label would hang more than half its width past a side. */
+  /** Free roam: the label on its cane at the board, or docked at the edge while the board's foot is off screen, the
+   * label would hang more than half its width past a side, or the label or its cane would cross the visitor's figure. */
   function plant(s: Sign, a: SignAnchor, rig: CameraRig, stake: Stake, at: Float32Array): void {
     rig.project(a.at[0], 0, a.at[2], foot);
     const caneAt = s.dir < 0 ? s.w - CANE_AT_PX : CANE_AT_PX;
     rig.project(a.at[0], SIGN_M, a.at[2], pt);
     const x = pt.x - caneAt;
-    const off = !foot.visible || x < EDGE_PX - s.w / 2 || x > vw - EDGE_PX - s.w / 2;
+    const maxY = vh - EDGE_PX - s.h;
+    let y = clearOfVisitor(rig, at, x, pt.y, s.w, s.h);
+    y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
+    const off = !foot.visible || x < EDGE_PX - s.w / 2 || x > vw - EDGE_PX - s.w / 2 || crossesVisitor(rig, at, x, y, s.w, s.h, pt.x, foot);
     if (off !== s.off) {
       s.off = off;
       s.el.toggleAttribute('data-off', off);
       stake.show(!off);
     }
     if (off) {
-      const y = vh * DOCK_FOOT - s.h + s.dir * STEP_PX;
-      settle(s, s.dir < 0 ? EDGE_PX : vw - EDGE_PX - s.w, y < TOP_PX ? TOP_PX : y);
+      const dock = vh * DOCK_FOOT - s.h + s.dir * STEP_PX;
+      settle(s, s.dir < 0 ? EDGE_PX : vw - EDGE_PX - s.w, dock < TOP_PX ? TOP_PX : dock);
       return;
     }
-    let y = clearOfVisitor(rig, at, x, pt.y, s.w, s.h);
-    const maxY = vh - EDGE_PX - s.h;
-    y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
     const left = settle(s, x, y);
     stake.stand(left + caneAt, y, foot);
   }

@@ -1,6 +1,6 @@
 /**
  * How far the approach eases in (APPROACH_FIT in core/motion.ts): the camera goes from the walking framing toward the
- * near one only as far as the focused subject's whole outline and the visitor's ground point stay inside a safe area
+ * near one only as far as the focused subject's whole outline and the visitor's figure stay inside a safe area
  * of the frame, clear of the top band of controls, the bottom band of cane labels and the plant tag beside the
  * subject, with a margin; the subject grows to at most `cap` of the frame height. Less than `minGain` times its
  * walking size is no gain: the camera stays on the walking framing. Tall or wide subjects, and phones where the tag
@@ -10,7 +10,11 @@
 import { APPROACH_FIT } from '../core/motion.ts';
 import { DEG } from './layout.ts';
 import { blendFraming, followPose, paramsFor, type Framing, type FramingParams, type ViewLimits } from './follow.ts';
+import { FIGURE } from './puppet.ts';
 import type { RigPose } from './rail.ts';
+
+/** The visitor's figure as the fit keeps it clear of the tag: half its body's width and its height to the hat (m). */
+const VISITOR = { halfW: 0.22, h: FIGURE.topM } as const;
 
 /**
  * A focused subject: its ground point (x, z), the height of its outline's foot and top and its width (m), the height
@@ -49,6 +53,7 @@ export function createFitter(lim: ViewLimits): Fitter {
   const a: Screen = { x: 0, y: 0, depth: 0 };
   const b: Screen = { x: 0, y: 0, depth: 0 };
   const v: Screen = { x: 0, y: 0, depth: 0 };
+  const vt: Screen = { x: 0, y: 0, depth: 0 };
   const tag: Screen = { x: 0, y: 0, depth: 0 };
   const F = APPROACH_FIT;
 
@@ -58,13 +63,15 @@ export function createFitter(lim: ViewLimits): Fitter {
     project(pose, aspect, s.x - s.w / 2, s.y1, s.z, a);
     project(pose, aspect, s.x + s.w / 2, s.y0, s.z, b);
     project(pose, aspect, vx, 0, vz, v);
+    project(pose, aspect, vx, VISITOR.h, vz, vt);
+    const half = VISITOR.halfW / (v.depth * 2 * Math.tan((pose.fov * DEG) / 2) * aspect);
     const height = b.y - a.y;
     const narrow = wPx < F.narrowPx;
     const top = F.topPx / hPx + F.margin;
     const bottom = (narrow ? 1 - (F.phoneTagPx + F.phoneCanePx + F.edgePx) / hPx : 1 - F.bottomShare) - F.margin;
     const lo = Math.min(a.x, v.x);
     const hi = Math.max(b.x, v.x);
-    if (a.depth <= 0 || lo < F.margin || hi > 1 - F.margin || Math.min(a.y, v.y) < top || Math.max(b.y, v.y) > bottom) return -1;
+    if (a.depth <= 0 || lo < F.margin || hi > 1 - F.margin || Math.min(a.y, vt.y) < top || Math.max(b.y, v.y) > bottom) return -1;
     if (narrow) return height;
     // The desktop tag (ui/label.ts place()): beside the tag point, on the side with more room, kept inside the frame.
     project(pose, aspect, s.x, s.tagY, s.z, tag);
@@ -82,7 +89,7 @@ export function createFitter(lim: ViewLimits): Fitter {
     const x1 = x0 + cw / wPx;
     const y1 = y0 + ch / hPx;
     const subjectUnder = a.x < x1 && b.x > x0 && a.y < y1 && b.y > y0;
-    const visitorUnder = v.x > x0 && v.x < x1 && v.y > y0 && v.y < y1;
+    const visitorUnder = v.x - half < x1 && v.x + half > x0 && vt.y < y1 && v.y > y0;
     return subjectUnder || visitorUnder ? -1 : height;
   }
 

@@ -98,3 +98,27 @@ export function clearOfVisitor(rig: CameraRig, at: Float32Array, x: number, y: n
   const overlaps = x < vg.x + half && x + w > vg.x - half && y < vg.y && y + h > vt.y;
   return overlaps ? vt.y - h - CLEAR_PX : y;
 }
+
+/** The cane's x at screen height py, on the line from its tip (x, tipY) to its ground point. */
+function alongCane(x: number, tipY: number, ground: Readonly<ScreenPt>, py: number): number {
+  return ground.y === tipY ? x : x + ((ground.x - x) * (py - tipY)) / (ground.y - tipY);
+}
+
+/**
+ * Whether a label of width w and height h at (x, y), or its cane from the slant-cut tip above the lashing at (caneX, y)
+ * down to its ground point, would cross the visitor standing at [x, z] (hat to shoes, the lantern at the side).
+ */
+export function crossesVisitor(rig: CameraRig, at: Float32Array, x: number, y: number, w: number, h: number, caneX: number,
+  ground: Readonly<ScreenPt>): boolean {
+  rig.project(at[0]!, 0, at[1]!, vg);
+  rig.project(at[0]!, VISITOR.h, at[1]!, vt);
+  const half = VISITOR.halfW * vg.scale;
+  if (x < vg.x + half && x + w > vg.x - half && y < vg.y && y + h > vt.y) return true;
+  const tipY = y - TIP_PX;
+  const top = Math.max(Math.min(tipY, ground.y), vt.y);
+  const bottom = Math.min(Math.max(tipY, ground.y), vg.y);
+  if (top > bottom) return false;
+  const a = alongCane(caneX, tipY, ground, top);
+  const b = alongCane(caneX, tipY, ground, bottom);
+  return Math.min(a, b) < vg.x + half && Math.max(a, b) > vg.x - half;
+}
