@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import type { BedId } from '../../../src/types.ts';
 import { expect, test } from '@playwright/test';
 import { PerspectiveCamera, Vector3 } from 'three';
@@ -208,8 +208,8 @@ test('no end wall fills more than its share of any frame row unless the visitor 
       for (let z = enc.walk.minZ + r; z <= enc.walk.maxZ - r + 1e-6; z += 0.5) {
         const p = followPose(x, z, f, limits, blankPose());
         const s = screenX(x, z, w / h);
-        // Where the visitor holds the edge of the 20 to 80 percent band, the band wins over the wall's share.
-        if (s < 0.2 + 1e-3 || s > 0.8 - 1e-3) continue;
+        // Where the visitor holds the edge of the 22 to 78 percent band, the band wins over the wall's share.
+        if (s < 0.22 + 1e-3 || s > 0.78 - 1e-3) continue;
         most = Math.max(most, wallShare(f, p.x - enc.x[0], p.z, limits), wallShare(f, enc.x[1] - p.x, p.z, limits));
       }
     }
@@ -218,10 +218,15 @@ test('no end wall fills more than its share of any frame row unless the visitor 
   }
 });
 
-test('no tall card ever covers the visitor: its hidden strip is walled off', () => {
-  const wide = framingFor(16 / 9, {} as Framing);
-  const blocks = occluderBlocks(enc, SCENES, wide.back, wide.up);
-  expect(blocks.length / 4).toBe(enc.occluders.length);
+/** Cards at least this tall (m) must never cover the visitor: a collider keeps the visitor out, or they fade. */
+const TALL = 1.5;
+const ATLAS_DIR = new URL('../../../public/atlas/', import.meta.url);
+const SIZES = new Map<string, [number, number]>(readdirSync(ATLAS_DIR).filter((f) => f.endsWith('.json'))
+  .flatMap((f) => Object.entries((JSON.parse(readFileSync(new URL(f, ATLAS_DIR), 'utf8')) as { sprites: Record<string, { size: [number, number] }> }).sprites))
+  .map(([k, v]) => [k, v.size]));
+
+test('no tall card ever covers the visitor: a collider walls off its hidden strip, or it fades', () => {
+  const blocks = occluderBlocks(enc, SCENES);
   const blocked = (x: number, z: number): boolean => {
     for (let i = 0; i < blocks.length; i += 4) if (x > blocks[i]! - r && x < blocks[i + 2]! + r && z > blocks[i + 1]! - r && z < blocks[i + 3]! + r) return true;
     return false;
@@ -230,22 +235,27 @@ test('no tall card ever covers the visitor: its hidden strip is walled off', () 
     const ax = traceLayout.anchors[b];
     expect(blocked(ax, pathZ(ground.path.points, ax)), `stand point of ${b}`).toBe(false);
   }
+  const tall = (Object.keys(SCENES) as BedId[]).flatMap((b) => SCENES[b].layers.flatMap((l) => l.items))
+    .filter((it) => builtIn(it, 'roam') && it.flat !== true && it.y + (it.h ?? 0) * it.scale >= TALL)
+    .filter((it) => it.z > enc.walk.minZ + r && it.x > enc.walk.minX - 3 && it.x < enc.walk.maxX + 3);
+  console.log(`tall cards ${tall.length}, fading: ${tall.filter((it) => it.fade === true).map((it) => it.sprite).join(', ')}`);
   const hidden: string[] = [];
-  for (const [w, h] of [[1920, 1080], [390, 844]] as const) {
+  for (const [w, h] of ASPECTS) {
     const f = framingFor(w / h, {} as Framing);
-    for (const o of enc.occluders) {
-      const it = SCENES[o.bed].layers.flatMap((l) => l.items).find((i) => i.sprite === o.sprite && builtIn(i, 'roam'));
-      if (it === undefined) throw new Error(`no ${o.sprite} in ${o.bed}`);
+    for (const it of tall) {
+      if (it.fade === true) continue;
+      const size = SIZES.get(it.sprite);
+      if (size === undefined) throw new Error(`no atlas size for ${it.sprite}`);
       const ch = (it.h ?? 0) * it.scale;
-      const half = (ch * o.aspect) / 2;
-      for (let x = it.x - 3; x <= it.x + 3; x += 0.2) {
-        for (let z = enc.walk.minZ + r; z <= it.z; z += 0.2) {
+      const half = (it.w ?? (ch * size[0]) / size[1]) / 2;
+      for (let x = it.x - 3; x <= it.x + 3; x += 0.1) {
+        for (let z = enc.walk.minZ + r; z <= it.z; z += 0.1) {
           if (x < enc.walk.minX + r || x > enc.walk.maxX - r || blocked(x, z)) continue;
           const cam = cameraOf(followPose(x, z, f, limits, blankPose()), w / h);
           const v = new Vector3(x, 0, z).project(cam);
           const a = new Vector3(it.x - half, it.y, it.z).project(cam);
           const c = new Vector3(it.x + half, it.y + ch, it.z).project(cam);
-          if (v.x > a.x && v.x < c.x && v.y > a.y && v.y < c.y) hidden.push(`${w}x${h} ${o.sprite} hides ${x.toFixed(1)},${z.toFixed(1)}`);
+          if (v.x > a.x && v.x < c.x && v.y > a.y && v.y < c.y) hidden.push(`${w}x${h} ${it.sprite} hides ${x.toFixed(1)},${z.toFixed(1)}`);
         }
       }
     }

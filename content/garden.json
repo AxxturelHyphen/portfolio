@@ -108,15 +108,14 @@
       "hedge": {"z": -6.7, "top": 3.1, "spans": [[18, 24.6], [38.3, 46.2]]},
       "crowns": [],
       "occluders": [
-        {"bed": "puerta", "sprite": "pu/pier-l", "aspect": 0.331},
-        {"bed": "puerta", "sprite": "pu/pier-r", "aspect": 0.331},
         {"bed": "puerta", "sprite": "pu/leaf-l", "aspect": 0.423},
         {"bed": "puerta", "sprite": "pu/leaf-r", "aspect": 0.423},
         {"bed": "rosaleda", "sprite": "ro/comp-white", "aspect": 0.725},
+        {"bed": "rosaleda", "sprite": "ro/comp-dark", "aspect": 0.76},
         {"bed": "estanque", "sprite": "es/peacock", "aspect": 0.654},
         {"bed": "estanque", "sprite": "es/papyrus", "aspect": 0.682},
         {"bed": "estanque", "sprite": "es/typha", "aspect": 0.175},
-        {"bed": "salida", "sprite": "sa/trunk", "aspect": 0.352}
+        {"bed": "estanque", "sprite": "es/armillary", "aspect": 0.73}
       ],
       "walk": {"minX": -3, "maxX": 46, "minZ": -5.5, "maxZ": 6.5},
       "viewMaxZ": 8.2

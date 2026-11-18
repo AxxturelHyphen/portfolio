@@ -1,7 +1,6 @@
 import type { BedId } from '../../../src/types.ts';
 import { expect, test } from '@playwright/test';
 import { ROAM } from '../../../src/core/motion.ts';
-import { framingFor, type Framing } from '../../../src/world/follow.ts';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../../content/beds/rosaleda.json' with { type: 'json' };
 import estanque from '../../../content/beds/estanque.json' with { type: 'json' };
@@ -22,8 +21,7 @@ const CELL = 0.25;
 /** A flower is within reach when the visitor can stand this close to it, or to the rim in front of it on the pond (m). */
 const SLOT_REACH = 1.5;
 
-const wide = framingFor(16 / 9, {} as Framing);
-const blocks = occluderBlocks(enc, SCENES, wide.back, wide.up);
+const blocks = occluderBlocks(enc, SCENES);
 const nx = Math.floor((walk.maxX - walk.minX - 2 * r) / CELL) + 1;
 const nz = Math.floor((walk.maxZ - walk.minZ - 2 * r) / CELL) + 1;
 const xAt = (i: number): number => walk.minX + r + i * CELL;
@@ -103,4 +101,36 @@ test('from the start every bed stand point and every flower slot stays reachable
     }
   }
   expect(missed, missed.join(', ')).toEqual([]);
+});
+
+test('the whole path, the Salida door and both north corners are reachable from the start', () => {
+  const [sx, sz] = standOf(beds[0]!);
+  const seen = reachFrom(sx, sz);
+  const reached = (x: number, z: number): boolean => {
+    const [i, j] = cellOf(x, z);
+    return seen[i + j * nx] === 1;
+  };
+  const inside = (x: number, z: number): [number, number] => [
+    Math.min(walk.maxX - r, Math.max(walk.minX + r, x)),
+    Math.min(walk.maxZ - r, Math.max(walk.minZ + r, z)),
+  ];
+  const pts = ground.path.points;
+  const door = inside(...(pts[pts.length - 1] as [number, number]));
+  expect(reached(...door), `the door at ${door.join(', ')}`).toBe(true);
+  // The corners where the north wall meets the end walls: the body's edge 0.5 m from both walls.
+  for (const x of [walk.minX + r, walk.maxX - r]) {
+    expect(enc.x.some((wx) => Math.abs(Math.abs(x - wx) - r - 0.5) < 1e-6), 'corner 0.5 m from the end wall').toBe(true);
+    expect(reached(x, walk.minZ + r), `north corner at ${x}`).toBe(true);
+  }
+  const off: string[] = [];
+  for (let k = 0; k + 1 < pts.length; k++) {
+    const [ax, az] = pts[k] as [number, number];
+    const [bx, bz] = pts[k + 1] as [number, number];
+    const n = Math.ceil(Math.hypot(bx - ax, bz - az) / CELL);
+    for (let i = 0; i <= n; i++) {
+      const [x, z] = inside(ax + ((bx - ax) * i) / n, az + ((bz - az) * i) / n);
+      if (!free(x, z) || !reached(x, z)) off.push(`${x.toFixed(2)},${z.toFixed(2)}`);
+    }
+  }
+  expect(off, off.join(' ')).toEqual([]);
 });
