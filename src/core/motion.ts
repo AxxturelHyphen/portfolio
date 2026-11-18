@@ -253,13 +253,17 @@ export interface FollowFraming { readonly up: number; readonly downDeg: number; 
 /**
  * The follow framings. Landscape uses the one FOLLOW.framing names; `low`, `mid` and `high` are the candidates compared
  * blind (closer and lower to farther and steeper, each with a band of sky over the wall). Portrait always uses `phone`:
- * a vertical fov under 55 degrees, so the visitor and the nearest flowers read large and the wall does not shrink.
+ * a 52 degree fov, lower and shallower than before so the moon hangs whole over the wall top even with the focus nudge
+ * and the visitor at the back wall, and the moon at La Puerta (10 degrees left) stays inside the frame
+ * (tests/unit/ui/phone.spec.ts). The figure (1.2 m drawn) stands about 13.4 percent of the frame tall: on a 390 px
+ * screen its size and the ground seen across (about 3.9 m) trade one for one, and the nearest flowers either side of a
+ * stand point (Rosaleda's rose 1.9 m aside) must stay on screen to be tapped.
  */
 export const FOLLOW_FRAMINGS = {
   low: { up: 3.8, downDeg: 21, fov: 48, moonAt: 0.07 },
   mid: { up: 5, downDeg: 26, fov: 48, moonAt: 0.07 },
   high: { up: 6.4, downDeg: 31, fov: 48, moonAt: 0.07 },
-  phone: { up: 4.4, downDeg: 24, fov: 52, moonAt: 0.12 },
+  phone: { up: 3.8, downDeg: 19, fov: 52, moonAt: 0.08 },
 } as const satisfies Record<string, FollowFraming>;
 
 export type LandscapeFraming = Exclude<keyof typeof FOLLOW_FRAMINGS, 'phone'>;
@@ -278,11 +282,13 @@ export interface NearFraming extends FollowFraming { readonly at: number }
 /**
  * The nearest framings the approach may use (world/fit.ts picks how far toward them to go): closer and lower than the
  * walking one, the visitor's light in the lower middle, the back wall and a band of sky with the moon above it.
- * Landscape and portrait (below PORTRAIT_ASPECT, follow.ts).
+ * Landscape and portrait (below PORTRAIT_ASPECT, follow.ts). Portrait barely comes nearer: the walking framing is
+ * already close, the visitor keeps its height on screen so the tag sheet and the cane labels keep the room below, and
+ * the camera goes lower only as far as a shallower pitch keeps the moon whole over the wall.
  */
 export const NEAR_FRAMINGS = {
   landscape: { up: 2.3, downDeg: 10, fov: 44, moonAt: 0.07, at: 0.78 },
-  phone: { up: 3, downDeg: 14, fov: 50, moonAt: 0.11, at: 0.74 },
+  phone: { up: 2.85, downDeg: 15, fov: 52, moonAt: 0.07, at: 0.62 },
 } as const satisfies Record<string, NearFraming>;
 
 /**
@@ -299,14 +305,15 @@ export const APPROACH = { fastMps: 1.5, fastS: 0.3, leaveM: 1, inS: 1.2, outS: 0
  * band of fixed controls (topPx, ui/label.ts TOP_PX) and ends above a bottom band (bottomShare of the height, where
  * the cane labels stand); beside the subject stands the plant tag (ui/label.ts: width clamp(300 px, 19 vw, 368 px),
  * about tagAspect as tall as wide, gapPx past the subject's hit reach, on the side with more room). Below narrowPx
- * of width the tag is a strip of about phoneTagPx above the bottom edge, with phoneCanePx of cane labels over it.
+ * of width the tag is a strip of about phoneTagPx above the bottom edge (measured 177 to 190 px plus its 10 px margin), with
+ * phoneCanePx of docked cane labels over it (ui/signs.stake.ts DOCK: two rows and their gaps).
  * The subject grows to at most cap of the frame height; less than minGain times its walking size is no gain. The
  * search takes `steps` steps toward the near framing and may slide the camera up to maxShiftM toward the subject.
  * nudge and nudgeY mirror the rig's focus nudge toward the slot (world/camera.ts FRAME), which the fit measures too.
  */
 export const APPROACH_FIT = {
   margin: 0.06, cap: 0.45, minGain: 1.25, steps: 20, maxShiftM: 0.8, topPx: 96, bottomShare: 0.12,
-  tagMinPx: 300, tagVw: 0.19, tagMaxPx: 368, tagAspect: 0.72, gapPx: 18, edgePx: 16, narrowPx: 720, phoneTagPx: 234, phoneCanePx: 70,
+  tagMinPx: 300, tagVw: 0.19, tagMaxPx: 368, tagAspect: 0.72, gapPx: 18, edgePx: 16, narrowPx: 720, phoneTagPx: 200, phoneCanePx: 140,
   nudge: 0.16, nudgeY: 0.5,
 } as const;
 
