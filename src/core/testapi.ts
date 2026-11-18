@@ -37,6 +37,8 @@ export interface TestRoam {
   readonly pos: Float32Array;
   walkTo(x: number, z: number): void;
   setHeld(bits: number): void;
+  /** Holds the camera's approach at k (0 walking, 1 near framing); null lets it follow the visitor again. */
+  holdApproach(k: number | null): void;
 }
 
 export const eventOf = (place: Place): Ev => (place.k === 'project' ? { type: 'OPEN', id: place.id } : { type: 'GOTO', place });
@@ -126,6 +128,9 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
     holdKeys(bits) {
       d.roam?.setHeld(bits);
       loop.wake();
+    },
+    holdApproach(k) {
+      d.roam?.holdApproach(k);
     },
     info: () => ({ ...d.info(snapshot) }),
     residency() {

@@ -205,6 +205,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
       roam?.setSlots(now === null ? NO_SLOTS : slots);
       host.refresh();
     }
+    if (roam !== null) placeLight.holdMoon(roam.moonElevation());
     placeLight.frame(c.dt, c.frozen);
     sharedUniforms.uCursor.value.fromArray(light.cursor);
     sharedUniforms.uGather.value.fromArray(light.gather);
