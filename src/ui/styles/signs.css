@@ -280,6 +280,44 @@
   display: none;
 }
 
+/*
+ * Free roam reads the safe-area insets from this padding (ui/signposts.ts); the labels are placed from the top left by
+ * transform, so the padding moves nothing.
+ */
+.px-signs[data-roam] {
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+}
+
+/* A long name's line break (ui/signposts.ts) shows only on portrait screens; elsewhere the name runs on one line. */
+.px-signs[data-roam] .px-sign-name br {
+  display: none;
+}
+
+/*
+ * Portrait free roam: the docked labels stand in a band beside the visitor (ui/signs.stake.ts dockAround). Names run on
+ * one line, or on the two the rule breaks them into, never wrapped by the width, with a little less room at the ends so
+ * both fit on one row at 360 px; the docked cane shows only a short tip so it never reaches up to the visitor's shoes.
+ */
+@media (max-aspect-ratio: 4/5) {
+  .px-signs[data-roam] .px-sign {
+    max-width: none;
+    white-space: nowrap;
+    padding-inline: 1.5rem 0.5rem;
+  }
+
+  .px-signs[data-roam] .px-sign[data-dir="prev"] {
+    padding-inline: 0.5rem 1.5rem;
+  }
+
+  .px-signs[data-roam] .px-sign-name br {
+    display: inline;
+  }
+
+  .px-signs[data-roam] .px-sign[data-off] {
+    --tip: 10px;
+  }
+}
+
 .px-sign-pole,
 .px-sign-foot {
   position: absolute;
