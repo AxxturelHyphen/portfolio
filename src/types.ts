@@ -182,7 +182,7 @@ export interface PerfLine { tier: Tier; drawCallsP95: number; textureMB: number;
 export interface JardinTestAPI {
   ready: Promise<void>; state(): State; channels(): Record<ChannelName, { value: number; target: number; settled: boolean }>;
   goto(hash: string, o?: { instant?: boolean }): Promise<void>;
-  send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
+  send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; roam(): { x: number; z: number } | null; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
   rec: { start(label: string): void; stop(): FrameReport }; tour(): Promise<PerfLine>;
 }
 

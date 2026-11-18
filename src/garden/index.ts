@@ -23,12 +23,14 @@ import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
 import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
+import { createRoamDrive } from './roam.drive.ts';
 import type { WorldLayout } from '../world/layout.ts';
 
 /**
  * Garden chunk entry and composition root (cook/ARCH.md 2.12): the only place that wires core, gl, world and ui.
  * boot.ts owns the machine, the router and the one loop (stage 'sim' ticks the machine); this adds the garden's
- * stages in their fixed order: input, camera, world, render, post, dom.
+ * stages in their fixed order: input, camera, world, render, post, dom. `?roam=1` (kept by the router) turns on free
+ * roam: the visitor walks the garden and the follow camera replaces the rail walk.
  */
 
 export interface GardenHost {
@@ -93,12 +95,14 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const layers = createModeLayers(host.world, host.herbario);
   const kit = { loadAtlas, createCutoutBatch, uploadTexture, projectsOf, moth: () => moth, onDom: (fn: (c: Clock) => void) => loop.on('dom', fn), createMover };
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit });
-  const input = createInput({ machine, rig, light, loop, surface: host.canvas });
+  const world = content.garden as WorldLayout;
+  const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
+  const roam = new URLSearchParams(location.search).get('roam') === '1' ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject }) : null;
+  const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
   const film = createFilmDrive(machine, rig, content.garden);
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
-  const world = content.garden as WorldLayout;
   prepareGl(gfx, world, SCENES);
   const placeLight = createPlaceLighting();
   proxies.setSigns(signAnchorsOf(world, SCENES));
@@ -137,7 +141,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   /** S01 is the kaleidoscope mid-turn: the intro channel holds at the shot's time instead of landing. */
   const introShot = q.shot === 'S01' && shot !== undefined ? Math.min(0.95, shot.t / INTRO.totalS) : null;
 
-  loop.on('input', () => {
+  loop.on('input', (c) => {
     /** Arrival can complete on a frame with no state change (channels settle after the bed went active). */
     if (snapping && arrived(machine.state, machine, machine.state.intent, garden.residency.stateOf)) snapping = false;
     if (shotFocus !== null && !snapping && machine.state.phase === 'bed' && slots.some((v) => v.id === shotFocus)) {
@@ -150,9 +154,11 @@ export function startGarden(host: GardenHost): GardenRuntime {
       const h = gfx.cssH;
       rig.resize(w, h);
       light.resize(w, h);
+      roam?.resize(w, h);
       for (const b of content.garden.order) rig.setBedPose(b, bedPose(SCENES[b].pose, w / Math.max(1, h)));
     }
     input.frame();
+    roam?.frame(c);
     if (introShot !== null) machine.ch.intro.snap(introShot);
     if (!snapping) return;
     for (let i = 0; i < CHANNELS.length; i++) {
@@ -162,6 +168,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
   loop.on('camera', (c) => {
     const s = machine.state;
+    roam?.follow(c);
     rig.update(c, s, machine.ch);
     gfx.setPose(rig.pose);
     light.update(c, s, machine.ch, rig);
@@ -256,7 +263,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
 
   if (testApiEnabled(q)) {
-    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out) });
+    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roamPos: roam?.pos ?? null });
   }
   return { quality, ready };
 }
