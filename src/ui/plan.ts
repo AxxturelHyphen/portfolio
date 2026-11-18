@@ -1,15 +1,20 @@
-import type { BedId, Machine, State } from '../types.ts';
+import { loadContent, projectsOf } from '../content/load.ts';
+import type { BedId, Machine, ProjectBed, State } from '../types.ts';
 import { uiText } from './copy.ts';
 import './styles/plan.css';
 import type { BedSign } from './signposts.ts';
+import { gapFree, hasGap } from './welcome.rules.ts';
 
 /**
- * The garden plan (cook/ART.md section 4), bottom left. Folded: the dog-eared corner of a paper map that reads "Plan".
- * Open (click, or M): a strip plan drawn in pencil line on card (hatched wall, winding path, pond, beds, tree) with
- * one button per place, and a small moth in pale rose over the place where the visitor is (in free roam it follows the
- * visitor along the strip, between the places by their anchors). A place button travels there (GOTO). Esc folds the
- * plan first (the garden's own Esc then waits for the next press), and focus returns to the label. No visited marks
- * and no grotto.
+ * The garden plan (cook/ART.md section 4), bottom left, also the index of the work. Folded: the dog-eared corner of a
+ * paper map that reads "Projects". Open (click, or M): the owner's name, place and gap-free headline (the first-visit
+ * plate folds into here), one button per project in bed order, then a strip plan drawn in pencil line on card
+ * (hatched wall, winding path, pond, beds, tree) with one button per place, and a small moth in pale rose over the
+ * place where the visitor is (in free roam it follows the visitor along the strip, between the places by their
+ * anchors). A place button travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT (detail: the
+ * project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Esc folds the plan
+ * first (the garden's own Esc then waits for the next press), and focus returns to the label. No visited marks and no
+ * grotto.
  */
 
 export interface Plan {
@@ -20,6 +25,9 @@ export interface Plan {
   /** Stage 'dom': moves the following moth while the plan is open (only when it moved a hundredth of a place). */
   sync(): void;
 }
+
+/** Dispatched (bubbling) by a project button of the plan; detail: the project id. */
+export const WORK_EVENT = 'jardin:work';
 
 /** A following moth is moved again once the visitor has gone this share of a place. */
 const MOTH_STEP = 0.01;
@@ -58,7 +66,16 @@ function svg(cls: string, box: string, paths: readonly string[]): SVGSVGElement 
   return s;
 }
 
+function para(cls: string, id?: string): HTMLParagraphElement {
+  const p = document.createElement('p');
+  p.className = cls;
+  if (id !== undefined) p.id = id;
+  return p;
+}
+
 export function createPlan(parent: HTMLElement, m: Machine): Plan {
+  const content = loadContent();
+  const isProjectBed = (b: BedId): b is ProjectBed => content.projects.some((p) => p.bed === b);
   const root = document.createElement('div');
   root.className = 'pl';
   const tag = document.createElement('button');
@@ -70,11 +87,14 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   const sheet = document.createElement('section');
   sheet.className = 'pl-sheet';
   sheet.id = 'pl-sheet';
-  sheet.setAttribute('aria-labelledby', 'pl-title');
   sheet.inert = true;
-  const title = document.createElement('p');
-  title.className = 'pl-title';
-  title.id = 'pl-title';
+  const name = para('pl-name');
+  const about = para('pl-about');
+  const workTitle = para('pl-title', 'pl-work-title');
+  const work = document.createElement('ul');
+  work.className = 'pl-work';
+  work.setAttribute('aria-labelledby', 'pl-work-title');
+  const title = para('pl-title');
   const map = document.createElement('div');
   map.className = 'pl-map';
   const drawing = svg('pl-drawing', `0 0 ${W} ${H}`, [WALL, PATH, TREE, ...Object.values(MOTIFS)]);
@@ -82,7 +102,7 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   const places = document.createElement('ul');
   places.className = 'pl-places';
   map.append(drawing, moth, places);
-  sheet.append(title, map);
+  sheet.append(name, about, workTitle, work, title, map);
   root.append(sheet, tag);
   parent.append(root);
 
@@ -129,6 +149,12 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     const target = beds.find((b) => b.id === bed);
     if (target !== undefined) m.send({ type: 'GOTO', place: { k: 'bed', bed: target.id } });
   });
+  work.addEventListener('click', (e) => {
+    const id = e.target instanceof Element ? e.target.closest<HTMLElement>('[data-project]')?.dataset.project : undefined;
+    if (id === undefined) return;
+    setOpen(false, true);
+    root.dispatchEvent(new CustomEvent(WORK_EVENT, { detail: id, bubbles: true }));
+  });
   document.addEventListener('keydown', (e) => {
     if (m.state.mode !== 'garden' || e.ctrlKey || e.metaKey || e.altKey) return;
     const t = e.target;
@@ -146,10 +172,25 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     mount(next) {
       beds = next;
       const lang = m.state.lang;
-      const label = uiText(null, lang, 'plan.title');
-      title.textContent = label;
-      tag.textContent = uiText(null, lang, 'plan.tag');
-      tag.setAttribute('aria-label', label);
+      const text = (key: string): string => uiText(content.strings, lang, key);
+      const profile = content.profile;
+      const line = gapFree(profile.headline[lang]);
+      name.textContent = profile.name;
+      about.textContent = line === '' ? profile.location[lang] : `${profile.location[lang]} · ${line}`;
+      workTitle.textContent = text('section.projects');
+      title.textContent = text('plan.title');
+      tag.textContent = text('plan.tag');
+      tag.setAttribute('aria-label', text('plan.label'));
+      sheet.setAttribute('aria-label', text('plan.label'));
+      work.replaceChildren(...next.flatMap((b) => (isProjectBed(b.id) ? projectsOf(b.id, content.projects) : [])).filter((p) => !hasGap(p.title)).map((p) => {
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.project = p.id;
+        btn.textContent = p.title;
+        li.append(btn);
+        return li;
+      }));
       places.style.setProperty('--cols', String(next.length));
       places.replaceChildren(...next.map((b) => {
         const li = document.createElement('li');
