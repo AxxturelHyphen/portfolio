@@ -3,7 +3,7 @@
  * velocity, driven by held directions, a walk target (click or tap) or an assisted move along the garden path. It
  * collides with the walkable rectangle and the pond ellipse by pushing out along the contact normal and removing the
  * normal velocity, so it slides along edges. A walk target whose straight line crosses the pond goes round it by the
- * nearer side. No allocation per frame.
+ * nearer side; a target the body cannot reach is given up once it stalls. No allocation per frame.
  */
 import type { BedId } from '../types.ts';
 import { ROAM } from '../core/motion.ts';
@@ -22,6 +22,8 @@ export const HOLD = { left: 1, right: 2, up: 4, down: 8 } as const;
 
 /** Waypoints round the pond sit this far out, in units of the body-inflated semi-axes. */
 const ROUTE_MARGIN = 1.15;
+/** A walk target is given up once the body has crawled under `mps` for `s` seconds (a wall or a card in the way). */
+const STALL = { mps: 0.05, s: 0.3 } as const;
 const ACCEL = ROAM.speed / ROAM.toSpeedS;
 const DECEL = ROAM.speed / ROAM.toStopS;
 
@@ -37,10 +39,15 @@ export interface Visitor {
   setHeld(bits: number): void;
   walkTo(x: number, z: number): void;
   place(x: number, z: number): void;
-  /** Starts an assisted move to (x, z) along the path; steering cancels it. */
+  /** Starts an assisted move to (x, z) along the path (world/assist.ts walks it); steering cancels it. */
   assist(x: number, z: number): void;
-  /** Sets the assisted move's progress 0..1; at 1 it lands and ends. */
-  assistAt(k: number, dt: number): void;
+  /**
+   * Puts the assisted visitor at x on the path, its offset off the path blended by u (the share of the way done); a
+   * jump (the cut of a long walk) keeps the walking velocity. At u 1 it lands on (x, z) of assist() and ends.
+   */
+  assistAt(x: number, u: number, dt: number, jumped: boolean): void;
+  /** Ends any assisted move or walk target where the visitor is. */
+  halt(): void;
   step(dt: number): void;
 }
 
@@ -104,9 +111,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   let tz = 0;
   /** Which way round the pond the current target goes: +1 or -1 in the angle of the pond's normalised frame. */
   let side = 1;
+  let stalledS = 0;
   let assisting = false;
-  let fromX = 0;
-  let fromZ = 0;
   let toX = 0;
   let toZ = 0;
   let pathOff0 = 0;
@@ -277,6 +283,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
     walkTo(x, z) {
       assisting = false;
       hasTarget = true;
+      stalledS = 0;
       tx = x;
       tz = z;
       settleTarget();
@@ -297,23 +304,21 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
     assist(x, z) {
       hasTarget = false;
       assisting = true;
-      fromX = pos[0]!;
-      fromZ = pos[1]!;
       toX = x;
       toZ = z;
-      pathOff0 = fromZ - pathOf(fromX);
+      pathOff0 = pos[1]! - pathOf(pos[0]!);
       pathOff1 = toZ - pathOf(toX);
     },
-    assistAt(k, dt) {
+    assistAt(x, k, dt, jumped) {
       if (!assisting) return;
       const u = Math.min(1, Math.max(0, k));
-      const x = fromX + (toX - fromX) * u;
-      const z = pathOf(x) + pathOff0 * (1 - u) + pathOff1 * u;
-      if (dt > 0) {
-        vel[0] = (x - pos[0]!) / dt;
+      const ax = u >= 1 ? toX : x;
+      const z = u >= 1 ? toZ : pathOf(ax) + pathOff0 * (1 - u) + pathOff1 * u;
+      if (dt > 0 && !jumped) {
+        vel[0] = (ax - pos[0]!) / dt;
         vel[1] = (z - pos[1]!) / dt;
       }
-      pos[0] = x;
+      pos[0] = ax;
       pos[1] = z;
       collide();
       if (u >= 1) {
@@ -321,6 +326,10 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
         vel[0] = 0;
         vel[1] = 0;
       }
+    },
+    halt() {
+      hasTarget = false;
+      assisting = false;
     },
     step(dt) {
       if (assisting || dt <= 0) return;
@@ -333,6 +342,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
         pos[1] = pos[1]! + vel[1]! * h;
         collide();
       }
+      stalledS = hasTarget && Math.hypot(vel[0]!, vel[1]!) < STALL.mps ? stalledS + dt : 0;
+      if (stalledS > STALL.s) hasTarget = false;
     },
   };
 }

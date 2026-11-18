@@ -114,6 +114,47 @@ test('a walk target across the pond goes round it by the nearer side and arrives
   }
 });
 
+test('an assisted move follows the path with its offset blended away, keeps its walking speed over a cut, lands exactly', () => {
+  const v = createVisitor(area, 10, 1.5);
+  v.assist(20, 1.25);
+  v.assistAt(12, 0.2, 1 / 60, false);
+  expect(v.assisted).toBe(true);
+  const vx = v.vel[0]!;
+  v.assistAt(18, 0.8, 1 / 60, true);
+  expect(v.pos[0], 'the cut puts the visitor ahead').toBeCloseTo(18, 5);
+  expect(v.vel[0], 'no velocity from the jump').toBe(vx);
+  v.assistAt(19.99, 1, 1 / 60, false);
+  expect([v.pos[0], v.pos[1]], 'lands on the stand point').toEqual([20, 1.25]);
+  expect(v.assisted).toBe(false);
+  expect(speedOf(v)).toBe(0);
+});
+
+test('steering ends an assisted move at once; halt ends a walk target where the visitor is', () => {
+  const v = createVisitor(area, 10, 1.5);
+  v.assist(30, 0);
+  v.setHeld(HOLD.down);
+  expect(v.assisted, 'a held key cancels').toBe(false);
+  v.setHeld(0);
+  v.assist(30, 0);
+  v.walkTo(12, 2);
+  expect(v.assisted, 'a walk target cancels').toBe(false);
+  for (let i = 0; i < 10; i++) v.step(1 / 60);
+  v.halt();
+  for (let i = 0; i < 30; i++) v.step(1 / 60);
+  expect(v.busy, 'stopped and still').toBe(false);
+  expect(v.pos[0]).toBeLessThan(12);
+});
+
+test('a walk target behind a card the body cannot pass is given up once the walk stalls', () => {
+  const v = createVisitor({ ...area, blocks: new Float32Array([11, -1, 12, 1]) }, 10, 0);
+  v.walkTo(13, 0);
+  let t = 0;
+  for (; t < 3 && v.busy; t += 1 / 60) v.step(1 / 60);
+  expect(v.busy, 'stopped and given up').toBe(false);
+  expect(t, 'within about half a second of reaching the card').toBeLessThan(1);
+  expect(v.pos[0]).toBeCloseTo(11 - r, 3);
+});
+
 test('a walk target inside the pond or outside the walls stops at the edge', () => {
   const v = createVisitor(area, 14, 1);
   v.walkTo(pond.x, pond.z);
