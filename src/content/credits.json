@@ -377,6 +377,7 @@
      "attribution": "Filippo Porreca, Lantern, circa 1938. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Filippo_Porreca,_Lantern,_c._1938,_NGA_24317.jpg",
      "usedIn": [
+      "fg/lantern",
       "semillero",
       "sh/lantern-tin"
      ]
@@ -634,6 +635,41 @@
       "es/plume-2",
       "estanque",
       "in/plume"
+     ]
+    },
+    {
+     "id": "fig-rijks-jardinier-1825-front",
+     "title": "Tuinman met schep over zijn schouder / Jardinier, Middelbourg",
+     "creator": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
+     "date": "1825-1835",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835. Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
+     "sourceUrl": "https://id.rijksmuseum.nl/200228151",
+     "usedIn": [
+      "fg/crook",
+      "fg/hat",
+      "fg/void"
+     ]
+    },
+    {
+     "id": "fig-rijks-jongen-rug-1842",
+     "title": "Jongen op de rug gezien",
+     "creator": "Jacques Van Gingelen",
+     "date": "1842",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Jacques Van Gingelen, Jongen op de rug gezien, 1842. Rijksmuseum, Amsterdam (RP-P-OB-49.053). Public domain.",
+     "sourceUrl": "https://id.rijksmuseum.nl/200196889",
+     "usedIn": [
+      "fg/arm",
+      "fg/hand",
+      "fg/head",
+      "fg/shin-l",
+      "fg/shin-r",
+      "fg/thigh-l",
+      "fg/thigh-r",
+      "fg/torso"
      ]
     },
     {

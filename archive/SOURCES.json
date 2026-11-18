@@ -1088,7 +1088,7 @@
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "es/peacock: all GM #746583/#a294a8/#ddd4cb, amount 0.9"
+     "note": "es/peacock: all GM #a294a8/#ddd4cb/#f7e4d4, amount 1"
     },
     {
      "stage": "cutout",
@@ -1108,7 +1108,7 @@
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "es/peacock-crest: all GM #746583/#a294a8/#ddd4cb, amount 0.9"
+     "note": "es/peacock-crest: all GM #a294a8/#ddd4cb/#f7e4d4, amount 1"
     },
     {
      "stage": "cutout",
@@ -1263,7 +1263,7 @@
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "es/plume-1: all GM #91809a/#b6a9b9/#ddd4cb, amount 1"
+     "note": "es/plume-1: all GM #a294a8/#ddd4cb/#f3e6cf, amount 1"
     },
     {
      "stage": "cutout",
@@ -1273,7 +1273,7 @@
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "es/plume-2: all GM #91809a/#b6a9b9/#ddd4cb, amount 1"
+     "note": "es/plume-2: all GM #a294a8/#ddd4cb/#f3e6cf, amount 1"
     },
     {
      "stage": "cutout",
@@ -2888,6 +2888,210 @@
    "sha256": "e8acf9d1184159679e714895989897f8a4d2308c2285d015b7d4ef8f4a88da4e",
    "usedIn": [],
    "edits": []
+  },
+  {
+   "id": "fig-rijks-jongen-rug-1842",
+   "title": "Jongen op de rug gezien",
+   "creator": "Jacques Van Gingelen",
+   "date": "1842",
+   "institution": "Rijksmuseum, Amsterdam",
+   "sourceUrl": "https://id.rijksmuseum.nl/200196889",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Jacques Van Gingelen, Jongen op de rug gezien, 1842. Rijksmuseum, Amsterdam (RP-P-OB-49.053). Public domain.",
+   "file": "archive/raw/figure/fig-rijks-jongen-rug-1842.jpg",
+   "need": "roam figure parts",
+   "category": "figure",
+   "sha256": "b38afcd2a2eb1f7a5d41c0296e134b5bd9de58b2ae379b43941dd14218e7fe9b",
+   "usedIn": [
+    "fg/arm",
+    "fg/hand",
+    "fg/head",
+    "fg/shin-l",
+    "fg/shin-r",
+    "fg/thigh-l",
+    "fg/thigh-r",
+    "fg/torso"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/torso: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.3875,0.333647,0.524167,0.450298"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/torso: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/torso: polygon of 94 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/head: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.443333,0.313578,0.504583,0.35058"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/head: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/head: polygon of 28 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/arm: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.49625,0.352462,0.59,0.45312"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/arm: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/arm: polygon of 68 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/hand: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.568333,0.415804,0.617083,0.445908"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/hand: all GM #1b1a3a/#8a7a62/#e8dfca, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/hand: polygon of 20 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/thigh-l: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.38625,0.430856,0.45375,0.566008"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/thigh-l: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/thigh-l: polygon of 84 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/shin-l: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.39,0.544058,0.449167,0.628097"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/shin-l: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/shin-l: polygon of 55 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/thigh-r: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.446667,0.430856,0.5275,0.568517"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/thigh-r: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/thigh-r: polygon of 90 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/shin-r: raw (forced: unhatched smock is the same paper tone as the plate: a paper key would punch holes in it; alpha from the hand matte per part), crop 0.450417,0.544058,0.555833,0.619316"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/shin-r: all GM #1b1a3a/#5e5446/#b4a487, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/shin-r: polygon of 64 points"
+    }
+   ]
+  },
+  {
+   "id": "fig-rijks-jardinier-1825-front",
+   "title": "Tuinman met schep over zijn schouder / Jardinier, Middelbourg",
+   "creator": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph)",
+   "date": "1825-1835",
+   "institution": "Rijksmuseum, Amsterdam",
+   "sourceUrl": "https://id.rijksmuseum.nl/200228151",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Jean Baptiste Madou (drawing), Guillaume Philidor Van den Burggraaff (lithograph), Tuinman met schep over zijn schouder / Jardinier, Middelbourg, 1825-1835. Rijksmuseum, Amsterdam (RP-P-OB-40.259). Public domain.",
+   "file": "archive/raw/figure/fig-rijks-jardinier-1825-front.jpg",
+   "need": "roam figure parts",
+   "category": "figure",
+   "sha256": "bda9088cf21325ec089655ca7a390029ac95af369a65ccd082c5cda32f43f94d",
+   "usedIn": [
+    "fg/crook",
+    "fg/hat",
+    "fg/void"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/hat: raw (forced: crayon lithograph hat over a face and a spade: alpha from the hand matte round crown and brim), crop 0.439167,0.266645,0.56375,0.308298"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/hat: all GM #1b1a3a/#3a2f2a/#7d6a55, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "fg/hat: polygon of 48 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/crook: raw (forced: crayon lithograph hat over a face and a spade: alpha from the hand matte round crown and brim), crop 0.498333,0.274844,0.505,0.280092"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/crook: all GM #1b1a3a/#3a2f2a/#7d6a55, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/void: raw (forced: crayon lithograph hat over a face and a spade: alpha from the hand matte round crown and brim), crop 0.166667,0.131191,0.17,0.133814"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "fg/void: 0.1625,0.127911,0.175,0.13775"
+    }
+   ]
   },
   {
    "id": "met-705858",
@@ -5589,10 +5793,16 @@
    "category": "props",
    "sha256": "7b76413d0a522fd6c7d75c02dc852001732a2a9e0a0182a085b80dbd31525e0d",
    "usedIn": [
+    "fg/lantern",
     "semillero",
     "sh/lantern-tin"
    ],
    "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.026, hi 0.052), morphology, edge un-mix",
+     "note": "fg/lantern: classical, crop 0.28,0.05,0.78,0.92"
+    },
     {
      "stage": "cutout",
      "tool": "classical OKLab paper key (lo 0.026, hi 0.052), morphology, edge un-mix",
