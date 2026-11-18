@@ -4,7 +4,7 @@ Usage: python -I scripts/py/figure2_sheet.py <repo root>
 Reads the two public domain plates in archive/raw/figure/, cuts the walker parts, lifts the paper inside each
 garment to one even paper tone with a fine paper grain (keeps the etched contour, the fold lines and the plate's
 own hatching, thinned; drops foxing and mottled stains), closes every outline with a ruled stroke, cuts the head
-seen from behind (hair, nape, one ear, collar) from the 1842 plate under its cap band, shapes the sleeves with a
+seen from behind (hair, nape, both ears, collar) from the 1842 plate under its cap band, shapes the sleeves with a
 shoulder cap and a feathered body side, ends the trousers in a turned hem over small shoes, and fades the shin
 tops so the knee overlap leaves no bright band. Writes a transparent sheet
 archive/raw/figure/fig-figure2-sheet.png and archive/raw/figure/fig-figure2-sheet.json (cell boxes, recipe crops,
@@ -140,7 +140,7 @@ O = lambda p, b=box: (p[0] - b[0], p[1] - b[1])
 add("fg/torso", t, m, {"pin": O((1085, 1392)), "neck": O((1162, 1096)), "shoulderL": O((989, 1147)),
                        "shoulderR": O((1218, 1168)), "hipL": O((1007, 1396)), "hipR": O((1162, 1396))}, None, "smock")
 
-# ---------- head (1842): seen from behind under the cap band: hair strokes, nape, left ear, collar ----------
+# ---------- head (1842): seen from behind under the cap band: hair strokes, a narrow nape, two ears, collar ----------
 # Canvas 104 x 114 (the second cut's cell, so the sprite stays 41 x 44 with the same pins). The plate window is
 # mapped onto it at 0.743; the cap above the band is replaced by the hair rows below it (the hat covers them).
 HW, HH, HK = 104, 114, 0.743
@@ -154,13 +154,13 @@ m = np.maximum.reduce([
     poly_mask((HH, HW), [(28, 40), (80, 40), (82, 86), (26, 86)]),
     poly_mask((HH, HW), [(6, 74), (98, 74), (104, 114), (0, 114)]),
 ])
-ear = (((xx - 17) / 8.0) ** 2 + ((yy - 42) / 14.0) ** 2) <= 1
+ear = ((((xx - 17) / 8.0) ** 2 + ((yy - 50) / 13.0) ** 2) <= 1) | ((((xx - 87) / 8.0) ** 2 + ((yy - 50) / 13.0) ** 2) <= 1)
 m = np.maximum(m, ear.astype(np.float32))
 pp = float(np.percentile(g, 85))
 ink = np.clip((pp - g) / max(1.0, pp - 100.0), 0, 1)
 ink = np.where(ink < 0.22, 0, np.clip((ink - 0.22) / 0.55, 0, 1))
-base = np.full((HH, HW), 118.0, np.float32)  # hair: mid tone, darker than the smock, not black
-nape = (yy > 58) & (yy < 80) & (xx > 26) & (xx < 82)
+base = np.full((HH, HW), 72.0, np.float32)  # hair: dark, well under the nape and the smock, so a head reads from behind
+nape = (yy > 66) & (yy < 80) & (xx > 32) & (xx < 76)
 base[nape] = 172.0
 base[ear] = 178.0
 collar = yy >= 76
@@ -172,7 +172,8 @@ im = Image.new("L", (HW, HH), 0)
 d = ImageDraw.Draw(im)
 for x0_, x1_ in ((30, 34), (42, 44), (54, 55), (66, 64), (78, 74)):
     d.line([(x0_, 34), ((x0_ + x1_) / 2, 48), (x1_, 60)], fill=170, width=1)
-d.arc([10, 30, 26, 56], 250, 110, fill=200, width=2)  # the ear's rim
+d.arc([10, 38, 26, 62], 250, 110, fill=200, width=2)  # the ears' rims
+d.arc([78, 38, 94, 62], 70, 290, fill=200, width=2)
 d.line([(18, 76), (52, 72), (88, 76)], fill=200, width=2)  # collar edge
 lines = ndi.gaussian_filter(np.asarray(im, np.float32) / 255.0, 0.5)
 tone = tone * (1 - lines) + INK * lines
