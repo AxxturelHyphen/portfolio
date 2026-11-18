@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { loadShots, pickShots } from '../helpers/shots.ts';
 
-test('shot manifest lists S01 to S12 with valid sizes and times', () => {
+test('shot manifest lists S01 to S18 with valid sizes and times', () => {
   const shots = loadShots();
-  expect(shots.map((s) => s.id)).toEqual(Array.from({ length: 12 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
+  expect(shots.map((s) => s.id)).toEqual(Array.from({ length: 18 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
   for (const s of shots) {
     expect(s.viewport[0], s.id).toBeGreaterThan(0);
     expect(s.viewport[1], s.id).toBeGreaterThan(0);
@@ -11,6 +11,7 @@ test('shot manifest lists S01 to S12 with valid sizes and times', () => {
     expect(s.refs.length, `${s.id} refs`).toBeGreaterThan(0);
   }
   expect(shots.find((s) => s.id === 'S11')?.viewport).toEqual([390, 844]);
+  expect(shots.find((s) => s.id === 'S18')?.viewport).toEqual([390, 844]);
   expect(shots.find((s) => s.id === 'S10')?.wait).toBe('dom');
 });
 

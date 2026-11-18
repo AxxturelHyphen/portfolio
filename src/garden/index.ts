@@ -20,7 +20,7 @@ import { createRig } from '../world/camera.ts';
 import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
 import { createMoth } from '../world/moth.ts';
-import { setWorldMode, worldMode } from '../world/mode.ts';
+import { setWorldMode, worldMode, worldModeOf } from '../world/mode.ts';
 import { createVisitorLantern, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
 import { fetchManifest } from '../world/bed.ts';
 import { FIGURE_SPRITES, type FigureRects } from '../world/puppet.ts';
@@ -34,8 +34,9 @@ import type { WorldLayout } from '../world/layout.ts';
 /**
  * Garden chunk entry and composition root (cook/ARCH.md 2.12): the only place that wires core, gl, world and ui.
  * boot.ts owns the machine, the router and the one loop (stage 'sim' ticks the machine); this adds the garden's
- * stages in their fixed order: input, camera, world, render, post, dom. `?roam=1` (kept by the router) turns on free
- * roam: the visitor walks the garden and the follow camera replaces the rail walk.
+ * stages in their fixed order: input, camera, world, render, post, dom. Free roam is the default: the visitor walks the
+ * garden and the follow camera replaces the rail walk; `?roam=0` (kept by the router) keeps the rail for one release,
+ * and so does a shot that is not a roam shot (world/mode.ts).
  */
 
 export interface GardenHost {
@@ -87,11 +88,14 @@ function bedPose(p: Pose, aspect: number): Pose {
 const panelHoldsMobile = (s: State): boolean => s.mode === 'garden' && s.phase === 'inspect' && s.intent.k === 'project';
 const NO_SLOTS: readonly SlotView[] = [];
 const SHOT_FOCUS: Readonly<Record<string, SlotId>> = { S08: 'rosaleda/rose-a' };
+/** The figure's page waits for the visitor's first walk, or this long after ready, so it never joins the first load. */
+const FIGURE_AFTER_MS = 6000;
 
 export function startGarden(host: GardenHost): GardenRuntime {
   const { machine, loop, content, q } = host;
   const quality = createQuality(q);
-  const roaming = new URLSearchParams(location.search).get('roam') === '1';
+  const shots = content.garden.shots;
+  const roaming = worldModeOf(new URLSearchParams(location.search).get('roam'), q.shot, (id) => shots[id]?.visitor !== undefined) === 'roam';
   const gfx = createGfx(host.canvas, quality, loop, roaming);
   const rig = createRig(rigLayout(content.garden));
   const light = createLight();
@@ -103,7 +107,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
   setWorldMode(roaming ? 'roam' : 'rail');
   const world = content.garden as WorldLayout;
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
-  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh() }) : null;
+  const spawn = q.shot === undefined ? undefined : shots[q.shot]?.visitor;
+  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), ...(spawn === undefined ? {} : { spawn }) }) : null;
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
   if (roam !== null) setStandeeTurn(1);
@@ -113,14 +118,14 @@ export function startGarden(host: GardenHost): GardenRuntime {
     light.carryFlame(lantern.flame);
   }
   if (roam !== null) carryVisitor(roam.pos);
-  const film = createFilmDrive(machine, rig, content.garden);
+  const film = createFilmDrive(machine, rig, content.garden, roam?.travel ?? null);
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
   prepareGl(gfx, world, SCENES, worldMode());
   const placeLight = createPlaceLighting();
   proxies.setSigns(signAnchorsOf(world, SCENES));
-  if (roam !== null) proxies.setVisitor(roam.pos);
+  if (roam !== null) proxies.setVisitor(roam.pos, content.garden.anchors, (slot, off) => roam.seek(slot, off));
 
   const slotOwner = new Map<ProjectId, SlotId>();
   for (const bed of garden.beds.values()) for (const v of bed.slots) if (v.project !== undefined) slotOwner.set(v.project.id, v.id);
@@ -180,6 +185,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
     input.frame();
     roam?.frame(c);
+    if (figureBatch !== null && roam?.walking === true) void startFigure();
     if (introShot !== null) machine.ch.intro.snap(introShot);
     if (!snapping) return;
     for (let i = 0; i < CHANNELS.length; i++) {
@@ -292,7 +298,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     lantern.attach(batch.writer, rect);
     return batch;
   };
-  /** The figure's page (free roam), after ready: decoded off the main thread, uploaded one texture a frame. */
+  /** The figure's page (free roam), after the first walk: decoded off the main thread, uploaded one texture a frame. */
   const loadFigure = async (batch: CutoutBatch): Promise<void> => {
     const signal = new AbortController().signal;
     const m = await fetchManifest('roam', signal);
@@ -312,9 +318,19 @@ export function startGarden(host: GardenHost): GardenRuntime {
       batch.uniforms.uNormal.value = normal;
     });
   };
-  const ready = Promise.all([gfx.warm(), garden.ready]).then(() => {
-    const batch = attachLantern();
-    if (batch !== null) void loadFigure(batch).catch(() => undefined);
+  let figureBatch: CutoutBatch | null = null;
+  let figureTimer = 0;
+  const startFigure = (): Promise<void> => {
+    clearTimeout(figureTimer);
+    const batch = figureBatch;
+    figureBatch = null;
+    return batch === null ? Promise.resolve() : loadFigure(batch).catch(() => undefined);
+  };
+  const ready = Promise.all([gfx.warm(), garden.ready]).then(async () => {
+    figureBatch = attachLantern();
+    /** A roam shot is a still: its figure is in before the garden counts as ready. */
+    if (spawn !== undefined) await startFigure();
+    else if (figureBatch !== null) figureTimer = window.setTimeout(() => void startFigure(), FIGURE_AFTER_MS);
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     void quality.probe().then((tier) => {
@@ -323,7 +339,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
 
   if (testApiEnabled(q)) {
-    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam });
+    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam, strip: () => gfx.film.uniforms.uStrip.value.w });
   }
   return { quality, ready };
 }

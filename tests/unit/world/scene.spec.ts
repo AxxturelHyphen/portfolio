@@ -15,11 +15,14 @@ const projectsFor = (b: BedId): Project[] => (b === 'rosaleda' || b === 'estanqu
 const bind = (b: BedId, projects = projectsFor(b)) => bindSlots({ scene: scenes[b], projects, profile, lang: 'en' });
 const items = (s: BedScene3) => s.layers.flatMap((l) => l.items);
 
-test('garden layout: beds in order, grotto under the Semillero, shots S01 to S12, ART film poses', () => {
+test('garden layout: beds in order, grotto under the Semillero, rail shots S01 to S12, roam shots S13 to S18, ART film poses', () => {
   expect(garden.order).toEqual(['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida']);
   expect(garden.grutaHost).toBe('semillero');
-  expect(Object.keys(garden.shots).sort()).toEqual(Array.from({ length: 12 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
+  expect(Object.keys(garden.shots).sort()).toEqual(Array.from({ length: 18 }, (_, i) => `S${String(i + 1).padStart(2, '0')}`));
+  const shots: Record<string, { hash: string; visitor?: readonly number[] }> = garden.shots;
+  expect(Object.keys(shots).filter((id) => shots[id]?.visitor !== undefined).sort(), 'roam shots name a visitor position').toEqual(['S13', 'S14', 'S15', 'S16', 'S17', 'S18']);
   expect(garden.shots['S11']?.viewport).toEqual([390, 844]);
+  expect(garden.shots['S18']?.viewport).toEqual([390, 844]);
   // S03 and S08 are lens close-ups from the live Rosaleda stop; S04 and S06 are the live Estanque and Puerta stops.
   expect(garden.film['S03']).toEqual({ x: 11.6, y: 2.4, z: 3.2, pitch: -12, yaw: -1.7, fov: 10 });
   expect(garden.film['S04']).toEqual({ x: 21, y: 2.1, z: 7.2, pitch: -7, yaw: 0, fov: 34 });

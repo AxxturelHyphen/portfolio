@@ -111,6 +111,10 @@ export function createRig(layout: GardenLayout): GardenRig {
   let shotGen = -1;
   let roamPose: Readonly<RigPose> | null = null;
   let followX = NaN;
+  /** Free roam: how far the camera has gone into an off-rail room (the grotto), on the focus nudge's spring. */
+  const room: SpringState = { x: 0, v: 0 };
+  let roomPose: RigPose | null = null;
+  const inRoom = blank();
   const slotPt = new Float32Array(3);
   const over = blank();
   const walk = blank();
@@ -199,6 +203,18 @@ export function createRig(layout: GardenLayout): GardenRig {
     return true;
   }
 
+  /** Free roam: the follow pose, eased into an off-rail room's pose (the grotto) while the visitor rests there. */
+  function roamSide(s: State, dt: number, snap: boolean): Readonly<RigPose> | null {
+    if (roamPose === null) return null;
+    const there = s.bed === null ? undefined : offPoses.get(s.bed);
+    if (there !== undefined) roomPose = there;
+    const target = there !== undefined && s.phase !== 'travel' ? 1 : 0;
+    stepNudge(room, target, snap || s.reduced, dt);
+    if (room.x === 0 || roomPose === null) return roamPose;
+    mixPose(roamPose, roomPose, room.x, inRoom);
+    return inRoom;
+  }
+
   function targetX(bed: BedId): number {
     const x = rail.stopX(bed);
     return Number.isNaN(x) ? (offPoses.get(bed)?.x ?? g.anchors[bed]) : x;
@@ -246,7 +262,7 @@ export function createRig(layout: GardenLayout): GardenRig {
     over.pitch = ov.pitch;
     over.yaw = 0;
     over.fov = ov.fov;
-    if (hasBed) mixPose(over, roamPose ?? walk, d, base);
+    if (hasBed) mixPose(over, roamSide(s, dt, snap) ?? walk, d, base);
     else mixPose(over, over, 0, base);
 
     const v = dt > 0 && hasBed && !Number.isNaN(prevSideX) ? Math.abs(sideX - prevSideX) / dt : 0;

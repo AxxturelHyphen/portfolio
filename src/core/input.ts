@@ -5,7 +5,7 @@ import type { CameraRig, LightRig, Loop, Machine } from '../types.ts';
  * swipe between beds, keys. Input only sends machine events and calls the rig; it never moves anything itself.
  * Handlers accumulate into module-owned numbers; the 'input' frame stage applies them once per frame.
  * Proxies (ui) own clicks, hover and Enter on flowers and beds; the canvas gets what they do not.
- * Free roam (the optional `roam` dep, ?roam=1): arrows and WASD hold walk directions instead of stepping beds, a
+ * Free roam (the optional `roam` dep, the default): arrows and WASD hold walk directions instead of stepping beds, a
  * pointer down on the canvas walks there and a drag steers toward the pointer; no pan, fling, zoom or swipe. Enter on
  * the page or the canvas opens the focused flower (focused by walking up to it, cook/ROAM_PLAN.md section 3).
  */

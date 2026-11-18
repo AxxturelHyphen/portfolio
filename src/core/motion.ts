@@ -235,7 +235,7 @@ export function stripOf(leg: number, hops: number, out: Vec4Out): Vec4Out {
   return out;
 }
 
-// Free roam behind ?roam=1 (cook/ROAM_PLAN.md sections 3 and 4, P1)
+// Free roam, the default way through the garden (cook/ROAM_PLAN.md sections 3 and 4)
 
 /**
  * The visitor's walk on the ground plane: top speed (m/s), linear ramps to it and to a stop, body radius (m), the

@@ -66,6 +66,9 @@ Node 23.6 or newer. `npm run cvpdf` prints `dist/cv.pdf` after a build and fails
   iris and panel timings), `src/core/router.ts` (the URL), `src/core/motion.ts` (eases and durations).
 - Any change there, or in `src/world/residency.ts`, needs a full `npm run check`: the transition budgets are measured,
   not eyeballed.
+- Free roam is the default way through the garden: the visitor walks (`src/world/roam.ts`, `src/garden/roam.drive.ts`)
+  and signposts, the plan and Tab walk them to a bed or a flower (`src/world/assist.ts`). `?roam=0` keeps the older
+  rail camera for one release. The stills S01 to S12 are rail shots; S13 to S18 are free roam shots.
 
 ## Budgets
 

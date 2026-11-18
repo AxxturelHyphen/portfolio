@@ -1,5 +1,5 @@
 {
-  "_doc": "Shot manifest for npm run stills and compare (spec section 13). Per shot: name, wait ('jardin' = window.__jardin.ready, 'dom' = DOM ready only), mode (forced ?mode, omit for the app's own), viewport [w,h], t (frozen content time, seconds), refs (reference ids to compare against, first is the pairing default). World builders override hash, pose, t and viewport in content/garden.json under 'shots' (ARCH 2.9, GardenLayout.shots); garden.json wins over this file, this file fills what garden.json does not say.",
+  "_doc": "Shot manifest for npm run stills and compare (spec section 13). Per shot: name, wait ('jardin' = window.__jardin.ready, 'dom' = DOM ready only), mode (forced ?mode, omit for the app's own), viewport [w,h], t (frozen content time, seconds), refs (reference ids to compare against, first is the pairing default). World builders override hash, pose, t and viewport in content/garden.json under 'shots' (ARCH 2.9, GardenLayout.shots); a shot there with a 'visitor' [x, z] is a free roam shot (the visitor stands there; every other shot keeps the rail world); garden.json wins over this file, this file fills what garden.json does not say.",
   "defaultViewport": [1920, 1080],
   "shots": {
     "S01": { "name": "Kaleidoscope intro, mid-turn", "wait": "jardin", "t": 2.5, "refs": ["R01", "R02", "V01"] },
@@ -13,6 +13,12 @@
     "S09": { "name": "Project panel open after the iris", "wait": "jardin", "t": 12.5, "refs": ["R05", "R07"] },
     "S10": { "name": "Herbario page", "wait": "dom", "mode": "herbario", "t": 12.5, "refs": ["R05"] },
     "S11": { "name": "Garden on mobile", "wait": "jardin", "t": 12.5, "viewport": [390, 844], "refs": ["R06"] },
-    "S12": { "name": "The grotto: the Coupe mid-push, the moth watching", "wait": "jardin", "t": 12.5, "refs": ["R04", "R07"] }
+    "S12": { "name": "The grotto: the Coupe mid-push, the moth watching", "wait": "jardin", "t": 12.5, "refs": ["R04", "R07"] },
+    "S13": { "name": "Free roam: the visitor at the gate", "wait": "jardin", "t": 12.5, "refs": ["R04", "R06"] },
+    "S14": { "name": "Free roam: the Rosaleda by the rose", "wait": "jardin", "t": 12.5, "refs": ["R01", "R03"] },
+    "S15": { "name": "Free roam: the pond bank", "wait": "jardin", "t": 12.5, "refs": ["R09", "R04"] },
+    "S16": { "name": "Free roam: the Semillero", "wait": "jardin", "t": 12.5, "refs": ["R03", "R04"] },
+    "S17": { "name": "Free roam: the Salida", "wait": "jardin", "t": 12.5, "refs": ["R05", "R06"] },
+    "S18": { "name": "Free roam: the Rosaleda on the phone", "wait": "jardin", "t": 12.5, "viewport": [390, 844], "refs": ["R06"] }
   }
 }
