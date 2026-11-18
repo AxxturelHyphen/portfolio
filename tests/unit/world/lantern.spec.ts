@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../../content/beds/rosaleda.json' with { type: 'json' };
 import type { BedScene3 } from '../../../src/world/layout.ts';
 import { findLamps, LAMPS, stepLamps } from '../../../src/world/lamps.ts';
-import { createPendulum, PENDULUM, stepPendulum } from '../../../src/world/visitor.ts';
+import type { AtlasManifest, Clock, InstanceWriter, QuadParams, SpriteRect } from '../../../src/types.ts';
+import { SLOT, type FigureRects } from '../../../src/world/puppet.ts';
+import { CROOK_QUADS, createPendulum, createVisitorLantern, HELD, PENDULUM, stepPendulum, VISITOR_QUADS } from '../../../src/world/visitor.ts';
 
 // The carried lantern (cook/ROAM_PLAN.md 3, P5): its pendulum and the lamp list the shader reads.
 
@@ -90,4 +93,74 @@ test('the carried lantern is lamp 0 at full strength; standing lamps light only 
   stepLamps(lamps, 5, 0.7, -1, standing, 0, () => true, DT, true);
   expect(lamps[7]).toBe(0);
   expect(lamps[11]).toBe(0);
+});
+
+// The figure's page (cook/FIGURE_BUILD.md 4): the visitor batch before and after it arrives.
+
+const roam = JSON.parse(readFileSync(new URL('../../../public/atlas/roam.json', import.meta.url), 'utf8')) as AtlasManifest;
+const sprite = (id: string): SpriteRect => roam.sprites[id as keyof typeof roam.sprites]!;
+
+/** A writer that keeps copies of what was set, with the batch's fixed capacity. */
+function fakeWriter(capacity: number): InstanceWriter & { quads: Map<number, QuadParams>; commits: number } {
+  const quads = new Map<number, QuadParams>();
+  let count = 0;
+  return {
+    capacity, quads, commits: 0,
+    get count() { return count; },
+    set count(n: number) { count = Math.min(capacity, Math.max(0, n)); },
+    set(i, p) { quads.set(i, { ...p, uv: Array.from(p.uv), tint: Array.from(p.tint) }); },
+    commit() { this.commits++; },
+  };
+}
+const clock = (t: number, frozen = false): Clock => ({ now: t * 1000, dt: 1 / 60, t, frame: Math.round(t * 60), frozen });
+
+test('the actor batch holds the figure: 14 instances, 6 until the roam page is in, the figure on the next step', () => {
+  expect(VISITOR_QUADS).toBe(14);
+  expect(CROOK_QUADS).toBe(6);
+  const pos = new Float32Array([2, -1]);
+  const v = createVisitorLantern(pos, null);
+  const w = fakeWriter(VISITOR_QUADS);
+  v.attach(w, sprite('fg/lantern'));
+  v.resize(1920, 1080);
+  v.frame(clock(1), false);
+  expect([w.count, v.figure]).toEqual([CROOK_QUADS, false]);
+  let shown = 0;
+  v.attachFigure(roam.sprites as unknown as FigureRects, sprite('fg/lantern'), sprite('fg/crook'), () => shown++);
+  v.frame(clock(1 + 0.2 / 60), false);
+  expect([w.count, v.figure, shown]).toEqual([CROOK_QUADS, false, 0]);
+  v.frame(clock(1 + 1 / 12), false);
+  expect([w.count, v.figure, shown]).toEqual([VISITOR_QUADS, true, 1]);
+  for (let i = 0; i < VISITOR_QUADS; i++) expect(w.quads.has(i)).toBe(true);
+});
+
+test('the held lantern hangs from the fist at its handle, its flame on the lantern', () => {
+  const pos = new Float32Array([2, -1]);
+  const v = createVisitorLantern(pos, null);
+  const w = fakeWriter(VISITOR_QUADS);
+  v.attach(w, sprite('fg/lantern'));
+  v.resize(1920, 1080);
+  v.attachFigure(roam.sprites as unknown as FigureRects, sprite('fg/lantern'), sprite('fg/crook'), () => undefined);
+  for (let i = 0; i < 3; i++) v.frame(clock(12.5, true), false);
+  const lamp = w.quads.get(SLOT.lantern)!;
+  expect(lamp.w).toBeCloseTo(sprite('fg/lantern').size[0] * HELD.scaleWide, 6);
+  expect(lamp.h).toBeCloseTo(sprite('fg/lantern').size[1] * HELD.scaleWide, 6);
+  expect(v.flame[0]).toBeCloseTo(lamp.x, 6);
+  expect(v.flame[2]).toBe(-1);
+  expect(v.flame[1]).toBeGreaterThan(lamp.y);
+  expect(v.flame[1]).toBeLessThan(lamp.y + lamp.h);
+  const handle = w.quads.get(SLOT.handle)!;
+  expect(handle.y).toBeGreaterThan(0.5);
+  expect(Math.abs(v.flame[0]! - 2)).toBeLessThan(0.6);
+});
+
+test('until the page is in, and if it never comes, the lantern hangs on its planted crook as before', () => {
+  const pos = new Float32Array([2, -1]);
+  const v = createVisitorLantern(pos, null);
+  const w = fakeWriter(VISITOR_QUADS);
+  v.attach(w, sprite('fg/lantern'));
+  v.resize(1920, 1080);
+  for (let i = 0; i < 30; i++) v.frame(clock(12.5, true), false);
+  expect([w.count, v.figure]).toEqual([CROOK_QUADS, false]);
+  expect(w.quads.get(CROOK_QUADS - 1)!.w).toBeCloseTo(sprite('fg/lantern').size[0] * 1.4, 6);
+  expect(w.quads.get(0)!.x).toBe(2);
 });

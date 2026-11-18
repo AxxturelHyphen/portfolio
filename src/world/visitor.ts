@@ -1,13 +1,15 @@
 /**
- * The visitor seen as the lantern they carry (cook/ROAM_PLAN.md 3, P5): an archival lantern cutout hanging from the hook
- * of a thin dark carrying crook planted at the visitor's ground point. The crook leans with the walk; the lantern swings
- * from its hook like a pendulum, bobs on twos while walking and casts a soft shadow straight below. Its flame is lamp 0
- * (world/lamps.ts). One actor batch drawn after every cutout with a depth test, so the rig passes behind what stands
- * nearer the lens. The crook is cut from a solid patch of the lantern plate, tinted near black: no new texture or
- * program. Nothing is allocated per frame.
+ * The visitor (cook/ROAM_PLAN.md 3, P5; cook/FIGURE_BUILD.md 4). Until the roam atlas is in, the lantern they carry:
+ * an archival lantern cutout hanging from the hook of a thin dark carrying crook planted at the visitor's ground point.
+ * Once it is in, on a step, the paper figure of world/puppet.ts takes its place and carries the lantern by a short
+ * handle in its fist. Either way the lantern swings like a pendulum, bobs on twos while walking and casts a soft shadow
+ * straight below; its flame is lamp 0 (world/lamps.ts). One actor batch drawn after every cutout with a depth test,
+ * so the visitor passes behind what stands nearer the lens. The crook and handle are a solid patch tinted near black:
+ * no new program. Nothing is allocated per frame.
  */
 import type { Clock, InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
 import { ROAM, follow } from '../core/motion.ts';
+import { createGait, createPuppet, FIGURE, SLOT, stepGait, type FigureRects, type Puppet } from './puppet.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export const LANTERN = {
@@ -35,6 +37,12 @@ export const CROOK = {
   heightM: 1.1, hookM: 0.075, shaftW: 0.024, hookW: 0.02, hookSegments: 4, hookSweep: 1.15,
   tint: [0.07, 0.05, 0.035], leanPerMS: 0.05, maxLean: 0.16, leanTauS: 0.25, pondNear: 1.6, sideTauS: 0.3,
 } as const;
+/**
+ * The lantern in the figure's hand: its handle from fist to ring (m at figure scale 1), its plate scale on landscape
+ * and portrait screens, the ground velocity follower and the flame's ease from the planted crook to the hand when the
+ * figure first appears.
+ */
+export const HELD = { handleM: 0.05, scaleWide: 1.05, scaleTall: 0.75, velTauS: 0.08, flameTauS: 0.3 } as const;
 /** The solid patch of the lantern plate the crook is cut from (shares of the sprite's uv rect). */
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 
@@ -86,16 +94,24 @@ export interface VisitorLantern {
   /** Flame xyz in world space, read by the light rig as lamp 0. */
   readonly flame: Float32Array;
   readonly pendulum: Pendulum;
+  /** True once the figure is drawn (it appears on the first step after attachFigure). */
+  readonly figure: boolean;
   /** The batch and lantern sprite to draw into, once the shared atlas is in (until then only the flame moves). */
   attach(writer: InstanceWriter, rect: SpriteRect): void;
-  /** The viewport (CSS px): portrait screens get the smaller lantern. */
+  /**
+   * The roam atlas is in: on the next step the figure replaces the planted crook. `show` runs on that frame, before
+   * the batch is written, to point the batch at the roam page. Ignored before attach().
+   */
+  attachFigure(rects: FigureRects, lantern: SpriteRect, handle: SpriteRect, show: () => void): void;
+  /** The viewport (CSS px): portrait screens get the smaller lantern and figure. */
   resize(w: number, h: number): void;
   /** Stage 'camera', before the light: follows the visitor at `pos` [x, z]. */
   frame(c: Clock, reduced: boolean): void;
 }
 
-/** Instances in the actor batch: the shaft, the hook segments, then the lantern. */
-export const VISITOR_QUADS = 1 + CROOK.hookSegments + 1;
+/** Instances in the actor batch with the figure (shadow, body, handle, lantern), and before it: shaft, hook, lantern. */
+export const VISITOR_QUADS = SLOT.count;
+export const CROOK_QUADS = 1 + CROOK.hookSegments + 1;
 
 export function createVisitorLantern(pos: Float32Array, pond: PondShape | null): VisitorLantern {
   const flame = new Float32Array(3);
@@ -108,32 +124,140 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   const stick: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: patch, sway: 0, lift: 0, facing: 0, tint: crookTint, phase: 0 };
   const shaftPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette);
   const hookPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
+  const gait = createGait();
+  const flameEase = new Float32Array(3);
   let writer: InstanceWriter | null = null;
+  let puppet: Puppet | null = null;
+  let show: (() => void) | null = null;
+  let shown = false;
   let plateW = 0.16;
   let plateH = 0.4;
+  let wide = true;
   let scale: number = LANTERN.scaleWide;
+  let lastX = NaN;
   let lastZ = NaN;
+  let groundVx = 0;
+  let groundVz = 0;
+  let gaitVz = 0;
+  let lastTick = NaN;
   let speed = 0;
   let lean = 0;
   let side = 1;
+  let figureSide = 1;
+
+  /** Writes one crook segment from world (ax, ay) to (bx, by) in the plane z. */
+  function piece(i: number, ax: number, ay: number, bx: number, by: number, width: number, z: number, phase: number): void {
+    stick.x = ax;
+    stick.y = ay;
+    stick.z = z;
+    stick.w = width;
+    stick.h = Math.hypot(bx - ax, by - ay) + width * 0.5;
+    stick.rot = Math.atan2(-(bx - ax), by - ay);
+    stick.phase = phase;
+    writer!.set(i, stick);
+  }
 
   /** Writes one crook segment from local (ax, ay) to (bx, by), leaned by `lean` about the foot (fx, fz). */
   function segment(i: number, ax: number, ay: number, bx: number, by: number, width: number, fx: number, fz: number): void {
     const cl = Math.cos(lean);
     const sl = Math.sin(lean);
-    stick.x = fx + ax * cl + ay * sl;
-    stick.y = -ax * sl + ay * cl;
-    stick.z = fz;
-    stick.w = width;
-    stick.h = Math.hypot(bx - ax, by - ay) + width * 0.5;
-    stick.rot = Math.atan2(-(bx - ax), by - ay) - lean;
-    stick.phase = i === 0 ? shaftPhase : hookPhase;
-    writer!.set(i, stick);
+    piece(i, fx + ax * cl + ay * sl, -ax * sl + ay * cl, fx + bx * cl + by * sl, -bx * sl + by * cl, width, fz, i === 0 ? shaftPhase : hookPhase);
+  }
+
+  /** The lantern hung by its ring from the hook tip (hx, hy): the quad turns about its foot, so place the foot. */
+  function hang(i: number, hx: number, hy: number, z: number): void {
+    const height = plateH * scale;
+    const s = Math.sin(pendulum.angle);
+    const co = Math.cos(pendulum.angle);
+    const below = 1 - LANTERN.flameOfHeight;
+    flame[0] = hx + s * height * below;
+    flame[1] = hy - co * height * below;
+    flame[2] = z;
+    if (writer === null) return;
+    lamp.w = plateW * scale;
+    lamp.h = height;
+    lamp.x = hx + s * height;
+    lamp.y = hy - co * height;
+    lamp.z = z;
+    lamp.rot = pendulum.angle;
+    writer.set(i, lamp);
+  }
+
+  /** The lantern on its planted crook, as before the figure. */
+  function crookFrame(c: Clock, still: boolean, x: number, z: number): void {
+    const vx = pendulum.vel;
+    const k = scale / LANTERN.scaleWide;
+    /** The hook hangs toward +x, or toward the bank when the visitor skirts the pond. */
+    side = still ? bankSide(x, z) : follow(side, bankSide(x, z), CROOK.sideTauS, c.dt);
+    lean = still ? 0 : follow(lean, Math.max(-CROOK.maxLean, Math.min(CROOK.maxLean, vx * CROOK.leanPerMS)), CROOK.leanTauS, c.dt);
+    const r = CROOK.hookM * k;
+    const top = CROOK.heightM * k;
+    /** The hook tip in the crook's own frame, leaned about the foot. */
+    const tipX = 2 * side * r;
+    const hx = x + tipX * Math.cos(lean) + top * Math.sin(lean);
+    const twos = Math.floor(c.t * LANTERN.fps) / LANTERN.fps;
+    speed = still ? 0 : follow(speed, Math.min(1, Math.hypot(vx, groundVz) / ROAM.speed), PENDULUM.velTauS, c.dt);
+    const bob = LANTERN.bobM * speed * Math.abs(Math.sin(Math.PI * LANTERN.stepHz * twos));
+    const hy = -tipX * Math.sin(lean) + top * Math.cos(lean) + bob;
+    stepPendulum(pendulum, hx, c.dt, still);
+    if (writer === null) {
+      hang(CROOK_QUADS - 1, hx, hy, z);
+      return;
+    }
+    segment(0, 0, 0, 0, top, CROOK.shaftW * k, x, z);
+    for (let i = 0; i < CROOK.hookSegments; i++) {
+      const t0 = (i / CROOK.hookSegments) * CROOK.hookSweep;
+      const t1 = ((i + 1) / CROOK.hookSegments) * CROOK.hookSweep;
+      segment(1 + i, side * r * (1 - Math.cos(Math.PI * t0)), top + r * Math.sin(Math.PI * t0),
+        side * r * (1 - Math.cos(Math.PI * t1)), top + r * Math.sin(Math.PI * t1), CROOK.hookW * k, x, z);
+    }
+    hang(CROOK_QUADS - 1, hx, hy, z);
+    writer.commit(0, CROOK_QUADS);
+  }
+
+  /** The figure carrying the lantern by a short handle from its fist: the handle and lantern swing about the hand. */
+  function figureFrame(c: Clock, reduced: boolean, still: boolean, x: number, z: number, tick: number): void {
+    const p = puppet!;
+    stepGait(gait, c.t, c.dt, groundVx, gaitVz, c.frozen, reduced);
+    if (still || tick !== lastTick) figureSide = carrySide(x, z);
+    const mirror = gait.view === 'side' ? gait.dir : gait.view === 'front' ? -figureSide : figureSide;
+    const k = wide ? 1 : FIGURE.portraitK;
+    p.place(gait, x, z, k, mirror);
+    const gx = p.grip[0]!;
+    const gy = p.grip[1]!;
+    stepPendulum(pendulum, gx, c.dt, still);
+    const handle = HELD.handleM * k;
+    const hx = gx + Math.sin(pendulum.angle) * handle;
+    const hy = gy - Math.cos(pendulum.angle) * handle;
+    const w = writer!;
+    p.write(w);
+    piece(SLOT.handle, gx, gy, hx, hy, CROOK.hookW * (scale / LANTERN.scaleWide), z, hookPhase);
+    hang(SLOT.lantern, hx, hy, z);
+    for (let i = 0; i < 3; i++) {
+      flameEase[i] = still ? 0 : follow(flameEase[i]!, 0, HELD.flameTauS, c.dt);
+      flame[i]! += flameEase[i]!;
+    }
+    w.commit(0, VISITOR_QUADS);
+  }
+
+  /**
+   * The figure's carrying side seen from behind: its left (-1), clear of the props the stand points put on the right
+   * (the watering can by the Rosaleda rose), or toward the bank when it skirts the pond.
+   */
+  function carrySide(x: number, z: number): number {
+    return pond !== null && Math.hypot((x - pond.x) / pond.rx, (z - pond.z) / pond.rz) < CROOK.pondNear ? bankSide(x, z) : -1;
+  }
+
+  /** +1, or toward the bank (-1 west of the pond's centre) when the visitor skirts the pond. */
+  function bankSide(x: number, z: number): number {
+    if (pond !== null && Math.hypot((x - pond.x) / pond.rx, (z - pond.z) / pond.rz) < CROOK.pondNear) return x < pond.x ? -1 : 1;
+    return 1;
   }
 
   return {
     flame,
     pendulum,
+    get figure() { return shown; },
     attach(w, rect) {
       writer = w;
       plateW = rect.size[0];
@@ -146,58 +270,59 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
       patch[1] = v0 + (v1 - v0) * PATCH[1];
       patch[2] = u0 + (u1 - u0) * PATCH[2];
       patch[3] = v0 + (v1 - v0) * PATCH[3];
-      w.count = VISITOR_QUADS;
+      w.count = CROOK_QUADS;
+    },
+    attachFigure(rects, lantern, handle, onShow) {
+      if (writer === null || puppet !== null) return;
+      puppet = createPuppet(rects);
+      show = () => {
+        onShow();
+        plateW = lantern.size[0];
+        plateH = lantern.size[1];
+        lamp.px = lantern.pivot[0];
+        lamp.py = lantern.pivot[1];
+        lamp.uv = lantern.uv;
+        patch.set(handle.uv);
+        scale = wide ? HELD.scaleWide : HELD.scaleTall;
+        writer!.count = VISITOR_QUADS;
+      };
     },
     resize(w, h) {
-      scale = w >= h ? LANTERN.scaleWide : LANTERN.scaleTall;
+      wide = w >= h;
+      const held = shown ? HELD : LANTERN;
+      scale = wide ? held.scaleWide : held.scaleTall;
     },
     frame(c, reduced) {
       const x = pos[0]!;
       const z = pos[1]!;
       const still = reduced || c.frozen;
-      const vx = pendulum.vel;
-      const k = scale / LANTERN.scaleWide;
-      /** The hook hangs toward +x, or toward the bank when the visitor skirts the pond. */
-      let wantSide = 1;
-      if (pond !== null && Math.hypot((x - pond.x) / pond.rx, (z - pond.z) / pond.rz) < CROOK.pondNear) wantSide = x < pond.x ? -1 : 1;
-      side = still ? wantSide : follow(side, wantSide, CROOK.sideTauS, c.dt);
-      lean = still ? 0 : follow(lean, Math.max(-CROOK.maxLean, Math.min(CROOK.maxLean, vx * CROOK.leanPerMS)), CROOK.leanTauS, c.dt);
-      const r = CROOK.hookM * k;
-      const top = CROOK.heightM * k;
-      /** The hook tip in the crook's own frame, leaned about the foot. */
-      const tipX = 2 * side * r;
-      const hx = x + tipX * Math.cos(lean) + top * Math.sin(lean);
-      const twos = Math.floor(c.t * LANTERN.fps) / LANTERN.fps;
-      const vz = Number.isNaN(lastZ) || c.dt <= 0 ? 0 : (z - lastZ) / c.dt;
+      const tick = Math.floor(c.t * FIGURE.fps);
+      const fresh = Number.isNaN(lastX) || c.dt <= 0;
+      groundVx = fresh ? 0 : follow(groundVx, (x - lastX) / c.dt, HELD.velTauS, c.dt);
+      groundVz = fresh ? 0 : (z - lastZ) / c.dt;
+      gaitVz = fresh ? 0 : follow(gaitVz, groundVz, HELD.velTauS, c.dt);
+      lastX = x;
       lastZ = z;
-      speed = still ? 0 : follow(speed, Math.min(1, Math.hypot(vx, vz) / ROAM.speed), PENDULUM.velTauS, c.dt);
-      const bob = LANTERN.bobM * speed * Math.abs(Math.sin(Math.PI * LANTERN.stepHz * twos));
-      const hy = -tipX * Math.sin(lean) + top * Math.cos(lean) + bob;
-      stepPendulum(pendulum, hx, c.dt, still);
-      const height = plateH * scale;
-      const s = Math.sin(pendulum.angle);
-      const co = Math.cos(pendulum.angle);
-      const below = 1 - LANTERN.flameOfHeight;
-      flame[0] = hx + s * height * below;
-      flame[1] = hy - co * height * below;
-      flame[2] = z;
-      if (writer === null) return;
-      segment(0, 0, 0, 0, top, CROOK.shaftW * k, x, z);
-      for (let i = 0; i < CROOK.hookSegments; i++) {
-        const t0 = (i / CROOK.hookSegments) * CROOK.hookSweep;
-        const t1 = ((i + 1) / CROOK.hookSegments) * CROOK.hookSweep;
-        segment(1 + i, side * r * (1 - Math.cos(Math.PI * t0)), top + r * Math.sin(Math.PI * t0),
-          side * r * (1 - Math.cos(Math.PI * t1)), top + r * Math.sin(Math.PI * t1), CROOK.hookW * k, x, z);
+      if (show !== null && (c.frozen || tick !== lastTick)) {
+        const fx = flame[0]!;
+        const fy = flame[1]!;
+        const fz = flame[2]!;
+        show();
+        show = null;
+        shown = true;
+        figureFrame(c, reduced, still, x, z, tick);
+        flameEase[0] = still ? 0 : fx - flame[0]!;
+        flameEase[1] = still ? 0 : fy - flame[1]!;
+        flameEase[2] = still ? 0 : fz - flame[2]!;
+        flame[0]! += flameEase[0]!;
+        flame[1]! += flameEase[1]!;
+        flame[2]! += flameEase[2]!;
+      } else if (shown) {
+        figureFrame(c, reduced, still, x, z, tick);
+      } else {
+        crookFrame(c, still, x, z);
       }
-      /** The lantern quad turns about its foot: place the foot so its ring stays on the hook. */
-      lamp.w = plateW * scale;
-      lamp.h = height;
-      lamp.x = hx + s * height;
-      lamp.y = hy - co * height;
-      lamp.z = z;
-      lamp.rot = pendulum.angle;
-      writer.set(VISITOR_QUADS - 1, lamp);
-      writer.commit(0, VISITOR_QUADS);
+      lastTick = tick;
     },
   };
 }
