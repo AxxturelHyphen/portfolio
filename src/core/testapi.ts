@@ -30,6 +30,8 @@ export interface TestApiDeps {
   info(out: InfoSnapshot): InfoSnapshot;
   /** The visitor under free roam (the default), else null. */
   roam: TestRoam | null;
+  /** True once the visitor is drawn as the paper figure (not the lantern on its crook). */
+  figure(): boolean;
   /** The film strip's enable (uStrip.w): 1 while it runs. */
   strip(): number;
 }
@@ -125,6 +127,7 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
     settled: () => until(() => channelsSettled(machine) && !MOVING.includes(machine.state.phase) && d.roam?.busy !== true),
     camera: (): Pose => ({ ...d.rig.pose }),
     roam: () => (d.roam === null ? null : { x: d.roam.pos[0]!, z: d.roam.pos[1]! }),
+    figure: () => d.figure(),
     strip: () => d.strip(),
     walkTo(x, z) {
       d.roam?.walkTo(x, z);

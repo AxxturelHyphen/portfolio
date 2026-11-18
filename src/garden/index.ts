@@ -91,7 +91,10 @@ function bedPose(p: Pose, aspect: number): Pose {
 const panelHoldsMobile = (s: State): boolean => s.mode === 'garden' && s.phase === 'inspect' && s.intent.k === 'project';
 const NO_SLOTS: readonly SlotView[] = [];
 const SHOT_FOCUS: Readonly<Record<string, SlotId>> = { S08: 'rosaleda/rose-a' };
-/** The figure's page waits for the visitor's first walk, or this long after ready, so it never joins the first load. */
+/**
+ * The figure is in from the first frame on its small low page; the full page replaces it on the visitor's first walk,
+ * or this long after ready, so it never joins the first load.
+ */
 const FIGURE_AFTER_MS = 6000;
 
 export function startGarden(host: GardenHost): GardenRuntime {
@@ -315,19 +318,22 @@ export function startGarden(host: GardenHost): GardenRuntime {
     const color = atlas.tex.color[rect.page];
     const normal = atlas.tex.normal[rect.page];
     if (color === undefined || normal === undefined) return null;
-    const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS, HELD.carriedLight);
+    const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS, HELD);
     gfx.scene.add(batch.mesh);
     lantern.attach(batch.writer, rect);
     return batch;
   };
-  /** The figure's page (free roam), after the first walk: decoded off the main thread, uploaded one texture a frame. */
-  const loadFigure = async (batch: CutoutBatch): Promise<void> => {
+  /**
+   * The figure's page (free roam) in `variant`: decoded off the main thread, uploaded one texture a frame. The first
+   * load brings the figure in; a later one swaps the page under it and frees the one it replaces.
+   */
+  const loadFigure = async (batch: CutoutBatch, variant: 'hi' | 'lo'): Promise<void> => {
     const signal = new AbortController().signal;
     const m = await fetchManifest('roam', signal);
     const held = m.sprites['fg/lantern'];
     const crook = m.sprites['fg/crook'];
     if (lantern === null || held === undefined || crook === undefined || FIGURE_SPRITES.some((id) => m.sprites[id]?.page !== held.page)) return;
-    const tex = await loadAtlas(gfx, m, quality.cfg.atlas, signal);
+    const tex = await loadAtlas(gfx, m, variant, signal);
     const color = tex.color[held.page];
     const normal = tex.normal[held.page];
     if (color === undefined || normal === undefined) return;
@@ -335,24 +341,33 @@ export function startGarden(host: GardenHost): GardenRuntime {
       await new Promise((resolve) => requestAnimationFrame(resolve));
       uploadTexture(gfx, t);
     }
-    lantern.attachFigure(m.sprites as FigureRects, held, crook, () => {
+    const show = (): void => {
+      const before = [batch.uniforms.uColor.value, batch.uniforms.uNormal.value];
       batch.uniforms.uColor.value = color;
       batch.uniforms.uNormal.value = normal;
-    });
+      if (lantern.figure) for (const t of before) t.dispose();
+    };
+    if (lantern.figure) show();
+    else lantern.attachFigure(m.sprites as FigureRects, held, crook, show);
   };
+  /** The batch waiting for the figure's full page (when the first one was the low page), else null. */
   let figureBatch: CutoutBatch | null = null;
   let figureTimer = 0;
   const startFigure = (): Promise<void> => {
     clearTimeout(figureTimer);
     const batch = figureBatch;
     figureBatch = null;
-    return batch === null ? Promise.resolve() : loadFigure(batch).catch(() => undefined);
+    return batch === null ? Promise.resolve() : loadFigure(batch, 'hi').catch(() => undefined);
   };
   const ready = Promise.all([gfx.warm(), garden.ready]).then(async () => {
-    figureBatch = attachLantern();
-    /** A roam shot is a still: its figure is in before the garden counts as ready. */
-    if (spawn !== undefined) await startFigure();
-    else if (figureBatch !== null) figureTimer = window.setTimeout(() => void startFigure(), FIGURE_AFTER_MS);
+    const batch = attachLantern();
+    /** The figure is drawn from the first frame: a roam shot (a still) and the low tier load their page at once. */
+    const first = spawn !== undefined ? quality.cfg.atlas : 'lo';
+    if (batch !== null) await loadFigure(batch, first).catch(() => undefined);
+    if (batch !== null && first === 'lo' && quality.cfg.atlas === 'hi') {
+      figureBatch = batch;
+      figureTimer = window.setTimeout(() => void startFigure(), FIGURE_AFTER_MS);
+    }
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     void quality.probe().then((tier) => {
@@ -361,7 +376,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
 
   if (testApiEnabled(q)) {
-    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam, strip: () => gfx.film.uniforms.uStrip.value.w });
+    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam, figure: () => lantern?.figure === true,
+      strip: () => gfx.film.uniforms.uStrip.value.w });
   }
   return { quality, ready };
 }
