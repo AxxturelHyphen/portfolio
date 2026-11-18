@@ -374,7 +374,6 @@
      "attribution": "Filippo Porreca, Lantern, circa 1938. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Filippo_Porreca,_Lantern,_c._1938,_NGA_24317.jpg",
      "usedIn": [
-      "fg/lantern",
       "semillero",
       "sh/lantern-tin"
      ]
@@ -417,6 +416,7 @@
      "attribution": "E.J. Gilsleider, Lantern, 1935/1942. National Gallery of Art, Washington, Index of American Design (Open Access). CC0 1.0. Via Wikimedia Commons.",
      "sourceUrl": "https://commons.wikimedia.org/wiki/File:E.J._Gilsleider,_Lantern,_1935-1942,_NGA_24425.jpg",
      "usedIn": [
+      "fg/lantern",
       "sh/lantern-globe"
      ]
     },
@@ -646,8 +646,8 @@
       "fg/arm",
       "fg/arm-bent",
       "fg/hand",
-      "fg/hat",
       "fg/head",
+      "fg/scarf",
       "fg/shin-l",
       "fg/shin-r",
       "fg/thigh-l",

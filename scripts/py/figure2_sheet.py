@@ -1,14 +1,15 @@
-"""Retouch sheet for the roam walker, third cut (build time only, never shipped).
+"""Retouch sheet for the roam walker (build time only, never shipped).
 
 Usage: python -I scripts/py/figure2_sheet.py <repo root>
-Reads the two public domain plates in archive/raw/figure/, cuts the walker parts, lifts the paper inside each
-garment to one even paper tone with a fine paper grain (keeps the etched contour, the fold lines and the plate's
-own hatching, thinned; drops foxing and mottled stains), closes every outline with a ruled stroke, cuts the head
-seen from behind (hair, nape, both ears, collar) from the 1842 plate under its cap band, shapes the sleeves with a
-shoulder cap and a feathered body side, ends the trousers in a turned hem over small shoes, and fades the shin
-tops so the knee overlap leaves no bright band. Writes a transparent sheet
-archive/raw/figure/fig-figure2-sheet.png and archive/raw/figure/fig-figure2-sheet.json (cell boxes, recipe crops,
-pins in sheet px). The sheet goes through npm run assets like any plate.
+Reads the 1842 public domain plate in archive/raw/figure/, cuts the walker parts, lifts the paper inside each garment
+to one even paper tone with a fine paper grain (keeps the etched contour, the fold lines and the plate's own
+hatching; drops foxing and mottled stains), closes every outline with a ruled stroke, cuts the bare head seen from
+behind (a full crown of hair, nape, both ears) from under the cap band, the neckerchief from the plate's own collar
+band, shapes the sleeves with a shoulder cap and a feathered body side, ends the trousers in a turned hem over small
+shoes, fades the shin tops so the knee overlap leaves no bright band, and gives the outer edges only a pale grained
+paper margin. Writes a transparent sheet archive/raw/figure/fig-figure2-sheet.png and
+archive/raw/figure/fig-figure2-sheet.json (cell boxes, recipe crops, pins in sheet px). The sheet goes through
+npm run assets like any plate.
 """
 
 import json
@@ -23,7 +24,6 @@ from scipy import ndimage as ndi
 ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
 RAW = ROOT / "archive/raw/figure"
 P42 = np.asarray(Image.open(RAW / "fig-rijks-jongen-rug-1842.jpg").convert("L"), dtype=np.float32)
-P25 = np.asarray(Image.open(RAW / "fig-rijks-jardinier-1825-front.jpg").convert("L"), dtype=np.float32)
 
 PAPER = 228.0  # flat paper tone of every garment before the tint (the tint maps it to the garment colour)
 INK = 38.0
@@ -58,8 +58,8 @@ def paper_grain(shape, seed):
     return n * (GRAIN / max(1e-3, float(n.std())))
 
 
-def flatten(gray, mask, keep_band=7, hatch_cut=0.45, seed=0):
-    """Paper to one even tone with grain; the plate's contour, folds and hatching kept, dense hatching thinned."""
+def flatten(gray, mask, keep_band=7, hatch_cut=0.2, seed=0):
+    """Paper to one even tone with grain; the plate's contour, folds and hatching kept, only the densest thinned."""
     inside = mask > 0.5
     paper = float(np.percentile(gray[inside], 80)) if inside.any() else PAPER
     ink = np.clip((paper - gray) / max(1.0, paper - 110.0), 0, 1)
@@ -93,7 +93,7 @@ def part_from(plate, box, poly, line=3, extra=None):
 
 
 def grain_patch(h, w):
-    """Crayon grain of the 1825 hat crown, tiled: fill texture for the code-drawn dark masses."""
+    """A fine crayon grain, tiled: fill texture for the code-drawn dark masses (the shoes)."""
     rng = np.random.default_rng(1825)
     n = ndi.gaussian_filter(rng.normal(0, 1, (h, w)).astype(np.float32), 1.2)
     return 120 + n * 60 / max(1e-3, float(n.std()))
@@ -131,90 +131,65 @@ def add(pid, tone, m, pins, size, tint):
 
 
 # ---------- torso (1842): smock only, hem trimmed straight, no flare ----------
-TORSO = [(1075, 1078), (1140, 1066), (1200, 1072), (1232, 1100), (1240, 1150), (1222, 1200), (1215, 1260),
+TORSO = [(1075, 1078), (1140, 1066), (1196, 1078), (1226, 1112), (1240, 1150), (1222, 1200), (1215, 1260),
          (1222, 1330), (1236, 1375), (1238, 1404), (1170, 1410), (1085, 1412), (1000, 1408), (938, 1402),
-         (936, 1360), (955, 1300), (960, 1220), (962, 1150), (985, 1112), (1030, 1092)]
+         (936, 1360), (955, 1300), (960, 1220), (962, 1150), (988, 1122), (1030, 1098)]  # shoulders rounded, dropped
 box = (920, 1050, 1260, 1425)
 t, m = part_from(P42, box, TORSO)
 O = lambda p, b=box: (p[0] - b[0], p[1] - b[1])
 add("fg/torso", t, m, {"pin": O((1085, 1392)), "neck": O((1162, 1096)), "shoulderL": O((989, 1147)),
                        "shoulderR": O((1218, 1168)), "hipL": O((1007, 1396)), "hipR": O((1162, 1396))}, None, "smock")
 
-# ---------- head (1842): seen from behind under the cap band: hair strokes, a narrow nape, two ears, collar ----------
-# Canvas 104 x 114 (the second cut's cell, so the sprite stays 41 x 44 with the same pins). The plate window is
-# mapped onto it at 0.743; the cap above the band is replaced by the hair rows below it (the hat covers them).
-HW, HH, HK = 104, 114, 0.743
-hwin = (1066, 975, 1066 + round(HW / HK), 975 + round(HH / HK))
-g = np.asarray(Image.fromarray(P42[hwin[1]:hwin[3], hwin[0]:hwin[2]]).resize((HW, HH), Image.LANCZOS), np.float32).copy()
+# ---------- head (1842): bare, seen from behind: a full crown of hair, nape, two ears, collar ----------
+# Plate window mapped at 0.743 onto 104 x 114 (the second cut's cell), then TOP rows of hair added above it so the
+# crown is whole; the cap above the band is replaced by the hair rows below it.
+HW, HH0, HK, TOP = 104, 114, 0.743, 14
+HH = HH0 + TOP
+hwin = (1066, 975, 1066 + round(HW / HK), 975 + round(HH0 / HK))
+g = np.asarray(Image.fromarray(P42[hwin[1]:hwin[3], hwin[0]:hwin[2]]).resize((HW, HH0), Image.LANCZOS), np.float32).copy()
 band = round((1020 - hwin[1]) * HK)  # cap band bottom
 g[:band] = np.flipud(g[band:2 * band])[:band]
+g = np.vstack([g[:TOP], g])
 yy, xx = np.mgrid[0:HH, 0:HW]
 m = np.maximum.reduce([
-    ((((xx - 52) / 42.0) ** 2 + ((yy - 40) / 44.0) ** 2) <= 1).astype(np.float32),
-    poly_mask((HH, HW), [(28, 40), (80, 40), (82, 86), (26, 86)]),
-    poly_mask((HH, HW), [(6, 74), (98, 74), (104, 114), (0, 114)]),
+    ((((xx - 52) / 45.0) ** 2 + ((yy - 52) / 50.0) ** 2) <= 1).astype(np.float32),
+    poly_mask((HH, HW), [(28, 54), (80, 54), (80, 100), (28, 100)]),
+    poly_mask((HH, HW), [(10, 90), (94, 90), (100, 128), (4, 128)]),
 ])
-ear = ((((xx - 17) / 8.0) ** 2 + ((yy - 50) / 13.0) ** 2) <= 1) | ((((xx - 87) / 8.0) ** 2 + ((yy - 50) / 13.0) ** 2) <= 1)
+ear = ((((xx - 13) / 8.0) ** 2 + ((yy - 64) / 13.0) ** 2) <= 1) | ((((xx - 91) / 8.0) ** 2 + ((yy - 64) / 13.0) ** 2) <= 1)
 m = np.maximum(m, ear.astype(np.float32))
 pp = float(np.percentile(g, 85))
 ink = np.clip((pp - g) / max(1.0, pp - 100.0), 0, 1)
 ink = np.where(ink < 0.22, 0, np.clip((ink - 0.22) / 0.55, 0, 1))
-base = np.full((HH, HW), 72.0, np.float32)  # hair: dark, well under the nape and the smock, so a head reads from behind
-nape = (yy > 66) & (yy < 80) & (xx > 32) & (xx < 76)
-base[nape] = 172.0
+base = np.full((HH, HW), 92.0, np.float32)  # hair: dark, under the nape and the smock, so a head reads from behind
+crown = ((((xx - 40) / 22.0) ** 2 + ((yy - 24) / 12.0) ** 2) <= 1)
+base[crown] = 120.0  # the light catching the crown: the head keeps its round shape at walking size
+nape = (yy > 72) & (yy < 94) & (xx > 32) & (xx < 72)  # pale nape and neck, above the collar
+base[nape] = 178.0
 base[ear] = 178.0
-collar = yy >= 76
+collar = yy >= 90
 base[collar] = PAPER
-base = ndi.gaussian_filter(base, 1.2) + paper_grain((HH, HW), 1842)
+base = ndi.gaussian_filter(base, 1.6) + paper_grain((HH, HW), 1842)
 tone = base - ink * 0.9 * (base - INK)
-# a few drawn hair strokes over the plate's own, falling to the nape
+# drawn hair strokes over the plate's own, from the crown to the nape
 im = Image.new("L", (HW, HH), 0)
 d = ImageDraw.Draw(im)
-for x0_, x1_ in ((30, 34), (42, 44), (54, 55), (66, 64), (78, 74)):
-    d.line([(x0_, 34), ((x0_ + x1_) / 2, 48), (x1_, 60)], fill=170, width=1)
-d.arc([10, 38, 26, 62], 250, 110, fill=200, width=2)  # the ears' rims
-d.arc([78, 38, 94, 62], 70, 290, fill=200, width=2)
-d.line([(18, 76), (52, 72), (88, 76)], fill=200, width=2)  # collar edge
+for x0_, x1_ in ((24, 30), (34, 38), (46, 48), (58, 58), (70, 68), (82, 76)):
+    d.line([(x0_ + 6, 12), (x0_, 40), ((x0_ + x1_) / 2, 58), (x1_, 74)], fill=150, width=1)
+d.arc([6, 52, 22, 76], 250, 110, fill=200, width=2)  # the ears' rims
+d.arc([82, 52, 98, 76], 70, 290, fill=200, width=2)
 lines = ndi.gaussian_filter(np.asarray(im, np.float32) / 255.0, 0.5)
 tone = tone * (1 - lines) + INK * lines
 s_ = stroke(m, 2)
 tone = tone * (1 - s_) + INK * s_
-add("fg/head", tone, m, {"pin": (51.7, 97.3), "hatSeat": (51.7, 20)}, 44, "smock")
+add("fg/head", tone, m, {"pin": (51.7, 97.3 + TOP)}, 49, "smock")
 
-# ---------- hat (1825): crown and brim, under-brim filled dark so no head shows ----------
-HB = (1040, 800, 1370, 990)
-HAT = [(1062, 905), (1068, 885), (1100, 868), (1140, 860), (1150, 840), (1175, 826), (1205, 822), (1240, 826),
-       (1262, 838), (1272, 858), (1300, 850), (1330, 848), (1350, 858), (1348, 880), (1325, 900), (1290, 915),
-       (1270, 930), (1250, 960), (1205, 972), (1160, 960), (1140, 930), (1110, 920), (1080, 918)]
-
-
-def hat_extra(tone, m, x0, y0):
-    # The face below the brim and the spade blade go: only a thin shadow under the brim stays, the head shows
-    # below it. The removed area keeps a trace alpha (0.03) so the sprite keeps its size and pin.
-    h, w = tone.shape
-    yy, xx = np.mgrid[0:h, 0:w]
-    under = ((((xx + x0 - 1203) / 62.0) ** 2 + ((yy + y0 - 906) / 44.0) ** 2) <= 1).astype(np.float32)
-    under[yy + y0 < 890] = 0
-    shade = under * (yy + y0 < 912)
-    cut = (under > 0.5) & (yy + y0 >= 912)
-    out = tone.copy()
-    hat_only = (m > 0.5) & (under < 0.5)
-    m[...] = np.maximum(m, (under > 0.5).astype(np.float32))
-    src = P25[y0:y0 + h, x0:x0 + w]
-    lo, hi = np.percentile(src[hat_only], [5, 95])
-    out[hat_only] = np.clip(40 + (src[hat_only] - lo) * (175.0 / max(1.0, hi - lo)), 30, 215)  # crayon lines read
-    out = np.where(shade > 0.5, 70.0, out)
-    m[cut] = 0.03
-    out[cut] = 60.0
-    return out
-
-
-# hand matte of the 1825 hat (crown and brim), plate fractions; first recorded in the roam recipe
-HAT_MATTE = [[0.4425, 0.303706], [0.445833, 0.298786], [0.45026, 0.296737], [0.455, 0.295179], [0.460853, 0.293583], [0.466667, 0.291899], [0.470089, 0.289176], [0.47375, 0.286651], [0.474512, 0.282729], [0.475, 0.27878], [0.478459, 0.275916], [0.481667, 0.272876], [0.48775, 0.270964], [0.494167, 0.269925], [0.49887, 0.269305], [0.503624, 0.27006], [0.508333, 0.269597], [0.514646, 0.270333], [0.520833, 0.271564], [0.524801, 0.27364], [0.528333, 0.276156], [0.531667, 0.281076], [0.539167, 0.278452], [0.543976, 0.277629], [0.548333, 0.275828], [0.556667, 0.27714], [0.560417, 0.28206], [0.5575, 0.286979], [0.553354, 0.288974], [0.549167, 0.290915], [0.543603, 0.292057], [0.538333, 0.293867], [0.53209, 0.294875], [0.525833, 0.295835], [0.519155, 0.296017], [0.5125, 0.296491], [0.506266, 0.297021], [0.5, 0.296819], [0.49416, 0.296841], [0.488333, 0.297147], [0.483641, 0.29759], [0.479167, 0.298786], [0.473323, 0.300403], [0.4675, 0.302066], [0.461158, 0.3033], [0.455, 0.305018], [0.450396, 0.305167], [0.445833, 0.305674]]
-HAT = [(x * P25.shape[1], y * P25.shape[0]) for x, y in HAT_MATTE]
-t, m = part_from(P25, HB, HAT, line=2, extra=hat_extra)
-t = t * (m > 0.05) + 60.0 * (m <= 0.05)  # the ruled stroke never rings the cut-away under-brim
-add("fg/hat", t, m, {"pin": (1205 - HB[0], 905 - HB[1])}, 118, "hat")
+# ---------- neckerchief (1842): the plate's own folded collar band, tinted apart from the smock ----------
+SCARF = [(1045, 1100), (1060, 1078), (1100, 1066), (1150, 1064), (1186, 1072), (1198, 1090), (1184, 1112),
+         (1140, 1122), (1095, 1124), (1056, 1116)]
+sbox = (1030, 1050, 1215, 1140)
+t, m = part_from(P42, sbox, SCARF, line=3)
+add("fg/scarf", t, m, {"pin": O((1121, 1096), sbox)}, None, "scarf")  # its centre on the neck
 
 # ---------- arms (1842 right sleeve): hanging straight and bent, shoulder cap and cuff lined ----------
 SH, CU = (1218, 1160), (1372, 1385)
@@ -337,6 +312,35 @@ leg("fg/thigh-l", THL, {"pin": (1010, 1392), "knee": (1003, 1771)})
 leg("fg/thigh-r", THR, {"pin": (1160, 1392), "knee": (1166, 1772)})
 leg("fg/shin-l", SHL, {"pin": (1005, 1765)}, hem_y=1952, heel_x=1004)
 leg("fg/shin-r", SHR, {"pin": (1165, 1765)}, hem_y=1944, heel_x=1165)
+
+# ---------- paper rim on the outer edges only (the inner edges, under a neighbour in the rig, stay clean) ----------
+RIM_W, RIM_TONE = 5, 238.0
+OUTER = {"fg/torso": "lrt", "fg/head": "lrt", "fg/scarf": "lrt", "fg/arm": "rt", "fg/arm-bent": "rt", "fg/hand": "lrb",
+         "fg/thigh-l": "l", "fg/thigh-r": "r", "fg/shin-l": "l", "fg/shin-r": "r"}
+
+
+def outer_rim(tone, m, sides, seed):
+    """A pale grained paper margin RIM_W px wide on the given sides, the ruled ink line moved just inside it."""
+    inside = m > 0.5
+    rim = np.zeros_like(inside)
+    line = np.zeros_like(inside)
+    for side in sides:
+        dx, dy = {"l": (-1, 0), "r": (1, 0), "t": (0, -1), "b": (0, 1)}[side]
+        for k in range(1, RIM_W + 4):
+            out = inside & ~np.roll(inside, (-dy * k, -dx * k), axis=(0, 1))
+            if k <= RIM_W:
+                rim |= out
+            else:
+                line |= out
+    line &= ~rim
+    paper = RIM_TONE + paper_grain(tone.shape, seed)
+    soft = ndi.gaussian_filter(line.astype(np.float32), 0.6) * 0.85
+    out = np.where(rim, paper, tone)
+    return out * (1 - soft * ~rim) + INK * soft * ~rim
+
+
+for n, (pid, sides) in enumerate(OUTER.items()):
+    parts[pid]["tone"] = outer_rim(parts[pid]["tone"], parts[pid]["m"], sides, 900 + n)
 
 # ---------- layout on one transparent sheet ----------
 SCALE = 0.385  # sprite px per plate px, as the first cut
