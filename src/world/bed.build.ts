@@ -2,6 +2,7 @@ import type { AtlasManifest, AtlasTextures, BloomDef, CutoutBatch, QuadParams, S
 import { createFlower, type GardenFlower } from './flower.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
 import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
+import { builtIn, type WorldMode } from './mode.ts';
 import { keptLayers } from './scene.ts';
 import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
 
@@ -18,6 +19,8 @@ export interface BuildInput {
   scene: BedScene3;
   tier: Tier;
   maxLayers: number;
+  /** The camera the bed is built for: items marked `only` for the other one are left out. */
+  mode: WorldMode;
   /** The back wall's z: cutouts on its band never turn as standees. */
   wallZ: number;
   bed: BuildAtlas;
@@ -121,7 +124,7 @@ export function buildBed(i: BuildInput): BuildOutput {
 
   for (const layer of keptLayers(scene, i.tier, i.maxLayers)) {
     for (const it of layer.items) {
-      if (it.sprite === SIGN_BOARD) continue;
+      if (it.sprite === SIGN_BOARD || !builtIn(it, i.mode)) continue;
       const r = resolveSprite(it.sprite, bed.manifest, shared?.manifest ?? null);
       if (r === null) { skipped++; continue; }
       placedSize(r.rect, it.h, it.w, it.scale, size);

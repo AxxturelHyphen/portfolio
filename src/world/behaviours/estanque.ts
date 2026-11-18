@@ -10,13 +10,16 @@ import type { BedBehaviour, Clock, QuadParams, SpriteRect } from '../../types.ts
 import { PEACOCK, STEP_FPS } from '../../core/motion.ts';
 import type { StreamBedCtx } from '../bed.ts';
 import type { BedScene3 } from '../layout.ts';
+import { builtIn } from '../mode.ts';
 import { QUAD_FLAG, packPhase } from '../quadflags.ts';
 
 const DEG = Math.PI / 180;
 const PLUMES = 24;
-/** Pivot at the rump (ART.md 2.3 fan plumes), metres. */
-const RUMP = { x: 20.0, y: 1.63, z: -3.47 } as const;
-/** Plume length 1.7 to 2.0 m, alternating with the two warps. */
+/** Pivot at the rump (ART.md 2.3 fan plumes), from the body's foot: its height share and a step back, metres. */
+const RUMP = { up: 1.58 / 2.4, back: 0.07 } as const;
+/** The body height the plume lengths are drawn for; a smaller bird gets a smaller fan. */
+const BODY_H = 2.4;
+/** Plume length 1.7 to 2.0 m at BODY_H, alternating with the two warps. */
 const LENGTH = [1.95, 1.75, 1.85, 1.7] as const;
 /** Spread half-angle (degrees from upright) closed and open; rise angle (degrees from lying back) closed and open. */
 const SPREAD = { closed: 15, open: 100 } as const;
@@ -30,10 +33,13 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const body: SpriteRect | undefined = sprites['es/peacock'];
   const crest: SpriteRect | undefined = sprites['es/peacock-crest'];
   if (plumeA === undefined || plumeB === undefined || body === undefined) return {};
-  const items = (scene as BedScene3).layers.flatMap((l) => l.items);
+  const items = (scene as BedScene3).layers.flatMap((l) => l.items).filter((it) => builtIn(it, ctx.mode));
   const bodyAt = items.find((it) => it.sprite === 'es/peacock');
   const crestAt = items.find((it) => it.sprite === 'es/peacock-crest');
   const bodyRect: SpriteRect = body;
+  const bodyH = bodyAt?.h ?? BODY_H;
+  const rump = { x: bodyAt?.x ?? 20, y: (bodyAt?.y ?? 0) + RUMP.up * bodyH, z: (bodyAt?.z ?? -3.4) - RUMP.back };
+  const fanScale = bodyH / BODY_H;
 
   const tint = [1, 1, 1, 1];
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: plumeA.uv, sway: 0, phase: 0, lift: 0, facing: 0, tint };
@@ -53,12 +59,12 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     const reach = (rank + 0.5) / (PLUMES / 2);
     const spread = (SPREAD.closed + (SPREAD.open - SPREAD.closed) * own) * reach * side;
     const rise = (RISE.closed + (RISE.open - RISE.closed) * own) * DEG;
-    const length = (LENGTH[i % LENGTH.length] ?? 1.8) * Math.max(0, Math.sin(rise)) * (own > 0 ? 1 : 0);
+    const length = (LENGTH[i % LENGTH.length] ?? 1.8) * fanScale * Math.max(0, Math.sin(rise)) * (own > 0 ? 1 : 0);
     const aspect = rect.size[1] / Math.max(1e-6, rect.size[0]);
     const towardTip = rect.pivot[0] > 0.5 ? Math.PI : 0;
-    q.x = RUMP.x;
-    q.y = RUMP.y;
-    q.z = RUMP.z - rank * 1e-3;
+    q.x = rump.x;
+    q.y = rump.y;
+    q.z = rump.z - rank * 1e-3;
     q.rot = (90 - spread) * DEG - towardTip;
     q.w = length;
     q.h = length * aspect;

@@ -17,6 +17,7 @@ const PROCS: readonly string[] = ['pond', 'sigils', 'sundial', 'fireflies', 'ste
 const SIZES: readonly string[] = ['hero', 'large', 'medium', 'small'];
 const GROUPS: readonly string[] = ['L', 'M', 'D'];
 const FEET: readonly string[] = ['sprays', 'pot', 'clump', 'none'];
+const MODES: readonly string[] = ['rail', 'roam'];
 const EM_DASH = '\u2014';
 
 export const tierRank = (t: Tier): number => TIERS.indexOf(t);
@@ -158,6 +159,7 @@ function checkItem(e: Errors, v: unknown, ip: string): void {
   e.bool(p.react, `${ip}.react`);
   for (const k of ['flip', 'flat', 'wing']) e.bool(p[k], `${ip}.${k}`, true);
   e.tuple(p.tint, 3, `${ip}.tint`, true);
+  e.oneOf(p.only, MODES, `${ip}.only`, true);
 }
 
 function checkLayer(e: Errors, v: unknown, path: string, ids: Set<string>): number {

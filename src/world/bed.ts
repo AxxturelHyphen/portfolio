@@ -10,6 +10,8 @@ import { buildBed, type BuildAtlas, type FlowerRef, type WingRef } from './bed.b
 import type { GardenRig } from './camera.ts';
 import type { BedScene3 } from './layout.ts';
 import type { GardenMemory } from './memory.ts';
+import { worldMode, type WorldMode } from './mode.ts';
+import { RENDER_ORDER } from './order.ts';
 import { bindSlots, relabel } from './scene.ts';
 
 /** What the composition root (src/garden/index.ts) hands the world from gl/ and content/, which world may not import. */
@@ -38,6 +40,8 @@ export interface StreamBedCtx extends BedCtx {
   onDom: StreamKit['onDom'];
   createMover: StreamKit['createMover'];
   sprites: Readonly<Record<SpriteId, SpriteRect>>;
+  /** The camera the bed was built for: a behaviour reads its items' placement for this mode. */
+  mode: WorldMode;
 }
 
 /** Shared world context of every bed: the always-resident shared atlas (null until loaded) and the garden memory. */
@@ -51,9 +55,7 @@ export interface BedEnv {
 /** Load work gate owned by the residency: one grant per frame, a time slice and an upload allowance. */
 export interface Slicer { frame(): Promise<void>; upload(): Promise<void>; spent(): boolean }
 
-/** Paint order: the overview atlas under every bed, the grotto under its host so the ivy covers it. */
-/** Paint order bases; `near` is the ground dressing in front of every bed (world/dressing.ts). */
-export const RENDER_ORDER = { overview: -1, hidden: 0, bed: 100, near: 600 } as const;
+export { RENDER_ORDER };
 const ACTOR_CAPACITY = 64;
 
 const behaviours = import.meta.glob<BedModule>('./behaviours/*.ts');
@@ -187,7 +189,7 @@ export class StreamBed implements Bed {
     const shared = env.shared();
     const order = this.id === 'gruta' ? RENDER_ORDER.hidden : RENDER_ORDER.bed;
     const out = buildBed({
-      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
+      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, mode: worldMode(), wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
       slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine,
       createBatch: (from, page, capacity) => {
         const t = from === 'shared' && shared !== null ? shared.tex : tex;
@@ -217,7 +219,7 @@ export class StreamBed implements Bed {
     if (this.module !== null && this.actors !== null) {
       const ctx: StreamBedCtx = { scene: this.scene, actors: this.actors.writer, machine: env.machine, light: env.light,
         rig: env.rig, quality: env.quality, content: env.content, moth: env.kit.moth(), onDom: env.kit.onDom, createMover: env.kit.createMover,
-        sprites: m.sprites };
+        sprites: m.sprites, mode: worldMode() };
       this.behaviour = this.module.default(ctx);
     }
     return true;
