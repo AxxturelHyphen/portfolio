@@ -1,14 +1,15 @@
 import type { AtlasManifest, AtlasTextures, BloomDef, CutoutBatch, QuadParams, SlotView, SpriteId, SpriteRect, Tier } from '../types.ts';
 import { createFlower, type GardenFlower } from './flower.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
-import { QUAD_FLAG, packPhase } from './quadflags.ts';
+import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
 import { keptLayers } from './scene.ts';
 import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
 
 /**
  * Turns a bed's 3D placements into instanced cutout batches: one batch per atlas page used (bed pages and the shared
  * pages), quads sorted far to near inside a batch and batches ordered by depth, since paint order is depth order while
- * the renderer has no depth buffer. Hinge is the yaw; lean, ground-lying and decal flags ride in the phase (quadflags.ts).
+ * the renderer has no depth buffer. Hinge is the yaw; lean, ground-lying, decal and standee flags ride in the phase
+ * (quadflags.ts).
  * Value groups D and M are mixed toward the place shadow colour by tint (cook/ART.md laws).
  */
 
@@ -17,6 +18,8 @@ export interface BuildInput {
   scene: BedScene3;
   tier: Tier;
   maxLayers: number;
+  /** The back wall's z: cutouts on its band never turn as standees. */
+  wallZ: number;
   bed: BuildAtlas;
   shared: BuildAtlas | null;
   slots: readonly SlotView[];
@@ -53,11 +56,19 @@ export function hexRgb(hex: string, out: Float32Array): Float32Array {
   return out;
 }
 
-function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade: Float32Array, x = it.x, y = it.y, z = it.z, k = 1): QuadParams {
+/** Flags of a placement; `turn` is QUAD_FLAG.turn or 0 (turnFlag). */
+function flagsOf(it: Placement3, turn: number): number {
+  return (it.flat === true ? QUAD_FLAG.flat : 0) | (it.lean === 0 ? QUAD_FLAG.noLean : 0)
+    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0) | turn;
+}
+
+/** The standee rule for a bed placement: upright, leaning and not a near mask. */
+const turnOf = (it: Placement3, wallZ: number): number => turnFlag(it.z, wallZ, it.flat !== true && it.lean !== 0 && it.wing !== true);
+
+function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade: Float32Array, turn: number, x = it.x, y = it.y, z = it.z, k = 1): QuadParams {
   const m = GROUP_MIX[it.group];
   const t = it.tint ?? [1, 1, 1];
-  const flags = (it.flat === true ? QUAD_FLAG.flat : 0) | (it.lean === 0 ? QUAD_FLAG.noLean : 0)
-    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0);
+  const flags = flagsOf(it, turn);
   return {
     x, y, z,
     rot: (it.rot ?? 0) * DEG,
@@ -114,7 +125,8 @@ export function buildBed(i: BuildInput): BuildOutput {
       const r = resolveSprite(it.sprite, bed.manifest, shared?.manifest ?? null);
       if (r === null) { skipped++; continue; }
       placedSize(r.rect, it.h, it.w, it.scale, size);
-      const q = quadOf(it, r.rect, size, shade);
+      const turn = turnOf(it, i.wallZ);
+      const q = quadOf(it, r.rect, size, shade, turn);
       add(r.from, r.rect.page, it.wing === true ? { z: it.z, write: once(q), wing: q } : { z: it.z, write: once(q) }, 1);
       if (it.foot !== 'sprays') continue;
       for (let f = 1; f <= FOOT_SPRAYS; f++) {
@@ -122,7 +134,7 @@ export function buildBed(i: BuildInput): BuildOutput {
         if (foot === null) continue;
         placedSize(foot.rect, undefined, undefined, 1, size);
         const dx = (f - 2) * FOOT_SPREAD * size[1];
-        add(foot.from, foot.rect.page, { z: it.z + 0.01 * f, write: once(quadOf(it, foot.rect, size, shade, it.x + dx, 0, it.z + 0.01 * f, 1)) }, 1);
+        add(foot.from, foot.rect.page, { z: it.z + 0.01 * f, write: once(quadOf(it, foot.rect, size, shade, turn, it.x + dx, 0, it.z + 0.01 * f, 1)) }, 1);
       }
     }
   }
@@ -134,7 +146,8 @@ export function buildBed(i: BuildInput): BuildOutput {
     const frame0 = bloom?.frames?.[0] ?? bloom?.petals?.[0]?.sprite;
     const rect = frame0 === undefined ? undefined : bed.manifest.sprites[frame0];
     if (bloom === undefined || rect === undefined) { skipped++; continue; }
-    const flower = createFlower({ slot: view, bloom, sprites: bed.manifest.sprites, scale: slot.scale, env: i.reduced, hinge: slot.hinge * DEG });
+    const turn = turnFlag(view.world[2], i.wallZ, true);
+    const flower = createFlower({ slot: view, bloom, sprites: bed.manifest.sprites, scale: slot.scale, env: i.reduced, hinge: slot.hinge * DEG, turn });
     flower.setVisited(view.project !== undefined && i.visited(view.project.id));
     add('bed', rect.page, { z: view.world[2], write: (b, at) => flower.write(b.writer, at), flower }, flower.quads);
   }

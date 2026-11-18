@@ -7,6 +7,7 @@
  */
 import type { Clock, Flower, InstanceWriter, Project, QuadParams, SlotView, SpriteRect, BloomDef, SpriteId } from '../types.ts';
 import { BLOOM_POSES, EASE_OUT, STEP_FPS, UI, bloomAt, clamp01 } from '../core/motion.ts';
+import { packPhase } from './quadflags.ts';
 
 const LAST_POSE = BLOOM_POSES.length - 1;
 const CLOSE_POSES_PER_TICK = 2;
@@ -26,6 +27,8 @@ export interface FlowerOptions {
   env: { readonly state: { readonly reduced: boolean } };
   /** Slot yaw in radians, plus turns the right edge toward the camera; focus turns it to face the camera. */
   hinge: number;
+  /** QUAD_FLAG.turn when the flower stands as a standee (quadflags.ts turnFlag), else 0 or left out. */
+  turn?: number;
 }
 
 export interface GardenFlower extends Flower {
@@ -59,7 +62,8 @@ export function createFlower(o: FlowerOptions): GardenFlower {
   const petals = bloom.petals ?? [];
   const frames = bloom.frames ?? [];
   const quads = bloom.mode === 'petals' ? petals.length : 1;
-  const phase = (slot.world[0] * 1.37) % (2 * Math.PI);
+  const swayPhase = (slot.world[0] * 1.37) % (2 * Math.PI);
+  const phase = o.turn === undefined || o.turn === 0 ? swayPhase : packPhase(swayPhase, o.turn);
   let focused = false;
   let visited = false;
   let pose = rest;

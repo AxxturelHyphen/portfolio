@@ -1,13 +1,14 @@
 import type { AtlasManifest, CutoutBatch, QuadParams, SpriteRect } from '../types.ts';
 import { clumpSprite } from './clumps.ts';
 import { DRESS_KIND, DRESS_STRIDE, type GroundBuild } from './ground.ts';
-import { QUAD_FLAG, packPhase } from './quadflags.ts';
+import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
 
 /**
  * The near-ground dressing (cook/LOOK_NOTES.md 4): grass clumps, a low leafy plant, its leaves lying flat as litter
  * and fallen petals, all from the shared atlas, in one instanced batch painted over the beds (pieces are sorted far
  * to near, the material has no depth). Standing pieces cast their contact shadow; flat ones lie on the ground.
  * Nearer pieces are mixed toward the night shade so the foreground frames the picture instead of competing with it.
+ * Standing pieces clear of the wall foot turn as standees under free roam.
  */
 
 const CLUMP_CARDS = 2;
@@ -24,7 +25,7 @@ function spriteOf(m: AtlasManifest, kind: number, i: number): string | null {
   return 'sh/ivy';
 }
 
-export function writeDressing(g: GroundBuild, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
+export function writeDressing(g: GroundBuild, wallZ: number, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
   const probe = m.sprites['sh/ivy'];
   if (g.dressCount === 0 || probe === undefined) return null;
   const page = probe.page;
@@ -45,7 +46,8 @@ export function writeDressing(g: GroundBuild, m: AtlasManifest, createBatch: (pa
     const h = g.dress[o + 4] ?? 0.3;
     const side = i % 2 === 0 ? 1 : -1;
     /** The nearest pieces are true dark framing: their night tint is applied uncapped. */
-    const flags = (flat ? QUAD_FLAG.flat | QUAD_FLAG.noShadow : 0) | (shade < NEAR_SHADE ? QUAD_FLAG.silhouette : 0);
+    const flags = (flat ? QUAD_FLAG.flat | QUAD_FLAG.noShadow : 0) | (shade < NEAR_SHADE ? QUAD_FLAG.silhouette : 0)
+      | turnFlag(g.dress[o + 1] ?? 0, wallZ, !flat);
     for (let k = 0; k < cards; k++) {
       q.x = (g.dress[o] ?? 0) + k * 0.05 * side;
       q.y = 0;

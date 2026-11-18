@@ -44,6 +44,8 @@ export interface StreamBedCtx extends BedCtx {
 export interface BedEnv {
   gfx: Gfx; machine: Machine; rig: GardenRig; light: LightRig; quality: Quality; content: Content; kit: StreamKit;
   shared(): BuildAtlas | null; memory: GardenMemory;
+  /** The back wall's z (garden.json ground.wall.z). */
+  wallZ: number;
 }
 
 /** Load work gate owned by the residency: one grant per frame, a time slice and an upload allowance. */
@@ -185,7 +187,7 @@ export class StreamBed implements Bed {
     const shared = env.shared();
     const order = this.id === 'gruta' ? RENDER_ORDER.hidden : RENDER_ORDER.bed;
     const out = buildBed({
-      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, bed: { manifest: m, tex }, shared,
+      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
       slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine,
       createBatch: (from, page, capacity) => {
         const t = from === 'shared' && shared !== null ? shared.tex : tex;
