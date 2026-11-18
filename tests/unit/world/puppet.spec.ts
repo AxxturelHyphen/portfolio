@@ -1,9 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type { AtlasManifest, QuadParams } from '../../../src/types.ts';
-import {
-  BACK_POSES, createGait, createPuppet, FIGURE, PINS, poseOf, SIDE_POSES, SLOT, stepGait, type FigureRects, type Gait, type Pose,
-} from '../../../src/world/puppet.ts';
+import { createGait, createPuppet, FIGURE, PINS, poseOf, SLOT, stepGait, type FigureRects, type Gait } from '../../../src/world/puppet.ts';
+import { BACK_POSES, IDLE, REST, SIDE_POSES, type Pose } from '../../../src/world/puppet.poses.ts';
 
 // The visitor's paper figure (cook/FIGURE_BUILD.md 4): pins, ground contact, the stepped gait and its views.
 
@@ -39,7 +38,7 @@ function gaitOf(view: Gait['view'], pose: number, idle: boolean, edge = false, d
 }
 
 const STATES: Gait[] = [];
-for (const view of ['back', 'side', 'front'] as const) {
+for (const view of ['back', 'side'] as const) {
   for (const dir of [1, -1]) {
     STATES.push(gaitOf(view, 0, true, false, dir), gaitOf(view, 0, true, true, dir));
     for (let p = 0; p < 4; p++) STATES.push(gaitOf(view, p, false, false, dir));
@@ -63,8 +62,10 @@ test('every part hangs from its parent pin within a pixel, in every pose, view, 
       expectAt(hat, seat[0] + (side ? m * (FIGURE.hatFwdM - FIGURE.headFwdM) * k : 0), seat[1]);
       const shoulderFree = at(torso, side ? PINS.sideShoulder : PINS.shoulderL);
       const shoulderCrook = at(torso, side ? PINS.sideShoulder : PINS.shoulderR);
-      expectAt(freeArm, ...shoulderFree);
-      expectAt(crookArm, ...shoulderCrook);
+      /** In the back view each sleeve hangs out from its shoulder pin by a share of its drawn width. */
+      const out = (q: QuadParams): number => (side ? 0 : FIGURE.armOut * q.w);
+      expectAt(freeArm, shoulderFree[0] - m * out(freeArm), shoulderFree[1]);
+      expectAt(crookArm, shoulderCrook[0] + m * out(crookArm), shoulderCrook[1]);
       expectAt(freeHand, ...at(freeArm, PINS.cuff));
       expectAt(crookHand, ...at(crookArm, PINS.cuffBent));
       if (!side) {
@@ -82,14 +83,13 @@ test('every part hangs from its parent pin within a pixel, in every pose, view, 
       const hB = rects['fg/shin-r'].uv[3] - rects['fg/shin-r'].uv[1];
       const soles = [soleOf(shinA, hA), soleOf(shinB, hB)];
       const p = poseOf(g);
-      const feet = g.view === 'front' ? -1 : 1;
-      const want = [feet * p.footA, feet * p.footB];
+      const want = [p.footA, p.footB];
       const planted = Math.min(...want);
       for (let i = 0; i < 2; i++) {
         if (want[i] === planted) expect(Math.abs(soles[i]!), `${g.view} ${g.pose} planted sole on the ground line`).toBeLessThan(PX);
         else expect(soles[i]!).toBeGreaterThan(PX);
       }
-      expect(Math.max(...soles)).toBeLessThan(0.1 * k);
+      expect(Math.max(...soles)).toBeLessThan(0.16 * k);
       expect(at(hat, [0.5, 1])[1]).toBeLessThan((FIGURE.topM + 0.05) * k);
       expect(at(hat, [0.5, 1])[1]).toBeGreaterThan((FIGURE.topM - 0.12) * k);
     }
@@ -129,7 +129,8 @@ test('the carrying arm turns at most a degree between poses, so the lantern bobs
       const now: [number, number, number] = [puppet.grip[0]!, puppet.grip[1]!, puppet.quads[view === 'back' ? 6 : 10]!.rot];
       if (prev !== null) {
         expect(Math.abs(now[2] - prev[2])).toBeLessThanOrEqual(1 * DEG + 1e-9);
-        expect(Math.hypot(now[0] - prev[0], now[1] - prev[1])).toBeLessThan(0.035);
+        /** The grip follows the body over the planted foot and its rise and fall: a step, not a jump. */
+        expect(Math.hypot(now[0] - prev[0], now[1] - prev[1])).toBeLessThan(0.04);
       }
       prev = now;
     }
@@ -196,18 +197,64 @@ test('the view turns to the side past 62.5 degrees and back under 47.5, on a tic
   expect([g.view, g.dir]).toEqual(['side', -1]);
 });
 
-test('walking south toward the lens turns the figure to the front, never a profile or a backward walk', () => {
+test('walking south toward the lens keeps the profile of the last sideways walk, never the back', () => {
   const g = createGait();
   walk(g, 0, 1, -1.5, 0);
   expect([g.view, g.dir]).toEqual(['side', -1]);
   walk(g, 1, 1.5, 0, 1.5);
-  expect(g.view).toBe('front');
-  walk(g, 2.5, 1, 0.6, 1.5);
-  expect(g.view).toBe('front');
+  expect([g.view, g.dir, g.idle]).toEqual(['side', -1, false]);
+  walk(g, 2.5, 1, 0.3, 1.5);
+  expect([g.view, g.dir]).toEqual(['side', -1]);
   walk(g, 3.5, 2, 0, 0);
-  expect([g.view, g.idle]).toEqual(['front', true]);
-  walk(g, 5.5, 1, 1.5, 0.5);
+  expect([g.view, g.idle]).toEqual(['back', true]);
+  walk(g, 5.5, 1, 0, 1.5);
+  expect(g.view).toBe('side');
+  walk(g, 6.5, 1, 1.5, 0.5);
   expect([g.view, g.dir]).toEqual(['side', 1]);
+  const fresh = createGait();
+  walk(fresh, 0, 1, 0, 1.5);
+  expect(fresh.view).toBe('side');
+});
+
+test('the free arm swings opposite the legs within a few degrees of hanging, never held out from the body', () => {
+  for (const [poses, rest] of [[BACK_POSES, REST.freeArm], [SIDE_POSES, REST.sideFree]] as const) {
+    for (const p of [...poses, IDLE]) expect(Math.abs(rest - p.free)).toBeLessThanOrEqual(12);
+  }
+  expect(Math.abs(REST.freeArm)).toBeLessThanOrEqual(4);
+  for (const p of BACK_POSES) expect(Math.abs(p.free)).toBeLessThanOrEqual(4);
+  const backSwing = BACK_POSES.map((p) => p.free);
+  expect(Math.sign(backSwing[0]!)).toBe(-Math.sign(backSwing[2]!));
+  expect(BACK_POSES[0]!.freeH).not.toBe(BACK_POSES[2]!.freeH);
+  const puppet = createPuppet(rects);
+  for (const view of ['back', 'side'] as const) {
+    for (let i = 0; i < 4; i++) {
+      puppet.place(gaitOf(view, i, false), 0, 0, 1, 1);
+      const arm = puppet.quads[view === 'back' ? 5 : 1]!;
+      const fromHanging = Math.abs(arm.rot) / DEG;
+      expect(fromHanging, `${view} ${i} free arm`).toBeLessThanOrEqual(12);
+    }
+  }
+});
+
+test('the back-view stride lifts the stepping foot clearly, alternates feet and rises and falls on the steps', () => {
+  const lift = BACK_POSES.map((p) => Math.max(p.footA, p.footB));
+  expect(Math.max(...lift)).toBeGreaterThanOrEqual(0.12);
+  expect(Math.min(...lift)).toBeGreaterThan(0.03);
+  expect(BACK_POSES[1]!.footA).toBeGreaterThan(0.1);
+  expect(BACK_POSES[3]!.footB).toBeGreaterThan(0.1);
+  expect(BACK_POSES[1]!.footB).toBe(0);
+  expect(BACK_POSES[3]!.footA).toBe(0);
+  const drops = BACK_POSES.map((p) => p.drop);
+  expect(Math.max(...drops) - Math.min(...drops)).toBeGreaterThanOrEqual(0.02);
+  const puppet = createPuppet(rects);
+  const lifted: number[] = [];
+  for (let i = 0; i < 4; i++) {
+    puppet.place(gaitOf('back', i, false), 0, 0, 1, 1);
+    const h = (id: 'fg/shin-l' | 'fg/shin-r'): number => rects[id].uv[3] - rects[id].uv[1];
+    lifted.push(Math.max(soleOf(puppet.quads[2]!, h('fg/shin-l')), soleOf(puppet.quads[4]!, h('fg/shin-r'))));
+  }
+  expect(lifted[1]!).toBeGreaterThan(0.1);
+  expect(lifted[3]!).toBeGreaterThan(0.1);
 });
 
 test('standing: the idle pose, the back view at once after a profile, and the idle shift held for seconds', () => {
