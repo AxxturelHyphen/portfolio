@@ -3,8 +3,9 @@ import type { Page } from '@playwright/test';
 import { checkBudget, recordFrames } from '../helpers/frames.ts';
 import { expect, isLow, PROJECTS, test, type Jardin } from '../helpers/jardin.ts';
 
-// Free roam behind ?roam=1 (cook/ROAM_PLAN.md P1): keys walk, the pond and the walkable rectangle stop the visitor,
-// a click or tap on the ground walks there, a flower still opens, and walking through two beds keeps the frame budget.
+// Free roam entered with ?roam=1, which still works now that roam is the default (cook/ROAM_PLAN.md P1): keys walk,
+// the pond and the walkable rectangle stop the visitor, a click or tap on the ground walks there, a flower still opens,
+// and walking through two beds keeps the frame budget.
 
 const garden = JSON.parse(readFileSync('content/garden.json', 'utf8')) as { ground: { pond: { x: number; z: number; rx: number; rz: number } } };
 const pond = garden.ground.pond;

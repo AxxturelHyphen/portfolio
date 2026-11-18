@@ -1,6 +1,7 @@
 import { expect, projectsInDifferentBeds, test } from '../helpers/jardin.ts';
 
-// Flow 3: back and forward through projects in different beds: URL, panel and camera stay in sync.
+// Flow 3: back and forward through projects in different beds: URL, panel and camera stay in sync. In free roam (the
+// default) each back or forward to another bed is an assisted walk along the path; the waits cover it.
 
 test('flow 3 herbario: back and forward across beds keep URL and panel in sync', async ({ page, jardin }) => {
   const [a, b] = projectsInDifferentBeds();

@@ -25,6 +25,8 @@ export interface Visit {
   lang?: 'en' | 'es';
   /** Extra query params, e.g. { shot: 'S03', t: '12.5' }. */
   query?: Record<string, string>;
+  /** The rail fallback (?roam=0) instead of free roam, the default. */
+  rail?: boolean;
 }
 
 interface Proj { id: string; bed: string; title: string }
@@ -74,6 +76,7 @@ export class Jardin {
     if (v.lang) q.set('lang', v.lang);
     q.set('bench', '1');
     if (this.tier) q.set('tier', this.tier);
+    if (v.rail === true) q.set('roam', '0');
     for (const [k, val] of Object.entries(v.query ?? {})) q.set(k, val);
     return `./?${q.toString()}${v.hash ?? '#/'}`;
   }

@@ -1,6 +1,7 @@
 import { expect, PROJECTS, test } from '../helpers/jardin.ts';
 
-// Flow 8: resize and rotate during a transition: no broken layout, no stuck state.
+// Flow 8: resize and rotate during a transition: no broken layout, no stuck state. In the garden (free roam, the
+// default) the travel is an assisted walk, resized while the visitor walks.
 
 const SIZES = [
   { width: 390, height: 844 },
@@ -60,7 +61,7 @@ test('flow 8 herbario: resize while the panel closes leaves nothing stuck', asyn
   if (home) await page.setViewportSize(home);
 });
 
-test('flow 8 garden: resize and rotate during travel and during the iris', async ({ page, jardin }) => {
+test('flow 8 garden: resize and rotate during an assisted walk and during the iris', async ({ page, jardin }) => {
   const p = PROJECTS[0];
   if (p === undefined) return;
   await jardin.visit({ mode: 'garden' });

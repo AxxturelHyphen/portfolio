@@ -1,15 +1,15 @@
 import type { Page } from '@playwright/test';
 import { expect, PROJECTS, type Jardin } from './jardin.ts';
 
-// Shared steps of the free roam specs (?roam=1): enter on a bed, read the visitor, find open ground on screen, wait for
-// proximity focus on a frame-exact poll.
+// Shared steps of the free roam specs (free roam is the default): enter on a bed, read the visitor, find open ground on
+// screen, wait for proximity focus on a frame-exact poll.
 
 export type At = { x: number; z: number };
 
 export const roamAt = (j: Jardin): Promise<At> => j.withApi((api) => api.roam() as At);
 
-export async function enterRoam(j: Jardin, hash = '#/'): Promise<void> {
-  await j.visit({ mode: 'garden', hash, query: { roam: '1' } });
+export async function enterRoam(j: Jardin, hash = '#/', query: Record<string, string> = {}): Promise<void> {
+  await j.visit({ mode: 'garden', hash, query });
   await j.withApi((api) => api.ready);
   await expect.poll(() => j.withApi((api) => api.state().phase), { timeout: 15000 }).toBe('bed');
   await j.settled();

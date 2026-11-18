@@ -31,7 +31,7 @@ test('roam keyboard: walk up to a rose, its tag shows, Enter opens, Esc closes w
   await expect.poll(() => poseDrift(jardin, before.pose as unknown as Record<string, number>), { timeout: 4000, message: 'back on the follow pose' }).toBeLessThan(0.0005);
 });
 
-test('roam keyboard: Esc on a flower in reach blurs it until the visitor walks on; Tab still reaches every slot', async ({ page, jardin }) => {
+test('roam keyboard: Esc on a flower in reach blurs it until the visitor walks on; Tab reaches and focuses every slot', async ({ page, jardin }) => {
   await enterRoam(jardin, '#/b/rosaleda');
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.keyboard.down('ArrowLeft');
@@ -47,13 +47,14 @@ test('roam keyboard: Esc on a flower in reach blurs it until the visitor walks o
   const order: string[] = [];
   for (let i = 0; i < 40 && !order.includes('sign'); i++) {
     await page.keyboard.press('Tab');
-    const at = await page.evaluate(() => {
+    const id = await page.evaluate(() => {
       const n = document.activeElement as HTMLElement | null;
-      const slot = n?.dataset.slot;
-      return slot !== undefined ? { id: slot, focused: window.__jardin?.state().slot ?? null } : { id: n?.closest('.px-sign') ? 'sign' : 'other', focused: null };
+      return n?.dataset.slot ?? (n?.closest('.px-sign') ? 'sign' : 'other');
     });
-    if (at.id !== 'other') order.push(at.id);
-    if (at.id !== 'sign' && at.id !== 'other') expect(at.focused, 'a slot reached by Tab is focused').toBe(at.id);
+    if (id !== 'other') order.push(id);
+    if (id === 'sign' || id === 'other') continue;
+    // In reach and on screen it is focused at once; otherwise the visitor walks to it and it is focused on arrival.
+    await expect.poll(() => jardin.withApi((api) => api.state().slot), { timeout: 10000, message: `${id} reached by Tab is focused` }).toBe(id);
   }
-  expect(order, 'Tab walks every slot of the bed in slot order, then the signposts').toEqual([...slots, 'sign']);
+  expect(order, 'Tab reaches every slot of the bed in slot order, then the signposts').toEqual([...slots, 'sign']);
 });

@@ -2,7 +2,8 @@ import { checkBudget, recordFrames } from '../helpers/frames.ts';
 import { expect, isLow, test } from '../helpers/jardin.ts';
 
 // Flow 4: travel through every bed and back to the overview: textures stream, memory returns to baseline after
-// leaving, no new shader program after ready (ARCH section 6, risk 1). Garden only.
+// leaving, no new shader program after ready (ARCH section 6, risk 1). Garden only. In free roam (the default) each
+// travel is an assisted walk with the same budgets; the rail's own legs run in 19-rail-fallback.
 
 const BEDS = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'] as const;
 

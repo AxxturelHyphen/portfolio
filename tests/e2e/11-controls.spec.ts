@@ -119,9 +119,28 @@ test('controls panel open in the Herbario: the same three controls work inside t
   await jardin.expectOpen(first);
 });
 
-test('travel: a jump of more than one bed settles with the target active and the canvas full', async ({ page, jardin }: { page: Page; jardin: Jardin }) => {
+test('travel: a jump of more than one bed walks out, runs the film strip, settles with the target active and the canvas full', async ({ page, jardin }: { page: Page; jardin: Jardin }) => {
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/b/puerta', true);
+  const walk = await jardin.withApi(async (api) => {
+    const frame = (): Promise<number> => new Promise((r) => requestAnimationFrame(r));
+    api.send({ type: 'GOTO', place: { k: 'bed', bed: 'gruta' } });
+    let strip = 0;
+    let jumps = 0;
+    let last = api.roam()?.x ?? 0;
+    for (let f = 0; f < 900; f++) {
+      await frame();
+      const x = api.roam()?.x ?? 0;
+      if (api.strip() > 0.5) strip++;
+      if (Math.abs(x - last) > 3) jumps++;
+      last = x;
+      const s = api.state();
+      if (s.phase === 'bed' && s.bed === 'gruta') break;
+    }
+    return { strip, jumps };
+  });
+  expect(walk.strip, 'frames with the film strip running').toBeGreaterThan(5);
+  expect(walk.jumps, 'one cut across the strip').toBe(1);
   await jardin.goto('#/b/gruta');
   expect((await jardin.withApi((api) => api.residency())).gruta).toBe('active');
   await bleed(page, 'after a jump');
