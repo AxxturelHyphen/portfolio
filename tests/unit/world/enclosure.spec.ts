@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import type { BedId } from '../../../src/types.ts';
 import { expect, test } from '@playwright/test';
-import { PerspectiveCamera, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import { ROAM } from '../../../src/core/motion.ts';
 import { enclosureRuns } from '../../../src/world/enclosure.ts';
 import { followPose, framingFor, moonElevation, SIDE_SKY_DEG, viewLimitsOf, WALL_SHARE, wallShare, type Framing } from '../../../src/world/follow.ts';
@@ -14,10 +14,10 @@ import salida from '../../../content/beds/salida.json' with { type: 'json' };
 import type { BedScene3 } from '../../../src/world/layout.ts';
 import { builtIn } from '../../../src/world/mode.ts';
 import { occluderBlocks } from '../../../src/world/occluders.ts';
-import type { RigPose } from '../../../src/world/rail.ts';
 import { createVisitor, HOLD, pathZ } from '../../../src/world/roam.ts';
 import shared from '../../../public/atlas/shared.json' with { type: 'json' };
 import { traceLayout } from './rig.trace.ts';
+import { blankPose, cameraOf, outsideSeen } from './view.ts';
 
 const ground = traceLayout.ground;
 const enc = ground.enclosure;
@@ -26,46 +26,6 @@ const r = ROAM.radius;
 const ASPECTS = [[1920, 1080], [2560, 1080], [800, 1200], [390, 844]] as const;
 const DEG = Math.PI / 180;
 const SCENES = { puerta, rosaleda, estanque, semillero, gruta, salida } as unknown as Record<BedId, BedScene3>;
-/** The clamp samples the frame's side edge: its sky angle holds to this much (degrees). */
-const SAMPLED_DEG = 0.1;
-const blankPose = (): RigPose => ({ x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
-
-function cameraOf(p: RigPose, aspect: number): PerspectiveCamera {
-  const cam = new PerspectiveCamera(p.fov, aspect, 0.05, 400);
-  cam.rotation.order = 'YXZ';
-  cam.position.set(p.x, p.y, p.z);
-  cam.rotation.set(p.pitch, -p.yaw, 0);
-  cam.updateMatrixWorld();
-  cam.updateProjectionMatrix();
-  return cam;
-}
-
-/**
- * What one view ray shows inside the closed garden model: null when it meets the garden's ground, a wall, the kerb or
- * sky (over the back wall, or over an end wall no steeper than SIDE_SKY_DEG below the horizon); otherwise what of the
- * outside it shows. The ground plane under free roam ends just past the walls, so a ray over a wall meets sky.
- */
-function outsideSeen(o: Vector3, d: Vector3): string | null {
-  const [x0, x1] = enc.x;
-  const depression = Math.atan2(-d.y, Math.hypot(d.x, d.z)) / DEG;
-  let t0 = 0;
-  if (o.z > enc.front && d.z < 0) {
-    t0 = (enc.front - o.z) / d.z;
-    const y = o.y + d.y * t0;
-    const x = o.x + d.x * t0;
-    if (y <= 0) return 'ground south of the kerb';
-    if (x < x0 - 1e-6 || x > x1 + 1e-6) return y < enc.endH || depression > SIDE_SKY_DEG + SAMPLED_DEG ? 'past a front corner' : null;
-    if (y < enc.kerbH) return null;
-  }
-  const toGround = d.y < 0 ? -o.y / d.y : Infinity;
-  const toBack = d.z < 0 ? (ground.wall.z - o.z) / d.z : Infinity;
-  const toSide = d.x < 0 ? (x0 - o.x) / d.x : d.x > 0 ? (x1 - o.x) / d.x : Infinity;
-  const t = Math.min(toGround, toBack, toSide);
-  if (t < t0 || t !== toSide) return null;
-  const y = o.y + d.y * t;
-  return y < enc.endH || depression <= SIDE_SKY_DEG + SAMPLED_DEG ? null : `sky over an end wall ${depression.toFixed(1)} deg down`;
-}
-
 test('the follow camera never shows beyond the closed garden, any visitor position, four aspects', () => {
   const seen: string[] = [];
   for (const [w, h] of ASPECTS) {
@@ -78,7 +38,7 @@ test('the follow camera never shows beyond the closed garden, any visitor positi
         for (let i = 0; i <= 32; i++) {
           for (let j = 0; j <= 18; j++) {
             const d = new Vector3(-1 + i / 16, -1 + j / 9, 0.5).unproject(cam).sub(cam.position);
-            const what = outsideSeen(cam.position, d);
+            const what = outsideSeen(cam.position, d, SIDE_SKY_DEG);
             if (what !== null) seen.push(`${w}x${h} visitor ${x.toFixed(2)},${z.toFixed(2)}: ${what}`);
           }
         }
