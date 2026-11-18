@@ -21,8 +21,12 @@ const W = 360;
 const H = 104;
 const MOTH = 'M7 3.6C5.6 1 2 0.6 1 2.2C0.2 3.8 2.4 5.6 5.6 5.4C3 6.2 2.2 8.4 3.6 9.2C5 9.8 6.4 7.8 7 5.8C7.6 7.8 9 9.8 10.4 9.2C11.8 8.4 11 6.2 8.4 5.4C11.6 5.6 13.8 3.8 13 2.2C12 0.6 8.4 1 7 3.6Z';
 
-/** The engraved strip: wall with hatching along the back, the winding path, then one small motif per place. */
-const WALL = `M4 10H${W - 4}M4 18H${W - 4}${Array.from({ length: 44 }, (_, i) => `M${8 + i * 8} 18L${14 + i * 8} 10`).join('')}`;
+/**
+ * The engraved strip: the closed garden (hatched wall along the back, the two end walls, the low kerb along the front),
+ * the winding path, then one small motif per place.
+ */
+const WALL = `M4 10H${W - 4}M4 18H${W - 4}${Array.from({ length: 44 }, (_, i) => `M${8 + i * 8} 18L${14 + i * 8} 10`).join('')}`
+  + `M4 10V98M10 18V95M${W - 4} 10V98M${W - 10} 18V95M4 98H${W - 4}M10 95H${W - 10}`;
 const PATH = `M4 72C40 60 60 84 100 74S160 58 200 72S270 88 300 70S340 62 ${W - 4} 70`;
 const MOTIFS: Partial<Record<BedId, string>> = {
   puerta: 'M26 28V56M46 28V56M23 28H29M43 28H49M29 40C32 34 40 34 43 40',
