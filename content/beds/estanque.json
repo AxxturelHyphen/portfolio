@@ -370,7 +370,12 @@
           "group": "D",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "block": [
+            0.4,
+            0.41,
+            0.6
+          ]
         },
         {
           "sprite": "es/armillary",
@@ -479,8 +484,8 @@
       ],
       "label": "left",
       "stand": [
-        22.2,
-        0.95
+        23.2,
+        0.75
       ]
     },
     {
@@ -497,7 +502,11 @@
         0.6,
         0.4
       ],
-      "label": "left"
+      "label": "left",
+      "stand": [
+        24.95,
+        -1.5
+      ]
     },
     {
       "id": "sundial",

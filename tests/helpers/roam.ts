@@ -1,10 +1,34 @@
 import type { Page } from '@playwright/test';
+import type { BedId } from '../../src/types.ts';
+import type { BedScene3 } from '../../src/world/layout.ts';
+import { propBlocks } from '../../src/world/occluders.ts';
+import puerta from '../../content/beds/puerta.json' with { type: 'json' };
+import rosaleda from '../../content/beds/rosaleda.json' with { type: 'json' };
+import estanque from '../../content/beds/estanque.json' with { type: 'json' };
+import semillero from '../../content/beds/semillero.json' with { type: 'json' };
+import gruta from '../../content/beds/gruta.json' with { type: 'json' };
+import salida from '../../content/beds/salida.json' with { type: 'json' };
 import { expect, PROJECTS, type Jardin } from './jardin.ts';
 
 // Shared steps of the free roam specs (free roam is the default): enter on a bed, read the visitor, find open ground on
 // screen, wait for proximity focus on a frame-exact poll.
 
 export type At = { x: number; z: number };
+
+const PROPS = propBlocks({ puerta, rosaleda, estanque, semillero, gruta, salida } as unknown as Record<BedId, BedScene3>);
+const BODY_M = 0.3;
+
+/** True when the straight walk from a to b keeps the visitor's body clear of every solid prop (occluders.ts). */
+export function clearOfProps(a: At, b: At): boolean {
+  for (let k = 0; k <= 40; k++) {
+    const x = a.x + ((b.x - a.x) * k) / 40;
+    const z = a.z + ((b.z - a.z) * k) / 40;
+    for (let i = 0; i + 3 < PROPS.length; i += 4) {
+      if (x > PROPS[i]! - BODY_M && x < PROPS[i + 2]! + BODY_M && z > PROPS[i + 1]! - BODY_M && z < PROPS[i + 3]! + BODY_M) return false;
+    }
+  }
+  return true;
+}
 
 export const roamAt = (j: Jardin): Promise<At> => j.withApi((api) => api.roam() as At);
 
@@ -77,14 +101,14 @@ export async function groundUnder(page: Page, j: Jardin, sx: number, sy: number)
   return { x: pose.x + k * nx * t * (vp.width / vp.height), z: pose.z + k * wz };
 }
 
-/** A screen point over bare canvas (no proxy, sign or plan on top), from a few candidates low in the frame. */
-export async function openGround(page: Page): Promise<[number, number]> {
+/** A screen point over bare canvas (no proxy, sign or plan on top) that passes `ok`, from a few candidates low in the frame. */
+export async function openGround(page: Page, ok: (x: number, y: number) => Promise<boolean> = async () => true): Promise<[number, number]> {
   const vp = page.viewportSize() ?? { width: 1, height: 1 };
   for (const [fx, fy] of [[0.7, 0.62], [0.3, 0.62], [0.7, 0.8], [0.3, 0.8], [0.5, 0.85]] as const) {
     const x = Math.round(fx * vp.width);
     const y = Math.round(fy * vp.height);
     const onCanvas = await page.evaluate(([px, py]) => document.elementFromPoint(px as number, py as number)?.tagName === 'CANVAS', [x, y]);
-    if (onCanvas) return [x, y];
+    if (onCanvas && await ok(x, y)) return [x, y];
   }
   throw new Error('no open patch of ground on screen');
 }

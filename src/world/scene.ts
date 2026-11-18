@@ -165,6 +165,7 @@ function checkItem(e: Errors, v: unknown, ip: string): void {
   e.bool(p.react, `${ip}.react`);
   for (const k of ['flip', 'flat', 'wing']) e.bool(p[k], `${ip}.${k}`, true);
   e.tuple(p.tint, 3, `${ip}.tint`, true);
+  e.tuple(p.block, 3, `${ip}.block`, true);
   e.oneOf(p.only, MODES, `${ip}.only`, true);
 }
 

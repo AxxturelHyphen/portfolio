@@ -45,3 +45,22 @@ export function occluderBlocks(e: EnclosureData, scenes: Readonly<Record<BedId, 
   }
   return new Float32Array(out);
 }
+
+/**
+ * Solid props (benches, cans, pots, lanterns, a barrow) are boxes the visitor walks round, so the figure never stands
+ * inside one and the depth test always finds the prop wholly in front of the figure or wholly behind it. Each is the
+ * item's `block` (reach left and right of its foot, depth) from the placements free roam builds.
+ */
+export function propBlocks(scenes: Readonly<Record<BedId, BedScene3>>): Float32Array {
+  const out: number[] = [];
+  for (const scene of Object.values(scenes)) {
+    for (const l of scene.layers) {
+      for (const it of l.items) {
+        if (it.block === undefined || !builtIn(it, 'roam')) continue;
+        const [left, right, depth] = it.block;
+        out.push(it.x - left, it.z - depth / 2, it.x + right, it.z + depth / 2);
+      }
+    }
+  }
+  return new Float32Array(out);
+}

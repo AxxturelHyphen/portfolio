@@ -281,7 +281,12 @@
           "foot": "none",
           "shadow": true,
           "react": false,
-          "only": "roam"
+          "only": "roam",
+          "block": [
+            0.11,
+            0.11,
+            0.25
+          ]
         },
         {
           "sprite": "sh/board",

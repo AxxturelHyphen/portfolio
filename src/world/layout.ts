@@ -91,6 +91,11 @@ export interface Placement3 extends Placement {
   fade?: boolean;
   /** Built only for this camera (mode.ts): rail framing masks, or the roam verge and placements. */
   only?: WorldMode;
+  /**
+   * Under free roam, the ground a solid prop takes (occluders.ts propBlocks): how far its box reaches left and right of
+   * x, and its depth centred on z, in metres. The reaches follow the plate's pivot, so the box sits under the drawn prop.
+   */
+  block?: [number, number, number];
   /** Mirrored in the Estanque water (gl/pond.ts reflector): its width in metres and mean plate colour (sRGB 0..1). */
   reflect?: { w: number; colour: [number, number, number] };
 }

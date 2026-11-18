@@ -1,5 +1,5 @@
 import { expect, test } from '../helpers/jardin.ts';
-import { enterRoam, groundUnder, openGround, projectOfSlot, roamAt } from '../helpers/roam.ts';
+import { clearOfProps, enterRoam, groundUnder, openGround, projectOfSlot, roamAt } from '../helpers/roam.ts';
 
 // Free roam by touch (cook/ROAM_PLAN.md P4, mobile profiles): a tap on a flower focuses it, a second tap opens it, Esc
 // closes it, and a tap on the ground walks the visitor there.
@@ -19,7 +19,8 @@ test('roam tap: tap a flower focuses, a second tap opens; a tap on the ground wa
   await jardin.expectClosed();
   await jardin.settled();
 
-  const [x, y] = await openGround(page);
+  const from = await roamAt(jardin);
+  const [x, y] = await openGround(page, async (sx, sy) => clearOfProps(from, await groundUnder(page, jardin, sx, sy)));
   const target = await groundUnder(page, jardin, x, y);
   await page.touchscreen.tap(x, y);
   await expect.poll(async () => {

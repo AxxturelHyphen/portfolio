@@ -167,7 +167,12 @@
           "group": "D",
           "foot": "clump",
           "shadow": true,
-          "react": false
+          "react": false,
+          "block": [
+            0.91,
+            0.26,
+            0.4
+          ]
         },
         {
           "sprite": "v/cat",
@@ -197,7 +202,12 @@
           "group": "D",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "block": [
+            0.17,
+            0.17,
+            0.3
+          ]
         },
         {
           "sprite": "sh/ivy",
@@ -468,7 +478,12 @@
           "group": "L",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "block": [
+            0.21,
+            0.21,
+            0.4
+          ]
         },
         {
           "sprite": "sh/lantern-candle",
@@ -483,7 +498,12 @@
           "group": "L",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "block": [
+            0.15,
+            0.12,
+            0.16
+          ]
         },
         {
           "sprite": "sh/board",
@@ -569,7 +589,12 @@
           "foot": "none",
           "shadow": true,
           "react": false,
-          "only": "roam"
+          "only": "roam",
+          "block": [
+            0.73,
+            0.32,
+            0.3
+          ]
         },
         {
           "sprite": "v/shears",
@@ -619,7 +644,12 @@
           "foot": "none",
           "shadow": true,
           "react": false,
-          "rot": 12
+          "rot": 12,
+          "block": [
+            0.4,
+            0.14,
+            0.2
+          ]
         }
       ]
     },
