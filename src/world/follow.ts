@@ -5,7 +5,7 @@
  * an end wall near the horizon, and the frame from looking past the front corners. Pure math on caller-owned objects:
  * no allocation per frame.
  */
-import { FOLLOW, FOLLOW_FRAMINGS, springStep, type FollowFraming, type SpringState } from '../core/motion.ts';
+import { FOLLOW, FOLLOW_FRAMINGS, NEAR_FRAMINGS, springStep, type NearFraming, type SpringState } from '../core/motion.ts';
 import { DEG, type EnclosureData } from './layout.ts';
 import type { RigPose } from './rail.ts';
 
@@ -42,20 +42,54 @@ export interface Framing { up: number; back: number; pitch: number; fov: number;
 /** Below this width / height the follow camera uses its portrait framing (the rail's own threshold). */
 export const PORTRAIT_ASPECT = 0.8;
 
+/** A framing's parameters (a NearFraming, mutable): what the walking and near framings blend in frame code. */
+export interface FramingParams { up: number; downDeg: number; fov: number; moonAt: number; at: number }
+
+/** Writes into out the framing of p at aspect: the visitor's ground point at p.at of the screen height from the top. */
+function framingOf(p: Readonly<FramingParams>, aspect: number, out: Framing): Framing {
+  const below = Math.atan((2 * p.at - 1) * Math.tan((p.fov * DEG) / 2));
+  out.aspect = aspect;
+  out.up = p.up;
+  out.back = p.up / Math.tan(p.downDeg * DEG + below);
+  out.pitch = -p.downDeg * DEG;
+  out.fov = p.fov;
+  out.moonAt = p.moonAt;
+  return out;
+}
+
 /**
  * Landscape: FOLLOW_FRAMINGS[name] (FOLLOW.framing by default); portrait: the phone framing. The back offset puts the
  * visitor's ground point at FOLLOW.at of the screen height from the top.
  */
 export function framingFor(aspect: number, out: Framing, name = FOLLOW.framing): Framing {
-  const f: FollowFraming = aspect >= PORTRAIT_ASPECT ? FOLLOW_FRAMINGS[name] : FOLLOW_FRAMINGS.phone;
-  const below = Math.atan((2 * FOLLOW.at - 1) * Math.tan((f.fov * DEG) / 2));
-  out.aspect = aspect;
+  const f = aspect >= PORTRAIT_ASPECT ? FOLLOW_FRAMINGS[name] : FOLLOW_FRAMINGS.phone;
+  return framingOf({ ...f, at: FOLLOW.at }, aspect, out);
+}
+
+/** The parameters of the walking (near false) or near framing for an aspect. */
+export function paramsFor(aspect: number, near: boolean, out: FramingParams): FramingParams {
+  const portrait = aspect < PORTRAIT_ASPECT;
+  const walk = portrait ? FOLLOW_FRAMINGS.phone : FOLLOW_FRAMINGS[FOLLOW.framing];
+  const f: NearFraming = near ? (portrait ? NEAR_FRAMINGS.phone : NEAR_FRAMINGS.landscape) : { ...walk, at: FOLLOW.at };
   out.up = f.up;
-  out.back = f.up / Math.tan(f.downDeg * DEG + below);
-  out.pitch = -f.downDeg * DEG;
+  out.downDeg = f.downDeg;
   out.fov = f.fov;
   out.moonAt = f.moonAt;
+  out.at = f.at;
   return out;
+}
+
+/**
+ * Writes into out the framing k of the way from walking to near. `mix` holds the blended parameters (caller-owned,
+ * so frame code allocates nothing).
+ */
+export function blendFraming(aspect: number, k: number, walk: Readonly<FramingParams>, near: Readonly<FramingParams>, mix: FramingParams, out: Framing): Framing {
+  mix.up = walk.up + (near.up - walk.up) * k;
+  mix.downDeg = walk.downDeg + (near.downDeg - walk.downDeg) * k;
+  mix.fov = walk.fov + (near.fov - walk.fov) * k;
+  mix.moonAt = walk.moonAt + (near.moonAt - walk.moonAt) * k;
+  mix.at = walk.at + (near.at - walk.at) * k;
+  return framingOf(mix, aspect, out);
 }
 
 /** Elevation of the moon (degrees) that hangs it at the framing's moonAt of the screen height, over the wall. */
@@ -121,8 +155,11 @@ function shareReach(f: Framing, z: number, lim: ViewLimits, from: number): numbe
   return hi;
 }
 
-/** The follow pose for a target point on the ground, clamped inside the view limits. Writes into out. */
-export function followPose(px: number, pz: number, f: Framing, lim: ViewLimits, out: RigPose): RigPose {
+/**
+ * The follow pose for a target point on the ground, clamped inside the view limits. The camera centres on lookX (the
+ * target's own x by default) only as far as the target keeps to the middle band of the width. Writes into out.
+ */
+export function followPose(px: number, pz: number, f: Framing, lim: ViewLimits, out: RigPose, lookX = px): RigPose {
   const t = Math.tan((f.fov * DEG) / 2);
   const cp = Math.cos(f.pitch);
   const sp = Math.sin(f.pitch);
@@ -138,7 +175,8 @@ export function followPose(px: number, pz: number, f: Framing, lim: ViewLimits, 
   const keep = (1 - 2 * KEEP) * (z - pz) * cp * f.aspect * t + (1 - 2 * KEEP) * -f.up * sp * f.aspect * t;
   const lo = Math.max(lim.minX + hard, Math.min(lim.minX + soft, px + keep));
   const hi = Math.min(lim.maxX - hard, Math.max(lim.maxX - soft, px - keep));
-  out.x = lo > hi ? (lim.minX + lim.maxX) / 2 : Math.min(hi, Math.max(lo, px));
+  const want = Math.min(px + keep, Math.max(px - keep, lookX));
+  out.x = lo > hi ? (lim.minX + lim.maxX) / 2 : Math.min(hi, Math.max(lo, want));
   out.y = f.up;
   out.z = z;
   out.pitch = f.pitch;
@@ -150,29 +188,44 @@ export function followPose(px: number, pz: number, f: Framing, lim: ViewLimits, 
 export interface Follower {
   /** The camera pose the rig mixes in place of the rail walk (same object every frame). */
   readonly pose: Readonly<RigPose>;
-  /** The framing for the current aspect (same object; changes on resize). */
+  /** The framing in use: walking, near or between (same object; changes on resize and with the approach). */
   readonly framing: Readonly<Framing>;
   resize(w: number, h: number): void;
-  /** Follows the visitor at (x, z); snap lands at once (first frame, frozen time, reduced motion). */
-  step(x: number, z: number, dt: number, snap: boolean): void;
+  /**
+   * Follows the visitor at (x, z); snap lands at once (first frame, frozen time, reduced motion). k (0..1) blends the
+   * walking framing toward the near one, sliding the camera k of `shift` metres along x (world/fit.ts chooses both).
+   */
+  step(x: number, z: number, dt: number, snap: boolean, k?: number, shift?: number): void;
 }
+
+const blankParams = (): FramingParams => ({ up: 0, downDeg: 0, fov: 0, moonAt: 0, at: 0 });
 
 export function createFollower(lim: ViewLimits): Follower {
   const framing: Framing = { up: 0, back: 0, pitch: 0, fov: 0, aspect: 16 / 9, moonAt: 0 };
   const pose: RigPose = { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 };
   const fx: SpringState = { x: 0, v: 0 };
   const fz: SpringState = { x: 0, v: 0 };
+  const walk = blankParams();
+  const near = blankParams();
+  const mix = blankParams();
   const omega = 1 / FOLLOW.tauS;
   let first = true;
-  framingFor(framing.aspect, framing);
+  let kNow = 0;
+
+  function reframe(aspect: number): void {
+    paramsFor(aspect, false, walk);
+    paramsFor(aspect, true, near);
+    blendFraming(aspect, kNow, walk, near, mix, framing);
+  }
+  reframe(framing.aspect);
 
   return {
     pose,
     framing,
     resize(w, h) {
-      framingFor(Math.max(1, w) / Math.max(1, h), framing);
+      reframe(Math.max(1, w) / Math.max(1, h));
     },
-    step(x, z, dt, snap) {
+    step(x, z, dt, snap, k = 0, shift = 0) {
       if (first || snap) {
         fx.x = x;
         fz.x = z;
@@ -183,7 +236,9 @@ export function createFollower(lim: ViewLimits): Follower {
         springStep(fx, x, omega, dt);
         springStep(fz, z, omega, dt);
       }
-      followPose(fx.x, fz.x, framing, lim, pose);
+      kNow = k;
+      blendFraming(framing.aspect, k, walk, near, mix, framing);
+      followPose(fx.x, fz.x, framing, lim, pose, fx.x + shift * k);
     },
   };
 }

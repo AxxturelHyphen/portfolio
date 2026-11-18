@@ -272,6 +272,44 @@ export type LandscapeFraming = Exclude<keyof typeof FOLLOW_FRAMINGS, 'phone'>;
  */
 export const FOLLOW: Readonly<{ framing: LandscapeFraming; at: number; tauS: number }> = { framing: 'low', at: 0.62, tauS: 0.1 };
 
+/** A near framing: a follow framing plus where the visitor's ground point sits, as a share of the height from the top. */
+export interface NearFraming extends FollowFraming { readonly at: number }
+
+/**
+ * The nearest framings the approach may use (world/fit.ts picks how far toward them to go): closer and lower than the
+ * walking one, the visitor's light in the lower middle, the back wall and a band of sky with the moon above it.
+ * Landscape and portrait (below PORTRAIT_ASPECT, follow.ts).
+ */
+export const NEAR_FRAMINGS = {
+  landscape: { up: 2.3, downDeg: 10, fov: 44, moonAt: 0.07, at: 0.78 },
+  phone: { up: 3, downDeg: 14, fov: 50, moonAt: 0.11, at: 0.74 },
+} as const satisfies Record<string, NearFraming>;
+
+/**
+ * When the camera eases toward the fitted framing and back (world/approach.ts): in while proximity focuses a slot, the
+ * fit gains and the visitor is not faster than fastMps; out after faster than fastMps for fastS, a move of leaveM
+ * from where it eased in, or the focus ending. The ease is a critically damped spring that settles in inS going in and
+ * outS going out.
+ */
+export const APPROACH = { fastMps: 1.5, fastS: 0.3, leaveM: 1, inS: 1.2, outS: 0.8 } as const;
+
+/**
+ * How far the approach goes (world/fit.ts): the focused subject's outline and the visitor's ground point must sit in a
+ * safe area of the frame with `margin` (share of the width and height) inside it. The safe area starts below the top
+ * band of fixed controls (topPx, ui/label.ts TOP_PX) and ends above a bottom band (bottomShare of the height, where
+ * the cane labels stand); beside the subject stands the plant tag (ui/label.ts: width clamp(300 px, 19 vw, 368 px),
+ * about tagAspect as tall as wide, gapPx past the subject's hit reach, on the side with more room). Below narrowPx
+ * of width the tag is a strip of about phoneTagPx above the bottom edge, with phoneCanePx of cane labels over it.
+ * The subject grows to at most cap of the frame height; less than minGain times its walking size is no gain. The
+ * search takes `steps` steps toward the near framing and may slide the camera up to maxShiftM toward the subject.
+ * nudge and nudgeY mirror the rig's focus nudge toward the slot (world/camera.ts FRAME), which the fit measures too.
+ */
+export const APPROACH_FIT = {
+  margin: 0.06, cap: 0.45, minGain: 1.25, steps: 20, maxShiftM: 0.8, topPx: 96, bottomShare: 0.12,
+  tagMinPx: 300, tagVw: 0.19, tagMaxPx: 368, tagAspect: 0.72, gapPx: 18, edgePx: 16, narrowPx: 720, phoneTagPx: 234, phoneCanePx: 70,
+  nudge: 0.16, nudgeY: 0.5,
+} as const;
+
 // Mode switch: canvas exposure down, then the DOM cross-fade, no overlap
 
 export const MODE = { totalS: 0.45, canvasDownS: 0.2, domUpS: 0.25 } as const;
