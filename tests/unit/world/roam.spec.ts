@@ -2,15 +2,16 @@ import { expect, test } from '@playwright/test';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { FOLLOW, FOLLOW_FRAMINGS, ROAM, SPRING_99, type LandscapeFraming } from '../../../src/core/motion.ts';
 import { createRig } from '../../../src/world/camera.ts';
-import { createFollower, followPose, framingFor, moonElevation, type Framing, type ViewLimits } from '../../../src/world/follow.ts';
+import { createFollower, followPose, framingFor, moonElevation, viewLimitsOf, type Framing } from '../../../src/world/follow.ts';
 import type { RigPose } from '../../../src/world/rail.ts';
 import { createVisitor, HOLD, nearestBed, type Visitor, type WalkArea } from '../../../src/world/roam.ts';
 import { traceLayout, traceRig } from './rig.trace.ts';
 
 const ground = traceLayout.ground;
 const pond = ground.pond;
-const area: WalkArea = { minX: -2.8, maxX: 46, minZ: -5.5, maxZ: 3, pond, path: ground.path.points };
-const limits: ViewLimits = { minX: -3.5, maxX: 46.5, maxZ: 8.5, wallZ: ground.wall.z };
+const enc = ground.enclosure;
+const area: WalkArea = { ...enc.walk, pond, path: ground.path.points };
+const limits = viewLimitsOf(enc, ground.wall.z);
 const r = ROAM.radius;
 
 /** Ellipse metric of the body-inflated pond: below 1 means the body overlaps the water. */
@@ -135,17 +136,6 @@ test('the nearest bed changes only 1 m past the halfway line', () => {
   expect(nearestBed(3.9, null, beds, at)).toBe('puerta');
 });
 
-/** Where the four frustum corner rays first meet the ground (y 0) or the back wall plane. */
-function cornerHits(p: RigPose, aspect: number): Vector3[] {
-  const cam = cameraOf(p, aspect);
-  return [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => {
-    const d = new Vector3(sx, sy, 0.5).unproject(cam).sub(cam.position);
-    const toGround = d.y < 0 ? -p.y / d.y : Infinity;
-    const toWall = d.z < 0 ? (limits.wallZ - p.z) / d.z : Infinity;
-    return cam.position.clone().addScaledVector(d, Math.min(toGround, toWall));
-  });
-}
-
 const LANDSCAPE: readonly LandscapeFraming[] = ['low', 'mid', 'high'];
 const blankPose = (): RigPose => ({ x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
 
@@ -158,26 +148,6 @@ function cameraOf(p: RigPose, aspect: number): PerspectiveCamera {
   cam.updateProjectionMatrix();
   return cam;
 }
-
-test('the follow camera never shows past the wall ends or south of the limit, every framing', () => {
-  const outside: string[] = [];
-  for (const name of LANDSCAPE) {
-    for (const [w, h] of [[1920, 1080], [2560, 1080], [800, 1200], [390, 844]] as const) {
-      const f = framingFor(w / h, {} as Framing, name);
-      const pose = blankPose();
-      for (let x = area.minX + r; x <= area.maxX - r; x += 1.6) {
-        for (let z = area.minZ + r; z <= area.maxZ - r; z += 0.79) {
-          followPose(x, z, f, limits, pose);
-          for (const c of cornerHits(pose, w / h)) {
-            const out = c.x < limits.minX - 1e-6 || c.x > limits.maxX + 1e-6 || c.z > limits.maxZ + 1e-6;
-            if (out) outside.push(`${name} ${w}x${h} at ${x.toFixed(1)},${z.toFixed(2)}: ${c.x.toFixed(2)},${c.z.toFixed(2)}`);
-          }
-        }
-      }
-    }
-  }
-  expect(outside).toEqual([]);
-});
 
 test('each framing puts the visitor at 60 to 65 percent of the height and the moon in view over the wall', () => {
   const cases = [...LANDSCAPE.map((n) => [n, 1920 / 1080] as const), ['phone', 390 / 844] as const, ['phone', 800 / 1200] as const];

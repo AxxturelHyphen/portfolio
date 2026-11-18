@@ -1,14 +1,39 @@
 /**
  * The follow camera of free roam (cook/ROAM_PLAN.md section 3): a fixed yaw looking along -z at the back wall, a
- * framing per aspect, a critically damped follower on the visitor, and clamps so the frame never shows past the ends of
- * the back wall nor ground south of the garden's limit. Pure math on caller-owned objects: no allocation per frame.
+ * framing per aspect, a critically damped follower on the visitor, and clamps so the frame stays inside the closed
+ * garden. The end walls let the view centre on the visitor near both ends: the clamp only keeps the sky that shows over
+ * an end wall near the horizon, and the frame from looking past the front corners. Pure math on caller-owned objects:
+ * no allocation per frame.
  */
 import { FOLLOW, FOLLOW_FRAMINGS, springStep, type FollowFraming, type SpringState } from '../core/motion.ts';
-import { DEG } from './layout.ts';
+import { DEG, type EnclosureData } from './layout.ts';
 import type { RigPose } from './rail.ts';
 
-/** What the follow camera may show: the back wall plane (z), the ends of the wall (x) and the ground's south limit (z). */
-export interface ViewLimits { wallZ: number; minX: number; maxX: number; maxZ: number }
+/**
+ * What the follow camera may show: the end wall planes (x) and their height, the back wall and front kerb lines (z) and the ground's
+ * south limit for the bottom of the frame (z, a little inside the kerb so the kerb only ever shows as a sliver).
+ */
+export interface ViewLimits { minX: number; maxX: number; endH: number; back: number; front: number; maxZ: number }
+
+/** What the follow camera may show inside the closed garden (cook/ROAM_ART.md section 3). */
+export function viewLimitsOf(e: EnclosureData, wallZ: number): ViewLimits {
+  return { minX: e.x[0], maxX: e.x[1], endH: e.endH, back: wallZ, front: e.front, maxZ: e.viewMaxZ };
+}
+
+/**
+ * Sky may show over an end wall only this far below the horizon (degrees): over a near wall the sky would reach down
+ * beside the visitor and read as the edge of the world, over a far one it is the same band as over the back wall.
+ */
+export const SIDE_SKY_DEG = 9;
+const SIDE_SAMPLES = 64;
+/**
+ * The most of any row of the frame an end wall may fill: a near wall seen at a grazing angle is magnified stone. Portrait
+ * frames are narrow, so they allow more.
+ */
+export const WALL_SHARE = { landscape: 0.18, portrait: 0.25 } as const;
+/** The visitor keeps at least this share of the width from either edge before a near wall may grow past its share. */
+const KEEP = 0.2;
+const SHARE_GRID = { cols: 32, rows: 18, steps: 12, far: 20 } as const;
 
 /** The follow framing for one aspect: camera height and back offset (m), pitch (radians), vertical fov (degrees), and
  * the moon's place as a share of the screen height from the top. */
@@ -38,15 +63,62 @@ export function moonElevation(f: Framing): number {
   return (f.pitch + Math.atan((1 - 2 * f.moonAt) * Math.tan((f.fov * DEG) / 2))) / DEG;
 }
 
-/** Distance along a frustum edge ray (camera-space y = sy * t) to the ground or the wall plane, whichever comes first. */
-function edgeReach(sy: number, t: number, f: Framing, camZ: number, wallZ: number): number {
+/**
+ * How far the camera keeps from an end wall plane (m) so that no ray on the side edge of the frame passes over the
+ * wall steeper than SIDE_SKY_DEG below the horizon.
+ */
+export function sideReach(f: Framing, endH: number): number {
+  const t = Math.tan((f.fov * DEG) / 2);
   const cp = Math.cos(f.pitch);
   const sp = Math.sin(f.pitch);
-  const dy = sy * t * cp + sp;
-  const dz = sy * t * sp - cp;
-  const toWall = dz < 0 ? (wallZ - camZ) / dz : Infinity;
-  const toGround = dy < 0 ? f.up / -dy : Infinity;
-  return Math.min(toWall, toGround);
+  const lateral = f.aspect * t;
+  const steep = Math.tan(SIDE_SKY_DEG * DEG);
+  let reach = 0;
+  for (let i = 0; i <= SIDE_SAMPLES; i++) {
+    const s = -1 + (2 * i) / SIDE_SAMPLES;
+    const dy = s * t * cp + sp;
+    const dz = s * t * sp - cp;
+    if (-dy <= steep * Math.hypot(lateral, dz)) continue;
+    reach = Math.max(reach, ((f.up - endH) * lateral) / -dy);
+  }
+  return reach;
+}
+
+/** The widest share of a frame row that an end wall at lateral distance l (m) fills, camera at z. */
+export function wallShare(f: Framing, l: number, z: number, lim: ViewLimits): number {
+  const t = Math.tan((f.fov * DEG) / 2);
+  const cp = Math.cos(f.pitch);
+  const sp = Math.sin(f.pitch);
+  let most = 0;
+  for (let j = 0; j <= SHARE_GRID.rows; j++) {
+    const s = -1 + (2 * j) / SHARE_GRID.rows;
+    const dy = s * t * cp + sp;
+    const dz = s * t * sp - cp;
+    let hits = 0;
+    for (let i = 0; i < SHARE_GRID.cols; i++) {
+      const dx = -f.aspect * t * (1 - (i + 0.5) / SHARE_GRID.cols);
+      const tw = l / -dx;
+      const y = f.up + dy * tw;
+      const wz = z + dz * tw;
+      if ((dy >= 0 || tw < f.up / -dy) && y <= lim.endH && wz >= lim.back && wz <= lim.front) hits++;
+    }
+    most = Math.max(most, hits / (2 * SHARE_GRID.cols));
+  }
+  return most;
+}
+
+/** The nearest lateral distance (m) to an end wall at which it fills no more than WALL_SHARE of any row. */
+function shareReach(f: Framing, z: number, lim: ViewLimits, from: number): number {
+  const limit = f.aspect >= PORTRAIT_ASPECT ? WALL_SHARE.landscape : WALL_SHARE.portrait;
+  if (wallShare(f, from, z, lim) <= limit) return from;
+  let lo = from;
+  let hi: number = SHARE_GRID.far;
+  for (let k = 0; k < SHARE_GRID.steps; k++) {
+    const mid = (lo + hi) / 2;
+    if (wallShare(f, mid, z, lim) <= limit) hi = mid;
+    else lo = mid;
+  }
+  return hi;
 }
 
 /** The follow pose for a target point on the ground, clamped inside the view limits. Writes into out. */
@@ -58,9 +130,14 @@ export function followPose(px: number, pz: number, f: Framing, lim: ViewLimits, 
   const bz = -t * sp - cp;
   let z = pz + f.back;
   if (by < 0) z = Math.min(z, lim.maxZ - (f.up / -by) * bz);
-  const half = Math.max(edgeReach(1, t, f, z, lim.wallZ), edgeReach(-1, t, f, z, lim.wallZ)) * f.aspect * t;
-  const lo = lim.minX + half;
-  const hi = lim.maxX - half;
+  // South of the kerb line, the bottom corner rays (the widest per metre forward) must cross it between the end walls.
+  const front = z > lim.front ? (f.aspect * t * (z - lim.front)) / -bz : 0;
+  const hard = Math.max(sideReach(f, lim.endH), front);
+  const soft = shareReach(f, z, lim, hard);
+  // The wall share gives way before the visitor leaves the middle KEEP band of the width; the outside never does.
+  const keep = (1 - 2 * KEEP) * (z - pz) * cp * f.aspect * t + (1 - 2 * KEEP) * -f.up * sp * f.aspect * t;
+  const lo = Math.max(lim.minX + hard, Math.min(lim.minX + soft, px + keep));
+  const hi = Math.min(lim.maxX - hard, Math.max(lim.maxX - soft, px - keep));
   out.x = lo > hi ? (lim.minX + lim.maxX) / 2 : Math.min(hi, Math.max(lo, px));
   out.y = f.up;
   out.z = z;

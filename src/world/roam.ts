@@ -13,6 +13,8 @@ export interface WalkArea {
   minX: number; maxX: number; minZ: number; maxZ: number;
   pond: { x: number; z: number; rx: number; rz: number };
   path: readonly (readonly [number, number])[];
+  /** Rectangles the body stays out of, as x0, z0, x1, z1 per box (tall cards' hidden strips, occluders.ts). */
+  blocks?: Float32Array;
 }
 
 /** Held direction bits (screen and world agree: the camera never turns). */
@@ -97,7 +99,31 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   const nx = (x: number): number => (x - area.pond.x) / pa;
   const nz = (z: number): number => (z - area.pond.z) / pb;
 
-  /** Pushes the body inside the rectangle and out of the pond, removing velocity into each contact. */
+  /** Pushes the body out of each blocked box by the shortest way, removing velocity into it. */
+  function pushOutOfBlocks(): void {
+    const b = area.blocks;
+    if (b === undefined) return;
+    for (let i = 0; i + 3 < b.length; i += 4) {
+      const x0 = b[i]! - r;
+      const z0 = b[i + 1]! - r;
+      const x1 = b[i + 2]! + r;
+      const z1 = b[i + 3]! + r;
+      const x = pos[0]!;
+      const z = pos[1]!;
+      if (x <= x0 || x >= x1 || z <= z0 || z >= z1) continue;
+      const dl = x - x0;
+      const dr = x1 - x;
+      const dn = z - z0;
+      const ds = z1 - z;
+      const m = Math.min(dl, dr, dn, ds);
+      if (m === dl) { pos[0] = x0; if (vel[0]! > 0) vel[0] = 0; }
+      else if (m === dr) { pos[0] = x1; if (vel[0]! < 0) vel[0] = 0; }
+      else if (m === dn) { pos[1] = z0; if (vel[1]! > 0) vel[1] = 0; }
+      else { pos[1] = z1; if (vel[1]! < 0) vel[1] = 0; }
+    }
+  }
+
+  /** Pushes the body inside the rectangle and out of the pond and the blocked boxes, removing velocity into each. */
   function collide(): void {
     for (let pass = 0; pass < ROAM.passes; pass++) {
       const lx = area.minX + r;
@@ -108,6 +134,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       if (pos[0]! > hx) { pos[0] = hx; if (vel[0]! > 0) vel[0] = 0; }
       if (pos[1]! < lz) { pos[1] = lz; if (vel[1]! < 0) vel[1] = 0; }
       if (pos[1]! > hz) { pos[1] = hz; if (vel[1]! > 0) vel[1] = 0; }
+      pushOutOfBlocks();
       const qx = nx(pos[0]!);
       const qz = nz(pos[1]!);
       const q = Math.hypot(qx, qz);

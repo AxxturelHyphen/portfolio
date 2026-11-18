@@ -2,7 +2,9 @@ import type { RoamControl } from '../core/input.ts';
 import { walkOf } from '../core/motion.ts';
 import type { BedId, Clock, Loop, Machine, ProjectId } from '../types.ts';
 import type { GardenRig } from '../world/camera.ts';
-import { createFollower, moonElevation, type ViewLimits } from '../world/follow.ts';
+import { createFollower, framingFor, moonElevation, viewLimitsOf, type Framing } from '../world/follow.ts';
+import { SCENES } from '../world/garden.ts';
+import { occluderBlocks } from '../world/occluders.ts';
 import type { WorldLayout } from '../world/layout.ts';
 import type { GardenLight } from '../world/light.ts';
 import { createVisitor, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
@@ -13,10 +15,6 @@ import { createVisitor, nearestBed, pathZ, type WalkArea } from '../world/roam.t
  * elsewhere (signpost, plan, history) carries the visitor to that bed's stand point, the path at the bed's anchor, on
  * the travel leg. The light is carried at the visitor.
  */
-
-/** P1 limits until the garden is closed (P3): the rectangle the visitor walks in and what the camera may show. */
-const AREA = { minX: -2.8, maxX: 46, minZ: -5.5, maxZ: 3 } as const;
-const VIEW = { minX: -3.5, maxX: 46.5, maxZ: 8.5 } as const;
 
 export interface RoamDeps {
   machine: Machine;
@@ -42,8 +40,11 @@ export interface RoamDrive extends RoamControl {
 export function createRoamDrive(d: RoamDeps): RoamDrive {
   const { machine, rig, light, loop, world } = d;
   const ground = world.ground;
-  const area: WalkArea = { ...AREA, pond: ground.pond, path: ground.path.points };
-  const limits: ViewLimits = { ...VIEW, wallZ: ground.wall.z };
+  /** The landscape framing hides the most behind a card (lowest camera): its strips hold for the phone too. */
+  const wide = framingFor(16 / 9, {} as Framing);
+  const blocks = occluderBlocks(ground.enclosure, SCENES, wide.back, wide.up);
+  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks };
+  const limits = viewLimitsOf(ground.enclosure, ground.wall.z);
   const beds = world.rail.keys.flatMap((k) => (k.bed === undefined ? [] : [k.bed]));
   const anchorOf = (b: BedId): number => world.anchors[b];
   const standZ = (b: BedId): number => pathZ(area.path, anchorOf(b));
