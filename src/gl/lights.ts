@@ -17,8 +17,15 @@ import { linearHex } from './colour.ts';
  * - uEye: the camera on the ground plane (x, z, written with uViewProj) and the standee turn weight: 0 on the rail,
  *   1 under free roam (cook/ROAM_PLAN.md 3), so rail views never move.
  * - uVisitor: the roaming visitor's ground point (x, z); cards flagged `fade` turn to a trace while they cover it.
+ * - uLamp: lanterns burning with their own amber pool (flame xyz, strength), free roam only: lamp 0 is the lantern the
+ *   visitor carries (it takes over from the hand light: uHandOn 0), lamps 1 and 2 standing props in view.
+ * - uFill: a near-foreground lift under free roam (0 on the rail).
+ * - uDepthCut: cutout fragments under this alpha are discarded so their soft edges write no depth (free roam: the scene
+ *   target has a depth buffer); 0 on the rail, where nothing is discarded.
  */
 export const FLY_LIGHTS = 4;
+/** Lanterns with their own amber light (a fixed count in the shader): the carried one and two standing props. */
+export const LAMP_LIGHTS = 3;
 
 /** Shadow decals fall toward (+0.34 x, +0.94 z), length per unit of height (Rosaleda 0.5), opacity 30 %. */
 const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.3 } as const;
@@ -56,6 +63,11 @@ export const sharedUniforms = {
   uHaze: { value: hazeOf(HAZE.colour, HAZE.density) },
   uFly: { value: Array.from({ length: FLY_LIGHTS }, () => new Vector4()) },
   uFlyColor: { value: linearHex('#ffb766', new Vector3(), 1.4) },
+  uHandOn: { value: 1 },
+  uDepthCut: { value: 0 },
+  uFill: { value: 0 },
+  uLamp: { value: Array.from({ length: LAMP_LIGHTS }, () => new Vector4(0, 0, 0, 0)) },
+  uLampColor: { value: linearHex('#f8b552', new Vector3(), 5.0) },
 };
 export type SharedUniforms = typeof sharedUniforms;
 
@@ -71,6 +83,26 @@ export function setMoon(azimuthDeg: number, elevationDeg: number): void {
 /** Turns the standees toward the eye (1, free roam) or keeps every cutout on its hinge (0, the rail). */
 export function setStandeeTurn(weight: number): void {
   sharedUniforms.uEye.value.z = weight;
+}
+
+/**
+ * Free roam's light: the scene target has a depth buffer and the cutouts' faint edges must not write it, and the hand
+ * light hands its pool to the carried lantern (lamp 0): one light, not two stacked. uCursor keeps moving with the
+ * visitor for what follows it (edges, bent leaves, the moth).
+ */
+const DEPTH_CUT = 0.02;
+/** The near-foreground lift under free roam (lights.glsl fillAt), so ground the lanterns miss is never crushed black. */
+const ROAM_FILL = 1;
+export function setRoamLight(): void {
+  sharedUniforms.uDepthCut.value = DEPTH_CUT;
+  sharedUniforms.uFill.value = ROAM_FILL;
+  sharedUniforms.uHandOn.value = 0;
+}
+
+/** Copies the lamp list (LAMP_LIGHTS vec4s: flame xyz, strength) into uLamp. No allocation. */
+export function writeLamps(lamps: Float32Array): void {
+  const u = sharedUniforms.uLamp.value;
+  for (let i = 0; i < LAMP_LIGHTS; i++) u[i]!.fromArray(lamps, i * 4);
 }
 
 /** Points uVisitor at the visitor's own [x, z] array: three uploads it with each frame, no copy per frame. */

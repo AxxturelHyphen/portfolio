@@ -31,6 +31,11 @@ const float WALL_FADE = 0.4;                          // soft dark join where th
 const vec3 POOL_SHAPE = vec3(0.35, 1.5, 0.75);        // the hand's throw: shift into the scene, length, width (radii)
 const float POOL = 0.45;
 const float POOL_GREY = 0.8;
+const float LAMP_CEIL = 0.2;                          // linear luma the lantern pools on the ground roll off toward
+const float LAMP_GREEN_FADE = 0.8;                    // how far the moss under a lantern pool loses its green
+const float LAMP_GRAIN = 0.35;
+const float LAMP_LAWN = 0.08;                         // the darkest value a lantern sees on the lawn: light on grass, no smudge
+const float GROUND_FILL = 0.4;                        // the near fill on the ground, as a share of the place ambient                        // how much the ground's own grain breaks up a lantern pool
 uniform float uHandThrow;                             // 0 until a pointer arrives: a hand at rest throws no pool
 const vec3 STONE = vec3(0.060, 0.055, 0.052);
 const vec3 MOSS_SHADE = vec3(0.016, 0.054, 0.028);   // #21422f
@@ -155,10 +160,18 @@ void main() {
   float along = dot(dp, axis) / (POOL_SHAPE.y * uCursor.w);
   float across = (dp.x * axis.y - dp.y * axis.x) / (POOL_SHAPE.z * uCursor.w);
   float pool = exp(-2.2 * (along * along + across * across)) * (1.0 - 0.45 * smoothstep(-0.6, 0.9, along));
-  hand += uCursorColor * (pool * POOL);
+  hand += uCursorColor * (pool * POOL * uHandOn);
   vec3 albedo = base * GROUND_ALBEDO;
   // Moss and earth under the hand go nearly grey first: the amber light, not the moss, sets the pool's hue.
-  vec3 col = base * (0.5 + 1.6 * key) + keyLit(mix(albedo, vec3(luma(albedo)), POOL_GREY), hand * uHandThrow);
+  vec3 grey = mix(albedo, vec3(luma(albedo)), POOL_GREY);
+  vec3 col = base * (0.5 + 1.6 * key) + keyLit(grey, hand * uHandThrow);
+  // The lanterns' pools on the ground's own value (fully grey: amber on moss must not turn olive), broken by its grain
+  // and rolled off toward LAMP_CEIL so lit stone keeps its edges.
+  vec3 lamp = vec3(max(luma(albedo), LAMP_LAWN)) * lampLights(vWorld, n) * (1.0 - LAMP_GRAIN + LAMP_GRAIN * 2.0 * fbm3(p * 1.7));
+  // The moss's own green fades where a lantern reaches, so amber over green never sums to olive.
+  col = mix(col, vec3(luma(col)), LAMP_GREEN_FADE * sat(luma(lamp) / LAMP_CEIL * 4.0));
+  col += lamp / (1.0 + luma(lamp) / LAMP_CEIL);
+  col += neutralise(uAmbient) * GROUND_FILL * fillAt(vDepth);
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;

@@ -1,11 +1,15 @@
-// Shared light chunk (src/gl/lights.ts): the hand light, the focus gather and up to 4 fireflies, all with a soft
-// quadratic falloff to zero at their radius. Linear colours.
+// Shared light chunk (src/gl/lights.ts): the hand light, the focus gather, up to 4 fireflies and 3 lanterns, all with a
+// soft falloff to zero at their reach. Linear colours.
 uniform vec4 uCursor;      // xyz, radius
 uniform vec3 uCursorColor;
+uniform float uHandOn;     // 1: the hand light shines; 0 under free roam, where the carried lantern (uLamp[0]) does
 uniform vec4 uGather;      // xyz, amount
 uniform vec4 uFocusBack;   // xyz of the plane the far layers fall back behind, amount (focus, or a bed's rest depth)
 uniform vec4 uFly[4];      // xyz, intensity
 uniform vec3 uFlyColor;
+uniform vec4 uLamp[3];     // flame xyz, strength (0: dark); 0 is the carried lantern, 1 and 2 standing ones (free roam)
+uniform vec3 uLampColor;
+uniform float uFill;       // free roam: a little cool lift on the near ground and plants the lanterns do not reach (0 on the rail)
 uniform vec3 uMoonDir;     // the soft key on the faces (upper left front)
 uniform vec3 uMoonColor;
 uniform vec3 uMoonBack;    // the real moon, low behind the garden: rim and glints
@@ -32,7 +36,7 @@ vec3 handLights(vec3 p, vec3 n) {
   float fc = falloff(dc, r) + spill(dc, r);
   vec3 dg = uGather.xyz - p;
   float fg = uGather.w * falloff(dg, r * 0.8);
-  vec3 c = uCursorColor * (wrapLight(dot(n, normalize(dc + vec3(0.0, 0.0, 1e-3))), 0.25) * fc * (1.0 + fg)
+  vec3 c = uCursorColor * (uHandOn * wrapLight(dot(n, normalize(dc + vec3(0.0, 0.0, 1e-3))), 0.25) * fc * (1.0 + fg)
     + 0.6 * fg * wrapLight(dot(n, normalize(dg + vec3(0.0, 0.0, 1e-3))), 0.3));
   for (int i = 0; i < 4; i++) {
     vec3 df = uFly[i].xyz - p;
@@ -60,6 +64,37 @@ float leafWeight(vec3 c) { return smoothstep(0.04, 0.14, (c.g - 0.5 * (c.r + c.b
 vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
   return mix(keyLit(albedo, light), albedo * luma(light) * LEAF_KEY, leaf);
 }
+
+// A lantern's throw: a soft core windowed to zero at its reach (about 3 m across the ground, shorter upward), with
+// the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc.
+const vec3 LAMP_REACH = vec3(3.0, 1.8, 3.0);
+const float LAMP_CORE = 1.5;
+const float LAMP_POSTS = 0.22;
+float lampFall(vec3 d) {
+  vec3 e = d / LAMP_REACH;
+  float q = dot(e, e);
+  float posts = 1.0 - LAMP_POSTS * pow(abs(sin(2.0 * atan(d.z, d.x + 1e-4) + 0.4)), 6.0) * sat(q * 8.0);
+  return sq(sat(1.0 - q)) / (1.0 + LAMP_CORE * q) * posts;
+}
+// Amber light from the lanterns on a surface at p with normal n, strongest on the sides that face the flame.
+// The carried lantern's own base shades the ground straight below it: a soft dark dot inside its pool.
+const vec2 LAMP_FOOT = vec2(0.3, 0.06);   // radius where the dot starts and inside which it is darkest (m)
+const float LAMP_FOOT_DARK = 0.9;
+vec3 lampLights(vec3 p, vec3 n) {
+  float c = 0.0;
+  for (int i = 0; i < 3; i++) {
+    if (uLamp[i].w <= 0.0) continue;
+    vec3 dl = uLamp[i].xyz - p;
+    float l = uLamp[i].w * lampFall(dl) * wrapLight(dot(n, normalize(dl + vec3(0.0, 1e-3, 0.0))), 0.5);
+    if (i == 0) l *= 1.0 - LAMP_FOOT_DARK * (1.0 - smoothstep(LAMP_FOOT.y, LAMP_FOOT.x, length(dl.xz))) * step(0.3, dl.y);
+    c += l;
+  }
+  return uLampColor * c;
+}
+
+// The near-foreground fill under free roam: full nearer than FILL_NEAR metres from the lens, gone past FILL_FAR.
+const vec2 FILL_DEPTH = vec2(8.0, 12.0);
+float fillAt(float depth) { return uFill * (1.0 - smoothstep(FILL_DEPTH.x, FILL_DEPTH.y, depth)); }
 
 // Air between the layers, banded by depth against the hand's plane (+ behind it, - in front): far layers sit lifted
 // and cooler in the dusk air, near layers darker and richer. `back` is the fall-off behind a focused flower (0..1).

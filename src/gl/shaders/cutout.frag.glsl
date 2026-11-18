@@ -6,6 +6,7 @@ uniform float uReveal;
 uniform vec3 uShadow;      // drop shadow onto what is behind: uv offset per unit lift, softness (mip bias), strength
 uniform vec4 uDepthFade;   // haze rgb, density per metre past HAZE_START
 uniform vec4 uShadowDir;   // decal x, z, length per height, opacity
+uniform float uDepthCut;   // fragments under this alpha are discarded: no depth from soft edges (0 on the rail)
 
 in vec2 vUV;
 in vec4 vRect;
@@ -21,6 +22,7 @@ in float vDepth;
 in float vMirror;
 in float vPlaneDepth;
 in float vFocusDepth;
+in float vHung;
 
 out vec4 outColor;
 
@@ -85,7 +87,20 @@ vec2 toSpriteUV(vec2 d) {
   return normalize(local + vec2(1e-4, 0.0));
 }
 
+const float CUTOUT_FILL = 0.6;                        // the near fill on paper, as a share of its ambient
+// A hung lantern is lit from inside: its pale parts (glass, pierced light) glow warm, strongest round the flame, its
+// dark frame stays dark, and the side toward the lens takes the most of it.
+const vec2 GLOW_FLAME = vec2(0.4, 0.3);               // the flame's height in the plate and the glow's spread
+const float GLOW = 0.13;
+const float FRAME_DARK = 0.35;
+const float HUNG_OPACITY = 0.95;                       // the soft shadow straight below a hanging cutout
+
 vec4 decal() {
+  if (vFrame.w < -0.5) {
+    vec2 e = (vUV - vRect.xy) / max(vRect.zw - vRect.xy, vec2(1e-5)) * 2.0 - 1.0;
+    float op = HUNG_OPACITY * sq(sat(1.0 - dot(e, e))) * vTint.a * uReveal;
+    return vec4(neutralise(uShadowColor) * 0.5 * op, op);
+  }
   vec2 size = vRect.zw - vRect.xy;
   float spread = size.x * (0.04 + 0.1 * vDecal);
   float a = 0.25 * (rectAlpha(vUV + vec2(-spread, 0.0), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(spread, 0.0), DECAL_SOFT_BIAS)
@@ -99,6 +114,7 @@ vec4 decal() {
 void main() {
   if (vFrame.w < 0.5) {
     outColor = decal();
+    if (outColor.a < uDepthCut) discard;
     return;
   }
   float back = uFocusBack.w * smoothstep(FOCUS_BACK.x, FOCUS_BACK.y, vDepth - vFocusDepth);
@@ -127,13 +143,20 @@ void main() {
   n = vOrient.w > 0.5 ? vec3(n.x, n.z, -n.y) : n;
   n = normalize(vec3(n.x * vOrient.x + n.z * vOrient.y, n.y, -n.x * vOrient.y + n.z * vOrient.x));
 
-  vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5);
+  vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5) * (1.0 + CUTOUT_FILL * fillAt(vDepth));
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
-  vec3 hand = handLights(vWorld, n);
+  vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n);
   // Leaf weight from a coarse mip of the plate, so block noise in a pale leaf never flips it on and off.
   float leaf = leafWeight(texture(uColor, vUV, LEAF_MIP_BIAS).rgb);
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
+  if (vHung > 0.5) {
+    vec2 q = (vUV - vRect.xy) / max(vRect.zw - vRect.xy, vec2(1e-5));
+    float core = exp(-sq((q.y - GLOW_FLAME.x) / GLOW_FLAME.y) - sq((q.x - 0.5) / 0.4));
+    float glass = smoothstep(0.02, 0.12, luma(tex.rgb)) * (0.25 + 0.75 * core);
+    vec3 glow = uLampColor * GLOW * (0.35 + core) * mix(vec3(1.0), albedo / max(luma(albedo), 1e-3), 0.3);
+    lit = paperShoulder(mix(albedo * (ambient + key) * FRAME_DARK, glow, glass) + albedo * hand * 0.15 * (1.0 - glass));
+  }
 
   // The light that moves the edges and shadows: the hand where it reaches, else the key.
   float reach = handReach(vWorld);
@@ -173,4 +196,5 @@ void main() {
   float a = tex.a * opacity;
   float shadowA = shadow * opacity * (1.0 - a);
   outColor = vec4(lit * a + neutralise(uShadowColor) * 0.4 * shadowA, a + shadowA);
+  if (outColor.a < uDepthCut) discard;
 }
