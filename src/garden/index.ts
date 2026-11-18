@@ -15,13 +15,15 @@ import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
 import { createModeLayers } from '../ui/mode.ts';
 import { createMover } from '../ui/xform.ts';
-import type { BedId, ChannelName, Clock, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State } from '../types.ts';
+import type { BedId, ChannelName, Clock, CutoutBatch, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State } from '../types.ts';
 import { createRig } from '../world/camera.ts';
 import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
 import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode } from '../world/mode.ts';
 import { createVisitorLantern, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
+import { fetchManifest } from '../world/bed.ts';
+import { FIGURE_SPRITES, type FigureRects } from '../world/puppet.ts';
 import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
@@ -278,19 +280,41 @@ export function startGarden(host: GardenHost): GardenRuntime {
 
   loop.setCallsProbe(() => gfx.renderer.info.render.calls);
   /** The carried lantern draws from the shared atlas: its actor batch comes once that is in (free roam). */
-  const attachLantern = (): void => {
+  const attachLantern = (): CutoutBatch | null => {
     const atlas = garden.sharedAtlas();
     const rect = atlas?.manifest.sprites[LANTERN.sprite];
-    if (lantern === null || atlas === null || rect === undefined) return;
+    if (lantern === null || atlas === null || rect === undefined) return null;
     const color = atlas.tex.color[rect.page];
     const normal = atlas.tex.normal[rect.page];
-    if (color === undefined || normal === undefined) return;
+    if (color === undefined || normal === undefined) return null;
     const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS);
     gfx.scene.add(batch.mesh);
     lantern.attach(batch.writer, rect);
+    return batch;
+  };
+  /** The figure's page (free roam), after ready: decoded off the main thread, uploaded one texture a frame. */
+  const loadFigure = async (batch: CutoutBatch): Promise<void> => {
+    const signal = new AbortController().signal;
+    const m = await fetchManifest('roam', signal);
+    const held = m.sprites['fg/lantern'];
+    const crook = m.sprites['fg/crook'];
+    if (lantern === null || held === undefined || crook === undefined || FIGURE_SPRITES.some((id) => m.sprites[id]?.page !== held.page)) return;
+    const tex = await loadAtlas(gfx, m, quality.cfg.atlas, signal);
+    const color = tex.color[held.page];
+    const normal = tex.normal[held.page];
+    if (color === undefined || normal === undefined) return;
+    for (const t of [color, normal]) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      uploadTexture(gfx, t);
+    }
+    lantern.attachFigure(m.sprites as FigureRects, held, crook, () => {
+      batch.uniforms.uColor.value = color;
+      batch.uniforms.uNormal.value = normal;
+    });
   };
   const ready = Promise.all([gfx.warm(), garden.ready]).then(() => {
-    attachLantern();
+    const batch = attachLantern();
+    if (batch !== null) void loadFigure(batch).catch(() => undefined);
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     void quality.probe().then((tier) => {
