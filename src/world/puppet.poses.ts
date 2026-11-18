@@ -17,29 +17,30 @@ const pose = (hipA: number, hipB: number, footA: number, footB: number, kneeA: n
   free: number, freeH: number, carry: number, drop: number): Pose => ({ hipA, hipB, footA, footB, kneeA, kneeB, torso, head, free, freeH, carry, drop });
 
 /**
- * Rest turns (degrees, counter-clockwise; sleeves cut hanging, close to the body): the bent arm holds the lantern just
- * clear of the leg. The free arm's swing stays within a few degrees of this, never held out from the body.
+ * Rest turns (degrees, counter-clockwise; sleeves cut hanging, close to the body): the bent arm holds the lantern clear
+ * of the hip, so lantern and fist always show beside the body. The free arm swings within 12 degrees of this.
  */
-export const REST = { freeArm: -2, carryArm: 16, sideFree: 0, sideCarry: 24 } as const;
+export const REST = { freeArm: -1, carryArm: 24, sideFree: 0, sideCarry: 30 } as const;
 
 /**
- * Back view, two steps of two poses: the trailing foot leaves the ground on contact (the body drops onto the planted
- * leg), then passes high up the screen on a shortened leg while the body rises over the straight planted one. The hips
- * sit over the planted foot; the free (left) arm swings opposite its leg: forward and foreshortened while the left leg
- * trails, back toward the lens and a little out when it lands.
+ * Back view, two steps of two poses: the trailing foot peels off the ground on contact (the body drops onto the
+ * planted leg), then passes high up the screen on a bent, shortened leg while the body rises over the straight planted
+ * one: the scissor of a stride seen from behind. The hips sit over the planted foot; the free (left) arm swings
+ * opposite its leg: forward, inward and foreshortened while the left leg trails, back toward the lens and out when it
+ * lands.
  */
 export const BACK_POSES: readonly Pose[] = [
-  pose(-2, 2, 0.05, 0, 6, 0, 1.5, -0.5, -2, 0.88, 0, 0.02),
-  pose(-1, 1, 0.13, 0, 14, 0, 0, 0, 0, 0.94, 0.5, -0.006),
-  pose(-2, 2, 0, 0.05, 0, 6, -1.5, 0.5, 3, 1, 0, 0.02),
-  pose(-1, 1, 0, 0.13, 0, 14, 0, 0, 0, 0.94, 0.5, -0.006),
+  pose(-3, 3, 0.07, 0, 12, 0, 2, -1, -9, 0.82, 0, 0.022),
+  pose(-1, 1, 0.16, 0, 24, 0, 0, 0, 0, 0.92, 0.5, -0.01),
+  pose(-3, 3, 0, 0.07, 0, 12, -2, 1, 10, 1, 0, 0.022),
+  pose(-1, 1, 0, 0.16, 0, 24, 0, 0, 0, 0.92, 0.5, -0.01),
 ];
 /** Side view: legs swing in the picture plane toward the heading; A is the far leg, B the near one. */
 export const SIDE_POSES: readonly Pose[] = [
-  pose(-14, 18, 0, 0, 10, 0, -4, 0, 10, 1, 0, 0.01),
-  pose(5, -2, 0.05, 0, 24, 0, -3, 0, 0, 1, 1, 0),
-  pose(18, -14, 0, 0, 0, 10, -4, 0, -10, 1, 0, 0.01),
-  pose(-2, 5, 0, 0.05, 0, 24, -3, 0, 0, 1, 1, 0),
+  pose(-16, 20, 0, 0, 12, 0, -4, 0, 12, 1, 0, 0.016),
+  pose(5, -2, 0.06, 0, 28, 0, -3, 0, 0, 1, 1, -0.008),
+  pose(20, -16, 0, 0, 0, 12, -4, 0, -12, 1, 0, 0.016),
+  pose(-2, 5, 0, 0.06, 0, 28, -3, 0, 0, 1, 1, -0.008),
 ];
 /** Standing, in every view: feet a little apart, arms hanging. */
 export const IDLE = pose(-3, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);

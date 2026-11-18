@@ -32,16 +32,16 @@ const soleOf = (q: QuadParams, rectH: number): number => {
 
 type Q11 = [QuadParams, QuadParams, QuadParams, QuadParams, QuadParams, QuadParams, QuadParams, QuadParams, QuadParams, QuadParams, QuadParams];
 
-/** A gait holding a given view, pose and edge state. */
-function gaitOf(view: Gait['view'], pose: number, idle: boolean, edge = false, dir = 1): Gait {
-  return { ...createGait(), view, dir, pose, idle, edge };
+/** A gait holding a given view, pose and ticks left of a turn (2: drawn edge-on). */
+function gaitOf(view: Gait['view'], pose: number, idle: boolean, turn = 0, dir = 1): Gait {
+  return { ...createGait(), view, dir, pose, idle, turn };
 }
 
 const STATES: Gait[] = [];
 for (const view of ['back', 'side'] as const) {
   for (const dir of [1, -1]) {
-    STATES.push(gaitOf(view, 0, true, false, dir), gaitOf(view, 0, true, true, dir));
-    for (let p = 0; p < 4; p++) STATES.push(gaitOf(view, p, false, false, dir));
+    for (const turn of [0, 1, 2, 3]) STATES.push(gaitOf(view, 0, true, turn, dir));
+    for (let p = 0; p < 4; p++) STATES.push(gaitOf(view, p, false, 0, dir));
   }
 }
 
@@ -54,23 +54,26 @@ test('every part hangs from its parent pin within a pixel, in every pose, view, 
       const q = puppet.quads;
       const side = g.view === 'side';
       /** Slots of torso, head, hat, free arm and hand, carrying arm and hand, shin A, thigh A, shin B, thigh B. */
-      const slots = side ? [7, 8, 9, 1, 2, 10, 11, 4, 3, 6, 5] : [7, 10, 11, 5, 8, 6, 9, 2, 1, 4, 3];
+      const slots = side ? [8, 7, 9, 2, 1, 11, 10, 3, 4, 5, 6] : [10, 9, 11, 7, 5, 8, 6, 3, 4, 1, 2];
       const [torso, head, hat, freeArm, freeHand, crookArm, crookHand, shinA, thighA, shinB, thighB] = slots.map((i) => q[i]!) as Q11;
       const neck = at(torso, PINS.neck);
       expectAt(head, neck[0] + (side ? m * FIGURE.headFwdM * k : 0), neck[1]);
       const seat = at(head, PINS.hatSeat);
-      expectAt(hat, seat[0] + (side ? m * (FIGURE.hatFwdM - FIGURE.headFwdM) * k : 0), seat[1]);
+      expectAt(hat, seat[0] + (side ? m * (FIGURE.hatFwdM - FIGURE.headFwdM) * k : 0), seat[1] + FIGURE.hatLiftM * k);
       const shoulderFree = at(torso, side ? PINS.sideShoulder : PINS.shoulderL);
       const shoulderCrook = at(torso, side ? PINS.sideShoulder : PINS.shoulderR);
-      /** In the back view each sleeve hangs out from its shoulder pin by a share of its drawn width. */
+      /** In the back view each sleeve hangs out from its shoulder pin by a share of its drawn width; both sit a little under it. */
       const out = (q: QuadParams): number => (side ? 0 : FIGURE.armOut * q.w);
-      expectAt(freeArm, shoulderFree[0] - m * out(freeArm), shoulderFree[1]);
-      expectAt(crookArm, shoulderCrook[0] + m * out(crookArm), shoulderCrook[1]);
+      const drop = FIGURE.armDropM * k;
+      expectAt(freeArm, shoulderFree[0] - m * out(freeArm), shoulderFree[1] - drop);
+      expectAt(crookArm, shoulderCrook[0] + m * out(crookArm), shoulderCrook[1] - drop);
       expectAt(freeHand, ...at(freeArm, PINS.cuff));
       expectAt(crookHand, ...at(crookArm, PINS.cuffBent));
       if (!side) {
-        expectAt(thighA, ...at(torso, PINS.hipL));
-        expectAt(thighB, ...at(torso, PINS.hipR));
+        const hipL = at(torso, PINS.hipL);
+        const hipR = at(torso, PINS.hipR);
+        expectAt(thighA, hipL[0] + m * FIGURE.hipInM * k, hipL[1]);
+        expectAt(thighB, hipR[0] - m * FIGURE.hipInM * k, hipR[1]);
       } else {
         expectAt(thighA, torso.x - m * FIGURE.hipM * k, torso.y);
         expectAt(thighB, torso.x + m * FIGURE.hipM * k, torso.y);
@@ -126,11 +129,11 @@ test('the carrying arm turns at most a degree between poses, so the lantern bobs
     let prev: [number, number, number] | null = null;
     for (let i = 0; i <= poses.length; i++) {
       puppet.place(gaitOf(view, i % poses.length, false), 0, 0, 1, 1);
-      const now: [number, number, number] = [puppet.grip[0]!, puppet.grip[1]!, puppet.quads[view === 'back' ? 6 : 10]!.rot];
+      const now: [number, number, number] = [puppet.grip[0]!, puppet.grip[1]!, puppet.quads[view === 'back' ? 8 : 11]!.rot];
       if (prev !== null) {
         expect(Math.abs(now[2] - prev[2])).toBeLessThanOrEqual(1 * DEG + 1e-9);
-        /** The grip follows the body over the planted foot and its rise and fall: a step, not a jump. */
-        expect(Math.hypot(now[0] - prev[0], now[1] - prev[1])).toBeLessThan(0.04);
+        /** The grip follows the body over the planted foot and its rise and fall (readable from behind): a step, not a jump. */
+        expect(Math.hypot(now[0] - prev[0], now[1] - prev[1])).toBeLessThan(0.05);
       }
       prev = now;
     }
@@ -138,12 +141,12 @@ test('the carrying arm turns at most a degree between poses, so the lantern bobs
 });
 
 /** Walks at (vx, vz) m/s for `s` seconds from time t0; returns each frame's tick and the drawn state. */
-interface Frame { tick: number; key: string; edge: boolean; view: string }
+interface Frame { tick: number; key: string; turn: number; view: string }
 function walk(g: Gait, t0: number, s: number, vx: number, vz: number, o: { frozen?: boolean; reduced?: boolean } = {}): Frame[] {
   const out: Frame[] = [];
   for (let t = t0; t < t0 + s; t += DT) {
     stepGait(g, t, DT, vx, vz, o.frozen ?? false, o.reduced ?? false);
-    out.push({ tick: Math.floor(t * FIGURE.fps), key: `${g.view} ${g.dir} ${g.pose} ${g.idle} ${g.edge} ${g.shift}`, edge: g.edge, view: g.view });
+    out.push({ tick: Math.floor(t * FIGURE.fps), key: `${g.view} ${g.dir} ${g.pose} ${g.idle} ${g.turn} ${g.shift}`, turn: g.turn, view: g.view });
   }
   return out;
 }
@@ -178,7 +181,7 @@ test('the walk advances only on twos of 12 fps, at most one pose a tick, one pos
   expect(fastChanges).toBeLessThanOrEqual(FIGURE.fps);
 });
 
-test('the view turns to the side past 62.5 degrees and back under 47.5, on a tick, edge-on for one tick', () => {
+test('the view turns to the side past 62.5 degrees and back under 47.5, over three ticks: old view, edge-on, new view', () => {
   const g = createGait();
   const at = (deg: number): [number, number] => [Math.sin(deg * DEG) * 1.5, -Math.cos(deg * DEG) * 1.5];
   walk(g, 0, 1, ...at(55));
@@ -186,9 +189,9 @@ test('the view turns to the side past 62.5 degrees and back under 47.5, on a tic
   const turn = walk(g, 1, 1, ...at(65));
   expect(g.view).toBe('side');
   expect(g.dir).toBe(1);
-  const edgeTicks = new Set(turn.filter((f) => f.edge).map((f) => f.tick));
-  expect(edgeTicks.size).toBe(1);
-  expect(turn.find((f) => f.edge)?.view).toBe('side');
+  const turning = turn.filter((f) => f.turn > 0);
+  expect(new Set(turning.map((f) => f.tick)).size).toBe(3);
+  expect(turning.map((f) => `${f.turn} ${f.view}`).filter((k, i, a) => a.indexOf(k) === i)).toEqual(['3 back', '2 side', '1 side']);
   walk(g, 2, 1, ...at(50));
   expect(g.view).toBe('side');
   walk(g, 3, 1, ...at(45));
@@ -221,15 +224,16 @@ test('the free arm swings opposite the legs within a few degrees of hanging, nev
     for (const p of [...poses, IDLE]) expect(Math.abs(rest - p.free)).toBeLessThanOrEqual(12);
   }
   expect(Math.abs(REST.freeArm)).toBeLessThanOrEqual(4);
-  for (const p of BACK_POSES) expect(Math.abs(p.free)).toBeLessThanOrEqual(4);
   const backSwing = BACK_POSES.map((p) => p.free);
   expect(Math.sign(backSwing[0]!)).toBe(-Math.sign(backSwing[2]!));
+  /** The swing reads at 120 px: well over ten degrees from one step to the next. */
+  expect(Math.abs(backSwing[0]! - backSwing[2]!)).toBeGreaterThanOrEqual(15);
   expect(BACK_POSES[0]!.freeH).not.toBe(BACK_POSES[2]!.freeH);
   const puppet = createPuppet(rects);
   for (const view of ['back', 'side'] as const) {
     for (let i = 0; i < 4; i++) {
       puppet.place(gaitOf(view, i, false), 0, 0, 1, 1);
-      const arm = puppet.quads[view === 'back' ? 5 : 1]!;
+      const arm = puppet.quads[view === 'back' ? 7 : 2]!;
       const fromHanging = Math.abs(arm.rot) / DEG;
       expect(fromHanging, `${view} ${i} free arm`).toBeLessThanOrEqual(12);
     }
@@ -251,18 +255,20 @@ test('the back-view stride lifts the stepping foot clearly, alternates feet and 
   for (let i = 0; i < 4; i++) {
     puppet.place(gaitOf('back', i, false), 0, 0, 1, 1);
     const h = (id: 'fg/shin-l' | 'fg/shin-r'): number => rects[id].uv[3] - rects[id].uv[1];
-    lifted.push(Math.max(soleOf(puppet.quads[2]!, h('fg/shin-l')), soleOf(puppet.quads[4]!, h('fg/shin-r'))));
+    lifted.push(Math.max(soleOf(puppet.quads[3]!, h('fg/shin-l')), soleOf(puppet.quads[1]!, h('fg/shin-r'))));
   }
   expect(lifted[1]!).toBeGreaterThan(0.1);
   expect(lifted[3]!).toBeGreaterThan(0.1);
 });
 
-test('standing: the idle pose, the back view at once after a profile, and the idle shift held for seconds', () => {
+test('standing: the idle pose, the back view after a quarter-second turn from a profile, and the idle shift held for seconds', () => {
   const g = createGait();
   walk(g, 0, 1, 1.5, 0);
   expect(g.view).toBe('side');
   const stand = walk(g, 1, 12, 0, 0);
-  expect(stand[Math.ceil((FIGURE.idleAfterS + 0.1) / DT)]!.view).toBe('back');
+  expect(stand.some((f) => f.turn === 3 && f.view === 'side')).toBe(true);
+  expect(stand.some((f) => f.turn === 2 && f.view === 'back')).toBe(true);
+  expect(stand[Math.ceil((FIGURE.idleAfterS + 0.35) / DT)]!.view).toBe('back');
   expect(g.idle).toBe(true);
   expect(g.view).toBe('back');
   const shifts = stand.filter((f, i) => i > 0 && f.key !== stand[i - 1]!.key && f.key.startsWith('back')).length;
@@ -270,12 +276,12 @@ test('standing: the idle pose, the back view at once after a profile, and the id
   expect(shifts).toBeLessThanOrEqual(6);
 });
 
-test('reduced motion keeps one standing pose: no cycle, no edge-on tick, no shift', () => {
+test('reduced motion keeps one standing pose: no cycle, no turn, no shift', () => {
   const g = createGait();
   const frames = walk(g, 0, 3, 1.5, -0.2, { reduced: true });
-  expect(frames.every((f) => f.key.endsWith(' 0 true false 0'))).toBe(true);
+  expect(frames.every((f) => f.key.endsWith(' 0 true 0 0'))).toBe(true);
   walk(g, 3, 12, 0, 0, { reduced: true });
-  expect([g.idle, g.edge, g.shift, g.pose]).toEqual([true, false, 0, 0]);
+  expect([g.idle, g.turn, g.shift, g.pose]).toEqual([true, 0, 0, 0]);
 });
 
 test('frozen time gives the pose for heading and speed at once, the same on every run', () => {
@@ -289,7 +295,7 @@ test('frozen time gives the pose for heading and speed at once, the same on ever
   expect(run(2, 0)).toBe(run(2, 0));
   const g = createGait();
   walk(g, 12.5, 0.2, 2, 0, { frozen: true });
-  expect([g.view, g.dir, g.pose, g.idle, g.edge]).toEqual(['side', 1, 0, false, false]);
+  expect([g.view, g.dir, g.pose, g.idle, g.turn]).toEqual(['side', 1, 0, false, 0]);
   walk(g, 12.5, 0.2, 0, 0, { frozen: true });
   expect(g.idle).toBe(true);
   const still = createGait();

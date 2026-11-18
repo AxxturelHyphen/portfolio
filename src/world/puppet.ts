@@ -3,9 +3,10 @@
  * theatre figure, who carries the lantern by its handle. The gait advances on twos of 12 fps by distance walked (one
  * pose per stride share, at most one per tick), so the feet change only on steps. Two views: back (walking away,
  * standing) and side (walking east or west, mirrored for west); walking south toward the lens keeps the side of the
- * last sideways movement, a figure carried downstage in profile. A view change is a swap on a tick, shown one tick
- * edge-on like a cutout being turned. The hierarchy is solved on the CPU into preallocated quads, re-grounded so the
- * lowest sole always stands on the ground plane. Nothing is allocated per frame.
+ * last sideways movement, a figure carried downstage in profile. A view change is a turn over three ticks (a quarter
+ * second): the old view narrows, the new one shows edge-on, then opens out, like a cutout being turned by hand. The
+ * hierarchy is solved on the CPU into preallocated quads, re-grounded so the lowest sole always stands on the ground
+ * plane. Nothing is allocated per frame.
  */
 import type { InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
 import { BACK_POSES, IDLE, REST, SIDE_POSES, type Pose } from './puppet.poses.ts';
@@ -22,12 +23,21 @@ export const FIGURE = {
   viewFrom: 0.25, sideOnDeg: 62.5, backOnDeg: 47.5,
   /** The slow idle shift: every shiftMinS plus up to shiftSpanS seconds, torso turn and root sway. */
   shiftMinS: 4.5, shiftSpanS: 2, shiftDeg: 1.5, shiftM: 0.008,
-  /** Width shares: the side torso, and the torso and arms on the edge-on tick of a turn. */
-  sideTorso: 0.78, edgeTorso: 0.45, edgeArm: 0.6,
+  /** Width share of the side torso. */
+  sideTorso: 0.78,
   /** Back view: each sleeve hangs this share of its width out from its shoulder pin, beside the smock and under its edge. */
-  armOut: 0.2,
+  armOut: 0.3,
+  /** Sleeve width share (slim sleeves, not puffed panels) and how far the shoulder pins sit under the smock's top (m). */
+  armSlim: 0.8, armDropM: 0.02,
+  /**
+   * Drawn size of the head (a real head under the hat: hair, nape and ears) and of the hat, against their sprites, and
+   * how far the hat sits above its seat (m), so the hair shows under the brim.
+   */
+  headK: 1.4, hatK: 0.78, hatLiftM: 0.012,
   /** Side view: head and hat shifted toward the heading, near and far hips either side of the hip centre (m). */
   headFwdM: 0.02, hatFwdM: 0.03, hipM: 0.012,
+  /** Back view: each hip drawn this far in from its pin, so the trouser legs meet at the seat with no gap of ground. */
+  hipInM: 0.01,
   /** Contact shadow: carrier width (the shader spreads it 1.5 x 0.9) and opacity (the lantern lights the ground). */
   shadowW: 0.23, shadowA: 0.8,
   /** Atlas page side in px: the sole sits `pad` px above a shin quad's bottom edge. */
@@ -56,20 +66,29 @@ export const PIVOTS: Readonly<Record<(typeof FIGURE_SPRITES)[number], readonly [
 };
 
 const DEG = Math.PI / 180;
-/** Paper tones on the plates' own tint: the body held down under its lantern, the far leg and the fists in shade. */
-const TONES = [[0.56, 0.55, 0.55], [0.42, 0.41, 0.41]] as const;
+/**
+ * Paper tones on the plates' own tint, both above the shader's shaded-layer luma (0.75), so the inner edges take no
+ * cool moon rim: the figure is held down by the actor batch's share of the lantern light instead. The far leg and the
+ * fists a step darker.
+ */
+const TONES = [[0.8, 0.79, 0.78], [0.77, 0.76, 0.75]] as const;
 const TONE = { body: 0, far: 1 } as const;
+/**
+ * The turn between views, by ticks left (index 0: no turn): torso and arm width shares. On the first tick the old view
+ * narrows; the view swaps on the second, drawn edge-on, and opens out on the third.
+ */
+const TURN = { ticks: 3, swapAt: 2, torso: [1, 0.8, 0.45, 0.62], arm: [1, 0.85, 0.6, 0.75] } as const;
 
 export type View = 'back' | 'side';
 
-/** Gait state: what is drawn (view, side, pose, idle, edge-on, idle shift) and the inputs that move it. */
+/** Gait state: what is drawn (view, side, pose, idle, ticks left of a turn, idle shift) and the inputs that move it. */
 export interface Gait {
-  view: View; dir: number; pose: number; idle: boolean; edge: boolean; shift: number;
+  view: View; dir: number; pose: number; idle: boolean; turn: number; shift: number;
   wantView: View; wantDir: number; tick: number; travelled: number; slowS: number; idleS: number; shifts: number; shiftAt: number;
 }
 
 export function createGait(): Gait {
-  return { view: 'back', dir: 1, pose: 0, idle: true, edge: false, shift: 0, wantView: 'back', wantDir: 1, tick: NaN, travelled: 0,
+  return { view: 'back', dir: 1, pose: 0, idle: true, turn: 0, shift: 0, wantView: 'back', wantDir: 1, tick: NaN, travelled: 0,
     slowS: 0, idleS: 0, shifts: 0, shiftAt: shiftInterval(0) };
 }
 
@@ -94,7 +113,7 @@ function desire(g: Gait, phi: number, vx: number): void {
 /**
  * One frame of the gait from the ground velocity (m/s). Poses, views and the idle shift change only when the 12 fps
  * tick floor(t * 12) moves. Frozen time gives the pose for the heading and speed at once (idle or the first pose of the
- * view); reduced motion keeps one standing pose with no cycle, no edge-on tick and no shift.
+ * view); reduced motion keeps one standing pose with no cycle, no turn and no shift.
  */
 export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number, frozen: boolean, reduced: boolean): void {
   const speed = Math.hypot(vx, vz);
@@ -108,7 +127,7 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
     g.dir = g.wantDir;
     g.idle = standing || reduced;
     g.pose = 0;
-    g.edge = false;
+    g.turn = 0;
     g.shift = 0;
     return;
   }
@@ -116,12 +135,7 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
   const tick = Math.floor(t * FIGURE.fps);
   if (tick === g.tick) return;
   g.tick = tick;
-  g.edge = false;
-  if (g.view !== g.wantView || (g.wantView === 'side' && g.dir !== g.wantDir)) {
-    g.view = g.wantView;
-    g.dir = g.wantDir;
-    g.edge = !reduced;
-  }
+  turnStep(g, reduced);
   if (reduced) {
     g.idle = true;
     g.pose = 0;
@@ -151,6 +165,17 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
   }
 }
 
+/** A tick of the turn: starts one when the wanted view or side differs, swaps the view halfway; reduced swaps at once. */
+function turnStep(g: Gait, reduced: boolean): void {
+  const differs = g.view !== g.wantView || (g.wantView === 'side' && g.dir !== g.wantDir);
+  if (g.turn > 0) g.turn--;
+  if (g.turn === 0 && differs && !reduced) g.turn = TURN.ticks;
+  if (differs && g.turn <= TURN.swapAt) {
+    g.view = g.wantView;
+    g.dir = g.wantDir;
+  }
+}
+
 /** The pose the gait shows. */
 export function poseOf(g: Gait): Pose {
   if (g.idle) return IDLE;
@@ -160,16 +185,20 @@ export function poseOf(g: Gait): Pose {
 /** The sole's height in a shin sprite: its padding as a share of the sprite's height. */
 const padOf = (r: SpriteRect): number => r.pad / ((r.uv[3] - r.uv[1]) * FIGURE.pagePx);
 
-/** One solved part: its rect, pivot (canonical figure plane, m), turn, width and height shares and mirroring. */
-interface Sprite { rect: SpriteRect; px: number; py: number }
+/** One solved part: its rect, pivot (canonical figure plane, m), drawn size share, turn, width and height shares and mirroring. */
+interface Sprite { rect: SpriteRect; px: number; py: number; size: number }
 interface Part { sprite: Sprite; x: number; y: number; a: number; sx: number; sy: number; flip: boolean; tone: number }
 
 /** Body parts (cook/FIGURE_BUILD.md 4). */
 const S = { Torso: 0, Head: 1, Hat: 2, FreeArm: 3, FreeHand: 4, CarryArm: 5, CarryHand: 6, ThighA: 7, ShinA: 8, ThighB: 9, ShinB: 10 } as const;
-/** Back: legs (shin over thigh), the sleeves beside the smock and tucked under its edge, the smock, fists, hat. */
-const BACK_ORDER = [S.ThighA, S.ShinA, S.ThighB, S.ShinB, S.FreeArm, S.CarryArm, S.Torso, S.FreeHand, S.CarryHand, S.Head, S.Hat] as const;
-/** Side: the far arm behind the body, the near (carrying) arm in front of it. */
-const SIDE_ORDER = [S.FreeArm, S.FreeHand, S.ThighA, S.ShinA, S.ThighB, S.ShinB, S.Torso, S.Head, S.Hat, S.CarryArm, S.CarryHand] as const;
+/**
+ * Back: every inner edge lies under a neighbour, so no paper rim splits the figure: each thigh over its shin (the knee),
+ * the right leg under the left (the inseam), the fists under their cuffs, the sleeves under the smock, the nape under
+ * the collar, the hat on top.
+ */
+const BACK_ORDER = [S.ShinB, S.ThighB, S.ShinA, S.ThighA, S.FreeHand, S.CarryHand, S.FreeArm, S.CarryArm, S.Head, S.Torso, S.Hat] as const;
+/** Side: the far arm behind the body, the near (carrying) arm in front of it, each fist under its cuff. */
+const SIDE_ORDER = [S.FreeHand, S.FreeArm, S.ShinA, S.ThighA, S.ShinB, S.ThighB, S.Head, S.Torso, S.Hat, S.CarryHand, S.CarryArm] as const;
 /** Instance indices: the shadow, the eleven body parts in paint order, then (the visitor's) handle and lantern. */
 export const SLOT = { shadow: 0, handle: 12, lantern: 13, count: 14 } as const;
 
@@ -188,10 +217,10 @@ export interface Puppet {
 }
 
 export function createPuppet(rects: FigureRects): Puppet {
-  const sprite = (id: keyof FigureRects): Sprite => ({ rect: rects[id], px: PIVOTS[id][0], py: PIVOTS[id][1] });
+  const sprite = (id: keyof FigureRects, size = 1): Sprite => ({ rect: rects[id], px: PIVOTS[id][0], py: PIVOTS[id][1], size });
   const sprites = { thighL: sprite('fg/thigh-l'), shinL: sprite('fg/shin-l'), thighR: sprite('fg/thigh-r'), shinR: sprite('fg/shin-r') };
-  const part = (id: keyof FigureRects): Part => ({ sprite: sprite(id), x: 0, y: 0, a: 0, sx: 1, sy: 1, flip: false, tone: TONE.body });
-  const parts: Part[] = [part('fg/torso'), part('fg/head'), part('fg/hat'), part('fg/arm'), part('fg/hand'), part('fg/arm-bent'), part('fg/hand'),
+  const part = (id: keyof FigureRects, size = 1): Part => ({ sprite: sprite(id, size), x: 0, y: 0, a: 0, sx: 1, sy: 1, flip: false, tone: TONE.body });
+  const parts: Part[] = [part('fg/torso'), part('fg/head', FIGURE.headK), part('fg/hat', FIGURE.hatK), part('fg/arm'), part('fg/hand'), part('fg/arm-bent'), part('fg/hand'),
     part('fg/thigh-l'), part('fg/shin-l'), part('fg/thigh-r'), part('fg/shin-r')];
   const flags = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow);
   const quads: QuadParams[] = [];
@@ -211,9 +240,9 @@ export function createPuppet(rects: FigureRects): Puppet {
   /** World point (canonical) of a sprite fraction (fx, fy) on a placed part, into `pin`. */
   function pinOf(p: Part, f: readonly number[]): Float32Array {
     const r = p.sprite;
-    let lx = (f[0]! - r.px) * r.rect.size[0] * k * p.sx;
+    let lx = (f[0]! - r.px) * r.rect.size[0] * k * r.size * p.sx;
     if (p.flip) lx = -lx;
-    const ly = (f[1]! - r.py) * r.rect.size[1] * k * p.sy;
+    const ly = (f[1]! - r.py) * r.rect.size[1] * k * r.size * p.sy;
     const c = Math.cos(p.a);
     const s = Math.sin(p.a);
     pin[0] = p.x + c * lx - s * ly;
@@ -270,8 +299,9 @@ export function createPuppet(rects: FigureRects): Puppet {
     k = scale;
     const p = poseOf(g);
     const side = g.view === 'side';
-    const torsoW = g.edge ? FIGURE.edgeTorso : side ? FIGURE.sideTorso : 1;
-    const armW = g.edge ? FIGURE.edgeArm : 1;
+    const torsoW = TURN.torso[g.turn]! * (side ? FIGURE.sideTorso : 1);
+    const armW = TURN.arm[g.turn]! * FIGURE.armSlim;
+    const drop = FIGURE.armDropM * k;
     const torso = parts[S.Torso]!;
     /** Back: hips over the planted foot. */
     const sway = side ? 0 : Math.sign(p.footA - p.footB) * FIGURE.hipSwayM;
@@ -281,22 +311,22 @@ export function createPuppet(rects: FigureRects): Puppet {
     /** Hair and nape under the hat, from behind and in profile. */
     set(parts[S.Head]!, pin[0]! + fwd * FIGURE.headFwdM * k, pin[1]!, p.torso + p.head, 1, 1, false);
     pinOf(parts[S.Head]!, PINS.hatSeat);
-    set(parts[S.Hat]!, pin[0]! + fwd * (FIGURE.hatFwdM - FIGURE.headFwdM) * k, pin[1]!, p.torso + p.head, 1, 1, false);
+    set(parts[S.Hat]!, pin[0]! + fwd * (FIGURE.hatFwdM - FIGURE.headFwdM) * k, pin[1]! + FIGURE.hatLiftM * k, p.torso + p.head, 1, 1, false);
     const freeArm = parts[S.FreeArm]!;
     const carryArm = parts[S.CarryArm]!;
     if (side) {
       pinOf(torso, PINS.sideShoulder);
       const sx = pin[0]!;
       const sy = pin[1]!;
-      set(freeArm, sx, sy, REST.sideFree + p.free, armW, p.freeH, false);
-      set(carryArm, sx, sy, REST.sideCarry + p.carry + mirror * carryDeg, armW, 1, false);
+      set(freeArm, sx, sy - drop, REST.sideFree + p.free, armW, p.freeH, false);
+      set(carryArm, sx, sy - drop, REST.sideCarry + p.carry + mirror * carryDeg, armW, 1, false);
     } else {
       const outL = FIGURE.armOut * freeArm.sprite.rect.size[0] * k * armW;
       const outR = FIGURE.armOut * carryArm.sprite.rect.size[0] * k * armW;
       pinOf(torso, PINS.shoulderL);
-      set(freeArm, pin[0]! - outL, pin[1]!, REST.freeArm - p.free, armW, p.freeH, true);
+      set(freeArm, pin[0]! - outL, pin[1]! - drop, REST.freeArm - p.free, armW, p.freeH, true);
       pinOf(torso, PINS.shoulderR);
-      set(carryArm, pin[0]! + outR, pin[1]!, REST.carryArm + p.carry + mirror * carryDeg, armW, 1, false);
+      set(carryArm, pin[0]! + outR, pin[1]! - drop, REST.carryArm + p.carry + mirror * carryDeg, armW, 1, false);
     }
     hand(freeArm, parts[S.FreeHand]!, PINS.cuff);
     hand(carryArm, parts[S.CarryHand]!, PINS.cuffBent);
@@ -318,10 +348,11 @@ export function createPuppet(rects: FigureRects): Puppet {
     } else {
       thighA.sprite = sprites.thighL;
       shinA.sprite = sprites.shinL;
+      const hipIn = FIGURE.hipInM * k;
       pinOf(torso, PINS.hipL);
-      leg(thighA, shinA, PINS.kneeL, pin[0]!, pin[1]!, p.hipA, p.kneeA, p.footA * k, 1);
+      leg(thighA, shinA, PINS.kneeL, pin[0]! + hipIn, pin[1]!, p.hipA, p.kneeA, p.footA * k, 1);
       pinOf(torso, PINS.hipR);
-      leg(thighB, shinB, PINS.kneeR, pin[0]!, pin[1]!, p.hipB, -p.kneeB, p.footB * k, rightBase);
+      leg(thighB, shinB, PINS.kneeR, pin[0]! - hipIn, pin[1]!, p.hipB, -p.kneeB, p.footB * k, rightBase);
     }
     const ground = Math.min(soleY(shinA), soleY(shinB));
     for (const q of parts) q.y -= ground;
@@ -337,14 +368,14 @@ export function createPuppet(rects: FigureRects): Puppet {
   }
 
   function quadOf(p: Part, q: QuadParams, x: number, z: number, mirror: number): void {
-    const { rect: r, px, py } = p.sprite;
+    const { rect: r, px, py, size } = p.sprite;
     const flip = p.flip !== mirror < 0;
     q.x = x + mirror * p.x;
     q.y = p.y;
     q.z = z;
     q.rot = mirror * p.a;
-    q.w = r.size[0] * k * p.sx;
-    q.h = r.size[1] * k * p.sy;
+    q.w = r.size[0] * k * size * p.sx;
+    q.h = r.size[1] * k * size * p.sy;
     q.px = flip ? 1 - px : px;
     q.py = py;
     const uv = q.uv as Float32Array;
