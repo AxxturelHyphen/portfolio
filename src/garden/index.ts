@@ -7,9 +7,9 @@ import { INTRO, OPEN_HALF } from '../core/motion.ts';
 import type { GardenGeo } from '../core/machine.ts';
 import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/quality.ts';
 import { arrived, installTestApi } from '../core/testapi.ts';
-import { createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
+import { createActorBatch, createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
-import { carryVisitor, setStandeeTurn } from '../gl/lights.ts';
+import { carryVisitor, setRoamLight, setStandeeTurn, writeLamps } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
@@ -21,6 +21,7 @@ import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
 import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode } from '../world/mode.ts';
+import { createVisitorLantern, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
 import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
@@ -88,7 +89,8 @@ const SHOT_FOCUS: Readonly<Record<string, SlotId>> = { S08: 'rosaleda/rose-a' };
 export function startGarden(host: GardenHost): GardenRuntime {
   const { machine, loop, content, q } = host;
   const quality = createQuality(q);
-  const gfx = createGfx(host.canvas, quality, loop);
+  const roaming = new URLSearchParams(location.search).get('roam') === '1';
+  const gfx = createGfx(host.canvas, quality, loop, roaming);
   const rig = createRig(rigLayout(content.garden));
   const light = createLight();
   const moth = createMoth(rig);
@@ -96,7 +98,6 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const label = createLabel(host.label, { t, tr });
   const layers = createModeLayers(host.world, host.herbario);
   const kit = { loadAtlas, createCutoutBatch, uploadTexture, projectsOf, moth: () => moth, onDom: (fn: (c: Clock) => void) => loop.on('dom', fn), createMover };
-  const roaming = new URLSearchParams(location.search).get('roam') === '1';
   setWorldMode(roaming ? 'roam' : 'rail');
   const world = content.garden as WorldLayout;
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
@@ -104,6 +105,11 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
   if (roam !== null) setStandeeTurn(1);
+  const lantern = roam === null ? null : createVisitorLantern(roam.pos, world.ground.pond);
+  if (lantern !== null) {
+    setRoamLight();
+    light.carryFlame(lantern.flame);
+  }
   if (roam !== null) carryVisitor(roam.pos);
   const film = createFilmDrive(machine, rig, content.garden);
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
@@ -130,6 +136,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     slots = bed === null ? NO_SLOTS : (garden.beds.get(bed)?.slots ?? NO_SLOTS);
     rig.setSlots(slots);
     light.setSlots(slots);
+    if (lantern !== null) light.setLamps(bed === null ? null : SCENES[bed]);
   };
   bindBed(machine.state.bed);
   placeLight.set(machine.state.bed);
@@ -162,6 +169,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
       const h = gfx.cssH;
       rig.resize(w, h);
       light.resize(w, h);
+      lantern?.resize(w, h);
       if (roam !== null) {
         roam.resize(w, h);
         placeLight.holdMoon(roam.moonElevation());
@@ -182,6 +190,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     roam?.follow(c);
     rig.update(c, s, machine.ch);
     gfx.setPose(rig.pose);
+    lantern?.frame(c, s.reduced);
     light.update(c, s, machine.ch, rig);
     moth.update(c, s, machine.ch, light, slots);
   });
@@ -202,6 +211,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     sharedUniforms.uFocusBack.value.fromArray(light.back);
     sharedUniforms.uHandThrow.value = light.handThrow;
     sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
+    if (lantern !== null) writeLamps(light.lamps);
     intro.frame(machine.ch.intro.value, machine.state.phase === 'intro' || machine.ch.intro.value < 1);
     const u = gfx.film.uniforms;
     gfx.setFilm(machine.state.reduced, film.frame(c, u.uIris.value, u.uStrip.value, slots));
@@ -266,7 +276,20 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
 
   loop.setCallsProbe(() => gfx.renderer.info.render.calls);
+  /** The carried lantern draws from the shared atlas: its actor batch comes once that is in (free roam). */
+  const attachLantern = (): void => {
+    const atlas = garden.sharedAtlas();
+    const rect = atlas?.manifest.sprites[LANTERN.sprite];
+    if (lantern === null || atlas === null || rect === undefined) return;
+    const color = atlas.tex.color[rect.page];
+    const normal = atlas.tex.normal[rect.page];
+    if (color === undefined || normal === undefined) return;
+    const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS);
+    gfx.scene.add(batch.mesh);
+    lantern.attach(batch.writer, rect);
+  };
   const ready = Promise.all([gfx.warm(), garden.ready]).then(() => {
+    attachLantern();
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     void quality.probe().then((tier) => {

@@ -1,12 +1,15 @@
 /**
  * LightRig (ARCH 2.5, spec §3.2 and §7): the cursor light follows the pointer on its own follower; on touch it stays at
  * the last touch and drifts on a slow figure of eight when idle. Carried (free roam) it sits at the visitor and the
- * pointer no longer moves it. The gather light rises on the focused flower. Output is world space, read by the cutout
+ * pointer no longer moves it, and the lamps (world/lamps.ts) burn: the carried lantern's flame and the active bed's
+ * standing lanterns on screen. The gather light rises on the focused flower. Output is world space, read by the cutout
  * material (uCursor, uGather, uFocusBack, uMoonDir).
  */
-import type { CameraRig, Clock, LightRig, Machine, SlotId, SlotView, State } from '../types.ts';
+import type { CameraRig, Clock, LightRig, Machine, ScreenPt, SlotId, SlotView, State } from '../types.ts';
 import { LIGHT, follow } from '../core/motion.ts';
 import { slotWorld } from './camera.ts';
+import { findLamps, LAMPS, stepLamps } from './lamps.ts';
+import type { BedScene3 } from './layout.ts';
 
 /** Light geometry (world units and fractions of the view, no timings). */
 const GEOM = {
@@ -36,6 +39,12 @@ export interface GardenLight extends LightRig {
   setSlots(slots: readonly SlotView[]): void;
   /** Free roam: the light sits at this [x, z] (read every frame); null gives it back to the pointer. */
   carry(at: Float32Array | null): void;
+  /** Free roam: lamp 0 burns at this flame xyz (the carried lantern, read every frame). */
+  carryFlame(flame: Float32Array): void;
+  /** The active bed's standing lanterns become lamps 1 and 2 (free roam). Runs on a bed change, never per frame. */
+  setLamps(scene: BedScene3 | null): void;
+  /** The lamp list, LAMPS.count vec4s (flame xyz, strength); all dark until a flame is carried. */
+  readonly lamps: Float32Array;
 }
 
 export function createLight(): GardenLight {
@@ -71,6 +80,13 @@ export function createLight(): GardenLight {
   let gatherSlot: SlotId | null = null;
   let slots: readonly SlotView[] = [];
   let carried: Float32Array | null = null;
+  let flame: Float32Array | null = null;
+  const lamps = new Float32Array(LAMPS.count * 4);
+  const standing = new Float32Array(LAMPS.standing * 4);
+  let standingN = 0;
+  const seen: ScreenPt = { x: 0, y: 0, scale: 0, visible: false };
+  let lampRig: CameraRig | null = null;
+  const onScreen = (x: number, y: number, z: number): boolean => lampRig !== null && lampRig.project(x, y, z, seen).visible;
 
   /** A follower step; under frozen time (`?t`, the test API) it lands on its target so stills never depend on load. */
   const ease = (v: number, to: number, tauS: number, dt: number, snap: boolean): number => (snap ? to : follow(v, to, tauS, dt));
@@ -150,6 +166,10 @@ export function createLight(): GardenLight {
         cursor[2] = carried[1]! + GEOM.carriedRadius * GEOM.liftOfRadius;
         cursor[3] = GEOM.carriedRadius;
         stepGather(s, ch, dt, c.frozen, true);
+        if (flame !== null) {
+          lampRig = rig;
+          stepLamps(lamps, flame[0]!, flame[1]!, flame[2]!, standing, standingN, onScreen, dt, c.frozen);
+        }
         return;
       }
       /** Under frozen time (`?t`, the test API) a pointer still at (0,0) is the stray load event, not a hand: stills keep the rest light. */
@@ -176,5 +196,13 @@ export function createLight(): GardenLight {
     carry(at) {
       carried = at;
     },
+    carryFlame(f) {
+      flame = f;
+    },
+    setLamps(scene) {
+      standingN = findLamps(scene, standing);
+      for (let i = 1; i < LAMPS.count; i++) lamps[i * 4 + 3] = 0;
+    },
+    lamps,
   };
 }

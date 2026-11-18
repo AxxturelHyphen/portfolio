@@ -49,6 +49,8 @@ export interface StreamGarden extends GardenHandle {
   readonly ground: GroundBuild;
   /** Visited flowers, kept across visits. */
   readonly memory: GardenMemory;
+  /** The shared atlas (lanterns, pots, boards) once it is uploaded, else null. */
+  sharedAtlas(): BuildAtlas | null;
 }
 
 interface OverviewCard { bed: StreamBed; batch: CutoutBatch; index: number; rect: SpriteRect; alpha: number }
@@ -264,6 +266,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     ready,
     ground,
     memory,
+    sharedAtlas: () => shared,
     hover(bed) {
       if (bed === hovered) return;
       hovered = bed;
