@@ -30,6 +30,8 @@ export const QUAD_FLAG = {
   noShadow: 8,
   /** The tint is applied uncapped: a dark silhouette (overview cards of beds not loaded). */
   silhouette: 16,
+  /** A standee: turns toward a roaming eye around the vertical axis (uEye, cook/ROAM_PLAN.md 3); still on the rail. */
+  turn: 32,
 } as const;
 const PHASE_SPAN = 8;
 

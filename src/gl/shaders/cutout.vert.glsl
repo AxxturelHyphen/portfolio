@@ -7,12 +7,13 @@ uniform vec2 uWind;        // x: steady lean in radians, y: gust gain 0..1
 uniform vec4 uCursor;
 uniform vec4 uFocusBack;   // the plane the far layers fall back behind, amount
 uniform vec4 uShadowDir;   // decal direction x, z on the ground; length per unit of height; opacity
+uniform vec3 uEye;         // camera x, z on the ground; standee turn weight (0 on the rail, 1 under free roam)
 
 in vec3 position;   // corner x, y; kind
 in vec4 aPos;       // x, y, z, rotation (radians)
 in vec4 aSize;      // w, h (world units), pivot x, pivot y (0..1 of the quad)
 in vec4 aUV;        // u0, v0, u1, v1; u1 < u0 means flipped
-in vec4 aAnim;      // sway amplitude (radians), phase + 8 * flags, lift, facing (yaw in radians)
+in vec4 aAnim;      // sway amplitude (radians), phase + 8 * flags, lift, facing (hinge yaw in radians)
 in vec4 aTint;      // rgb multiplier, opacity (u8 normalised)
 
 out vec2 vUV;
@@ -33,6 +34,8 @@ const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the ca
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
 const float PUSH_MAX = 0.2443;       // 14 degrees
 const float DECAL_LIFT = 0.004;      // decals sit just above the ground they fall on
+const float TURN_MAX = 0.61087;      // a standee follows the eye's bearing up to 35 degrees either side
+const float TURN_K = 0.7;            // and turns this share of it, so the hinge variety stays
 
 float bit(float flags, float b) { return mod(floor(flags / b), 2.0); }
 
@@ -45,8 +48,11 @@ void main() {
   float kind = position.z;
   vec2 corner = position.xy;
 
-  float cy = cos(aAnim.w);
-  float sy = sin(aAnim.w);
+  // Standees (flag 32) turn from their hinge toward the eye; weight 0 leaves the hinge exactly as it was.
+  float bearing = clamp(atan(uEye.x - aPos.x, uEye.y - aPos.z), -TURN_MAX, TURN_MAX);
+  float yaw = aAnim.w + bit(flags, 32.0) * uEye.z * TURN_K * bearing;
+  float cy = cos(yaw);
+  float sy = sin(yaw);
   vec3 right = vec3(cy, 0.0, -sy);
   vec3 front = vec3(sy, 0.0, cy);
   vec3 world;

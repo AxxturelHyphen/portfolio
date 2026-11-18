@@ -146,6 +146,8 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     sharedUniforms.uCamRight.value.set(m[0] ?? 1, m[1] ?? 0, m[2] ?? 0);
     sharedUniforms.uCamUp.value.set(m[4] ?? 0, m[5] ?? 1, m[6] ?? 0);
     sharedUniforms.uCamPos.value.copy(camera.position);
+    sharedUniforms.uEye.value.x = camera.position.x;
+    sharedUniforms.uEye.value.y = camera.position.z;
   }
 
   function renderScene(c: Clock): void {

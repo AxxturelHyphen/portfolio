@@ -9,6 +9,7 @@ import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/
 import { arrived, installTestApi } from '../core/testapi.ts';
 import { createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
+import { setStandeeTurn } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
@@ -99,6 +100,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
   const roam = new URLSearchParams(location.search).get('roam') === '1' ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject }) : null;
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
+  if (roam !== null) setStandeeTurn(1);
   const film = createFilmDrive(machine, rig, content.garden);
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig);
