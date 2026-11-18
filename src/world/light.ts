@@ -46,6 +46,8 @@ export function createLight(): GardenLight {
   let width = 1280;
   let height = 720;
   let hasPointer = false;
+  /** False until a pointer reports anywhere but (0,0): headless Chromium fires one stray move there on load. */
+  let leftOrigin = false;
   let touch = false;
   let tx = 0;
   let ty = 0;
@@ -66,8 +68,8 @@ export function createLight(): GardenLight {
   /** A follower step; under frozen time (`?t`, the test API) it lands on its target so stills never depend on load. */
   const ease = (v: number, to: number, tauS: number, dt: number, snap: boolean): number => (snap ? to : follow(v, to, tauS, dt));
 
-  function stepScreen(c: Clock, dt: number): void {
-    if (!hasPointer) {
+  function stepScreen(c: Clock, dt: number, pointer: boolean): void {
+    if (!pointer) {
       tx = width * GEOM.restX;
       ty = height * GEOM.restY;
     }
@@ -94,7 +96,7 @@ export function createLight(): GardenLight {
     }
   }
 
-  function stepGather(s: State, ch: Machine['ch'], dt: number, snap: boolean): void {
+  function stepGather(s: State, ch: Machine['ch'], dt: number, snap: boolean, pointer: boolean): void {
     if (slotWorld(slots, s.slot, hit)) {
       gather[0] = hit[0]!;
       gather[1] = hit[1]!;
@@ -109,7 +111,7 @@ export function createLight(): GardenLight {
     gather[3] = gatherAmount;
     restBack = ease(restBack, slots.length > 0 ? GEOM.bedRestBack : 0, LIGHT.gatherOutTauS, dt, snap);
     /** A bed's rest light is part of its composed shot; on the overview the ground is lit only once a hand is there. */
-    handThrow = ease(handThrow, hasPointer || slots.length > 0 ? 1 : 0, LIGHT.gatherOutTauS, dt, snap);
+    handThrow = ease(handThrow, pointer || slots.length > 0 ? 1 : 0, LIGHT.gatherOutTauS, dt, snap);
     const toGather = Math.min(1, gatherAmount * 4);
     back[0] = cursor[0]! + (gather[0]! - cursor[0]!) * toGather;
     back[1] = cursor[1]! + (gather[1]! - cursor[1]!) * toGather;
@@ -127,6 +129,7 @@ export function createLight(): GardenLight {
     },
     setPointer(xPx, yPx, kind) {
       hasPointer = true;
+      if (xPx !== 0 || yPx !== 0) leftOrigin = true;
       touch = kind === 'touch';
       tx = xPx;
       ty = yPx;
@@ -134,7 +137,9 @@ export function createLight(): GardenLight {
     },
     update(c: Clock, s: State, ch: Machine['ch'], rig: CameraRig) {
       const dt = c.dt;
-      stepScreen(c, dt);
+      /** Under frozen time (`?t`, the test API) a pointer still at (0,0) is the stray load event, not a hand: stills keep the rest light. */
+      const pointer = hasPointer && (leftOrigin || !c.frozen);
+      stepScreen(c, dt, pointer);
       /** In a bed the light moves on the plane of its flowers; the overview keeps the garden's middle plane. */
       const planeZ = slots.length > 0 ? slots[0]!.world[2] : GEOM.planeZ;
       rig.unproject(fx, fy, planeZ, hit);
@@ -144,7 +149,7 @@ export function createLight(): GardenLight {
       cursor[1] = hit[1]!;
       cursor[2] = planeZ + r * GEOM.liftOfRadius;
       cursor[3] = r;
-      stepGather(s, ch, dt, c.frozen);
+      stepGather(s, ch, dt, c.frozen, pointer);
     },
     resize(w, h) {
       width = Math.max(1, w);

@@ -100,3 +100,24 @@ test('running time: the moth follows the light and lands only after the still ti
   for (let i = 0; i < 4; i++) step(0.05, false);
   expect(moth.mode).toBe('land');
 });
+
+test('frozen time: a pointer that never left (0,0) is the stray load event and keeps the overview rest light', () => {
+  const rest = scene();
+  const stray = scene();
+  const real = scene();
+  for (const s of [rest, stray, real]) s.light.setSlots([]);
+  stray.light.setPointer(0, 0, 'mouse');
+  real.light.setPointer(300, 500, 'mouse');
+  for (const s of [rest, stray, real]) s.step(0.016, true);
+  expect(stray.light.handThrow).toBe(0);
+  expect(Array.from(stray.light.cursor)).toEqual(Array.from(rest.light.cursor));
+  expect(real.light.handThrow).toBe(1);
+});
+
+test('running time: a pointer at (0,0) counts as present, as before', () => {
+  const { light, step } = scene();
+  light.setSlots([]);
+  light.setPointer(0, 0, 'mouse');
+  step(0.016, false);
+  expect(light.handThrow).toBe(follow(0, 1, LIGHT.gatherOutTauS, 0.016));
+});
