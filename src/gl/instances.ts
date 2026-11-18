@@ -34,6 +34,8 @@ export const QUAD_FLAG = {
   turn: 32,
   /** Fades to a trace while it covers the roaming visitor's ground point (uVisitor); never on the rail. */
   fade: 64,
+  /** Hangs in the air (the carried lantern): its decal is a soft shadow on the ground straight below, not a cast one. */
+  hung: 128,
 } as const;
 const PHASE_SPAN = 8;
 

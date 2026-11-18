@@ -21,7 +21,7 @@ out vec2 vUV;
 out vec4 vRect;
 out vec3 vWorld;
 out vec4 vTint;
-out vec4 vFrame;    // cos and sin of the rotation, flip sign, kind
+out vec4 vFrame;    // cos and sin of the rotation, flip sign, kind (-1: the shadow below a hung cutout)
 out vec4 vOrient;   // cos and sin of the yaw, lean (radians), flat 0/1
 out float vLift;
 out float vDecal;   // 0 at the foot, 1 at the far end of the decal
@@ -31,15 +31,18 @@ out float vSilhouette; // 1: the tint is the colour, uncapped (overview cards of
 out float vPlaneDepth; // view depth of the hand light's plane
 out float vFocusDepth; // view depth of the fall-back plane (the focused flower or the bed's flowers)
 out float vFade;       // paper opacity factor: under 1 while a fading card covers the visitor
+out float vHung;       // 1: a hung cutout's paper (the carried lantern), lit from its own flame
 
 const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the camera pitch)
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
 const float PUSH_MAX = 0.2443;       // 14 degrees
+const float ROAM_PUSH_RADIUS = 1.2;  // under free roam leaves bend round the visitor's ground point within this distance
 const float DECAL_LIFT = 0.004;      // decals sit just above the ground they fall on
 const float TURN_MAX = 0.61087;      // a standee follows the eye's bearing up to 35 degrees either side
 const float TURN_K = 0.7;            // and turns this share of it, so the hinge variety stays
 const float FADE_TO = 0.35;          // a fading card's opacity while it covers the visitor
 const float FADE_EDGE = 0.3;         // metres either side of its outline over which it fades: about 0.2 s of walking
+const vec2 HUNG_SHADOW = vec2(1.5, 0.9); // a hanging cutout's shadow below it: width and depth as shares of its width
 
 float bit(float flags, float b) { return mod(floor(flags / b), 2.0); }
 
@@ -85,6 +88,12 @@ void main() {
     float across = (corner.x - aSize.z) * aSize.x * (1.0 + 0.35 * corner.y);
     float along = corner.y * uShadowDir.z * aSize.y;
     world = aPos.xyz + right * across + vec3(uShadowDir.x, 0.0, uShadowDir.y) * along + vec3(0.0, DECAL_LIFT - aSize.w * aSize.y, 0.0);
+    if (bit(flags, 128.0) > 0.5) {
+      // Hung (the carried lantern): a soft patch on the ground straight below, whatever the height it hangs at.
+      vec2 spread = (corner - 0.5) * abs(aSize.x) * HUNG_SHADOW;
+      world = vec3(aPos.x, DECAL_LIFT, aPos.z) + right * spread.x + front * spread.y;
+      kind = -1.0;
+    }
     vec4 clip = uViewProj * vec4(world, 1.0);
     gl_Position = casts > 0.5 ? clip : vec4(2.0, 2.0, 2.0, 1.0);
   } else {
@@ -94,8 +103,9 @@ void main() {
     float bend = max(corner.y - aSize.w, 0.0);
     float angle = aAnim.x * (sin(t * 1.3 + phase) * (0.6 + 0.4 * uWind.y) + uWind.x);
     // Leaves that sway bend away from the hand light's ground point at the full rate.
-    vec2 away = aPos.xz - uCursor.xz;
-    float push = step(1e-4, aAnim.x) * (1.0 - smoothstep(0.0, PUSH_RADIUS, length(away)));
+    // Under free roam (uEye.z 1) they bend round the visitor's ground point instead, in a wider ring.
+    vec2 away = aPos.xz - (uEye.z > 0.5 ? uVisitor : uCursor.xz);
+    float push = step(1e-4, aAnim.x) * (1.0 - smoothstep(0.0, mix(PUSH_RADIUS, ROAM_PUSH_RADIUS, uEye.z), length(away)));
     angle += sign(away.x + 1e-4) * push * PUSH_MAX;
     local.x += angle * bend * bend * aSize.y;
 
@@ -111,6 +121,7 @@ void main() {
     if (bit(flags, 64.0) * uEye.z > 0.5) vFade = 1.0 - (1.0 - FADE_TO) * coverOf(right, front, lean);
   }
 
+  vHung = kind > 0.5 ? bit(flags, 128.0) : 0.0;
   vUV = mix(aUV.xy, aUV.zw, corner);
   vRect = vec4(min(aUV.x, aUV.z), min(aUV.y, aUV.w), max(aUV.x, aUV.z), max(aUV.y, aUV.w));
   vWorld = world;
