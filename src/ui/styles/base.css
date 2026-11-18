@@ -244,6 +244,27 @@ html[data-mode="garden"] {
   color: var(--ink-3);
 }
 
+/* In the notebook the dot is drawn in the gap before each word and the one that would open a wrapped line is clipped,
+   as in the Herbario's lists, so every line starts on a word. Screen readers skip the dot. */
+@media screen {
+  .pn .h-tags {
+    column-gap: 0.75em;
+    clip-path: inset(-0.5em -1em -0.5em -0.05em);
+  }
+
+  .pn .h-tags > li {
+    position: relative;
+  }
+
+  .pn .h-tags > li + li::before {
+    content: "\00B7" / "";
+    position: absolute;
+    left: -0.375em;
+    margin: 0;
+    translate: -50% 0;
+  }
+}
+
 /* Status as a stamped word: rose ink in a double ruled frame, set a little askew like a rubber stamp. No dots. */
 [data-status]:is(.h-status, .c-status) {
   display: inline-block;
