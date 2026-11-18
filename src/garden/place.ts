@@ -7,6 +7,7 @@ import { MAX_REFLECTORS, type PondRect, type PondReflector } from '../gl/pond.ts
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
+import { builtIn, type WorldMode } from '../world/mode.ts';
 
 /**
  * What the world data hands to gl and ui at load: the ground layout from garden.json (path, puddles), the light of each
@@ -129,23 +130,40 @@ export function signAnchorsOf(g: WorldLayout, scenes: Readonly<Record<BedId, Bed
 }
 
 /** The Estanque water from its bed file: the pond procedural's rectangle and the items marked to reflect (gl/pond.ts). */
-export function pondOf(scene: BedScene3): { rect: PondRect; reflectors: PondReflector[] } | null {
+export function pondOf(scene: BedScene3, mode: WorldMode): { rect: PondRect; reflectors: PondReflector[] } | null {
   const p = scene.procedural.find((x) => x.type === 'pond');
   if (p === undefined) return null;
   const reflectors: PondReflector[] = [];
   for (const l of scene.layers) {
     for (const it of l.items) {
-      if (it.reflect === undefined) continue;
+      if (it.reflect === undefined || !builtIn(it, mode)) continue;
       reflectors.push({ x: it.x, z: it.z, h: (it.h ?? it.reflect.w) * it.scale, w: it.reflect.w * it.scale, colour: it.reflect.colour });
     }
   }
   return { rect: { x0: p.x - p.w / 2, z0: p.z - p.h / 2, x1: p.x + p.w / 2, z1: p.z + p.h / 2 }, reflectors: reflectors.slice(0, MAX_REFLECTORS) };
 }
 
-/** Everything gl must have before warm() so no texture uploads on first draw: the ground layout and the pond, once. */
-export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>): void {
-  gfx.ground.setLayout(groundLayoutOf(g));
-  const pond = pondOf(scenes.estanque);
+/**
+ * Free roam: the ground plane ends just past the closed garden's walls (CLOSED_MARGIN, m), so whatever shows over a
+ * wall is sky, and the strip it keeps past them is shaded.
+ */
+const CLOSED_MARGIN = { side: 0.6, far: 1.2, shade: 0.3 } as const;
+
+export function closedGroundLayoutOf(g: WorldLayout): GroundLayout {
+  const e = g.ground.enclosure;
+  return { ...groundLayoutOf(g), x0: e.x[0] - CLOSED_MARGIN.side, x1: e.x[1] + CLOSED_MARGIN.side, z0: g.ground.wall.z - CLOSED_MARGIN.far };
+}
+
+/**
+ * Everything gl must have before warm() so no texture uploads on first draw: the ground layout and the pond, once.
+ * Free roam clips the ground to the closed garden and reflects the roam variants in the pond.
+ */
+export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode): void {
+  const closed = mode === 'roam';
+  gfx.ground.setLayout(closed ? closedGroundLayoutOf(g) : groundLayoutOf(g));
+  const e = g.ground.enclosure;
+  if (closed) gfx.ground.enclose(e.x[0], g.ground.wall.z - CLOSED_MARGIN.shade, e.x[1], e.front);
+  const pond = pondOf(scenes.estanque, mode);
   if (pond === null) return;
   gfx.pond.setRect(pond.rect);
   gfx.pond.setReflectors(pond.reflectors);

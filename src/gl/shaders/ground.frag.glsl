@@ -25,6 +25,8 @@ const vec3 MOSS_FLOOR = vec3(0.025, 0.042, 0.034);   // #2c3a33 moss patches, 1.
 const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
+uniform vec4 uEnclose;                                // free roam: the closed garden x0, z0, x1, z1; x1 < x0 on the rail
+const vec3 HEDGE_FOOT = vec3(0.008, 0.017, 0.013);    // #22352e in deep shade: the ground beyond the walls
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
 const vec3 POOL_SHAPE = vec3(0.35, 1.5, 0.75);        // the hand's throw: shift into the scene, length, width (radii)
 const float POOL = 0.45;
@@ -190,5 +192,10 @@ void main() {
   col = mix(col, haze, past * 0.8);
   vec3 fields = mix(vec3(luma(uSkyHorizon)), uSkyHorizon, FIELDS_CHROMA) * mix(FIELDS_NEAR, FIELDS_FAR, far);
   col = mix(col, fields, past * (0.5 + 0.5 * far));
+  if (uEnclose.z > uEnclose.x) {
+    // Free roam: past the closed garden's walls the ground is the shadowed foot of the hedge, never a lit plain.
+    vec2 inside = step(uEnclose.xy, p) * step(p, uEnclose.zw);
+    col = mix(HEDGE_FOOT, col, inside.x * inside.y);
+  }
   outColor = vec4(col, 1.0);
 }

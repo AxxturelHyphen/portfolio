@@ -19,6 +19,8 @@ export interface Ground {
   readonly mesh: Mesh;
   /** Bakes the path field (a few ms) and places the puddles. Load time only. */
   setLayout(l: GroundLayout): void;
+  /** Free roam: the closed garden's rectangle (x0, z0 far, x1, z1 near); the ground past it turns to deep shade. */
+  enclose(x0: number, z0: number, x1: number, z1: number): void;
   /** Photo stone and its normal map (CC0, repeat-wrapped by the caller's loader); null keeps the code-drawn stone. */
   setStone(color: Texture | null, normal: Texture | null): void;
   /** Textures the warm-up must upload before first use. */
@@ -42,6 +44,7 @@ export function createGround(moonBody: Vector3): Ground {
     ...sharedUniforms,
     uBounds: { value: new Vector4() },
     uWallZ: { value: ART_LAYOUT.wallZ },
+    uEnclose: { value: new Vector4(0, 0, -1, 0) },
     uPath: { value: path as Texture },
     uPathRange: { value: PATH_RANGE_M },
     uStone: { value: neutral as Texture },
@@ -87,6 +90,9 @@ export function createGround(moonBody: Vector3): Ground {
     mesh,
     textures,
     setLayout,
+    enclose(x0, z0, x1, z1) {
+      uniforms.uEnclose.value.set(x0, z0, x1, z1);
+    },
     setStone(color, normal) {
       for (const t of [color, normal]) if (t !== null) t.wrapS = t.wrapT = RepeatWrapping;
       uniforms.uStone.value = color ?? neutral;
