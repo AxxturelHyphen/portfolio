@@ -152,11 +152,13 @@ export function createMoth(rig: GardenRig): GardenMoth {
       const viewH = rig.viewHeightAt(light.cursor[2]!);
       const lx = light.cursor[0]!;
       const ly = light.cursor[1]!;
-      stillS = Math.abs(lx - lastLight[0]!) + Math.abs(ly - lastLight[1]!) < PATH.stillEps * viewH ? stillS + dt : 0;
+      const still = Math.abs(lx - lastLight[0]!) + Math.abs(ly - lastLight[1]!) < PATH.stillEps * viewH;
+      /** Frozen time (`?t`, the test API): timers and the circling angle come from c.t, never from accumulated dt. */
+      stillS = !still ? 0 : c.frozen ? Math.max(stillS + dt, MOTH.landAfterS) : stillS + dt;
       lastLight[0] = lx;
       lastLight[1] = ly;
-      celebrateS = Math.max(0, celebrateS - dt);
-      angle += PATH.circleRadPerS * dt;
+      celebrateS = c.frozen ? 0 : Math.max(0, celebrateS - dt);
+      angle = c.frozen ? PATH.circleRadPerS * c.t : angle + PATH.circleRadPerS * dt;
 
       mode = choose(s, ch, light, slots, viewH);
       const introAt = INTRO.moth[0] / INTRO.totalS;

@@ -106,7 +106,7 @@ export function createFlower(o: FlowerOptions): GardenFlower {
       }
       lastTick = tick;
       const nextOpen = quantise(bloomAt(pose), bloom.steps);
-      const nextTurn = clamp01(turn + ((focused ? 1 : -1) * c.dt) / UI.flowerTurnS);
+      const nextTurn = c.frozen ? (focused ? 1 : 0) : clamp01(turn + ((focused ? 1 : -1) * c.dt) / UI.flowerTurnS);
       if (pose !== shownPose || nextOpen !== openness || nextTurn !== turn) dirty = true;
       openness = nextOpen;
       turn = nextTurn;

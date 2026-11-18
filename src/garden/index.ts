@@ -177,7 +177,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
       entered = now;
       host.refresh();
     }
-    placeLight.frame(c.dt);
+    placeLight.frame(c.dt, c.frozen);
     sharedUniforms.uCursor.value.fromArray(light.cursor);
     sharedUniforms.uGather.value.fromArray(light.gather);
     sharedUniforms.uFocusBack.value.fromArray(light.back);

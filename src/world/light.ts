@@ -63,6 +63,9 @@ export function createLight(): GardenLight {
   let gatherSlot: SlotId | null = null;
   let slots: readonly SlotView[] = [];
 
+  /** A follower step; under frozen time (`?t`, the test API) it lands on its target so stills never depend on load. */
+  const ease = (v: number, to: number, tauS: number, dt: number, snap: boolean): number => (snap ? to : follow(v, to, tauS, dt));
+
   function stepScreen(c: Clock, dt: number): void {
     if (!hasPointer) {
       tx = width * GEOM.restX;
@@ -72,17 +75,17 @@ export function createLight(): GardenLight {
     prevTx = tx;
     prevTy = ty;
     const fast = speed > LIGHT.swellSpeedPxS;
-    swell = follow(swell, fast ? 1 : 0, fast ? LIGHT.cursorTauS : LIGHT.swellRelaxS, dt);
+    swell = ease(swell, fast ? 1 : 0, fast ? LIGHT.cursorTauS : LIGHT.swellRelaxS, dt, c.frozen);
 
     idleS = moved ? 0 : idleS + dt;
     moved = false;
-    drift = follow(drift, touch && idleS >= TOUCH.idleAfterS ? 1 : 0, TOUCH.driftInTauS, dt);
+    drift = ease(drift, touch && idleS >= TOUCH.idleAfterS ? 1 : 0, TOUCH.driftInTauS, dt, c.frozen);
     const phase = (2 * Math.PI * c.t) / LIGHT.idleDriftPeriodS;
     const amp = drift * LIGHT.idleDriftAmp * height;
     const gx = tx + amp * Math.sin(phase);
     const gy = ty + amp * 0.5 * Math.sin(2 * phase);
 
-    if (Number.isNaN(fx)) {
+    if (Number.isNaN(fx) || c.frozen) {
       fx = gx;
       fy = gy;
     } else {
@@ -91,7 +94,7 @@ export function createLight(): GardenLight {
     }
   }
 
-  function stepGather(s: State, ch: Machine['ch'], dt: number): void {
+  function stepGather(s: State, ch: Machine['ch'], dt: number, snap: boolean): void {
     if (slotWorld(slots, s.slot, hit)) {
       gather[0] = hit[0]!;
       gather[1] = hit[1]!;
@@ -102,11 +105,11 @@ export function createLight(): GardenLight {
       gatherSlot = s.slot;
       gatherAmount = Math.min(gatherAmount, f.value);
     }
-    gatherAmount = f.target >= 0.5 ? Math.max(gatherAmount, f.value) : follow(gatherAmount, 0, LIGHT.gatherOutTauS, dt);
+    gatherAmount = f.target >= 0.5 ? Math.max(gatherAmount, f.value) : ease(gatherAmount, 0, LIGHT.gatherOutTauS, dt, snap);
     gather[3] = gatherAmount;
-    restBack = follow(restBack, slots.length > 0 ? GEOM.bedRestBack : 0, LIGHT.gatherOutTauS, dt);
+    restBack = ease(restBack, slots.length > 0 ? GEOM.bedRestBack : 0, LIGHT.gatherOutTauS, dt, snap);
     /** A bed's rest light is part of its composed shot; on the overview the ground is lit only once a hand is there. */
-    handThrow = follow(handThrow, hasPointer || slots.length > 0 ? 1 : 0, LIGHT.gatherOutTauS, dt);
+    handThrow = ease(handThrow, hasPointer || slots.length > 0 ? 1 : 0, LIGHT.gatherOutTauS, dt, snap);
     const toGather = Math.min(1, gatherAmount * 4);
     back[0] = cursor[0]! + (gather[0]! - cursor[0]!) * toGather;
     back[1] = cursor[1]! + (gather[1]! - cursor[1]!) * toGather;
@@ -141,7 +144,7 @@ export function createLight(): GardenLight {
       cursor[1] = hit[1]!;
       cursor[2] = planeZ + r * GEOM.liftOfRadius;
       cursor[3] = r;
-      stepGather(s, ch, dt);
+      stepGather(s, ch, dt, c.frozen);
     },
     resize(w, h) {
       width = Math.max(1, w);

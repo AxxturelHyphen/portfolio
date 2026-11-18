@@ -56,8 +56,8 @@ interface LinearLight { skyTop: Vector3; skyHorizon: Vector3; ambient: Vector3; 
 export interface PlaceLighting {
   /** The place the camera is heading to; the overview keeps the Rosaleda night. */
   set(bed: BedId | null): void;
-  /** Stage 'world': eases the shared light uniforms toward the place. No allocation. */
-  frame(dt: number): void;
+  /** Stage 'world': eases the shared light uniforms toward the place; `snap` (frozen time) lands on it. No allocation. */
+  frame(dt: number, snap: boolean): void;
 }
 
 /** Place lights parsed once at load, then eased per frame so a walk never pops the sky. */
@@ -78,15 +78,15 @@ export function createPlaceLighting(): PlaceLighting {
   let moonGoal: readonly [number, number] = OVERVIEW_MOON;
   let az = moonGoal[0];
   let el = moonGoal[1];
-  let snap = true;
+  let first = true;
   return {
     set(bed) {
       goal = parsed.get(bed ?? 'rosaleda') ?? goal;
       moonGoal = bed === null ? OVERVIEW_MOON : goal.moon;
     },
-    frame(dt) {
-      const k = snap ? 1 : 1 - Math.exp(-dt / LIGHT_TAU_S);
-      snap = false;
+    frame(dt, snap) {
+      const k = first || snap ? 1 : 1 - Math.exp(-dt / LIGHT_TAU_S);
+      first = false;
       u.uSkyTop.value.lerp(goal.skyTop, k);
       u.uSkyHorizon.value.lerp(goal.skyHorizon, k);
       u.uAmbient.value.lerp(goal.ambient, k);
