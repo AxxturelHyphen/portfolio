@@ -1,5 +1,6 @@
 import type { BedId, CameraRig, Machine, ScreenPt, State } from '../types.ts';
 import { uiText } from './copy.ts';
+import { clearOfVisitor, createStake, SIGN_M, type Stake } from './signs.stake.ts';
 import './styles/signs.css';
 import { createMover, type Mover } from './xform.ts';
 
@@ -16,6 +17,9 @@ import { createMover, type Mover } from './xform.ts';
  * Without anchors both signs dock at the screen edges in the lower half; on phones the way back stands above the
  * folded plan and the way on at the foot of the screen, clear of the fixed controls and the hero. The way back always
  * stands higher than the way on, so the pair never reads as one row.
+ * Free roam (setVisitor, ?roam=1, phones too): each sign is planted at its board, the label SIGN_M above the ground
+ * and a cane down to the ground point with a contact shadow (ui/signs.stake.ts), lifted clear of the visitor. While
+ * the ground point is off screen the label docks at the screen edge with a short cane (data-off).
  */
 
 /** One canvas board: shown while `bed` is the current place; it points `dir` toward `to`. World point of the label. */
@@ -29,6 +33,8 @@ export interface Signposts {
   onState(s: State): void;
   /** Stage 'dom': places anchored signs; `force` after a remount or retarget. */
   sync(rig: CameraRig, force: boolean): void;
+  /** Free roam: plants the signs in the world and keeps them off the visitor standing at this [x, z]. */
+  setVisitor(at: Float32Array): void;
 }
 
 const EDGE_PX = 16;
@@ -52,6 +58,8 @@ const HAND = 'M3 5h7v15H3zM4.8 7.5v10M6.6 7.5v10M8.4 7.5v10M10 6.5c4-1.5 9-1.8 1
 /** Twine lashing the label to the cane: two turns round the cane over the label's top edge, a knot and a tail. */
 const LASH = 'M3 10l18-5M3 16l18-5M21 5c3-.6 4 1.6 2.4 3.4M21 11c3 .4 3.4 4 1 7.5';
 const NARROW = '(max-width: 44.99rem)';
+/** Where the cane is lashed, in from the label's pointing-away end (the CSS --cane-at). */
+const CANE_AT_PX = 14;
 const SHOWN: readonly State['phase'][] = ['bed', 'focus'];
 
 interface Sign {
@@ -67,9 +75,13 @@ interface Sign {
   /** Cosine and sine of the label's CSS tilt. */
   cos: number;
   sin: number;
+  /** Free roam: the planted cane and shadow; null on the rail. */
+  stake: Stake | null;
+  off: boolean;
 }
 
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
+const foot: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
 
 function drawing(cls: string, box: string, d: string): SVGSVGElement {
   const svg = document.createElementNS(SVG, 'svg');
@@ -100,7 +112,7 @@ function makeSign(dir: -1 | 1, m: Machine): Sign {
   cane.className = 'px-sign-cane';
   cane.setAttribute('aria-hidden', 'true');
   el.append(cane, drawing('px-sign-lash', '0 0 26 26', LASH), name, drawing('px-sign-hand', '0 0 48 24', HAND));
-  const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44, cos: 1, sin: 0 };
+  const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44, cos: 1, sin: 0, stake: null, off: false };
   el.addEventListener('click', () => {
     if (sign.to === 'cv') m.send({ type: 'SET_MODE', mode: 'herbario' });
     else if (sign.to !== null) m.send({ type: 'GOTO', place: { k: 'bed', bed: sign.to } });
@@ -122,6 +134,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   let vh = innerHeight;
   /** A new viewport or sign size re-places the signs on the next frame even when the rig stands still. */
   let resized = false;
+  let visitor: Float32Array | null = null;
 
   addEventListener('resize', () => {
     vw = innerWidth;
@@ -161,14 +174,61 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       s.anchor = anchors.findIndex((a) => a.bed === current && a.dir === s.dir);
       s.el.toggleAttribute('data-docked', s.anchor < 0);
       s.mover.reset();
+      if (s.stake !== null) {
+        s.off = true;
+        s.el.toggleAttribute('data-off', true);
+        s.stake.show(false);
+      }
       if (s.anchor < 0) s.el.style.removeProperty('transform');
       else readTilt(s);
     }
   }
 
+  /** Turns the label's wanted top-left (x, y) into its transform, pulling it in where the tilt would carry it too near a
+   * side; returns the screen x the label's left edge lands on. */
+  function settle(s: Sign, x: number, y: number): number {
+    // Where the tilt turns (x, y) to on screen; only a label nearer a side than SIDE_PX is pulled in.
+    const vy = x * s.sin + y * s.cos;
+    let vx = x * s.cos - y * s.sin;
+    const inset = SIDE_PX + Math.ceil(s.h * Math.abs(s.sin));
+    const maxVx = vw - inset - s.w;
+    vx = vx < inset ? inset : vx > maxVx ? maxVx : vx;
+    s.mover.move(Math.round(vx * s.cos + vy * s.sin), Math.round(vy * s.cos - vx * s.sin), 1);
+    return vx;
+  }
+
+  /** Free roam: the label on its cane at the board, or docked at the edge while the board's foot is off screen or the
+   * label would hang more than half its width past a side. */
+  function plant(s: Sign, a: SignAnchor, rig: CameraRig, stake: Stake, at: Float32Array): void {
+    rig.project(a.at[0], 0, a.at[2], foot);
+    const caneAt = s.dir < 0 ? s.w - CANE_AT_PX : CANE_AT_PX;
+    rig.project(a.at[0], SIGN_M, a.at[2], pt);
+    const x = pt.x - caneAt;
+    const off = !foot.visible || x < EDGE_PX - s.w / 2 || x > vw - EDGE_PX - s.w / 2;
+    if (off !== s.off) {
+      s.off = off;
+      s.el.toggleAttribute('data-off', off);
+      stake.show(!off);
+    }
+    if (off) {
+      const y = vh * DOCK_FOOT - s.h + s.dir * STEP_PX;
+      settle(s, s.dir < 0 ? EDGE_PX : vw - EDGE_PX - s.w, y < TOP_PX ? TOP_PX : y);
+      return;
+    }
+    let y = clearOfVisitor(rig, at, x, pt.y, s.w, s.h);
+    const maxY = vh - EDGE_PX - s.h;
+    y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
+    const left = settle(s, x, y);
+    stake.stand(left + caneAt, y, foot);
+  }
+
   function place(s: Sign, rig: CameraRig): void {
     const a = anchors[s.anchor];
     if (a === undefined) return;
+    if (s.stake !== null && visitor !== null) {
+      plant(s, a, rig, s.stake, visitor);
+      return;
+    }
     rig.project(a.at[0], a.at[1], a.at[2], pt);
     const maxX = vw - EDGE_PX - s.w;
     const maxY = vh - EDGE_PX - s.h - STAKE_PX;
@@ -181,13 +241,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     y += s.dir * STEP_PX;
     x = x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x;
     y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
-    // Where the tilt turns (x, y) to on screen; only a label nearer a side than SIDE_PX is pulled in.
-    const vy = x * s.sin + y * s.cos;
-    let vx = x * s.cos - y * s.sin;
-    const inset = SIDE_PX + Math.ceil(s.h * Math.abs(s.sin));
-    const maxVx = vw - inset - s.w;
-    vx = vx < inset ? inset : vx > maxVx ? maxVx : vx;
-    s.mover.move(Math.round(vx * s.cos + vy * s.sin), Math.round(vy * s.cos - vx * s.sin), 1);
+    settle(s, x, y);
   }
 
   return {
@@ -207,12 +261,18 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       if (at !== null) retarget();
     },
     sync(rig, force) {
-      if (current === null || narrow.matches || (!rig.changed && !force && !resized)) return;
+      if (current === null || (narrow.matches && visitor === null) || (!rig.changed && !force && !resized)) return;
       resized = false;
       for (let i = 0; i < signs.length; i++) {
         const s = signs[i];
         if (s !== undefined && s.anchor >= 0 && !s.el.hidden) place(s, rig);
       }
+    },
+    setVisitor(at) {
+      visitor = at;
+      group.toggleAttribute('data-roam', true);
+      for (const s of signs) s.stake = createStake(group);
+      retarget();
     },
   };
 }

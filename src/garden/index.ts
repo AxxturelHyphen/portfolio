@@ -108,6 +108,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   prepareGl(gfx, world, SCENES);
   const placeLight = createPlaceLighting();
   proxies.setSigns(signAnchorsOf(world, SCENES));
+  if (roam !== null) proxies.setVisitor(roam.pos);
 
   const slotOwner = new Map<ProjectId, SlotId>();
   for (const bed of garden.beds.values()) for (const v of bed.slots) if (v.project !== undefined) slotOwner.set(v.project.id, v.id);
@@ -156,7 +157,10 @@ export function startGarden(host: GardenHost): GardenRuntime {
       const h = gfx.cssH;
       rig.resize(w, h);
       light.resize(w, h);
-      roam?.resize(w, h);
+      if (roam !== null) {
+        roam.resize(w, h);
+        placeLight.holdMoon(roam.moonElevation());
+      }
       for (const b of content.garden.order) rig.setBedPose(b, bedPose(SCENES[b].pose, w / Math.max(1, h)));
     }
     input.frame();

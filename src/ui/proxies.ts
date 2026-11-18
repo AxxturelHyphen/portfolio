@@ -27,6 +27,8 @@ export const ACTIVATE_EVENT = 'jardin:activate';
 export interface GardenProxies extends ProxyLayer {
   mountBeds(beds: readonly BedSign[]): void;
   setSigns(anchors: readonly SignAnchor[]): void;
+  /** Free roam: the signs stand planted in the world, clear of the visitor at this [x, z]. */
+  setVisitor(at: Float32Array): void;
 }
 
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
@@ -181,6 +183,11 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
 
     setSigns(anchors: readonly SignAnchor[]): void {
       signs.setAnchors(anchors);
+      signsDirty = true;
+    },
+
+    setVisitor(at: Float32Array): void {
+      signs.setVisitor(at);
       signsDirty = true;
     },
 

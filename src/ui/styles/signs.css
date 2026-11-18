@@ -231,6 +231,9 @@
     white-space: normal;
     text-wrap: balance;
     filter: drop-shadow(2px 4px 3px rgb(6 5 10 / 0.55));
+  }
+
+  .px-signs:not([data-roam]) .px-sign {
     transform: none !important;
   }
 
@@ -255,6 +258,53 @@
     left: auto;
     right: max(20px, env(safe-area-inset-right, 0px));
   }
+}
+
+/*
+ * Free roam: every sign is placed by transform from the top left, phones too. A planted label stands on its own cane
+ * (.px-sign-pole, stretched by transform from the lashing to the ground) over a small contact shadow; the cane inside
+ * the label shows only while the sign is docked at an edge (data-off), cut short so it never reads as a pole.
+ */
+.px-signs[data-roam] .px-sign:not([data-docked]) {
+  top: 0;
+  right: auto;
+  bottom: auto;
+  left: 0;
+}
+
+.px-signs[data-roam] .px-sign-cane {
+  height: calc(var(--tip) + 36px);
+}
+
+.px-signs[data-roam] .px-sign:not([data-off]) .px-sign-cane {
+  display: none;
+}
+
+.px-sign-pole,
+.px-sign-foot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.px-sign-pole {
+  width: 8px;
+  height: 100px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 30px, rgb(40 32 14 / 0.6) 30px 32px, rgb(214 196 140 / 0.35) 32px 33px, transparent 33px 40px),
+    linear-gradient(90deg, #3b341f, #8f8152 32%, #6f6340 62%, #2f2a19);
+  clip-path: polygon(0 4px, 100% 0, 100% 100%, 0 100%);
+  transform-origin: 4px 0;
+  translate: -4px 0;
+}
+
+.px-sign-foot {
+  width: 40px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(6 5 10 / 0.6), rgb(6 5 10 / 0.25) 60%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
