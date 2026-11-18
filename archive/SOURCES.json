@@ -2957,7 +2957,7 @@
    "file": "archive/raw/figure/fig-figure2-sheet.png",
    "need": "roam figure parts, second cut",
    "category": "figure",
-   "sha256": "df02a0414c20661ddcd7bc886e27ba845a1d0fe82292ee461d11de4279dd8311",
+   "sha256": "4994da15bea2675445d3fbefd7eff41571825a69fc6f57e16945c83b95856f2e",
    "usedIn": [
     "fg/arm",
     "fg/arm-bent",
@@ -2979,97 +2979,97 @@
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/torso: all GM #1b1a3a/#6c6a64/#b3ad9f, amount 1"
+     "note": "fg/torso: all GM #1b1a2a/#4c4a46/#7f7a70, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/head: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.172273,0.066536,0.225455,0.315068"
+     "note": "fg/head: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.172273,0.066536,0.225,0.313112"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/head: all GM #14141f/#25232a/#45403c, amount 1"
+     "note": "fg/head: all GM #1b1a2a/#4c4a46/#7f7a70, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/hat: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.238182,0.066536,0.372727,0.342466"
+     "note": "fg/hat: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.237727,0.066536,0.372273,0.344423"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/hat: all GM #14141f/#25232a/#45403c, amount 1"
+     "note": "fg/hat: all GM #121118/#2c2824/#5e554a, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/arm: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.385455,0.066536,0.444091,0.780822"
+     "note": "fg/arm: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.385,0.066536,0.443636,0.780822"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/arm: all GM #1b1a3a/#6c6a64/#b3ad9f, amount 1"
+     "note": "fg/arm: all GM #1b1a2a/#4c4a46/#7f7a70, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/arm-bent: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.456818,0.066536,0.513636,0.64775"
+     "note": "fg/arm-bent: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.456364,0.066536,0.513182,0.64775"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/arm-bent: all GM #1b1a3a/#6c6a64/#b3ad9f, amount 1"
+     "note": "fg/arm-bent: all GM #1b1a2a/#4c4a46/#7f7a70, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/hand: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.526364,0.066536,0.564091,0.25636"
+     "note": "fg/hand: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.525909,0.066536,0.563636,0.25636"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/hand: all GM #1b1a3a/#5f5c56/#9c968a, amount 1"
+     "note": "fg/hand: all GM #1b1a2a/#48443e/#78706a, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/thigh-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.576818,0.066536,0.644545,0.917808"
+     "note": "fg/thigh-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.576364,0.066536,0.644091,0.917808"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/thigh-l: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+     "note": "fg/thigh-l: all GM #121119/#262424/#48433d, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/thigh-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.657273,0.066536,0.740455,0.933464"
+     "note": "fg/thigh-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.656818,0.066536,0.74,0.933464"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/thigh-r: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+     "note": "fg/thigh-r: all GM #121119/#262424/#48433d, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/shin-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.753182,0.066536,0.814545,0.579256"
+     "note": "fg/shin-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.752727,0.066536,0.814091,0.579256"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/shin-l: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+     "note": "fg/shin-l: all GM #121119/#262424/#48433d, amount 1"
     },
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/shin-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.827273,0.066536,0.901364,0.559687"
+     "note": "fg/shin-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.826818,0.066536,0.900909,0.559687"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "fg/shin-r: all GM #1b1a3a/#3f3c3a/#6e665c, amount 1"
+     "note": "fg/shin-r: all GM #121119/#262424/#48433d, amount 1"
     }
    ]
   },

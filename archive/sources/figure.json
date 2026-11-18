@@ -16,7 +16,7 @@
       3189
     ],
     "background": "pale pink-beige paper, etched line, unhatched smock",
-    "notes": "Etching of a youth seen from behind in a smock and wide trousers. Body, sleeve, hand and both legs of the roam walker puppet are cut from it (archive/recipes/roam.json); the raised left arm and the cap are left out. Second cut: the parts now come through fig-figure2-sheet (retouched from this plate).",
+    "notes": "Etching of a youth seen from behind in a smock and wide trousers. Body, sleeve, hand and both legs of the roam walker puppet are cut from it (archive/recipes/roam.json); the raised left arm and the cap are left out. Second cut: the parts now come through fig-figure2-sheet (retouched from this plate). Third cut: line and grain back (the plate's contour, folds and hatching kept, dense hatching thinned, an even paper tone with a fine 1 to 3 px grain, foxing dropped); the head seen from behind (hair, nape, left ear, collar) is now cut from this plate under the cap band; sleeves shaped with a shoulder cap, body side feathered with a fold line; trousers end in a turned hem with one fold line over small shoes; shin tops fade into the thighs.",
     "parts": [
       {
         "sprite": "fg/torso",
@@ -55,7 +55,7 @@
           1090
         ],
         "cutout": "classical: raw plate (no key), hand matte polygon with a jagged scissor edge (1.6 px), feathered 1 px, defringed, pipeline paper rim; no ML matting",
-        "retouch": "cut under the 1842 cap band; neck runs 18 px past the pin into the collar",
+        "retouch": "third cut: plate window 1066,975 to 1206,1128 at 0.743, cap above the band replaced by the hair rows below it; hair mid tone, nape and ear lighter, collar in the smock tone; a few drawn hair strokes, the ear rim and the collar edge added; no face",
         "tint": "gradient map #1b1a3a/#8a7a62/#e8dfca, amount 1, value 0.9; bevel 2",
         "spritePx": [
           61,
@@ -229,7 +229,7 @@
       3049
     ],
     "background": "buff paper, crayon lithograph",
-    "notes": "Lithograph of a gardener with a spade. Only the dark round felt hat (crown and brim) is cut, for the roam walker; the face below the brim and the spade blade are left out. Second cut: the hat comes through fig-figure2-sheet; the crook and void patches still cut here.",
+    "notes": "Lithograph of a gardener with a spade. Only the dark round felt hat (crown and brim) is cut, for the roam walker; the face below the brim and the spade blade are left out. Second cut: the hat comes through fig-figure2-sheet; the crook and void patches still cut here. Third cut: only the hat comes from this plate; the under-brim fill is gone (a thin shadow stays, the head shows below) and the crayon crown and brim are contrast-stretched so their lines read.",
     "parts": [
       {
         "sprite": "fg/hat",
