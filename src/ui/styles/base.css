@@ -227,6 +227,14 @@ html[data-mode="garden"] {
   -webkit-box-decoration-break: clone;
 }
 
+/* The garden's cards leave the mark out: the blank alone, a short pencil line on the baseline. */
+.h-fill:empty {
+  display: inline-block;
+  inline-size: 2.4em;
+  block-size: 0.9em;
+  padding: 0;
+}
+
 /* The stack as stamped words on one italic line: no chips, no pills. */
 .h-tags {
   display: flex;

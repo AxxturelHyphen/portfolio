@@ -5,7 +5,7 @@ import './ui/styles/panel.css';
 import './content/herbario/herbario.css';
 import './content/herbario/sheet.css';
 import './content/herbario/print.css';
-import { renderCaseBody, renderCaseHead } from './content/herbario/case.ts';
+import { BLANK_GAPS, renderCaseBody, renderCaseHead } from './content/herbario/case.ts';
 import { renderHerbario } from './content/herbario/template.ts';
 import { initI18n, isLang, lookup, onLang, setLang } from './content/i18n.ts';
 import { loadContent } from './content/load.ts';
@@ -52,7 +52,7 @@ function renderLang(l: Lang): void {
 
 const renderCase: CaseRenderer = (p, l, titleId) => {
   const s = (key: string): string => lookup(content.strings, l, key);
-  return renderCaseHead(p, l, s, titleId) + renderCaseBody(p, l, s);
+  return renderCaseHead(p, l, s, titleId, BLANK_GAPS) + renderCaseBody(p, l, s, BLANK_GAPS);
 };
 
 type GardenModule = typeof import('./garden/index.ts');

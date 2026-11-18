@@ -1,3 +1,4 @@
+import { blank, onlyFill } from '../content/herbario/html.ts';
 import { UI } from '../core/motion.ts';
 import type { I18n, LabelCard, ScreenPt, SlotView } from '../types.ts';
 import './styles/label.css';
@@ -8,7 +9,8 @@ import { createMover } from './xform.ts';
  * top centre, tied there with twine to a zinc rod that runs down behind it into the soil. The name, the one-liner and
  * the stack (a plain comma list) in Kalnia, the Latin name in italic, "View" as an inked line in the tag's ink over a
  * hand-ruled stroke, and the status as a small rubber stamp set askew in the bottom corner.
- * The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
+ * Owner gaps read as in the panel (content/herbario/case.ts BLANK_GAPS): a quiet blank without its note, a field that
+ * is nothing but a gap left out. The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
  * opacity through preallocated movers: no layout reads, no allocation. The tag's own size comes from a
  * ResizeObserver and the viewport size from 'resize' events, both outside the frame.
  * Placement: beside the flower on the asked side, clear of its hit ellipse; it flips when that side has no room,
@@ -101,10 +103,11 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
       const latinName = latinKey === '' ? latinKey : text.t(latinKey);
       latin.textContent = latinName === latinKey ? '' : latinName;
       latin.hidden = latin.textContent === '';
-      oneLiner.textContent = p === undefined ? '' : text.tr(p.oneLiner);
-      oneLiner.hidden = p === undefined;
-      const words = p?.stack.slice(0, UI.chipsMax) ?? [];
-      stack.textContent = words.join(', ');
+      const line = p === undefined ? '' : text.tr(p.oneLiner);
+      oneLiner.innerHTML = blank(line);
+      oneLiner.hidden = line === '' || onlyFill(line);
+      const words = p?.stack.filter((w) => !onlyFill(w)).slice(0, UI.chipsMax) ?? [];
+      stack.innerHTML = words.map(blank).join(', ');
       stack.hidden = words.length === 0;
       status.hidden = p === undefined;
       if (p !== undefined) status.dataset.status = p.status;
