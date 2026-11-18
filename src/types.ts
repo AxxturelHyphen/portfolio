@@ -90,9 +90,9 @@ export interface SpriteRect { page: number; uv: [number, number, number, number]
 export interface BedScene { id: BedId; title: I18n; alt: I18n; pose: Pose; bounds: [number, number]; layers: Layer[]; slots: Slot[]; procedural: Proc[]; behaviour?: string }
 export interface Layer { id: string; z: number; minTier: Tier; page: number; items: Placement[] }
 export interface Placement { sprite: SpriteId; x: number; y: number; scale: number; rot?: number; flip?: boolean; tint?: [number, number, number]; sway?: number; lift?: number; dz?: number }
-export interface Slot { id: string; kind: 'project' | 'link' | 'prop'; accepts?: Project['flower']; ref?: string; x: number; y: number; z: number; scale: number; bloom?: string; hit: [number, number]; label: 'left' | 'right' | 'auto'; alt?: I18n }
+export interface Slot { id: string; kind: 'project' | 'link' | 'prop'; accepts?: Project['flower']; ref?: string; x: number; y: number; z: number; scale: number; bloom?: string; hit: [number, number]; label: 'left' | 'right' | 'auto'; alt?: I18n; stand?: [number, number] }
 export type Proc = { type: 'pond' | 'sigils' | 'sundial' | 'fireflies' | 'stereoscope'; x: number; y: number; z: number; w: number; h: number; params?: Record<string, number> };
-export interface SlotView { id: SlotId; kind: Slot['kind']; project?: Project; href?: string; world: [number, number, number]; hit: [number, number]; alt: string }
+export interface SlotView { id: SlotId; kind: Slot['kind']; project?: Project; href?: string; world: [number, number, number]; hit: [number, number]; alt: string; /** Free roam: where the visitor stands to reach it (x, z), when no shore comes near enough. */ stand?: readonly [number, number] }
 
 // 2.7 Cutout material, light model, film pass
 /** A uniform map as three's ShaderMaterial expects it: every field wrapped in { value }. */
@@ -154,7 +154,7 @@ export interface Profile {
   education: { title: I18n; place: string; status: I18n }[]; languages: { name: I18n; level: string }[]; stack: string[];
   links: { key: string; label: I18n; href: string }[]; portrait: { src: string; alt: I18n }; cv: string;
 }
-export interface GardenLayout { order: BedId[]; anchors: Record<BedId, number>; grutaHost: BedId; overview: Pose; pan: [number, number]; shots: Record<ShotId, { hash: string; t: number; pose?: Pose; viewport?: [number, number] }> }
+export interface GardenLayout { order: BedId[]; anchors: Record<BedId, number>; grutaHost: BedId; overview: Pose; pan: [number, number]; shots: Record<ShotId, { hash: string; t: number; pose?: Pose; viewport?: [number, number]; /** A roam shot: the visitor stands at (x, z). */ visitor?: [number, number] }> }
 export type Strings = Record<Lang, Record<string, string>>;
 export interface Content { projects: Project[]; profile: Profile; garden: GardenLayout; strings: Strings }
 
@@ -182,7 +182,7 @@ export interface PerfLine { tier: Tier; drawCallsP95: number; textureMB: number;
 export interface JardinTestAPI {
   ready: Promise<void>; state(): State; channels(): Record<ChannelName, { value: number; target: number; settled: boolean }>;
   goto(hash: string, o?: { instant?: boolean }): Promise<void>;
-  send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; roam(): { x: number; z: number } | null; walkTo(x: number, z: number): void; holdKeys(bits: number): void; holdApproach(k: number | null): void; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
+  send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; roam(): { x: number; z: number } | null; strip(): number; walkTo(x: number, z: number): void; holdKeys(bits: number): void; holdApproach(k: number | null): void; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
   rec: { start(label: string): void; stop(): FrameReport }; tour(): Promise<PerfLine>;
 }
 

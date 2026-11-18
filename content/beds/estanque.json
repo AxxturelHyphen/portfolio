@@ -477,7 +477,11 @@
         0.8,
         0.5
       ],
-      "label": "left"
+      "label": "left",
+      "stand": [
+        22.2,
+        0.95
+      ]
     },
     {
       "id": "lily-b",

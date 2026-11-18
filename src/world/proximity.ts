@@ -3,11 +3,19 @@
  * slot within reach of the visitor is the one to focus. A held slot is kept until the visitor is more than the
  * hysteresis past the reach, or another slot is nearer by more than the hysteresis. When anything else chooses the
  * focus (hover, keyboard, a tap, Esc), proximity yields until the visitor has walked a metre from where that happened.
- * Distances are in the ground plane (x, z). No allocation per frame.
+ * Distances are in the ground plane (x, z), to a slot's stand point where it has one. No allocation per frame.
  */
 import type { SlotId, SlotView } from '../types.ts';
 
 export const PROXIMITY = { reachM: 2.2, hysteresisM: 0.4, yieldM: 1 } as const;
+
+/**
+ * Ground distance from (x, z) to where a slot is reached from: its own stand point (a flower out on the water, which
+ * no shore comes near enough), else the slot itself.
+ */
+export function reachDist(v: SlotView, x: number, z: number): number {
+  return v.stand === undefined ? Math.hypot(v.world[0] - x, v.world[2] - z) : Math.hypot(v.stand[0] - x, v.stand[1] - z);
+}
 
 export interface Proximity {
   /** The slot proximity wants focused after the last update (null: none). */
@@ -28,8 +36,6 @@ export function createProximity(): Proximity {
   let yielding = false;
   let yx = 0;
   let yz = 0;
-
-  const dist = (v: SlotView, x: number, z: number): number => Math.hypot(v.world[0] - x, v.world[2] - z);
 
   return {
     get want() {
@@ -54,14 +60,14 @@ export function createProximity(): Proximity {
       let bestD = Infinity;
       for (let i = 0; i < slots.length; i++) {
         const v = slots[i]!;
-        const d = dist(v, x, z);
+        const d = reachDist(v, x, z);
         if (d < bestD) {
           bestD = d;
           best = v;
         }
       }
       if (held !== null) {
-        const d = dist(held, x, z);
+        const d = reachDist(held, x, z);
         const keep = d <= PROXIMITY.reachM + PROXIMITY.hysteresisM && !(best !== held && bestD < d - PROXIMITY.hysteresisM);
         if (keep) return true;
       }

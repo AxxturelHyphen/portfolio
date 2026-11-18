@@ -46,6 +46,12 @@ const isRealHref = (href: string): boolean => /^(https?:|mailto:)/.test(href) &&
 
 export interface BindInput { scene: BedScene; projects: readonly Project[]; profile: Profile; lang: Lang }
 
+/** A slot's own stand point (free roam) rides on its view. */
+function withStand(view: SlotView, slot: Slot): SlotView {
+  if (slot.stand !== undefined) view.stand = slot.stand;
+  return view;
+}
+
 /**
  * Binds slots to content. Project slots are positional templates: projects (already in projectsOf order) take the
  * free slot that accepts their flower, biggest slot first. Unused project slots are left out. Throws when a project
@@ -60,11 +66,11 @@ export function bindSlots(b: BindInput): SlotView[] {
     const slot = free[i];
     if (slot === undefined) throw new Error(`bed ${scene.id}: no free "${p.flower}" slot for project ${p.id}; add a slot to content/beds/${scene.id}.json`);
     free.splice(i, 1);
-    views.push({ id: `${scene.id}/${slot.id}`, kind: 'project', project: p, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: p.title });
+    views.push(withStand({ id: `${scene.id}/${slot.id}`, kind: 'project', project: p, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: p.title }, slot));
   }
   for (const slot of scene.slots) {
     if (slot.kind === 'project') continue;
-    const view: SlotView = { id: `${scene.id}/${slot.id}`, kind: slot.kind, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: '' };
+    const view = withStand({ id: `${scene.id}/${slot.id}`, kind: slot.kind, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: '' }, slot);
     if (slot.kind === 'link') {
       const link = profile.links.find((l) => l.key === slot.ref);
       if (link === undefined) throw new Error(`bed ${scene.id}: link slot ${slot.id} names unknown profile link "${slot.ref ?? ''}"`);
@@ -185,6 +191,7 @@ function checkSlot(e: Errors, v: unknown, path: string, ids: Set<string>): void 
   for (const k of ['x', 'y', 'z', 'scale', 'hinge']) e.num(s[k], `${path}.${k}`);
   e.str(s.bloom, `${path}.bloom`, true);
   e.tuple(s.hit, 2, `${path}.hit`);
+  e.tuple(s.stand, 2, `${path}.stand`, true);
   e.oneOf(s.label, LABELS, `${path}.label`);
   e.i18n(s.alt, `${path}.alt`, s.kind !== 'prop');
 }

@@ -28,6 +28,18 @@ test('the nearest slot in reach is wanted, none beyond reach, projects, links an
   expect(q.want).toBe(PROP.id);
 });
 
+test('a flower with its own stand point is reached from there, not from where it floats', () => {
+  const lily: SlotView = { ...slot('estanque/lily-a', 'project', 0, 0), stand: [0, 2.5] };
+  const p = createProximity();
+  p.setSlots([lily]);
+  p.update(0, 2.5 + reachM + 0.01);
+  expect(p.want, 'beyond reach of the stand point').toBeNull();
+  p.update(0, 2.5 + reachM - 0.01);
+  expect(p.want, 'within reach of the stand point, 4.7 m from the flower').toBe(lily.id);
+  p.update(0, -0.5);
+  expect(p.want, 'next to the flower but 3 m from its stand point, past reach and margin').toBeNull();
+});
+
 test('hysteresis: a held slot stays until past reach plus the margin; another must be nearer by the margin', () => {
   const p = createProximity();
   p.setSlots([ROSE]);

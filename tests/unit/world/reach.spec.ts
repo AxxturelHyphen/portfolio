@@ -9,6 +9,7 @@ import gruta from '../../../content/beds/gruta.json' with { type: 'json' };
 import salida from '../../../content/beds/salida.json' with { type: 'json' };
 import type { BedScene3 } from '../../../src/world/layout.ts';
 import { occluderBlocks } from '../../../src/world/occluders.ts';
+import { PROXIMITY } from '../../../src/world/proximity.ts';
 import { pathZ } from '../../../src/world/roam.ts';
 import { traceLayout } from './rig.trace.ts';
 
@@ -101,6 +102,37 @@ test('from the start every bed stand point and every flower slot stays reachable
     }
   }
   expect(missed, missed.join(', ')).toEqual([]);
+});
+
+test('every flower out of the grotto can be focused by walking up to it, from its own stand point when it has one', () => {
+  const [sx, sz] = standOf(beds[0]!);
+  const seen = reachFrom(sx, sz);
+  const reached = (x: number, z: number): boolean => {
+    const [i, j] = cellOf(x, z);
+    return seen[i + j * nx] === 1;
+  };
+  const missed: string[] = [];
+  for (const b of beds) {
+    for (const sl of SCENES[b].slots) {
+      if (sl.stand !== undefined) {
+        const [x, z] = sl.stand;
+        if (!free(x, z) || !reached(x, z)) missed.push(`${b}/${sl.id} stand point`);
+        continue;
+      }
+      let best = Infinity;
+      for (let j = 0; j < nz; j++) {
+        for (let i = 0; i < nx; i++) if (seen[i + j * nx] === 1) best = Math.min(best, Math.hypot(xAt(i) - sl.x, zAt(j) - sl.z));
+      }
+      if (best > PROXIMITY.reachM - CELL) missed.push(`${b}/${sl.id} at ${best.toFixed(2)} m`);
+    }
+  }
+  expect(missed, missed.join(', ')).toEqual([]);
+  const lily = SCENES.estanque.slots.find((s) => s.id === 'lily-a');
+  expect(lily?.stand, 'the pond lily has a stand point on the bank').toBeDefined();
+  const shots = traceLayout.shots as Record<string, { visitor?: [number, number] }>;
+  for (const [id, s] of Object.entries(shots)) {
+    if (s.visitor !== undefined) expect(free(...s.visitor) && reached(...s.visitor), `roam shot ${id} stands on open ground`).toBe(true);
+  }
 });
 
 test('the whole path, the Salida door and both north corners are reachable from the start', () => {
