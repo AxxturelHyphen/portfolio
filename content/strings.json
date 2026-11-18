@@ -54,7 +54,15 @@
     "label.view": "View",
     "gruta.push": "Push the ball",
     "gruta.score": "Goals",
-    "gruta.goal": "Goal!"
+    "gruta.goal": "Goal!",
+    "mode.exit": "Album",
+    "plan.tag": "Projects",
+    "plan.label": "Projects and plan of the garden",
+    "welcome.keys": "Walk with the arrow keys or WASD, or click the ground to go there.",
+    "welcome.touch": "Tap the ground to walk there, or drag to steer.",
+    "welcome.railKeys": "Drag or use the arrow keys to look along the garden, and click a bed to go in.",
+    "welcome.railTouch": "Swipe along the garden and tap a bed to go in.",
+    "welcome.work": "Every project is listed under Projects, bottom left."
   },
   "es": {
     "site.title": "El Jardín",
@@ -111,6 +119,14 @@
     "label.view": "Ver",
     "gruta.push": "Empuja la pelota",
     "gruta.score": "Goles",
-    "gruta.goal": "¡Gol!"
+    "gruta.goal": "¡Gol!",
+    "mode.exit": "Álbum",
+    "plan.tag": "Proyectos",
+    "plan.label": "Proyectos y plano del jardín",
+    "welcome.keys": "Camina con las flechas o WASD, o haz clic en el suelo para ir allí.",
+    "welcome.touch": "Toca el suelo para ir allí o arrastra para moverte.",
+    "welcome.railKeys": "Arrastra o usa las flechas para recorrer el jardín, y haz clic en un parterre para entrar.",
+    "welcome.railTouch": "Desliza por el jardín y toca un parterre para entrar.",
+    "welcome.work": "Todos los proyectos están en Proyectos, abajo a la izquierda."
   }
 }

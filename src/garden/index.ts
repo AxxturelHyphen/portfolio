@@ -14,6 +14,9 @@ import { createGfx } from '../gl/renderer.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
 import { createModeLayers } from '../ui/mode.ts';
+import { WORK_EVENT } from '../ui/plan.ts';
+import { createWorkWalk } from '../ui/plan.walk.ts';
+import { createWelcome } from '../ui/welcome.ts';
 import { createMover } from '../ui/xform.ts';
 import type { BedId, ChannelName, Clock, CutoutBatch, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State } from '../types.ts';
 import { createRig } from '../world/camera.ts';
@@ -137,6 +140,22 @@ export function startGarden(host: GardenHost): GardenRuntime {
     ...(roam === null ? {} : { roam: () => true, arrived: (b: BedId) => roam.arrived(b) }),
   });
   let entered: BedId | null = null;
+  /** The first visit's plate: never in a still (?shot, ?t), so the stills stay as they were. */
+  const welcome = q.shot === undefined && q.t === undefined
+    ? createWelcome(host.world, host.proxies, { machine, content, visitor: roam?.pos ?? null, settled: () => channelsSettled(machine) && roam?.busy !== true })
+    : null;
+  const work = createWorkWalk({
+    machine,
+    bedOf: bedOfProject,
+    slotOf: (id) => slotOwner.get(id) ?? null,
+    proxies: host.proxies,
+    seek: roam === null ? null : (slot) => roam.seek(slot, true),
+    focus: (slot) => proxies.focus(slot),
+  });
+  host.proxies.addEventListener(WORK_EVENT, (e) => {
+    work.start((e as CustomEvent<ProjectId>).detail);
+    loop.wake();
+  });
 
   let slots: readonly SlotView[] = NO_SLOTS;
   const bindBed = (bed: BedId | null): void => {
@@ -245,6 +264,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
     proxies.sync(rig);
     labels.frame(c);
+    welcome?.frame();
+    if (work.step()) loop.wake();
     /**
      * Mobile: once the panel covers the garden and nothing moves (the mode fade included), the garden sleeps. Never
      * before the garden is ready: warm-up and streaming advance only in frames, so a pause then would hold the entry
@@ -268,6 +289,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
     film.onState(s, prev);
     labels.onState(s, prev, slots);
+    if (work.step()) loop.wake();
     if (snapping && arrived(s, machine, s.intent, garden.residency.stateOf)) snapping = false;
     if (quality.mobile && !panelHoldsMobile(s)) loop.resume('panel-mobile');
   });

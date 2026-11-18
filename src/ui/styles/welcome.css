@@ -1,0 +1,168 @@
+/*
+ * The first-visit plate (ui/welcome.ts), top left, clear of the wire of fixed tags, the moon's corner on phones, the
+ * visitor and the plan corner. A card tag of the plant tag's stock, punched and tied with twine to a nail in the wall,
+ * the name in the display serif; under it a slip of notebook paper with the hint. Opacity and transform only. Folded,
+ * the card stays where it stood at opacity 0 (text for screen readers, never a target); the slip leaves the page.
+ * Contrast: --tag-ink on the card's darkest stop (#bfb49c) 8.5:1, --tag-ink-2 6.9:1; --note-ink on --note 10.4:1.
+ */
+
+.wl {
+  --hy: 15px;
+  position: fixed;
+  z-index: 4;
+  top: calc(max(var(--edge), env(safe-area-inset-top, 0px)) + 18px);
+  left: max(calc(var(--edge) + 8px), env(safe-area-inset-left, 0px));
+  width: min(368px, calc(100vw - 2 * var(--edge)));
+  pointer-events: none;
+}
+
+.wl:not([data-state]) {
+  visibility: hidden;
+}
+
+.wl-card,
+.wl-hint {
+  opacity: 0;
+  translate: 0 -10px;
+  transition: opacity var(--dur-ui) var(--ease-out), translate var(--dur-ui) var(--ease-out);
+}
+
+.wl[data-state="shown"] :is(.wl-card, .wl-hint) {
+  opacity: 1;
+  translate: none;
+}
+
+.wl[data-state="shown"] .wl-hint {
+  transition-delay: 120ms;
+}
+
+.wl[data-state="folded"] .wl-card,
+.wl .wl-hint[data-gone] {
+  opacity: 0;
+  translate: 0 8px;
+  transition-duration: var(--dur-ui-exit);
+  transition-delay: 0s;
+}
+
+.wl-card {
+  position: relative;
+  isolation: isolate;
+  padding: 32px 24px 16px;
+  color: var(--tag-ink);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  filter: drop-shadow(0 1px 1px rgb(6 8 16 / 0.7)) drop-shadow(2px 4px 3px rgb(6 8 16 / 0.45)) drop-shadow(6px 18px 14px rgb(4 6 12 / 0.45));
+  transform-origin: 50% var(--hy);
+  rotate: -1.2deg;
+}
+
+.wl-card::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% var(--hy), transparent 3.4px, #6a5a3a 3.8px, #c2ad78 4.8px, #93804f 5.8px, #4f4430 6.6px, rgb(60 44 28 / 0.3) 7.4px, transparent 8.6px),
+    radial-gradient(14px 10px at 6% 90%, rgb(120 84 46 / 0.2), transparent),
+    radial-gradient(120% 70% at 12% 0%, rgb(108 112 156 / 0.2), transparent 70%),
+    radial-gradient(90% 60% at 100% 100%, rgb(82 60 36 / 0.24), transparent 72%),
+    linear-gradient(176deg, #cbc2ae 0%, #bfb49c 100%);
+  box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.24), inset 0 0 18px -6px rgb(82 60 36 / 0.45);
+  clip-path: polygon(0 3px, 21% 0, 52% 2px, 79% 0, 100% 4px, calc(100% - 2px) 41%, 100% 74%, calc(100% - 1px) 100%, 58% calc(100% - 2px), 27% 100%, 2px calc(100% - 1px), 0 61%, 1px 27%);
+  -webkit-mask-image: radial-gradient(circle at 50% var(--hy), transparent 3.5px, #000 4.2px);
+  mask-image: radial-gradient(circle at 50% var(--hy), transparent 3.5px, #000 4.2px);
+}
+
+/* The twine from the eyelet up to a nail in the wall, and the nail's domed head. */
+.wl-card::after {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  top: -16px;
+  left: calc(50% - 5px);
+  width: 10px;
+  height: calc(var(--hy) + 18px);
+  background:
+    radial-gradient(circle 4px at 5px 4px, #c9cecb, #6d7270 45%, #262827 85%, transparent 4.5px),
+    linear-gradient(90deg, transparent 4px, #2f2519 4px, #bba57c 5px, #2f2519 6px, transparent 6px) 0 4px / 100% 100% no-repeat;
+}
+
+.wl-name {
+  font-size: 1.875rem;
+  line-height: 2rem;
+  text-wrap: balance;
+}
+
+.wl-place {
+  margin-top: 2px;
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--tag-ink-2);
+}
+
+.wl-line {
+  margin-top: 10px;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  text-wrap: pretty;
+}
+
+.wl-hint {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  max-width: calc(100% - 28px);
+  margin: 10px 0 0 22px;
+  padding: 10px 14px 11px;
+  color: var(--note-ink);
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  text-wrap: pretty;
+  filter: var(--cast-paper) drop-shadow(2px 6px 6px rgb(6 8 16 / 0.4));
+  rotate: 0.8deg;
+}
+
+.wl-hint::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--note);
+  box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.2);
+  clip-path: polygon(0 2px, 34% 0, 71% 2px, 100% 0, calc(100% - 1px) 52%, 100% 100%, 62% calc(100% - 2px), 18% 100%, 1px calc(100% - 1px), 0 48%);
+}
+
+/* Phones: under the wire of tags and below the moon's corner, full width; the visitor stands lower in the frame. */
+@media (max-width: 44.99rem) {
+  .wl {
+    top: calc(max(6px, env(safe-area-inset-top, 0px)) + 96px);
+    left: max(var(--edge), env(safe-area-inset-left, 0px));
+    width: calc(100vw - 2 * var(--edge));
+  }
+
+  .wl-card {
+    padding: 28px 18px 12px;
+    rotate: -0.6deg;
+  }
+
+  .wl-name {
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+  }
+
+  .wl-line {
+    margin-top: 6px;
+    line-height: 1.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wl-card,
+  .wl-hint,
+  .wl[data-state="shown"] :is(.wl-card, .wl-hint) {
+    translate: none;
+    transition: none;
+  }
+}
