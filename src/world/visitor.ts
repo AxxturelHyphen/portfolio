@@ -39,10 +39,11 @@ export const CROOK = {
 } as const;
 /**
  * The lantern in the figure's hand: its handle from fist to ring (m at figure scale 1), its plate scale on landscape
- * and portrait screens, the ground velocity follower and the flame's ease from the planted crook to the hand when the
- * figure first appears.
+ * and portrait screens, the ground velocity follower, the flame's ease from the planted crook to the hand when the
+ * figure first appears, and how far the carrying arm follows the lantern's swing (a share of its angle, clamped in
+ * degrees), taken on the figure's ticks.
  */
-export const HELD = { handleM: 0.05, scaleWide: 1.05, scaleTall: 0.75, velTauS: 0.08, flameTauS: 0.3 } as const;
+export const HELD = { handleM: 0.05, scaleWide: 1.05, scaleTall: 0.75, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4 } as const;
 /** The solid patch of the lantern plate the crook is cut from (shares of the sprite's uv rect). */
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 
@@ -112,6 +113,7 @@ export interface VisitorLantern {
 /** Instances in the actor batch with the figure (shadow, body, handle, lantern), and before it: shaft, hook, lantern. */
 export const VISITOR_QUADS = SLOT.count;
 export const CROOK_QUADS = 1 + CROOK.hookSegments + 1;
+const DEG = Math.PI / 180;
 
 export function createVisitorLantern(pos: Float32Array, pond: PondShape | null): VisitorLantern {
   const flame = new Float32Array(3);
@@ -144,6 +146,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   let lean = 0;
   let side = 1;
   let figureSide = 1;
+  let armSway = 0;
 
   /** Writes one crook segment from world (ax, ay) to (bx, by) in the plane z. */
   function piece(i: number, ax: number, ay: number, bx: number, by: number, width: number, z: number, phase: number): void {
@@ -219,10 +222,14 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   function figureFrame(c: Clock, reduced: boolean, still: boolean, x: number, z: number, tick: number): void {
     const p = puppet!;
     stepGait(gait, c.t, c.dt, groundVx, gaitVz, c.frozen, reduced);
-    if (still || tick !== lastTick) figureSide = carrySide(x, z);
-    const mirror = gait.view === 'side' ? gait.dir : gait.view === 'front' ? -figureSide : figureSide;
+    if (still || tick !== lastTick) {
+      figureSide = carrySide(x, z);
+      const turn = (HELD.armFollow * pendulum.angle) / DEG;
+      armSway = still ? 0 : Math.max(-HELD.armMaxDeg, Math.min(HELD.armMaxDeg, turn));
+    }
+    const mirror = gait.view === 'side' ? gait.dir : figureSide;
     const k = wide ? 1 : FIGURE.portraitK;
-    p.place(gait, x, z, k, mirror);
+    p.place(gait, x, z, k, mirror, armSway);
     const gx = p.grip[0]!;
     const gy = p.grip[1]!;
     stepPendulum(pendulum, gx, c.dt, still);
