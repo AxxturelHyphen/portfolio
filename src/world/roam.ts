@@ -73,6 +73,25 @@ export function nearestBed(x: number, current: BedId | null, beds: readonly BedI
   return Math.abs(x - anchorOf(current)) - bestD > 2 * ROAM.bedHysteresisM ? best : current;
 }
 
+/** Streaming lookahead: the bed ahead is wanted once the visitor is this near its edge, walking at least this fast. */
+export const HEADING = { withinM: 6, minSpeed: 0.2 } as const;
+
+/** The first bed whose x range starts ahead of x in direction dir (+1 or -1), if its edge is within `within` metres. */
+export function bedAhead(x: number, dir: number, beds: readonly BedId[], boundsOf: (b: BedId) => readonly [number, number], within: number): BedId | null {
+  let best: BedId | null = null;
+  let bestD = Infinity;
+  for (let i = 0; i < beds.length; i++) {
+    const b = beds[i]!;
+    const [x0, x1] = boundsOf(b);
+    const d = dir > 0 ? x0 - x : x - x1;
+    if (d > 0 && d < bestD) {
+      bestD = d;
+      best = b;
+    }
+  }
+  return bestD <= within ? best : null;
+}
+
 export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   const pos = new Float32Array([x0, z0]);
   const vel = new Float32Array(2);

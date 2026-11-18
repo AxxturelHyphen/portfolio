@@ -28,8 +28,15 @@ export interface TestApiDeps {
   /** Resolves when the garden is warm and its first bed or the overview is shown. */
   ready: Promise<void>;
   info(out: InfoSnapshot): InfoSnapshot;
-  /** The visitor's [x, z] under free roam (?roam=1), else null. */
-  roamPos: Float32Array | null;
+  /** The visitor under free roam (?roam=1), else null. */
+  roam: TestRoam | null;
+}
+
+/** The visitor's position and test-only steering (the same calls a click on the ground and held keys make). */
+export interface TestRoam {
+  readonly pos: Float32Array;
+  walkTo(x: number, z: number): void;
+  setHeld(bits: number): void;
 }
 
 export const eventOf = (place: Place): Ev => (place.k === 'project' ? { type: 'OPEN', id: place.id } : { type: 'GOTO', place });
@@ -111,7 +118,15 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
     send: (ev) => machine.send(ev),
     settled: () => until(() => channelsSettled(machine) && !MOVING.includes(machine.state.phase)),
     camera: (): Pose => ({ ...d.rig.pose }),
-    roam: () => (d.roamPos === null ? null : { x: d.roamPos[0]!, z: d.roamPos[1]! }),
+    roam: () => (d.roam === null ? null : { x: d.roam.pos[0]!, z: d.roam.pos[1]! }),
+    walkTo(x, z) {
+      d.roam?.walkTo(x, z);
+      loop.wake();
+    },
+    holdKeys(bits) {
+      d.roam?.setHeld(bits);
+      loop.wake();
+    },
     info: () => ({ ...d.info(snapshot) }),
     residency() {
       const out = {} as Record<BedId, BedState>;

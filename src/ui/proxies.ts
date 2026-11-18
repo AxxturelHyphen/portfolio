@@ -1,5 +1,5 @@
 import { GESTURE } from '../core/input.ts';
-import type { BedId, CameraRig, Machine, ProxyLayer, ScreenPt, SlotView } from '../types.ts';
+import type { BedId, CameraRig, Machine, ProxyLayer, ScreenPt, SlotId, SlotView } from '../types.ts';
 import { LABEL_ID } from './label.ts';
 import { createPlan } from './plan.ts';
 import { createSignposts, type BedSign, type SignAnchor } from './signposts.ts';
@@ -14,7 +14,7 @@ import { createMover, type Mover } from './xform.ts';
  * rig's projection in stage 'dom', only when the rig moved. Mouse hover and keyboard focus send FOCUS, leaving sends
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
  * Props have no route: activating one dispatches `jardin:activate` (detail: the slot id) for the bed's behaviour.
- * One polite live region announces the bed the visitor arrives in.
+ * One polite live region announces the bed the visitor arrives in and, in free roam, the flower the visitor walks up to.
  */
 
 /** Proxy boxes are laid out at this many CSS px per world unit; the transform scales them to the projection. */
@@ -27,8 +27,18 @@ export const ACTIVATE_EVENT = 'jardin:activate';
 export interface GardenProxies extends ProxyLayer {
   mountBeds(beds: readonly BedSign[]): void;
   setSigns(anchors: readonly SignAnchor[]): void;
-  /** Free roam: the signs stand planted in the world, clear of the visitor at this [x, z]. */
+  /**
+   * Free roam: the signs stand planted in the world, clear of the visitor at this [x, z]. Slots off screen stay in the
+   * Tab order, so a keyboard or screen-reader visitor never has to walk to reach a flower.
+   */
   setVisitor(at: Float32Array): void;
+  /**
+   * Free roam: the slot the visitor stands by (proximity focus). The pointer leaving it does not blur it, and its name
+   * is said once per newly focused flower. DOM focus is not moved.
+   */
+  setNear(id: SlotId | null): void;
+  /** Activates a slot's proxy as a click would (free roam: Enter on the page opens the focused flower). */
+  activate(id: SlotId): void;
 }
 
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
@@ -54,6 +64,9 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   let signsDirty = true;
   let lastPointer = 'mouse';
   let announceTimer = 0;
+  let roaming = false;
+  let near: SlotId | null = null;
+  let said: SlotId | null = null;
 
   el.addEventListener('pointerdown', (e) => {
     lastPointer = e.pointerType;
@@ -98,7 +111,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   }
 
   function blurSlot(slot: string, n: HTMLElement): void {
-    if (isFocused(slot) && document.activeElement !== n) m.send({ type: 'BLUR' });
+    if (isFocused(slot) && document.activeElement !== n && slot !== near) m.send({ type: 'BLUR' });
   }
 
   function announce(text: string): void {
@@ -187,8 +200,21 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     },
 
     setVisitor(at: Float32Array): void {
+      roaming = true;
       signs.setVisitor(at);
       signsDirty = true;
+    },
+
+    setNear(id: SlotId | null): void {
+      near = id;
+      if (id === null || id === said) return;
+      said = id;
+      const name = nodes.find((n) => n.dataset.slot === id)?.textContent;
+      if (name) announce(name);
+    },
+
+    activate(id: SlotId): void {
+      nodes.find((n) => n.dataset.slot === id)?.click();
     },
 
     mountSlots(bed: BedId, slots: readonly SlotView[]): void {
@@ -228,7 +254,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
           const n = nodes[i];
           if (n !== undefined) {
             n.toggleAttribute('data-off', hidden);
-            n.tabIndex = hidden ? -1 : 0;
+            n.tabIndex = hidden && !roaming ? -1 : 0;
           }
         }
         if (!hidden) movers[i]?.move(pt.x, pt.y, pt.scale / PX_PER_UNIT);

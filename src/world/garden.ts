@@ -61,8 +61,12 @@ quad.phase = packPhase(0, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
 /** Free roam: the closed garden (crowns, hedge, base course, wall stone, coping) stands in place of the rail's wall. */
 const CLOSED_ORDER = { crowns: RENDER_ORDER.overview - 5, hedge: RENDER_ORDER.overview - 4, base: RENDER_ORDER.overview - 3, wall: RENDER_ORDER.overview - 2, coping: RENDER_ORDER.overview - 1 } as const;
 
-export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig }): StreamGarden {
+/** Free roam hands the garden the bed ahead of the walking visitor (cook/ROAM_PLAN.md section 3, Streaming). */
+export interface RoamStreaming { heading(): BedId | null }
+
+export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; roam?: RoamStreaming }): StreamGarden {
   const { gfx, machine, content, proxies } = d;
+  const roam = d.roam ?? null;
   const layout = content.garden as WorldLayout;
   const memory = createMemory();
   let shared: BuildAtlas | null = null;
@@ -89,9 +93,15 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
     proxies.mountBeds(layout.order.filter((b) => b !== 'gruta').map((b) => ({ id: b, title: SCENES[b].title[lang] })));
   };
 
-  /** Where the camera is (active) and where it is going (heading); the bed being left stays wanted until arrival. */
+  /**
+   * Where the camera is (active) and where it is going (heading); the bed being left stays wanted until arrival. In free
+   * roam the active bed is the machine's bed and the heading is the bed ahead of the walking visitor.
+   */
   const place = (s: State): void => {
-    if (s.phase === 'travel') {
+    if (roam !== null) {
+      active = s.phase === 'travel' || SETTLED.includes(s.phase) ? s.bed : null;
+      heading = roam.heading();
+    } else if (s.phase === 'travel') {
       heading = s.intent.k === 'overview' ? null : s.bed;
       active = origin;
     } else if (SETTLED.includes(s.phase)) {
@@ -260,6 +270,10 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
       residency.want(active, heading, hovered);
     },
     update(c: Clock) {
+      if (roam !== null && roam.heading() !== heading) {
+        place(machine.state);
+        residency.want(active, heading, hovered);
+      }
       residency.tick(c);
       if (entered === null) syncEntered();
       const s = machine.state;
