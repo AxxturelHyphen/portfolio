@@ -3,7 +3,8 @@
  * then the focus nudge and the "View" push toward the slot. The walk is a continuous move along the rail driven by
  * ch.leg through the walk profile of core/motion.ts (10 m/s cap on a neighbour hop); a new leg starts from where the
  * camera is and carries its velocity, so every move reverses from where it is. Jumps over more than one bed dip
- * through the overview (the film strip covers them). Pitch and yaw are radians; positive yaw turns the view toward +x.
+ * through the overview (the film strip covers them). Free roam (setFollow) puts the follow pose in place of the walk.
+ * Pitch and yaw are radians; positive yaw turns the view toward +x.
  */
 import { PerspectiveCamera, Vector3 } from 'three';
 import type { BedId, CameraRig, Clock, GardenLayout, Machine, Pose, ScreenPt, ShotId, SlotId, SlotView, State } from '../types.ts';
@@ -27,6 +28,10 @@ export interface GardenRig extends CameraRig {
   viewHeightAt(planeZ: number): number;
   /** World X of the overview pan: where a leg from the overview starts. */
   readonly panX: number;
+  /** Free roam: this pose (read every frame) replaces the rail walk in the pose mix; null restores the rail. */
+  setFollow(pose: Readonly<RigPose> | null): void;
+  /** Writes the ground point (y 0) under a CSS pixel into out [x, y, z]; false when the ray misses the ground. */
+  groundAt(xPx: number, yPx: number, out: Float32Array): boolean;
 }
 
 export function slotWorld(slots: readonly SlotView[], id: SlotId | null, out: Float32Array): boolean {
@@ -104,6 +109,8 @@ export function createRig(layout: GardenLayout): GardenRig {
   let snapNext = true;
   let shotPose: RigPose | null = null;
   let shotGen = -1;
+  let roamPose: Readonly<RigPose> | null = null;
+  let followX = NaN;
   const slotPt = new Float32Array(3);
   const over = blank();
   const walk = blank();
@@ -216,15 +223,17 @@ export function createRig(layout: GardenLayout): GardenRig {
     snapNext = false;
     if (slotWorld(slots, s.slot, slotPt)) slotKnown = true;
 
-    const prevWalkX = walkX;
+    const prevSideX = roamPose === null ? walkX : followX;
     const hasBed = stepWalk(s, ch.leg.value, dt, snap);
     let d = hasBed ? ch.dolly.value : 0;
-    if (hasBed && hops > 0) d *= 1 - FRAME.hopDip * Math.sin(Math.PI * ch.leg.value);
+    if (hasBed && hops > 0 && roamPose === null) d *= 1 - FRAME.hopDip * Math.sin(Math.PI * ch.leg.value);
     dollyNow = d;
+    const sideX = roamPose === null ? walkX : roamPose.x;
+    followX = roamPose === null ? NaN : roamPose.x;
 
     const dTarget = ch.dolly.target;
     if (prevDollyTarget >= 0.5 && dTarget < 0.5) {
-      panX = walkX;
+      panX = sideX;
       panV = 0;
     }
     prevDollyTarget = dTarget;
@@ -237,10 +246,10 @@ export function createRig(layout: GardenLayout): GardenRig {
     over.pitch = ov.pitch;
     over.yaw = 0;
     over.fov = ov.fov;
-    if (hasBed) mixPose(over, walk, d, base);
+    if (hasBed) mixPose(over, roamPose ?? walk, d, base);
     else mixPose(over, over, 0, base);
 
-    const v = dt > 0 && hasBed ? Math.abs(walkX - prevWalkX) / dt : 0;
+    const v = dt > 0 && hasBed && !Number.isNaN(prevSideX) ? Math.abs(sideX - prevSideX) / dt : 0;
     speed = snap ? 0 : follow(speed, v * d, FRAME.speedTauS, dt);
 
     const ft = slotKnown ? ch.focus.target : 0;
@@ -314,6 +323,22 @@ export function createRig(layout: GardenLayout): GardenRig {
       out[0] = o3.x + v3.x * k;
       out[1] = o3.y + v3.y * k;
       out[2] = planeZ;
+    },
+    groundAt(xPx, yPx, out) {
+      v3.set((xPx / width) * 2 - 1, 1 - (yPx / height) * 2, 0.5).unproject(camera);
+      o3.copy(camera.position);
+      v3.sub(o3);
+      if (v3.y >= 0) return false;
+      const k = -o3.y / v3.y;
+      out[0] = o3.x + v3.x * k;
+      out[1] = 0;
+      out[2] = o3.z + v3.z * k;
+      return true;
+    },
+    setFollow(p) {
+      roamPose = p;
+      followX = NaN;
+      dirty = true;
     },
     update,
     setShot(id: ShotId) {

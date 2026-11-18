@@ -1,7 +1,8 @@
 /**
  * LightRig (ARCH 2.5, spec §3.2 and §7): the cursor light follows the pointer on its own follower; on touch it stays at
- * the last touch and drifts on a slow figure of eight when idle. The gather light rises on the focused flower.
- * Output is world space, read by the cutout material (uCursor, uGather, uFocusBack, uMoonDir).
+ * the last touch and drifts on a slow figure of eight when idle. Carried (free roam) it sits at the visitor and the
+ * pointer no longer moves it. The gather light rises on the focused flower. Output is world space, read by the cutout
+ * material (uCursor, uGather, uFocusBack, uMoonDir).
  */
 import type { CameraRig, Clock, LightRig, Machine, SlotId, SlotView, State } from '../types.ts';
 import { LIGHT, follow } from '../core/motion.ts';
@@ -20,6 +21,9 @@ const GEOM = {
   moon: [-0.35, 0.8, 0.5],
   /** In a bed at rest the far layers fall back behind the flowers by this share of a focus (an 85 mm close shot). */
   bedRestBack: 0.6,
+  /** Carried at the visitor (free roam): hand height and pool radius, metres. */
+  carriedY: 0.9,
+  carriedRadius: 1.6,
 } as const;
 
 /** Idle touch drift: starts after this long without a touch and fades in on this follower. */
@@ -30,6 +34,8 @@ export interface GardenLight extends LightRig {
   resize(w: number, h: number): void;
   /** The active bed's slots, for the gather light. */
   setSlots(slots: readonly SlotView[]): void;
+  /** Free roam: the light sits at this [x, z] (read every frame); null gives it back to the pointer. */
+  carry(at: Float32Array | null): void;
 }
 
 export function createLight(): GardenLight {
@@ -64,6 +70,7 @@ export function createLight(): GardenLight {
   let handThrow = 0;
   let gatherSlot: SlotId | null = null;
   let slots: readonly SlotView[] = [];
+  let carried: Float32Array | null = null;
 
   /** A follower step; under frozen time (`?t`, the test API) it lands on its target so stills never depend on load. */
   const ease = (v: number, to: number, tauS: number, dt: number, snap: boolean): number => (snap ? to : follow(v, to, tauS, dt));
@@ -137,6 +144,14 @@ export function createLight(): GardenLight {
     },
     update(c: Clock, s: State, ch: Machine['ch'], rig: CameraRig) {
       const dt = c.dt;
+      if (carried !== null) {
+        cursor[0] = carried[0]!;
+        cursor[1] = GEOM.carriedY;
+        cursor[2] = carried[1]! + GEOM.carriedRadius * GEOM.liftOfRadius;
+        cursor[3] = GEOM.carriedRadius;
+        stepGather(s, ch, dt, c.frozen, true);
+        return;
+      }
       /** Under frozen time (`?t`, the test API) a pointer still at (0,0) is the stray load event, not a hand: stills keep the rest light. */
       const pointer = hasPointer && (leftOrigin || !c.frozen);
       stepScreen(c, dt, pointer);
@@ -157,6 +172,9 @@ export function createLight(): GardenLight {
     },
     setSlots(v) {
       slots = v;
+    },
+    carry(at) {
+      carried = at;
     },
   };
 }
