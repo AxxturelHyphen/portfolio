@@ -169,18 +169,28 @@
     --corner: 2rem;
   }
 
-  #herbario .h-mount-full,
+  #herbario .h-mount,
   #herbario .h-frontis {
     position: relative;
     padding: 1.25rem 1.25rem 0.875rem;
     background: var(--mount-paper);
   }
 
-  #herbario .h-mount-full {
-    grid-template-rows: minmax(0, 1fr);
+  /* Every mount, empty or full, holds the same box, so a row of them shares its top, its rule and its titles. */
+  #herbario .h-mount {
     min-height: 0;
     aspect-ratio: 3 / 4;
     transform: rotate(var(--tilt));
+  }
+
+  #herbario .h-mount-full {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* The faint stain a pressed plate leaves on its mount, in the box the mount already reserves: a plate still
+     loading reads as a pressing, never as a hole, and nothing moves when it arrives. */
+  #herbario .h-specimen-img {
+    background: radial-gradient(closest-side, rgb(205 186 152 / 0.3), rgb(205 186 152 / 0.12) 65%, transparent);
   }
 
   #herbario .h-frontis {
@@ -214,11 +224,11 @@
     mix-blend-mode: multiply;
   }
 
-  /* The collection label: Latin and plate on a hand-ruled line at the foot of the mount. Every label holds three
+  /* The collection label: Latin and plate on a hand-ruled line at the foot of the mount. Every label holds four
      lines and sets from the top, so the first lines and the rules share one baseline across the row. */
   #herbario .h-specimen-cap {
     align-content: start;
-    min-height: 4.5rem;
+    min-height: 5.75rem;
     max-width: none;
     margin: 0;
     padding: 0.5rem 0 0.375rem;
@@ -229,10 +239,6 @@
     width: auto;
     margin: 1.5rem 0 0;
     gap: 0.5rem;
-  }
-
-  #herbario .h-title {
-    font-size: 1.5rem;
   }
 
   /* Status and year as one quiet line of small text; their labels stay for screen readers only. */
@@ -262,6 +268,11 @@
   }
 
   @media (max-width: 64rem) {
+    /* Room for the paper strip the tags hang on at these widths (toggles.css). */
+    #herbario {
+      padding-top: 4.75rem;
+    }
+
     .h-id {
       grid-column: 1 / -1;
     }
@@ -282,9 +293,10 @@
 
     .h-projects {
       grid-auto-flow: row;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-auto-columns: auto;
       row-gap: 3.5rem;
+      margin-top: 7rem;
     }
 
     .h-section-title {
@@ -298,13 +310,21 @@
       grid-row: auto;
       grid-column: 1 / -1;
     }
+
+    /* Two wide tracks fill the row; a bed with a single specimen sets its name beside the plate, not above it. */
+    @media (min-width: 45rem) {
+      .h-bed:not(:has(.h-sheet:nth-child(2))) .h-bed-head {
+        grid-column: 1;
+      }
+
+      .h-bed:not(:has(.h-sheet:nth-child(2))) .h-sheets {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+    }
   }
 
   @media (max-width: 44.99rem) {
-    #herbario {
-      padding-top: 4.5rem;
-    }
-
     #herbario .h-site {
       display: none;
     }
@@ -327,7 +347,7 @@
 
     .h-facts {
       row-gap: 2rem;
-      padding-top: 2.5rem;
+      padding-top: 3.25rem;
     }
 
     .h-projects {
@@ -339,8 +359,12 @@
       row-gap: 3.5rem;
     }
 
-    #herbario .h-mount-full {
+    #herbario .h-mount {
       aspect-ratio: 4 / 5;
+    }
+
+    #herbario .h-contact-list > li + li {
+      margin-top: 1.25rem;
     }
   }
 }
