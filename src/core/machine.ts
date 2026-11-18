@@ -25,6 +25,10 @@ export interface GardenGeo {
   bedReady(b: BedId): boolean;
   /** World X of the overview pan. */
   viewX(): number | null;
+  /** Free roam: the visitor walks, so camera legs snap (cook/ROAM_PLAN.md section 3). Default false. */
+  roam?(): boolean;
+  /** Free roam: the visitor stands inside the bed's x range, so travel may end there. Default true. */
+  arrived?(b: BedId): boolean;
 }
 
 export interface MachineOptions extends MachineEnv {
@@ -70,6 +74,8 @@ function geoOf(c: MachineContent, o: MachineOptions): Geo {
     slotOf: (id) => (geo === undefined ? null : geo.slotOf(id)),
     bedReady: (b) => (geo === undefined ? true : geo.bedReady(b)),
     viewX: () => (geo === undefined ? null : geo.viewX()),
+    roam: () => geo?.roam?.() ?? false,
+    arrived: (b) => geo?.arrived?.(b) ?? true,
   };
 }
 

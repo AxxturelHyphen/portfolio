@@ -21,7 +21,7 @@ export const slotOf = (id: ProjectId): string | null => {
   const bed = bedOf(id);
   return bed === null ? null : `${bed}/${id}`;
 };
-export const geo = { order: ORDER, anchor: (b: BedId) => anchors[b], bedOf, slotOf, bedReady: (): boolean => true, viewX: (): null => null };
+export const geo = { order: ORDER, anchor: (b: BedId) => anchors[b], bedOf, slotOf, bedReady: (): boolean => true, viewX: (): null => null, roam: (): boolean => false, arrived: (): boolean => true };
 
 export function machine(mode: Mode = 'garden', reduced = false, gardenGeo: Partial<GardenGeo> = {}): RuntimeMachine {
   return createMachine(content, { mode, reduced, lang: 'en', geo: { slotOf, bedReady: () => true, viewX: () => null, ...gardenGeo } });

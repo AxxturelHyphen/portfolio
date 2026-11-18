@@ -128,7 +128,10 @@ if (lang !== 'en') renderLang(lang);
 let gardenGeo: GardenGeo = { slotOf: () => null, bedReady: () => false, viewX: () => null };
 const machine = createMachine(content, {
   mode, reduced, lang,
-  geo: { slotOf: (id) => gardenGeo.slotOf(id), bedReady: (b) => gardenGeo.bedReady(b), viewX: () => gardenGeo.viewX() },
+  geo: {
+    slotOf: (id) => gardenGeo.slotOf(id), bedReady: (b) => gardenGeo.bedReady(b), viewX: () => gardenGeo.viewX(),
+    roam: () => gardenGeo.roam?.() ?? false, arrived: (b) => gardenGeo.arrived?.(b) ?? true,
+  },
 });
 const loop = createLoop(q);
 startRouter(machine, content);

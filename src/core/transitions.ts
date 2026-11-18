@@ -21,6 +21,10 @@ export interface Geo {
   bedReady(b: BedId): boolean;
   /** World X the overview shows (the rig's pan), or null when no garden runs. */
   viewX(): number | null;
+  /** Free roam: the follow camera ignores the leg, so it snaps. */
+  roam(): boolean;
+  /** Free roam: the visitor is inside the bed, so travel may end there. */
+  arrived(b: BedId): boolean;
 }
 
 export const OVERVIEW: Place = { k: 'overview' };
@@ -154,7 +158,7 @@ function leg(s: State, c: BedId, ch: Channels, g: Geo): State {
   const span = g.anchor(c) - x;
   const hops = Math.max(1, hopsFrom(g.order, g.anchor, x, c));
   ch.leg.retime(s.phase === 'overview' || ch.dolly.value < 0.5 ? CAMERA.dollyS : travelS(hops));
-  if (hidden(s, ch)) {
+  if (hidden(s, ch) || g.roam()) {
     ch.leg.snap(1);
   } else {
     ch.leg.snap(0);
@@ -180,7 +184,7 @@ function travel(s: State, want: BedId | null, ch: Channels, g: Geo): State {
     return ch.dolly.settled && ch.leg.settled ? { ...s, phase: 'overview', bed: null, fromX: camX(s, ch, g) } : s;
   }
   if (want !== s.bed || ch.leg.target !== 1 || ch.dolly.target !== 1) return leg(s, want, ch, g);
-  return at(ch.leg, 1) && at(ch.dolly, 1) ? { ...s, phase: 'bed' } : s;
+  return at(ch.leg, 1) && at(ch.dolly, 1) && g.arrived(want) ? { ...s, phase: 'bed' } : s;
 }
 
 function inBed(s: State, want: BedId | null, ch: Channels, g: Geo): State {
