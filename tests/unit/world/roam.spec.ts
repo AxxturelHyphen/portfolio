@@ -1,0 +1,244 @@
+import { expect, test } from '@playwright/test';
+import { PerspectiveCamera, Vector3 } from 'three';
+import { FOLLOW, ROAM } from '../../../src/core/motion.ts';
+import { createRig } from '../../../src/world/camera.ts';
+import { createFollower, followPose, framingFor, type Framing, type ViewLimits } from '../../../src/world/follow.ts';
+import type { RigPose } from '../../../src/world/rail.ts';
+import { createVisitor, HOLD, nearestBed, type Visitor, type WalkArea } from '../../../src/world/roam.ts';
+import { traceLayout, traceRig } from './rig.trace.ts';
+
+const ground = traceLayout.ground;
+const pond = ground.pond;
+const area: WalkArea = { minX: -2.8, maxX: 46, minZ: -5.5, maxZ: 3, pond, path: ground.path.points };
+const limits: ViewLimits = { minX: -3.5, maxX: 46.5, maxZ: 8.5, wallZ: ground.wall.z };
+const r = ROAM.radius;
+
+/** Ellipse metric of the body-inflated pond: below 1 means the body overlaps the water. */
+const pondMetric = (v: Visitor): number => Math.hypot((v.pos[0]! - pond.x) / (pond.rx + r), (v.pos[1]! - pond.z) / (pond.rz + r));
+const speedOf = (v: Visitor): number => Math.hypot(v.vel[0]!, v.vel[1]!);
+const inside = (v: Visitor): boolean =>
+  v.pos[0]! >= area.minX + r - 1e-5 && v.pos[0]! <= area.maxX - r + 1e-5 && v.pos[1]! >= area.minZ + r - 1e-5 && v.pos[1]! <= area.maxZ - r + 1e-5;
+
+test('walk speed is capped at 3.2 m/s', () => {
+  const v = createVisitor(area, 0, 0);
+  v.setHeld(HOLD.right | HOLD.down);
+  let max = 0;
+  for (let i = 0; i < 120; i++) {
+    v.step(1 / 60);
+    max = Math.max(max, speedOf(v));
+  }
+  expect(max).toBeLessThanOrEqual(ROAM.speed + 1e-4);
+  expect(max).toBeGreaterThan(ROAM.speed - 1e-4);
+});
+
+test('full speed after 0.15 s, standing still 0.1 s after release', () => {
+  const dt = 1 / 240;
+  const v = createVisitor(area, 0, 0);
+  v.setHeld(HOLD.right);
+  let t = 0;
+  while (speedOf(v) < ROAM.speed - 1e-4) {
+    v.step(dt);
+    t += dt;
+  }
+  expect(t).toBeCloseTo(ROAM.toSpeedS, 2);
+  v.setHeld(0);
+  t = 0;
+  while (speedOf(v) > 0) {
+    v.step(dt);
+    t += dt;
+  }
+  expect(t).toBeCloseTo(ROAM.toStopS, 2);
+});
+
+test('slides along the edge of the walkable rectangle', () => {
+  const v = createVisitor(area, 2, -4.9);
+  v.setHeld(HOLD.up | HOLD.right);
+  for (let i = 0; i < 60; i++) v.step(1 / 60);
+  const x0 = v.pos[0]!;
+  for (let i = 0; i < 60; i++) v.step(1 / 60);
+  expect(v.pos[1]).toBeCloseTo(area.minZ + r, 5);
+  expect(v.pos[0]! - x0).toBeGreaterThan(1.5);
+  expect(v.vel[1]).toBe(0);
+});
+
+test('never inside the pond, from any approach direction and at dt 0.05', () => {
+  const dirs = [HOLD.left, HOLD.right, HOLD.up, HOLD.down, HOLD.left | HOLD.up, HOLD.left | HOLD.down, HOLD.right | HOLD.up, HOLD.right | HOLD.down];
+  let minMetric = Infinity;
+  let outside = 0;
+  for (const dt of [1 / 60, 0.05, 0.25]) {
+    for (let a = 0; a < 16; a++) {
+      const ang = (a / 16) * 2 * Math.PI;
+      for (const dir of dirs) {
+        const v = createVisitor(area, pond.x + Math.cos(ang) * (pond.rx + 1), pond.z + Math.sin(ang) * (pond.rz + 0.6));
+        v.setHeld(dir);
+        for (let t = 0; t < 3; t += dt) {
+          v.step(dt);
+          minMetric = Math.min(minMetric, pondMetric(v));
+          if (!inside(v)) outside++;
+        }
+      }
+    }
+  }
+  expect(minMetric).toBeGreaterThan(1 - 1e-4);
+  expect(outside).toBe(0);
+});
+
+test('no tunnelling through the rectangle at dt 0.05', () => {
+  for (const dir of [HOLD.left, HOLD.right, HOLD.up, HOLD.down]) {
+    const v = createVisitor(area, 40, 0);
+    v.setHeld(dir);
+    for (let i = 0; i < 400; i++) {
+      v.step(0.05);
+      expect(inside(v)).toBe(true);
+    }
+  }
+});
+
+test('a walk target across the pond goes round it by the nearer side and arrives', () => {
+  for (const [z, north] of [[-1.2, true], [-2.4, false]] as const) {
+    const v = createVisitor(area, pond.x - pond.rx - 1.5, z);
+    v.walkTo(pond.x + pond.rx + 1.5, z);
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (let t = 0; t < 12 && v.busy; t += 1 / 60) {
+      v.step(1 / 60);
+      expect(pondMetric(v)).toBeGreaterThan(1 - 1e-4);
+      minZ = Math.min(minZ, v.pos[1]!);
+      maxZ = Math.max(maxZ, v.pos[1]!);
+    }
+    expect(v.busy).toBe(false);
+    expect(Math.hypot(v.pos[0]! - (pond.x + pond.rx + 1.5), v.pos[1]! - z)).toBeLessThan(0.1);
+    if (north) expect(maxZ).toBeGreaterThan(pond.z + pond.rz);
+    else expect(minZ).toBeLessThan(pond.z - pond.rz);
+  }
+});
+
+test('a walk target inside the pond or outside the walls stops at the edge', () => {
+  const v = createVisitor(area, 14, 1);
+  v.walkTo(pond.x, pond.z);
+  for (let i = 0; i < 600 && v.busy; i++) v.step(1 / 60);
+  expect(pondMetric(v)).toBeGreaterThan(1 - 1e-4);
+  expect(pondMetric(v)).toBeLessThan(1.05);
+  v.walkTo(60, 20);
+  for (let i = 0; i < 1200 && v.busy; i++) v.step(1 / 60);
+  expect(v.pos[0]).toBeCloseTo(area.maxX - r, 1);
+  expect(v.pos[1]).toBeCloseTo(area.maxZ - r, 1);
+});
+
+test('the nearest bed changes only 1 m past the halfway line', () => {
+  const beds = ['puerta', 'rosaleda', 'estanque'] as const;
+  const at = (b: string): number => traceLayout.anchors[b as 'puerta'];
+  expect(nearestBed(5.9, 'puerta', beds, at)).toBe('puerta');
+  expect(nearestBed(6.1, 'puerta', beds, at)).toBe('rosaleda');
+  expect(nearestBed(4.1, 'rosaleda', beds, at)).toBe('rosaleda');
+  expect(nearestBed(3.9, 'rosaleda', beds, at)).toBe('puerta');
+  expect(nearestBed(3.9, null, beds, at)).toBe('puerta');
+});
+
+/** Where the four frustum corner rays first meet the ground (y 0) or the back wall plane. */
+function cornerHits(p: RigPose, aspect: number): Vector3[] {
+  const cam = new PerspectiveCamera(p.fov, aspect, 0.05, 400);
+  cam.rotation.order = 'YXZ';
+  cam.position.set(p.x, p.y, p.z);
+  cam.rotation.set(p.pitch, -p.yaw, 0);
+  cam.updateMatrixWorld();
+  cam.updateProjectionMatrix();
+  return [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => {
+    const d = new Vector3(sx, sy, 0.5).unproject(cam).sub(cam.position);
+    const toGround = d.y < 0 ? -p.y / d.y : Infinity;
+    const toWall = d.z < 0 ? (limits.wallZ - p.z) / d.z : Infinity;
+    return cam.position.clone().addScaledVector(d, Math.min(toGround, toWall));
+  });
+}
+
+test('the follow camera never shows past the wall ends or south of the limit', () => {
+  for (const [w, h] of [[1920, 1080], [2560, 1080], [390, 844]] as const) {
+    const f = framingFor(w / h, {} as Framing);
+    const pose = { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 };
+    for (let x = area.minX + r; x <= area.maxX - r; x += 1.6) {
+      for (let z = area.minZ + r; z <= area.maxZ - r; z += 0.79) {
+        followPose(x, z, f, limits, pose);
+        for (const c of cornerHits(pose, w / h)) {
+          expect(c.x, `${w}x${h} at ${x},${z}`).toBeGreaterThanOrEqual(limits.minX - 1e-6);
+          expect(c.x, `${w}x${h} at ${x},${z}`).toBeLessThanOrEqual(limits.maxX + 1e-6);
+          expect(c.z, `${w}x${h} at ${x},${z}`).toBeLessThanOrEqual(limits.maxZ + 1e-6);
+        }
+      }
+    }
+  }
+});
+
+test('portrait framing shows 9 m across at the visitor, who sits at 60 percent of the height', () => {
+  const aspect = 390 / 844;
+  const f = framingFor(aspect, {} as Framing);
+  expect(f.up).toBe(FOLLOW.portraitUp);
+  const pose = followPose(20, -1, f, limits, { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
+  const cam = new PerspectiveCamera(pose.fov, aspect, 0.05, 400);
+  cam.rotation.order = 'YXZ';
+  cam.position.set(pose.x, pose.y, pose.z);
+  cam.rotation.set(pose.pitch, 0, 0);
+  cam.updateMatrixWorld();
+  cam.updateProjectionMatrix();
+  const ndc = new Vector3(20, 0, -1).project(cam);
+  expect((1 - ndc.y) / 2).toBeCloseTo(FOLLOW.at, 2);
+  const right = new Vector3(20 + FOLLOW.acrossM / 2, 0, -1).project(cam);
+  expect(right.x).toBeLessThanOrEqual(1 + 1e-6);
+});
+
+test('the follower lags while walking and lands on the pose without lag under reduced motion', () => {
+  const f = createFollower(limits);
+  f.resize(1920, 1080);
+  f.step(10, 0, 1 / 60, false);
+  f.step(12, 0, 1 / 60, false);
+  expect(f.pose.x).toBeGreaterThan(10);
+  expect(f.pose.x).toBeLessThan(12);
+  f.step(14, 0, 1 / 60, true);
+  const want = followPose(14, 0, framingFor(1920 / 1080, {} as Framing), limits, { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 });
+  expect(f.pose).toEqual(want);
+});
+
+/** Rail poses recorded from the rig before free roam existed (tests/unit/world/rig.trace.ts). */
+const RAIL_BEFORE_ROAM: number[][] = [
+  [22.5, 2.2, 8, -0.10472, 0, 44],
+  [23.93654, 2.2, 8, -0.10472, 0, 44],
+  [24.52937, 1.5723, 5.71744, -0.10472, 0, 44],
+  [24.62764, 1.57143, 5.71429, -0.10472, 0, 44],
+  [21.14801, 2.02686, 6.95291, -0.1224, -0.11651, 35.59943],
+  [15.16954, 2.58561, 6.32722, -0.27715, -0.07127, 36.03868],
+  [11.63477, 2.3996, 3.20182, -0.26172, -0.11144, 34.0055],
+  [11.6, 2.4, 3.2, -0.2618, -0.10472, 34],
+  [11.6, 2.32362, 2.46742, -0.2618, -0.10472, 34],
+  [11.6, 2.3216, 2.44814, -0.2618, -0.10472, 34],
+  [11.6, 2.07366, 0.2766, -0.2618, -0.10472, 34],
+  [11.6, 2.07366, 0.2766, -0.2618, -0.10472, 34],
+  [11.6, 2.31566, 2.39595, -0.2618, -0.10472, 34],
+  [11.6, 2.3216, 2.448, -0.2618, -0.10472, 34],
+  [11.6, 2.3216, 2.448, -0.2618, -0.10472, 34],
+  [14.57667, 2.57388, 5.99501, -0.27715, 0.04207, 35.75902],
+  [18.49333, 2.31086, 6.86249, -0.18842, 0.01432, 34.84343],
+  [20.97978, 2.10002, 7.19997, -0.12218, -0.06491, 34.00008],
+  [21, 2.1, 7.2, -0.12217, -0.06981, 34],
+  [26.57746, 2.26281, 5.8534, -0.22906, 0.05395, 38.42147],
+  [35.09393, 2.50917, 6.3384, -0.26386, 0.06367, 36.70578],
+  [41.28975, 2.58383, 5.0115, -0.20781, 0.06211, 38.09392],
+  [41.55689, 2.59739, 5.00182, -0.20917, 0.05223, 38.01525],
+  [37.28225, 2.06167, 1.89582, -0.24256, -0.01297, 32.49121],
+  [34.076, 1.35333, -2.84975, -0.25387, -0.01235, 26.16724],
+  [33.50004, 0.90366, -6.17434, -0.24445, 0.00002, 22.62792],
+  [33.5, 0.9, -6.2, -0.24435, 0, 22.6],
+  [33.16908, 1.43833, -2.55576, -0.26294, 0.00146, 26.62723],
+  [31.72533, 2.14667, 1.93498, -0.29405, 0.01003, 31.73603],
+  [30.21418, 2.59634, 4.77634, -0.31401, 0.03311, 34.97333],
+  [30.20362, 1.73206, 5.5714, -0.13743, 0.00545, 42.59427],
+  [30.20427, 1.58168, 5.70502, -0.10681, 0.00035, 43.90997],
+  [30.20423, 1.57196, 5.7138, -0.10483, 0.00002, 43.99533],
+  [30.20423, 1.57143, 5.71429, -0.10472, 0, 44],
+  [25.08454, 1.98467, 6.32841, -0.16412, -0.0396, 42.86561],
+  [11.33727, 2.22903, 3.98067, -0.19924, -0.06301, 42.19482],
+  [2.22292, 2.28818, 0.88392, -0.20774, -0.01463, 42.03246],
+  [1.77244, 2.29815, 0.81249, -0.20917, 0, 42.00508],
+];
+
+test('without roam the rig poses equal the rail poses recorded before free roam', () => {
+  expect(traceRig(createRig(traceLayout))).toEqual(RAIL_BEFORE_ROAM);
+});

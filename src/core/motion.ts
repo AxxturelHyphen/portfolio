@@ -235,6 +235,22 @@ export function stripOf(leg: number, hops: number, out: Vec4Out): Vec4Out {
   return out;
 }
 
+// Free roam behind ?roam=1 (cook/ROAM_PLAN.md sections 3 and 4, P1)
+
+/**
+ * The visitor's walk on the ground plane: top speed (m/s), linear ramps to it and to a stop, body radius (m), the
+ * distance at which a walk target counts as reached, the collision passes, and the hysteresis (m past the halfway
+ * line between two beds) before the nearest bed changes.
+ */
+export const ROAM = { speed: 3.2, toSpeedS: 0.15, toStopS: 0.1, radius: 0.3, arriveM: 0.05, passes: 2, maxStepS: 0.05, bedHysteresisM: 1 } as const;
+
+/**
+ * The follow camera: offset from the visitor (up, back toward +z), pitch and vertical fov on landscape; on portrait a
+ * higher, steeper camera whose fov widens until `acrossM` of ground shows across at the visitor, who sits at `at` of
+ * the screen height from the top. tauS: the critically damped follower on the visitor (omega = 1 / tauS).
+ */
+export const FOLLOW = { up: 6, back: 10, pitchDeg: -28, fov: 36, portraitUp: 7.5, portraitPitchDeg: -34, acrossM: 9, at: 0.6, tauS: 0.25 } as const;
+
 // Mode switch: canvas exposure down, then the DOM cross-fade, no overlap
 
 export const MODE = { totalS: 0.45, canvasDownS: 0.2, domUpS: 0.25 } as const;
