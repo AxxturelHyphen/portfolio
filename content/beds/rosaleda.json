@@ -470,7 +470,7 @@
         {
           "sprite": "sh/lantern-candle",
           "x": 10.4,
-          "y": 0.25,
+          "y": 0,
           "z": -1,
           "scale": 1,
           "h": 0.4,
@@ -533,7 +533,8 @@
           "group": "D",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "v/trestle",
@@ -548,7 +549,24 @@
           "group": "D",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
+        },
+        {
+          "sprite": "v/trestle",
+          "x": 13.5,
+          "y": 0,
+          "z": -5.55,
+          "scale": 1,
+          "h": 2.4,
+          "hinge": 0,
+          "lean": 0,
+          "size": "large",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
         },
         {
           "sprite": "v/shears",
@@ -564,7 +582,25 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "flat": true
+          "flat": true,
+          "only": "rail"
+        },
+        {
+          "sprite": "v/shears",
+          "x": 14.6,
+          "y": 0,
+          "z": -0.95,
+          "scale": 1,
+          "w": 0.32,
+          "hinge": 0,
+          "lean": 0,
+          "size": "small",
+          "group": "D",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "flat": true,
+          "only": "roam"
         },
         {
           "sprite": "v/spade",
@@ -604,7 +640,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         },
         {
           "sprite": "ro/leaf-wing",
@@ -620,7 +657,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         }
       ]
     }
@@ -633,7 +671,7 @@
       "x": 11.88,
       "y": 1.39,
       "z": -1.63,
-      "scale": 1.0,
+      "scale": 1,
       "hinge": -4,
       "bloom": "rose-a",
       "hit": [

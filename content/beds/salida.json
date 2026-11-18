@@ -84,7 +84,7 @@
         {
           "sprite": "sa/card-b",
           "x": 41.3,
-          "y": 1.0,
+          "y": 1,
           "z": -5.88,
           "scale": 1,
           "w": 0.7,
@@ -215,7 +215,7 @@
       "items": [
         {
           "sprite": "sa/grass-heads",
-          "x": 41.0,
+          "x": 41,
           "y": 0,
           "z": 2.2,
           "scale": 1,
@@ -227,7 +227,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         },
         {
           "sprite": "sa/grass-heads",
@@ -243,7 +244,40 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
+        },
+        {
+          "sprite": "sa/grass-heads",
+          "x": 41,
+          "y": 0,
+          "z": 2.2,
+          "scale": 1,
+          "h": 0.45,
+          "hinge": 0,
+          "lean": 8,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "sa/grass-heads",
+          "x": 43.1,
+          "y": 0,
+          "z": 2.3,
+          "scale": 1,
+          "h": 0.45,
+          "hinge": 10,
+          "lean": 8,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
         }
       ]
     }
@@ -269,7 +303,7 @@
       "kind": "link",
       "ref": "email",
       "x": 41.3,
-      "y": 1.0,
+      "y": 1,
       "z": -5.88,
       "scale": 1,
       "hinge": 0,

@@ -264,7 +264,24 @@
           "group": "L",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
+        },
+        {
+          "sprite": "sh/lantern-cage",
+          "x": 1.6,
+          "y": 0,
+          "z": -4.6,
+          "scale": 1,
+          "h": 0.45,
+          "hinge": 15,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
         },
         {
           "sprite": "sh/board",
@@ -299,7 +316,7 @@
         },
         {
           "sprite": "sh/ivy-2",
-          "x": -2.0,
+          "x": -2,
           "y": 0.3,
           "z": -5.12,
           "scale": 1,
@@ -319,7 +336,7 @@
           "y": 2.2,
           "z": -5.12,
           "scale": 1,
-          "h": 1.0,
+          "h": 1,
           "hinge": -11,
           "lean": 0,
           "size": "medium",
@@ -351,7 +368,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         },
         {
           "sprite": "sh/ivy",
@@ -367,7 +385,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         }
       ]
     }

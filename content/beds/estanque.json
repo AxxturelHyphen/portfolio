@@ -29,9 +29,9 @@
       "items": [
         {
           "sprite": "es/urn",
-          "x": 17.6,
+          "x": 18.7,
           "y": 1.2,
-          "z": -5.4,
+          "z": -5.95,
           "scale": 1,
           "h": 1.2,
           "hinge": 8,
@@ -126,7 +126,32 @@
               0.76,
               0.84
             ]
-          }
+          },
+          "only": "rail"
+        },
+        {
+          "sprite": "es/peacock",
+          "x": 20,
+          "y": 0,
+          "z": -5.3,
+          "scale": 1,
+          "h": 2,
+          "hinge": -6,
+          "lean": 0,
+          "size": "hero",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "reflect": {
+            "w": 1.25,
+            "colour": [
+              0.78,
+              0.76,
+              0.84
+            ]
+          },
+          "only": "roam"
         },
         {
           "sprite": "es/peacock-crest",
@@ -141,7 +166,24 @@
           "group": "L",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
+        },
+        {
+          "sprite": "es/peacock-crest",
+          "x": 19.81,
+          "y": 1.81,
+          "z": -5.29,
+          "scale": 1,
+          "w": 0.133,
+          "hinge": -6,
+          "lean": 0,
+          "size": "small",
+          "group": "L",
+          "foot": "none",
+          "shadow": false,
+          "react": false,
+          "only": "roam"
         }
       ]
     },
@@ -157,7 +199,7 @@
           "y": 0.01,
           "z": -2.6,
           "scale": 1,
-          "w": 1.0,
+          "w": 1,
           "hinge": 0,
           "lean": 8,
           "size": "small",
@@ -278,7 +320,7 @@
           "sprite": "es/typha",
           "x": 23.9,
           "y": 0,
-          "z": -1.0,
+          "z": -1,
           "scale": 1,
           "h": 1.6,
           "hinge": -4,
@@ -335,7 +377,7 @@
           "y": 0.82,
           "z": 0.1,
           "scale": 1,
-          "h": 1.0,
+          "h": 1,
           "hinge": -6,
           "lean": 0,
           "size": "medium",
@@ -413,7 +455,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         }
       ]
     }
