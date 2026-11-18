@@ -42,10 +42,11 @@ export const CROOK = {
  * and portrait screens, the ground velocity follower, the flame's ease from the planted crook to the hand when the
  * figure first appears, and how far the carrying arm follows the lantern's swing (a share of its angle, clamped in
  * degrees), taken on the figure's ticks. `carriedLight` is the share of the lantern's own light the actor batch takes,
- * so the figure sits level with the lit plants beside it.
+ * so the figure sits level with the lit plants beside it; `glow` scales the lantern's own glow on that batch (under the
+ * paper shoulder, so its flame core stays bright and the tin around it falls off instead of reading flat).
  */
-export const HELD = { handleM: 0.05, scaleWide: 1.05, scaleTall: 0.75, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
-  carriedLight: 0.3 } as const;
+export const HELD = { handleM: 0.05, scaleWide: 0.8, scaleTall: 0.6, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
+  carriedLight: 0.3, glow: 0.5 } as const;
 /** The solid patch of the lantern plate the crook is cut from (shares of the sprite's uv rect). */
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 

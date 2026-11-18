@@ -86,26 +86,32 @@ const ACTOR_ORDER = 2e5;
 /**
  * A batch of moving actors (the carried lantern): drawn after every cutout with a depth test against the depth they
  * wrote, so an actor passes behind what stands nearer the lens and in front of the rest. Same program as the cutouts.
- * With `carriedLight` (free roam, where the hand light sits on the visitor and the carried lantern is lamp 0) the
- * batch reads its own copies of the lamp list and the hand light, refreshed just before its draw with no allocation:
- * lamp 0 at that share, so the one who carries it is lit level with the plants beside them, and the hand light's
- * reach shrunk to nothing, so the inner edges of a figure, which all face its own chest, take no pale paper rim.
+ * With `light` (free roam, where the hand light sits on the visitor and the carried lantern is lamp 0) the batch reads
+ * its own copies of the lamp list, the lamp colour and the hand light, refreshed just before its draw with no
+ * allocation: the lamp colour at the `glow` share (the hung lantern's own glow), every lamp's strength divided by it so
+ * the light on the figure is unchanged, lamp 0 further at the `carriedLight` share, so the one who carries it is lit
+ * level with the plants beside them, and the hand light's reach shrunk to nothing, so the inner edges of a figure,
+ * which all face its own chest, take no pale paper rim.
  */
-export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capacity: number, carriedLight?: number): CutoutBatch {
+export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capacity: number,
+  light?: { carriedLight: number; glow: number }): CutoutBatch {
   const batch = createCutoutBatch(gfx, color, normal, capacity);
   const material = batch.mesh.material as RawShaderMaterial;
   material.depthFunc = LessEqualDepth;
   material.depthWrite = false;
   batch.mesh.renderOrder = ACTOR_ORDER;
-  if (carriedLight !== undefined) {
+  if (light !== undefined) {
     const lamps = sharedUniforms.uLamp.value;
     const ownLamps = lamps.map(() => new Vector4());
+    const ownColor = new Vector3();
     const ownCursor = new Vector4();
     material.uniforms['uLamp'] = { value: ownLamps };
+    material.uniforms['uLampColor'] = { value: ownColor };
     material.uniforms['uCursor'] = { value: ownCursor };
     batch.mesh.onBeforeRender = () => {
-      for (let i = 0; i < ownLamps.length; i++) ownLamps[i]!.copy(lamps[i]!);
-      ownLamps[0]!.w *= carriedLight;
+      for (let i = 0; i < ownLamps.length; i++) ownLamps[i]!.copy(lamps[i]!).setW(lamps[i]!.w / light.glow);
+      ownLamps[0]!.w *= light.carriedLight;
+      ownColor.copy(sharedUniforms.uLampColor.value).multiplyScalar(light.glow);
       ownCursor.copy(sharedUniforms.uCursor.value).setW(0);
     };
   }
