@@ -32,6 +32,8 @@ export const QUAD_FLAG = {
   silhouette: 16,
   /** A standee: turns toward a roaming eye around the vertical axis (uEye, cook/ROAM_PLAN.md 3); still on the rail. */
   turn: 32,
+  /** Fades to a trace while it covers the roaming visitor's ground point (uVisitor); never on the rail. */
+  fade: 64,
 } as const;
 const PHASE_SPAN = 8;
 

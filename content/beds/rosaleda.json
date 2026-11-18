@@ -344,6 +344,7 @@
       "items": [
         {
           "sprite": "w/gallica",
+          "fade": true,
           "x": 16.4,
           "y": 0,
           "z": -2.4,
@@ -360,6 +361,7 @@
         },
         {
           "sprite": "w/cane",
+          "fade": true,
           "x": 14.6,
           "y": 0,
           "z": -3,
@@ -415,6 +417,7 @@
         },
         {
           "sprite": "ro/hero-a",
+          "fade": true,
           "x": 11.8,
           "y": 0.4,
           "z": -1.5,

@@ -78,3 +78,12 @@ test('the rule: upright cutouts turn unless they stand on the wall band', () => 
   expect(turnFlag(-5.4, wallZ, true)).toBe(0);
   expect(turnFlag(-8.4, wallZ, true)).toBe(0);
 });
+
+test('the fade flag decodes beside the turn and fades to about a third, only under free roam', () => {
+  expect(QUAD_FLAG.fade).toBe(64);
+  expect(glsl).toContain('bit(flags, 64.0) * uEye.z');
+  expect(constant('FADE_TO')).toBeCloseTo(0.35, 2);
+  const s = standee(10, -2, 5, QUAD_FLAG.turn | QUAD_FLAG.fade);
+  expect(Math.floor(Math.floor(s.phase / 8) / 64) % 2).toBe(1);
+  expect(yawOf(s, { x: 30, z: 6, weight: 1 })).toBe(yawOf(standee(10, -2, 5), { x: 30, z: 6, weight: 1 }));
+});

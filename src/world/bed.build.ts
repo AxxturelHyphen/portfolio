@@ -62,7 +62,7 @@ export function hexRgb(hex: string, out: Float32Array): Float32Array {
 /** Flags of a placement; `turn` is QUAD_FLAG.turn or 0 (turnFlag). */
 function flagsOf(it: Placement3, turn: number): number {
   return (it.flat === true ? QUAD_FLAG.flat : 0) | (it.lean === 0 ? QUAD_FLAG.noLean : 0)
-    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0) | turn;
+    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0) | (it.fade === true ? QUAD_FLAG.fade : 0) | turn;
 }
 
 /** The standee rule for a bed placement: upright, leaning and not a near mask. */

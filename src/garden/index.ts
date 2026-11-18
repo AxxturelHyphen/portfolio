@@ -9,7 +9,7 @@ import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/
 import { arrived, installTestApi } from '../core/testapi.ts';
 import { createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
-import { setStandeeTurn } from '../gl/lights.ts';
+import { carryVisitor, setStandeeTurn } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
@@ -98,12 +98,13 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const kit = { loadAtlas, createCutoutBatch, uploadTexture, projectsOf, moth: () => moth, onDom: (fn: (c: Clock) => void) => loop.on('dom', fn), createMover };
   const roaming = new URLSearchParams(location.search).get('roam') === '1';
   setWorldMode(roaming ? 'roam' : 'rail');
-  const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit });
   const world = content.garden as WorldLayout;
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
-  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject }) : null;
+  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh() }) : null;
+  const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
   if (roam !== null) setStandeeTurn(1);
+  if (roam !== null) carryVisitor(roam.pos);
   const film = createFilmDrive(machine, rig, content.garden);
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig);
@@ -120,6 +121,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     /** A bed that failed to stream for good no longer holds a project back: it opens without its bed. */
     bedReady: (b) => garden.residency.stateOf(b) === 'active' || garden.residency.failed(b),
     viewX: () => rig.panX,
+    ...(roam === null ? {} : { roam: () => true, arrived: (b: BedId) => roam.arrived(b) }),
   });
   let entered: BedId | null = null;
 
@@ -191,6 +193,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     const now = bed !== null && (garden.residency.stateOf(bed) === 'active' || garden.residency.failed(bed)) ? bed : null;
     if (now !== entered) {
       entered = now;
+      roam?.setSlots(now === null ? NO_SLOTS : slots);
       host.refresh();
     }
     placeLight.frame(c.dt, c.frozen);
@@ -272,7 +275,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
 
   if (testApiEnabled(q)) {
-    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roamPos: roam?.pos ?? null });
+    installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam });
   }
   return { quality, ready };
 }

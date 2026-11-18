@@ -29,6 +29,7 @@
       "items": [
         {
           "sprite": "sa/trunk",
+          "fade": true,
           "x": 44.3,
           "y": 0,
           "z": -1.2,
@@ -52,6 +53,7 @@
       "items": [
         {
           "sprite": "sa/birdhouse",
+          "fade": true,
           "x": 44.5,
           "y": 2.3,
           "z": -0.95,

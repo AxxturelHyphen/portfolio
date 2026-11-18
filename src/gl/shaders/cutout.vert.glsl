@@ -8,6 +8,7 @@ uniform vec4 uCursor;
 uniform vec4 uFocusBack;   // the plane the far layers fall back behind, amount
 uniform vec4 uShadowDir;   // decal direction x, z on the ground; length per unit of height; opacity
 uniform vec3 uEye;         // camera x, z on the ground; standee turn weight (0 on the rail, 1 under free roam)
+uniform vec2 uVisitor;     // the roaming visitor's ground point x, z
 
 in vec3 position;   // corner x, y; kind
 in vec4 aPos;       // x, y, z, rotation (radians)
@@ -29,6 +30,7 @@ out float vMirror;     // 1: mirrored by a negative width (winding reversed)
 out float vSilhouette; // 1: the tint is the colour, uncapped (overview cards of beds not loaded)
 out float vPlaneDepth; // view depth of the hand light's plane
 out float vFocusDepth; // view depth of the fall-back plane (the focused flower or the bed's flowers)
+out float vFade;       // paper opacity factor: under 1 while a fading card covers the visitor
 
 const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the camera pitch)
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
@@ -36,8 +38,27 @@ const float PUSH_MAX = 0.2443;       // 14 degrees
 const float DECAL_LIFT = 0.004;      // decals sit just above the ground they fall on
 const float TURN_MAX = 0.61087;      // a standee follows the eye's bearing up to 35 degrees either side
 const float TURN_K = 0.7;            // and turns this share of it, so the hinge variety stays
+const float FADE_TO = 0.35;          // a fading card's opacity while it covers the visitor
+const float FADE_EDGE = 0.3;         // metres either side of its outline over which it fades: about 0.2 s of walking
 
 float bit(float flags, float b) { return mod(floor(flags / b), 2.0); }
+
+// How far the visitor's ground point lies inside the card's outline on screen: 0 outside, 1 well inside.
+float coverOf(vec3 right, vec3 front, float lean) {
+  vec2 lo = vec2(1e9);
+  vec2 hi = vec2(-1e9);
+  for (int i = 0; i < 4; i++) {
+    vec2 local = (vec2(float(i % 2), float(i / 2)) - aSize.zw) * aSize.xy;
+    vec4 c = uViewProj * vec4(aPos.xyz + right * local.x + vec3(0.0, local.y * cos(lean), 0.0) - front * (local.y * sin(lean)), 1.0);
+    lo = min(lo, c.xy / c.w);
+    hi = max(hi, c.xy / c.w);
+  }
+  vec4 v = uViewProj * vec4(uVisitor.x, 0.0, uVisitor.y, 1.0);
+  vec2 p = v.xy / v.w;
+  float inside = min(min(p.x - lo.x, hi.x - p.x), min(p.y - lo.y, hi.y - p.y));
+  float edge = FADE_EDGE * (hi.x - lo.x) / max(abs(aSize.x), 1e-3);
+  return smoothstep(-edge, edge, inside);
+}
 
 void main() {
   float flags = floor(aAnim.y / 8.0);
@@ -56,6 +77,7 @@ void main() {
   vec3 right = vec3(cy, 0.0, -sy);
   vec3 front = vec3(sy, 0.0, cy);
   vec3 world;
+  vFade = 1.0;
 
   if (kind < 0.5) {
     // Ground decal: only for standing cutouts with the pivot at the foot.
@@ -86,6 +108,7 @@ void main() {
       world = aPos.xyz + right * local.x + vec3(0.0, local.y * cos(lean), 0.0) - front * (local.y * sin(lean));
     }
     gl_Position = uViewProj * vec4(world, 1.0);
+    if (bit(flags, 64.0) * uEye.z > 0.5) vFade = 1.0 - (1.0 - FADE_TO) * coverOf(right, front, lean);
   }
 
   vUV = mix(aUV.xy, aUV.zw, corner);

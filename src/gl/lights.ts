@@ -16,6 +16,7 @@ import { linearHex } from './colour.ts';
  * - uHandThrow: how much of the hand light reaches the ground (0..1): a bed's composed rest light, or a real pointer.
  * - uEye: the camera on the ground plane (x, z, written with uViewProj) and the standee turn weight: 0 on the rail,
  *   1 under free roam (cook/ROAM_PLAN.md 3), so rail views never move.
+ * - uVisitor: the roaming visitor's ground point (x, z); cards flagged `fade` turn to a trace while they cover it.
  */
 export const FLY_LIGHTS = 4;
 
@@ -33,6 +34,7 @@ export const sharedUniforms = {
   uViewProj: { value: new Matrix4() },
   uCamPos: { value: new Vector3(0, 2.6, 4.6) },
   uEye: { value: new Vector3(0, 4.6, 0) },
+  uVisitor: { value: new Float32Array(2) as Float32Array },
   uCamRight: { value: new Vector3(1, 0, 0) },
   uCamUp: { value: new Vector3(0, 1, 0) },
   uTime: { value: 0 },
@@ -69,6 +71,11 @@ export function setMoon(azimuthDeg: number, elevationDeg: number): void {
 /** Turns the standees toward the eye (1, free roam) or keeps every cutout on its hinge (0, the rail). */
 export function setStandeeTurn(weight: number): void {
   sharedUniforms.uEye.value.z = weight;
+}
+
+/** Points uVisitor at the visitor's own [x, z] array: three uploads it with each frame, no copy per frame. */
+export function carryVisitor(pos: Float32Array): void {
+  sharedUniforms.uVisitor.value = pos;
 }
 
 /** One place's light (cook/ART.md section 1 table), as sRGB hexes; garden/place.ts parses and eases them. */

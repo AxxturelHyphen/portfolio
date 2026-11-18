@@ -11,6 +11,7 @@ in vec2 vUV;
 in vec4 vRect;
 in vec3 vWorld;
 in vec4 vTint;
+in float vFade;
 in float vSilhouette;
 in vec4 vFrame;
 in vec4 vOrient;
@@ -168,7 +169,7 @@ void main() {
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);
 
-  float opacity = vTint.a * uReveal;
+  float opacity = vTint.a * uReveal * vFade;
   float a = tex.a * opacity;
   float shadowA = shadow * opacity * (1.0 - a);
   outColor = vec4(lit * a + neutralise(uShadowColor) * 0.4 * shadowA, a + shadowA);

@@ -87,6 +87,8 @@ export interface Placement3 extends Placement {
   react: boolean;
   flat?: boolean;
   wing?: boolean;
+  /** Under free roam, turns to a trace while it covers the visitor (occluders.ts): for cards a collider may not replace. */
+  fade?: boolean;
   /** Built only for this camera (mode.ts): rail framing masks, or the roam verge and placements. */
   only?: WorldMode;
   /** Mirrored in the Estanque water (gl/pond.ts reflector): its width in metres and mean plate colour (sRGB 0..1). */
