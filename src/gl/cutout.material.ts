@@ -1,4 +1,4 @@
-import { DoubleSide, GLSL3, Mesh, NormalBlending, RawShaderMaterial, Vector3, Vector4 } from 'three';
+import { AlwaysDepth, DoubleSide, GLSL3, LessEqualDepth, Mesh, NormalBlending, RawShaderMaterial, Vector3, Vector4 } from 'three';
 import type { Texture } from 'three';
 import type { CutoutBatch, CutoutUniforms, Gfx } from '../types.ts';
 import { createCutoutGeometry } from './instances.ts';
@@ -16,7 +16,9 @@ const VERTEX = common + vertexBody;
 const FRAGMENT = common + lights + fragmentBody;
 
 /**
- * The one lit cutout material. Premultiplied output, no depth: instance order and renderOrder are paint order.
+ * The one lit cutout material. Premultiplied output; instance order and renderOrder are paint order: the depth test
+ * always passes, and the depth written (only when the scene target has a depth buffer, free roam) serves the actors
+ * drawn after every cutout (createActorBatch). Fragments under uDepthCut alpha are discarded so soft edges write none.
  * Two sided: the back of a turned cutout shows plain paper. The returned uniforms are the frozen CutoutUniforms;
  * the material also reads the rest of the shared light set (lights.ts) by reference.
  */
@@ -48,8 +50,9 @@ export function createCutoutMaterial(color: Texture, normal: Texture): { materia
     premultipliedAlpha: true,
     blending: NormalBlending,
     side: DoubleSide,
-    depthTest: false,
-    depthWrite: false,
+    depthTest: true,
+    depthFunc: AlwaysDepth,
+    depthWrite: true,
   });
   return { material, uniforms };
 }
@@ -75,4 +78,20 @@ export function createCutoutBatch(_gfx: Gfx, color: Texture, normal: Texture, ca
       material.dispose();
     },
   };
+}
+
+/** Paint order of the actor batches: after every cutout, the near dressing and the fireflies. */
+const ACTOR_ORDER = 2e5;
+
+/**
+ * A batch of moving actors (the carried lantern): drawn after every cutout with a depth test against the depth they
+ * wrote, so an actor passes behind what stands nearer the lens and in front of the rest. Same program as the cutouts.
+ */
+export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capacity: number): CutoutBatch {
+  const batch = createCutoutBatch(gfx, color, normal, capacity);
+  const material = batch.mesh.material as RawShaderMaterial;
+  material.depthFunc = LessEqualDepth;
+  material.depthWrite = false;
+  batch.mesh.renderOrder = ACTOR_ORDER;
+  return batch;
 }

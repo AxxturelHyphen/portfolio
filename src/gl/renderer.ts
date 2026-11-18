@@ -52,7 +52,8 @@ const FAR = 200;
 /** The largest firefly cap of any tier (core/quality.ts): the instance buffer never reallocates. */
 const FIREFLY_CAPACITY = 64;
 
-export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loop): GlGfx {
+/** `depth`: the scene target gets a depth buffer (free roam: actors drawn last are placed among the cutouts by depth). */
+export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loop, depth = false): GlGfx {
   const renderer = new WebGLRenderer({
     canvas,
     antialias: false,
@@ -78,7 +79,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
   fireflies.setCount(quality.cfg.fireflies);
   const pond = createPond();
   scene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh);
-  const target = createSceneTarget();
+  const target = createSceneTarget(depth);
   const film = createFilmPass(renderer, quality);
 
   const size: PixelSize = { w: 0, h: 0 };
@@ -159,6 +160,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     film.tick(c, reduced, exposure);
     renderer.info.reset();
     renderer.setRenderTarget(target.target);
+    if (depth) renderer.clearDepth();
     renderer.render(scene, camera);
     film.render(target.target);
   }

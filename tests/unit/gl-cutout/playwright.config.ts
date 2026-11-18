@@ -8,7 +8,7 @@ const gpu = gpuLaunch();
 
 export default defineConfig({
   testDir: '.',
-  testMatch: 'cutout.spec.ts',
+  testMatch: ['cutout.spec.ts', 'depth.spec.ts'],
   workers: 1,
   outputDir: '../../../test-results/gl-cutout',
   use: { baseURL: `http://127.0.0.1:${PORT}/`, viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, launchOptions: { headless: gpu.headless, args: gpu.args } },

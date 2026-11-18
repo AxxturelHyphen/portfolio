@@ -19,7 +19,9 @@ export function fitPixels(cssW: number, cssH: number, dpr: number, pixelCap: num
 /**
  * The scene target: allocated once per resize at dprMax under pixelCap. DPR changes and the panel scale only move the
  * viewport sub-rect (`setScale`), never reallocate. Colour is SRGB8_ALPHA8: shaders write linear, blending happens in
- * linear, and the film pass samples linear values back (it must encode to sRGB for the canvas). No depth buffer.
+ * linear, and the film pass samples linear values back (it must encode to sRGB for the canvas). A depth buffer only
+ * under free roam (`depth`): cutouts keep their paint order but write depth, so actors that move between them (the
+ * carried lantern) can be drawn last with a depth test. The rail has none.
  */
 export interface SceneTarget {
   readonly target: WebGLRenderTarget;
@@ -31,13 +33,15 @@ export interface SceneTarget {
 }
 
 const BYTES_PER_PIXEL = 4;
+/** A 24-bit depth renderbuffer is stored in 4 bytes per pixel. */
+const DEPTH_BYTES_PER_PIXEL = 4;
 const MIN_SCALE = 0.25;
 
-export function createSceneTarget(): SceneTarget {
+export function createSceneTarget(depth: boolean): SceneTarget {
   const target = new WebGLRenderTarget(1, 1, {
     colorSpace: SRGBColorSpace,
     type: UnsignedByteType,
-    depthBuffer: false,
+    depthBuffer: depth,
     stencilBuffer: false,
     generateMipmaps: false,
     minFilter: LinearFilter,
@@ -55,7 +59,7 @@ export function createSceneTarget(): SceneTarget {
 
   return {
     target,
-    get bytes(): number { return target.width * target.height * BYTES_PER_PIXEL; },
+    get bytes(): number { return target.width * target.height * (BYTES_PER_PIXEL + (depth ? DEPTH_BYTES_PER_PIXEL : 0)); },
     get scale(): number { return scale; },
     resize(w: number, h: number): boolean {
       if (w === target.width && h === target.height) return false;
