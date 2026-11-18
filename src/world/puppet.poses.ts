@@ -1,6 +1,6 @@
 /**
- * The figure's pose tables (cook/FIGURE_BUILD.md 4): the walk cycles of the back and side views and the standing pose,
- * stepped on twos of 12 fps by world/puppet.ts.
+ * The figure's pose tables (cook/FIGURE_BUILD.md 4): the walk cycles of the back and side views, the settling step
+ * and the standing pose, stepped on twos of 12 fps by world/puppet.ts.
  */
 
 /**
@@ -30,10 +30,10 @@ export const REST = { freeArm: -1, carryArm: 24, sideFree: 0, sideCarry: 30 } as
  * lands.
  */
 export const BACK_POSES: readonly Pose[] = [
-  pose(-3, 3, 0.07, 0, 12, 0, 2, -1, -9, 0.82, 0, 0.022),
-  pose(-1, 1, 0.16, 0, 24, 0, 0, 0, 0, 0.92, 0.5, -0.01),
-  pose(-3, 3, 0, 0.07, 0, 12, -2, 1, 10, 1, 0, 0.022),
-  pose(-1, 1, 0, 0.16, 0, 24, 0, 0, 0, 0.92, 0.5, -0.01),
+  pose(-3, 3, 0.09, 0, 20, 0, 2, -1, -9, 0.72, 0, 0.024),
+  pose(-1, 1, 0.18, 0, 34, 0, 0, 0, 0, 0.88, 0.5, -0.01),
+  pose(-3, 3, 0, 0.09, 0, 20, -2, 1, 10, 1, 0, 0.024),
+  pose(-1, 1, 0, 0.18, 0, 34, 0, 0, 0, 0.88, 0.5, -0.01),
 ];
 /** Side view: legs swing in the picture plane toward the heading; A is the far leg, B the near one. */
 export const SIDE_POSES: readonly Pose[] = [
@@ -44,3 +44,6 @@ export const SIDE_POSES: readonly Pose[] = [
 ];
 /** Standing, in every view: feet a little apart, arms hanging. */
 export const IDLE = pose(-3, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+/** The short last step before standing, per view: the trailing foot comes in low, the body settles a little. */
+export const SETTLE = { back: pose(-2, 2, 0.035, 0, 10, 0, 1, 0, -3, 0.92, 0, 0.012), side: pose(-6, 8, 0, 0, 6, 0, -2, 0, 4, 1, 0, 0.008) } as const;
+

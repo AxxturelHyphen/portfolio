@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type { AtlasManifest, QuadParams } from '../../../src/types.ts';
 import { createGait, createPuppet, FIGURE, PINS, poseOf, SLOT, stepGait, type FigureRects, type Gait } from '../../../src/world/puppet.ts';
-import { BACK_POSES, IDLE, REST, SIDE_POSES, type Pose } from '../../../src/world/puppet.poses.ts';
+import { BACK_POSES, IDLE, REST, SETTLE, SIDE_POSES, type Pose } from '../../../src/world/puppet.poses.ts';
 
 // The visitor's paper figure (cook/FIGURE_BUILD.md 4): pins, ground contact, the stepped gait and its views.
 
@@ -53,13 +53,12 @@ test('every part hangs from its parent pin within a pixel, in every pose, view, 
       puppet.place(g, 3, -2, k, m);
       const q = puppet.quads;
       const side = g.view === 'side';
-      /** Slots of torso, head, hat, free arm and hand, carrying arm and hand, shin A, thigh A, shin B, thigh B. */
+      /** Slots of torso, head, neckerchief, free arm and hand, carrying arm and hand, shin A, thigh A, shin B, thigh B. */
       const slots = side ? [8, 7, 9, 2, 1, 11, 10, 3, 4, 5, 6] : [10, 9, 11, 7, 5, 8, 6, 3, 4, 1, 2];
-      const [torso, head, hat, freeArm, freeHand, crookArm, crookHand, shinA, thighA, shinB, thighB] = slots.map((i) => q[i]!) as Q11;
+      const [torso, head, scarf, freeArm, freeHand, crookArm, crookHand, shinA, thighA, shinB, thighB] = slots.map((i) => q[i]!) as Q11;
       const neck = at(torso, PINS.neck);
-      expectAt(head, neck[0] + (side ? m * FIGURE.headFwdM * k : 0), neck[1]);
-      const seat = at(head, PINS.hatSeat);
-      expectAt(hat, seat[0] + (side ? m * (FIGURE.hatFwdM - FIGURE.headFwdM) * k : 0), seat[1] + FIGURE.hatLiftM * k);
+      expectAt(head, neck[0] + (side ? m * FIGURE.headFwdM * k : 0), neck[1] + FIGURE.headLiftM * k);
+      expectAt(scarf, ...neck);
       const shoulderFree = at(torso, side ? PINS.sideShoulder : PINS.shoulderL);
       const shoulderCrook = at(torso, side ? PINS.sideShoulder : PINS.shoulderR);
       /** In the back view each sleeve hangs out from its shoulder pin by a share of its drawn width; both sit a little under it. */
@@ -92,9 +91,9 @@ test('every part hangs from its parent pin within a pixel, in every pose, view, 
         if (want[i] === planted) expect(Math.abs(soles[i]!), `${g.view} ${g.pose} planted sole on the ground line`).toBeLessThan(PX);
         else expect(soles[i]!).toBeGreaterThan(PX);
       }
-      expect(Math.max(...soles)).toBeLessThan(0.16 * k);
-      expect(at(hat, [0.5, 1])[1]).toBeLessThan((FIGURE.topM + 0.05) * k);
-      expect(at(hat, [0.5, 1])[1]).toBeGreaterThan((FIGURE.topM - 0.12) * k);
+      expect(Math.max(...soles)).toBeLessThan(0.2 * k);
+      expect(at(head, [0.5, 1])[1]).toBeLessThan((FIGURE.topM + 0.05) * k);
+      expect(at(head, [0.5, 1])[1]).toBeGreaterThan((FIGURE.topM - 0.06) * k);
     }
   }
 });
@@ -274,6 +273,21 @@ test('standing: the idle pose, the back view after a quarter-second turn from a 
   const shifts = stand.filter((f, i) => i > 0 && f.key !== stand[i - 1]!.key && f.key.startsWith('back')).length;
   expect(shifts).toBeGreaterThanOrEqual(2);
   expect(shifts).toBeLessThanOrEqual(6);
+});
+
+test('stopping takes a short settling step in the walking view before the turn and the standing pose', () => {
+  for (const [vx, vz, view] of [[1.5, 0, 'side'], [0, -1.5, 'back']] as const) {
+    const g = createGait();
+    walk(g, 0, 1, vx, vz);
+    const seen: string[] = [];
+    for (let t = 1; t < 2.5; t += DT) {
+      stepGait(g, t, DT, 0, 0, false, false);
+      const p = poseOf(g);
+      const k = p === SETTLE[view] ? `settle ${g.view}` : p === IDLE ? 'idle' : 'walk';
+      if (seen[seen.length - 1] !== k) seen.push(k);
+    }
+    expect(seen).toEqual(['walk', `settle ${view}`, 'idle']);
+  }
 });
 
 test('reduced motion keeps one standing pose: no cycle, no turn, no shift', () => {
