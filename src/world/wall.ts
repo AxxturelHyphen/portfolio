@@ -14,23 +14,23 @@ import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export const WALL_TILE = 'tile/wall';
 /** Piers stand a little proud of the flats; flats overlap so their yaw never opens a seam onto the sky. */
-const PIER_PROUD = 0.25;
+export const PIER_PROUD = 0.25;
 const OVERLAP = 0.4;
 /**
  * The wall sits back in the place shadow as dark cool stone (a dark ground of cook/SHOTS.md B), never violet. The tile
  * is neutral stone (mean #626256): the tint darkens it and leans it a touch toward indigo, so the flowers carry the frame.
  */
-const WALL_TINT = [0.76, 0.72, 0.68] as const;
+export const WALL_TINT = [0.76, 0.72, 0.68] as const;
 /** Shade jitter per flat (fraction of the tint): small, so neighbouring flats never meet on a light-dark line. */
-const SHADE_JITTER = 0.04;
+export const SHADE_JITTER = 0.04;
 /** The tile's outer texels fade in alpha (page border, mips): each quad stays this share of the tile inside it. */
-const BORDER = 0.004;
+export const BORDER = 0.004;
 /** World x where the tile starts: left of the first flat, so every offset is positive. */
-const TILE_ORIGIN_X = -60;
+export const TILE_ORIGIN_X = -60;
 /** Coping: a band of the tile's top course, overhanging the flat, catching the moon rim (brighter, warm). */
-const COPING = { h: 0.16, overhang: 0.07, proud: 0.06, tint: [1, 0.97, 0.88] } as const;
+export const COPING = { h: 0.16, overhang: 0.07, proud: 0.06, tint: [1, 0.97, 0.88] } as const;
 
-function hash01(i: number, salt: number): number {
+export function hash01(i: number, salt: number): number {
   let n = Math.imul(i ^ salt, 0x27d4eb2d);
   n = Math.imul(n ^ (n >>> 15), 0x165667b1);
   return ((n ^ (n >>> 13)) >>> 0) / 4294967295;
@@ -40,7 +40,7 @@ function hash01(i: number, salt: number): number {
  * Cuts [0, len) at the multiples of `period` past `offset`; calls back with each piece's start and end (metres), its
  * start inside the tile and whether its tile period is an odd one (mirrored).
  */
-function cuts(len: number, offset: number, period: number, each: (a: number, b: number, t0: number, odd: boolean) => void): number {
+export function cuts(len: number, offset: number, period: number, each: (a: number, b: number, t0: number, odd: boolean) => void): number {
   let n = 0;
   let a = 0;
   while (a < len - 1e-4) {

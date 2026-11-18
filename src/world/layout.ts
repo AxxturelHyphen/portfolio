@@ -1,4 +1,5 @@
 import type { BedId, BedScene, GardenLayout, Layer, Placement, Slot } from '../types.ts';
+import type { WorldMode } from './mode.ts';
 
 /**
  * The 3D world data of cook/ART.md sections 1 and 2, as world reads content/garden.json and content/beds/*.json.
@@ -33,6 +34,28 @@ export interface GroundData {
   /** Unit (x, z) direction every contact shadow falls toward. */
   shadowDir: [number, number];
   clumps: { high: number; low: number };
+  /** The closed garden of free roam (cook/ROAM_ART.md section 3); never built on the rail. */
+  enclosure: EnclosureData;
+}
+
+/** One tree-crown cutout standing behind the back wall: sprite, foot (x, z) and height, metres. */
+export interface CrownSpot { sprite: string; x: number; z: number; h: number }
+
+/**
+ * The closed garden: end walls at x[0] and x[1] (height endH), the back wall's low stretches [x0, x1, h] and the door
+ * gap [x0, x1] in it, piers (x on the back wall), a coped kerb at z front, the stone base course height, the flats' yaw
+ * (degrees), the clipped hedge behind the low stretches, the crowns over the wall, the visitor's walk rectangle and the
+ * ground limit for the bottom of the follow frame.
+ */
+export interface EnclosureData {
+  x: [number, number]; front: number; endH: number; kerbH: number; baseH: number; flatYaw: [number, number];
+  low: [number, number, number][]; door: [number, number]; piers: number[];
+  hedge: { z: number; top: number; spans: [number, number][] };
+  crowns: CrownSpot[];
+  /** Tall cards the visitor may not stand behind (occluders.ts): bed, sprite and the card's width over its height. */
+  occluders: { bed: BedId; sprite: string; aspect: number }[];
+  walk: { minX: number; maxX: number; minZ: number; maxZ: number };
+  viewMaxZ: number;
 }
 
 export interface WorldLayout extends GardenLayout {
@@ -64,6 +87,8 @@ export interface Placement3 extends Placement {
   react: boolean;
   flat?: boolean;
   wing?: boolean;
+  /** Built only for this camera (mode.ts): rail framing masks, or the roam verge and placements. */
+  only?: WorldMode;
   /** Mirrored in the Estanque water (gl/pond.ts reflector): its width in metres and mean plate colour (sRGB 0..1). */
   reflect?: { w: number; colour: [number, number, number] };
 }

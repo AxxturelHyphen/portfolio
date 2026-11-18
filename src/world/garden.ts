@@ -10,10 +10,13 @@ import { createResidency, type StreamResidency } from './residency.ts';
 import type { BuildAtlas } from './bed.build.ts';
 import type { GardenRig } from './camera.ts';
 import { buildGround, type GroundBuild } from './ground.ts';
+import { worldMode } from './mode.ts';
 import { writeClumps } from './clumps.ts';
 import { writeDressing } from './dressing.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { writeWall } from './wall.ts';
+import { enclosureRuns, writeEnclosure } from './enclosure.ts';
+import { writeCrowns, writeHedge } from './crowns.ts';
 import type { BedScene3, WorldLayout } from './layout.ts';
 import { createMemory, type GardenMemory } from './memory.ts';
 
@@ -54,6 +57,9 @@ const quad: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, u
 const tint = new Float32Array(4);
 quad.tint = tint;
 quad.phase = packPhase(0, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
+
+/** Free roam: the closed garden (crowns, hedge, base course, wall stone, coping) stands in place of the rail's wall. */
+const CLOSED_ORDER = { crowns: RENDER_ORDER.overview - 5, hedge: RENDER_ORDER.overview - 4, base: RENDER_ORDER.overview - 3, wall: RENDER_ORDER.overview - 2, coping: RENDER_ORDER.overview - 1 } as const;
 
 export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig }): StreamGarden {
   const { gfx, machine, content, proxies } = d;
@@ -161,11 +167,8 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
       if (color === undefined || normal === undefined) throw new Error(`shared atlas: no page ${page}`);
       return d.kit.createCutoutBatch(gfx, color, normal, capacity);
     };
-    const wall = writeWall(ground, layout.ground.wall.z, manifest, batchOn);
-    if (wall !== null) {
-      wall.mesh.renderOrder = RENDER_ORDER.overview - 1;
-      gfx.scene.add(wall.mesh);
-    }
+    if (worldMode() === 'roam') addClosed(manifest, batchOn);
+    else addBatch(writeWall(ground, layout.ground.wall.z, manifest, batchOn), RENDER_ORDER.overview - 1);
     const clumps = writeClumps(ground, layout.ground.wall.z, manifest, batchOn);
     if (clumps !== null) {
       clumps.mesh.renderOrder = RENDER_ORDER.bed - 1;
@@ -177,6 +180,23 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig })
       gfx.scene.add(dressing.mesh);
     }
     await residency.frame();
+  }
+
+  function addBatch(batch: CutoutBatch | null, order: number): void {
+    if (batch === null) return;
+    batch.mesh.renderOrder = order;
+    gfx.scene.add(batch.mesh);
+  }
+
+  function addClosed(manifest: AtlasManifest, batchOn: (page: number, capacity: number) => CutoutBatch): void {
+    const g = layout.ground;
+    addBatch(writeCrowns(g.enclosure, manifest, batchOn), CLOSED_ORDER.crowns);
+    addBatch(writeHedge(g.enclosure, manifest, batchOn), CLOSED_ORDER.hedge);
+    const walls = writeEnclosure(enclosureRuns(g.enclosure, g.wall.z, g.wall.h, g.wall.flatW), g.enclosure.baseH, manifest, batchOn);
+    if (walls === null) return;
+    addBatch(walls.wall, CLOSED_ORDER.wall);
+    addBatch(walls.base, CLOSED_ORDER.base);
+    addBatch(walls.coping, CLOSED_ORDER.coping);
   }
 
   async function loadOverview(): Promise<void> {

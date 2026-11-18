@@ -94,7 +94,33 @@
     },
     "shadowLength": {"puerta": 0.6, "rosaleda": 0.5, "estanque": 0.9, "semillero": 0.3, "gruta": 0.3, "salida": 1.1},
     "shadowDir": [0.34, 0.94],
-    "clumps": {"high": 150, "low": 80}
+    "clumps": {"high": 150, "low": 80},
+    "enclosure": {
+      "x": [-3.5, 46.5],
+      "front": 8.5,
+      "endH": 3.2,
+      "kerbH": 0.45,
+      "baseH": 0.8,
+      "flatYaw": [-1.5, 1.5],
+      "low": [[18.2, 24.4, 1.2], [38.5, 44.4, 1.1]],
+      "door": [44.65, 45.75],
+      "piers": [-3.5, 5.5, 6.3, 13.8, 18.2, 24.4, 26.8, 37.5, 38.5, 44.4, 46, 46.5],
+      "hedge": {"z": -6.7, "top": 3.1, "spans": [[18, 24.6], [38.3, 46.2]]},
+      "crowns": [],
+      "occluders": [
+        {"bed": "puerta", "sprite": "pu/pier-l", "aspect": 0.331},
+        {"bed": "puerta", "sprite": "pu/pier-r", "aspect": 0.331},
+        {"bed": "puerta", "sprite": "pu/leaf-l", "aspect": 0.423},
+        {"bed": "puerta", "sprite": "pu/leaf-r", "aspect": 0.423},
+        {"bed": "rosaleda", "sprite": "ro/comp-white", "aspect": 0.725},
+        {"bed": "estanque", "sprite": "es/peacock", "aspect": 0.654},
+        {"bed": "estanque", "sprite": "es/papyrus", "aspect": 0.682},
+        {"bed": "estanque", "sprite": "es/typha", "aspect": 0.175},
+        {"bed": "salida", "sprite": "sa/trunk", "aspect": 0.352}
+      ],
+      "walk": {"minX": -3, "maxX": 46, "minZ": -5.5, "maxZ": 6.5},
+      "viewMaxZ": 8.2
+    }
   },
   "shots": {
     "S01": {"hash": "#/", "t": 1.1},
