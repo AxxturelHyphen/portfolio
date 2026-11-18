@@ -3,8 +3,8 @@ import { uiText } from './copy.ts';
 
 /**
  * The three fixed controls, top right in every mode (cook/ART.md section 4): language, Download CV, and one way-out
- * button that leads to the other mode ("Exit" in the garden, named "Exit to the CV album" and showing a short hint on
- * hover and focus; "Enter the garden" in the Herbario). Text-first plant labels hung on a short wire: japanned zinc
+ * button that leads to the other mode ("Album" in the garden, saying where it leads, named "Exit to the CV album" and
+ * showing a short hint on hover and focus; "Enter the garden" in the Herbario). Text-first plant labels hung on a short wire: japanned zinc
  * in the garden, ink on paper in the Herbario. The panel renders the same controls in its dialog (renderToggles with its own id prefix, bound
  * with bindToggles) at the same spot, so they stay usable while the modal makes the rest of the page inert.
  * renderToggles is pure (scripts/prerender.ts puts it in index.html, so the controls exist without JS): there the
