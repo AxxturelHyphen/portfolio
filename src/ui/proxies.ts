@@ -15,6 +15,8 @@ import { createMover, type Mover } from './xform.ts';
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
  * Props have no route: activating one dispatches `jardin:activate` (detail: the slot id) for the bed's behaviour.
  * One polite live region announces the bed the visitor arrives in and, in free roam, the flower the visitor walks up to.
+ * Free roam: Tab onto a flower off screen or out of reach walks the visitor to it (the seek hook) instead of focusing
+ * it at once; it is focused on arrival.
  */
 
 /** Proxy boxes are laid out at this many CSS px per world unit; the transform scales them to the projection. */
@@ -28,10 +30,11 @@ export interface GardenProxies extends ProxyLayer {
   mountBeds(beds: readonly BedSign[]): void;
   setSigns(anchors: readonly SignAnchor[]): void;
   /**
-   * Free roam: the signs stand planted in the world, clear of the visitor at this [x, z]. Slots off screen stay in the
-   * Tab order, so a keyboard or screen-reader visitor never has to walk to reach a flower.
+   * Free roam: the signs stand planted in the world, clear of the visitor at this [x, z], and the plan's moth follows it
+   * (places at their anchors). Slots off screen stay in the Tab order, so a keyboard or screen-reader visitor never has
+   * to walk to reach a flower: `seek` walks the visitor to a Tab-reached flower and says whether it did.
    */
-  setVisitor(at: Float32Array): void;
+  setVisitor(at: Float32Array, anchors: Readonly<Record<BedId, number>>, seek: (slot: SlotId, offScreen: boolean) => boolean): void;
   /**
    * Free roam: the slot the visitor stands by (proximity focus). The pointer leaving it does not blur it, and its name
    * is said once per newly focused flower. DOM focus is not moved.
@@ -67,9 +70,18 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   let roaming = false;
   let near: SlotId | null = null;
   let said: SlotId | null = null;
+  let seek: ((slot: SlotId, offScreen: boolean) => boolean) | null = null;
+  /** The next focus comes from a Tab press (not a click, a script or the panel handing focus back). */
+  let tabbed = false;
 
   el.addEventListener('pointerdown', (e) => {
     lastPointer = e.pointerType;
+  }, { capture: true });
+  document.addEventListener('keydown', (e) => {
+    tabbed = e.key === 'Tab';
+  }, { capture: true });
+  document.addEventListener('pointerdown', () => {
+    tabbed = false;
   }, { capture: true });
 
   /**
@@ -155,7 +167,9 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     n.addEventListener('pointercancel', onSlotEnd);
     /** A touch tap also focuses the button: the click handler decides there (first tap focuses, second opens). */
     n.addEventListener('focus', () => {
-      if (lastPointer !== 'touch') focusSlot(v.id);
+      const walked = tabbed && seek !== null && seek(v.id, n.hasAttribute('data-off'));
+      tabbed = false;
+      if (lastPointer !== 'touch' && !walked) focusSlot(v.id);
     });
     n.addEventListener('blur', () => blurSlot(v.id, n));
     n.addEventListener('click', (e) => {
@@ -199,9 +213,11 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       signsDirty = true;
     },
 
-    setVisitor(at: Float32Array): void {
+    setVisitor(at, anchors, walkTo): void {
       roaming = true;
+      seek = walkTo;
       signs.setVisitor(at);
+      plan.follow(at, anchors);
       signsDirty = true;
     },
 
@@ -244,6 +260,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     sync(rig: CameraRig): void {
       signs.sync(rig, signsDirty);
       signsDirty = false;
+      plan.sync();
       if (!rig.changed && !dirty) return;
       dirty = false;
       for (let i = 0; i < movers.length; i++) {

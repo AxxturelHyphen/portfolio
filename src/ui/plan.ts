@@ -6,15 +6,23 @@ import type { BedSign } from './signposts.ts';
 /**
  * The garden plan (cook/ART.md section 4), bottom left. Folded: the dog-eared corner of a paper map that reads "Plan".
  * Open (click, or M): a strip plan drawn in pencil line on card (hatched wall, winding path, pond, beds, tree) with
- * one button per place, and a small moth in pale rose over the place where the visitor is. A place button travels
- * there (GOTO). Esc folds the plan first (the garden's own Esc then waits for the next press), and focus returns to
- * the label. No visited marks and no grotto.
+ * one button per place, and a small moth in pale rose over the place where the visitor is (in free roam it follows the
+ * visitor along the strip, between the places by their anchors). A place button travels there (GOTO). Esc folds the
+ * plan first (the garden's own Esc then waits for the next press), and focus returns to the label. No visited marks
+ * and no grotto.
  */
 
 export interface Plan {
   mount(beds: readonly BedSign[]): void;
   onState(s: State): void;
+  /** Free roam: the moth follows the visitor at [x, z]; places sit at their anchors' x. */
+  follow(at: Float32Array, anchors: Readonly<Record<BedId, number>>): void;
+  /** Stage 'dom': moves the following moth while the plan is open (only when it moved a hundredth of a place). */
+  sync(): void;
 }
+
+/** A following moth is moved again once the visitor has gone this share of a place. */
+const MOTH_STEP = 0.01;
 
 const SVG = 'http://www.w3.org/2000/svg';
 const W = 360;
@@ -80,8 +88,24 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
 
   let beds: readonly BedSign[] = [];
   let here: BedId | null = null;
+  let visitor: Float32Array | null = null;
+  let anchorOf: Readonly<Record<BedId, number>> | null = null;
+  let shownCol = Number.NaN;
+
+  /** The visitor's place along the strip as a fractional column: linear between neighbouring places' anchors. */
+  function colOf(x: number, anchors: Readonly<Record<BedId, number>>): number {
+    let a = anchors[beds[0]!.id];
+    if (x <= a) return 0;
+    for (let i = 1; i < beds.length; i++) {
+      const b = anchors[beds[i]!.id];
+      if (x <= b) return i - 1 + (x - a) / Math.max(1e-6, b - a);
+      a = b;
+    }
+    return beds.length - 1;
+  }
 
   function setOpen(open: boolean, refocus: boolean): void {
+    shownCol = Number.NaN;
     root.toggleAttribute('data-open', open);
     tag.setAttribute('aria-expanded', String(open));
     sheet.inert = !open;
@@ -91,8 +115,8 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
 
   function paintHere(): void {
     const i = beds.findIndex((b) => b.id === here);
-    moth.toggleAttribute('data-off', i < 0);
-    if (i >= 0) moth.style.setProperty('--col', String(i));
+    moth.toggleAttribute('data-off', i < 0 && visitor === null);
+    if (i >= 0 && visitor === null) moth.style.setProperty('--col', String(i));
     for (const b of places.querySelectorAll<HTMLButtonElement>('button')) {
       if (b.dataset.bed === here) b.setAttribute('aria-current', 'location');
       else b.removeAttribute('aria-current');
@@ -143,6 +167,19 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       if (at === here) return;
       here = at;
       paintHere();
+    },
+    follow(at, anchors) {
+      visitor = at;
+      anchorOf = anchors;
+      shownCol = Number.NaN;
+      paintHere();
+    },
+    sync() {
+      if (visitor === null || anchorOf === null || beds.length === 0 || !isOpen()) return;
+      const col = colOf(visitor[0]!, anchorOf);
+      if (Math.abs(col - shownCol) < MOTH_STEP) return;
+      shownCol = col;
+      moth.style.setProperty('--col', col.toFixed(3));
     },
   };
 }

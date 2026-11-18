@@ -28,13 +28,17 @@ export interface TestApiDeps {
   /** Resolves when the garden is warm and its first bed or the overview is shown. */
   ready: Promise<void>;
   info(out: InfoSnapshot): InfoSnapshot;
-  /** The visitor under free roam (?roam=1), else null. */
+  /** The visitor under free roam (the default), else null. */
   roam: TestRoam | null;
+  /** The film strip's enable (uStrip.w): 1 while it runs. */
+  strip(): number;
 }
 
 /** The visitor's position and test-only steering (the same calls a click on the ground and held keys make). */
 export interface TestRoam {
   readonly pos: Float32Array;
+  /** True while the visitor or the camera's approach still moves: settled() waits for it. */
+  readonly busy: boolean;
   walkTo(x: number, z: number): void;
   setHeld(bits: number): void;
   /** Holds the camera's approach at k (0 walking, 1 near framing); null lets it follow the visitor again. */
@@ -118,9 +122,10 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
       }
     },
     send: (ev) => machine.send(ev),
-    settled: () => until(() => channelsSettled(machine) && !MOVING.includes(machine.state.phase)),
+    settled: () => until(() => channelsSettled(machine) && !MOVING.includes(machine.state.phase) && d.roam?.busy !== true),
     camera: (): Pose => ({ ...d.rig.pose }),
     roam: () => (d.roam === null ? null : { x: d.roam.pos[0]!, z: d.roam.pos[1]! }),
+    strip: () => d.strip(),
     walkTo(x, z) {
       d.roam?.walkTo(x, z);
       loop.wake();
