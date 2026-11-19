@@ -462,7 +462,8 @@
           "react": false,
           "sway": 0.03,
           "flip": true,
-          "only": "roam"
+          "only": "roam",
+          "fade": true
         },
         {
           "sprite": "w/gallica",
@@ -515,7 +516,8 @@
           "shadow": true,
           "react": false,
           "sway": 0.03,
-          "only": "roam"
+          "only": "roam",
+          "fade": true
         },
         {
           "sprite": "w/gallica",

@@ -12,7 +12,7 @@ import { builtIn } from './mode.ts';
  * blocks just that band of ground north of it, as wide as the card on screen, for the landscape and the phone framing.
  * Position and height come from the bed's own item as free roam builds it (its roam variant where one exists); only the
  * card's width to height ratio is listed in garden.json. A card that would block the way to a place the visitor must
- * reach fades instead (its item's `fade` flag, cutout.vert.glsl) and is not listed.
+ * reach fades instead (its item's `fade` flag, cutout.vert.glsl) and gets no band, even when its sprite is listed.
  */
 
 /** Extra width each side of the card (m): the camera may sit a little off the visitor near the end walls. */
@@ -26,7 +26,7 @@ export function occluderBlocks(e: EnclosureData, scenes: Readonly<Record<BedId, 
   for (const o of e.occluders) {
     for (const l of scenes[o.bed].layers) {
       for (const it of l.items) {
-        if (it.sprite !== o.sprite || !builtIn(it, 'roam')) continue;
+        if (it.sprite !== o.sprite || it.fade === true || !builtIn(it, 'roam')) continue;
         const h = (it.h ?? 0) * it.scale;
         const top = it.y + h;
         let near = Infinity;
