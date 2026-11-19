@@ -171,11 +171,7 @@ export interface ProxyLayer {
 export interface Toggles { setMode(m: Mode, pending: boolean): void; setLang(l: Lang): void; setAudio(on: boolean): void }
 export interface ModeLayers { setProgress(p: number): void; settle(m: Mode): void }
 
-// 2.11 Audio, debug params, test API
-export interface AudioBus {
-  readonly enabled: boolean; enable(): Promise<void>; disable(): void; onState(s: State, prev: State): void;
-  setLevel(name: 'ambience' | 'musicbox' | 'beats', v: number): void; cue(name: 'bloom' | 'iris' | 'goal'): void;
-}
+// 2.11 Debug params, test API (the sound contract lives in src/audio/)
 export interface DebugParams { mode?: Mode; shot?: ShotId; t?: number; tier?: Tier; film?: 0 | 1; stats?: 0 | 1; bench?: 0 | 1; lang?: Lang }
 export interface InfoSnapshot { calls: number; triangles: number; textures: number; geometries: number; programs: number; texBytes: number; targetBytes: number }
 export interface PerfLine { tier: Tier; drawCallsP95: number; textureMB: number; heapMB: number; frameAvg: number; frameP95: number; longTasks: number }
@@ -219,4 +215,3 @@ export type CreateLabel = (el: HTMLElement) => LabelCard;
 export type CreateProxies = (el: HTMLElement, m: Machine) => ProxyLayer;
 export type CreateToggles = (el: HTMLElement, m: Machine) => Toggles;
 export type CreateModeLayers = (canvas: HTMLElement, herbario: HTMLElement) => ModeLayers;
-export type CreateAudio = (m: Machine) => AudioBus;

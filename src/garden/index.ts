@@ -33,6 +33,7 @@ import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
 import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
 import { createRoamDrive } from './roam.drive.ts';
+import { soundMapOf, startSound } from './sound.ts';
 import type { WorldLayout } from '../world/layout.ts';
 
 /**
@@ -375,6 +376,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
+    startSound({ machine, loop, q, tier: quality.tier, map: soundMapOf(world, SCENES), visitor: roam?.pos ?? null, cameraX: () => rig.pose.x, proxies: host.proxies });
     void quality.probe().then((tier) => {
       if (tier === 'fail') host.fail();
     });
