@@ -39,6 +39,11 @@ const WALK_KEYS: Readonly<Record<string, number>> = {
   ArrowLeft: 1, KeyA: 1, ArrowRight: 2, KeyD: 2, ArrowUp: 4, KeyW: 4, ArrowDown: 8, KeyS: 8,
 };
 
+/** Focus whose keys belong to the control: fields and open dialogs (the panel with its film strip, the credits). */
+export const OWN_KEYS = 'input, textarea, select, [contenteditable], dialog';
+/** Also keeps the walk keys: the plan's sheet (ui/plan.ts), inert while closed, so focus inside it means it is open. */
+export const OWN_WALK_KEYS = `${OWN_KEYS}, .pl-sheet`;
+
 export interface InputDeps { machine: Machine; rig: CameraRig; light: LightRig; loop: Loop; surface: HTMLElement; roam?: RoamControl }
 export interface Input { /** Stage 'input': applies this frame's pan and zoom to the rig. */ frame(): void; dispose(): void }
 
@@ -240,7 +245,7 @@ export function createInput(d: InputDeps): Input {
   function onKey(e: KeyboardEvent): void {
     if (!garden() || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     const t = e.target;
-    if (t instanceof Element && t.closest('input, textarea, select, [contenteditable], dialog')) return;
+    if (t instanceof Element && t.closest(OWN_KEYS)) return;
     anyInput();
     const p = phase();
     if (roam !== null && roamKey(e, t)) return;
@@ -268,12 +273,15 @@ export function createInput(d: InputDeps): Input {
     }
   }
 
-  /** Free roam: a walk key held on the page, the canvas or a flower (never in the plan, a field or the panel). */
+  /**
+   * Free roam: a walk key held anywhere but in a field, an open dialog (the panel with its film strip, the credits) or
+   * the open plan sheet, so a clicked tag or toggle never leaves the keys dead. Space and Enter stay the buttons'.
+   */
   function roamKey(e: KeyboardEvent, t: EventTarget | null): boolean {
     const bit = WALK_KEYS[e.code] ?? WALK_KEYS[e.key];
     if (bit === undefined) return false;
-    const here = t === document.body || t === surface || (t instanceof Element && t.closest('.px-slot') !== null);
-    if (!here || panelUp() || phase() === 'intro') return true;
+    const owned = t instanceof Element && t.closest(OWN_WALK_KEYS) !== null;
+    if (owned || panelUp() || phase() === 'intro') return true;
     e.preventDefault();
     setHeld(held | bit);
     return true;

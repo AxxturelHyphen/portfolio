@@ -1,4 +1,4 @@
-import { expect, test } from '../helpers/jardin.ts';
+import { expect, SEL, test } from '../helpers/jardin.ts';
 import { enterRoam, focusIn, poseDrift, projectOfSlot, roamAt, untilCameraStill, untilStill } from '../helpers/roam.ts';
 
 // Free roam by keyboard (cook/ROAM_PLAN.md P4): arrows walk from the gate to the Rosaleda, walking up to a rose focuses
@@ -57,4 +57,26 @@ test('roam keyboard: Esc on a flower in reach blurs it until the visitor walks o
     await expect.poll(() => jardin.withApi((api) => api.state().slot), { timeout: 10000, message: `${id} reached by Tab is focused` }).toBe(id);
   }
   expect(order, 'Tab reaches every slot of the bed in slot order, then the signposts').toEqual([...slots, 'sign']);
+});
+
+test('roam keyboard: the walk keys stay live after clicking the plan tag, the language and the Album round trip', async ({ page, jardin }) => {
+  await enterRoam(jardin, '#/b/rosaleda');
+  const walks = async (after: string): Promise<void> => {
+    await jardin.settled();
+    const x0 = (await roamAt(jardin)).x;
+    await page.keyboard.down('ArrowRight');
+    await page.waitForTimeout(400);
+    await page.keyboard.up('ArrowRight');
+    await expect.poll(async () => (await roamAt(jardin)).x - x0, { message: `the arrows walk after ${after}` }).toBeGreaterThan(0.2);
+  };
+  await page.locator('.pl-tag').click();
+  await page.locator('.pl-tag').click();
+  await walks('the plan opened and closed');
+  await page.locator('#toggles [data-lang="es"]').click();
+  await walks('the language');
+  await page.locator('#toggles .tg-exit[data-mode="herbario"]').click();
+  await expect.poll(() => jardin.mode()).toBe('herbario');
+  await page.locator(SEL.gardenToggle).first().click();
+  await expect.poll(() => jardin.mode()).toBe('garden');
+  await walks('the Album and back');
 });
