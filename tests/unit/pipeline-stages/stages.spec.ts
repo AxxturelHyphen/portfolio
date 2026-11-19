@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { expect, test } from '@playwright/test';
-import { creditsOf } from '../../../scripts/stages/credits.ts';
+import { changesOf, creditsOf, fontOf, holderOf } from '../../../scripts/stages/credits.ts';
 import { linearPlanes } from '../../../scripts/stages/lib/color.ts';
 import { refineEdges } from '../../../scripts/stages/lib/matte.ts';
 import { distanceTo, mask } from '../../../scripts/stages/lib/morph.ts';
@@ -75,4 +75,23 @@ test('credits list only shipped sources, grouped and sorted', () => {
   expect(c.groups.map((g) => g.institution)).toEqual(['Z']);
   expect(c.groups[0]!.items.map((i) => i.id)).toEqual(['a', 'b']);
   expect(c.groups[0]!.items[0]!.usedIn).toEqual(['w', 'y']);
+});
+
+test('credits name one holder per museum, tell what changed, and read the fonts from their OFL texts', () => {
+  expect(holderOf('Rijksmuseum, Amsterdam (via Wikimedia Commons)')).toBe('Rijksmuseum, Amsterdam');
+  expect(holderOf('Scan of Flora Batava via Wikimedia Commons')).toBe('Wikimedia Commons');
+  expect(holderOf(' Poly Haven ')).toBe('Poly Haven');
+  expect(changesOf([
+    { stage: 'sprite', tool: 'painted out', note: 'x: 0.1,0.1,0.2,0.2' },
+    { stage: 'tint', tool: 'OKLab hue-selected re-tint', note: 'x: all toward #5d6c71' },
+    { stage: 'cutout', tool: 'hand garbage matte', note: 'x: classical, crop 0.1,0.2,0.8,0.9' },
+  ])).toEqual(['cropped', 'cutout', 'tinted', 'retouched']);
+  expect(changesOf([{ stage: 'tile', tool: 'plate pass: 5 tone steps', note: 'tile/wall' }])).toEqual(['tinted', 'screened']);
+  expect(changesOf([])).toEqual([]);
+  const ofl = 'Copyright 2022 The Kalnia Project Authors (https://github.com/fridamedrano/Kalnia-Typeface.git)\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1.';
+  expect(fontOf('Kalnia-OFL.txt', ofl)).toEqual({
+    family: 'Kalnia', copyright: 'Copyright 2022 The Kalnia Project Authors', license: 'OFL-1.1',
+    licenseUrl: 'https://openfontlicense.org', sourceUrl: 'https://github.com/fridamedrano/Kalnia-Typeface', file: 'fonts/LICENSES/Kalnia-OFL.txt',
+  });
+  expect(fontOf('Other.txt', 'MIT licence')).toBeNull();
 });
