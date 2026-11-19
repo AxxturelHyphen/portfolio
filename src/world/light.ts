@@ -22,8 +22,11 @@ const GEOM = {
   restX: 0.5,
   restY: 0.42,
   moon: [-0.35, 0.8, 0.5],
-  /** In a bed at rest the far layers fall back behind the flowers by this share of a focus (an 85 mm close shot). */
+  /** In a bed at rest the far layers fall back behind the flowers by this share of a focus (an 85 mm close shot). Under
+   * free roam the plane is the visitor and the bed's own flowers stand behind it: they only darken a little (roamRestBack)
+   * and never soften (cutout.frag.glsl). */
   bedRestBack: 0.6,
+  roamRestBack: 0.3,
   /** Carried at the visitor (free roam): hand height and pool radius, metres. */
   carriedY: 0.9,
   carriedRadius: 1.6,
@@ -134,7 +137,7 @@ export function createLight(): GardenLight {
     }
     gatherAmount = f.target >= 0.5 ? Math.max(gatherAmount, f.value) : ease(gatherAmount, 0, LIGHT.gatherOutTauS, dt, snap);
     gather[3] = gatherAmount;
-    restBack = ease(restBack, slots.length > 0 ? GEOM.bedRestBack : 0, LIGHT.gatherOutTauS, dt, snap);
+    restBack = ease(restBack, slots.length === 0 ? 0 : carried === null ? GEOM.bedRestBack : GEOM.roamRestBack, LIGHT.gatherOutTauS, dt, snap);
     /** A bed's rest light is part of its composed shot; on the overview the ground is lit only once a hand is there. */
     handThrow = ease(handThrow, pointer || slots.length > 0 ? 1 : 0, LIGHT.gatherOutTauS, dt, snap);
     const toGather = Math.min(1, gatherAmount * 4);

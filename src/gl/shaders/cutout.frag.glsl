@@ -55,8 +55,12 @@ const float RIM_SOFT_BIAS = 1.0;
 const vec3 RIM_MOON = vec3(0.672, 0.708, 0.791);
 const vec3 RIM_SHADE = vec3(0.107, 0.127, 0.181);
 const float RIM_STRENGTH = 0.22;
+// Free roam sees the plates from a metre or two: a 10 px band reads as a halo there, so the rim is a thin sharp line.
+const float ROAM_RIM_PX = 2.5;
+const float ROAM_RIM_STRENGTH = 0.12;
 const float RIM_DARK_LUMA = 0.08;                     // forms darker than this take the full rim
-// Behind a focused flower (or a bed's flowers at rest) the far layers fall back: softer (mip bias) and darker.
+// Behind a focused flower (or a bed's flowers at rest) the far layers fall back: softer (mip bias, never under free roam,
+// where the walker sees the plates up close) and darker.
 const vec2 FOCUS_BACK = vec2(0.35, 1.6);              // metres behind the flower where the fall-off starts and is full
 const float FOCUS_BLUR = 3.0;
 // Under free roam no paper goes black: away from every light the darkest plates (a cart's wheels, the hedge beyond the
@@ -85,11 +89,26 @@ float edgeAlpha(vec2 uv, float here) {
   return inside.x * inside.y > 0.5 ? texture(uColor, uv, 0.0).a : here;
 }
 
-// Soft alpha beside a pixel for the moon rim; past the sprite's rect it repeats `here`, like edgeAlpha.
+// Soft alpha beside a pixel for the moon rim (sharp under free roam); past the sprite's rect it repeats `here`.
 float rimAlpha(vec2 uv, float here) {
   vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
-  return inside.x * inside.y > 0.5 ? texture(uColor, uv, RIM_SOFT_BIAS).a : here;
+  return inside.x * inside.y > 0.5 ? texture(uColor, uv, RIM_SOFT_BIAS * (1.0 - uEye.z)).a : here;
 }
+
+// Scissor-cut paper under free roam: where a plate is magnified its linear alpha ramp spans a whole texel, so the
+// edge is squeezed back to about one pixel, cut a little inside the matte (CUT) where the paper's own fringe sits.
+// Minified plates keep their filtered alpha, so thin stems never break up.
+const float CUT = 0.55;
+float crispAlpha(float a) {
+  float texels = length(fwidth(vUV)) * float(textureSize(uColor, 0).x);
+  float cut = sat((a - CUT) / max(fwidth(a), 1e-4) + 0.5);
+  return mix(a, cut, uEye.z * sat(1.5 - texels));
+}
+// The plates' cut edges still hold a trace of the page they were cut from, a pale line one or two texels wide: under
+// free roam it is toned down to the paper's own value, so a cutout ends in its own colour, not a halo.
+const vec2 FRINGE = vec2(0.5, 0.97);                  // raw alpha where the toning is full and where it ends
+const float FRINGE_TONE = 0.78;
+float fringeTone(float a) { return mix(1.0, mix(FRINGE_TONE, 1.0, smoothstep(FRINGE.x, FRINGE.y, a)), uEye.z); }
 
 // Direction in the sprite's uv frame of a world-space xy direction (undoes rotation and flip).
 vec2 toSpriteUV(vec2 d) {
@@ -132,9 +151,10 @@ void main() {
     return;
   }
   float back = uFocusBack.w * smoothstep(FOCUS_BACK.x, FOCUS_BACK.y, vDepth - vFocusDepth);
-  float blur = back * FOCUS_BLUR;
+  float blur = back * FOCUS_BLUR * (1.0 - uEye.z);
   // The colour softens behind the focus; the alpha stays sharp so tiled flats never open a seam.
-  vec4 tex = vec4(texture(uColor, vUV, blur).rgb, texture(uColor, vUV).a);
+  float rawA = texture(uColor, vUV).a;
+  vec4 tex = vec4(texture(uColor, vUV, blur).rgb * fringeTone(rawA), crispAlpha(rawA));
   vec2 nxy = texture(uNormal, vUV, blur).xy * 2.0 - 1.0;
   nxy.x *= vFrame.z * (vMirror > 0.5 ? -1.0 : 1.0);
   nxy = vec2(vFrame.x * nxy.x - vFrame.y * nxy.y, vFrame.y * nxy.x + vFrame.x * nxy.y);
@@ -202,14 +222,14 @@ void main() {
   // Moon rim, after the air so the haze cannot eat it: inside the paper, where the soft alpha toward the moon runs out
   // (two taps make the gradient). Thin moon white at the very edge into cool shade, only on the moon side.
   vec2 moonUV = toSpriteUV(uMoonBack.xy + vec2(0.0, 0.2));
-  float rw = RIM_PX * length(fwidth(vUV));
+  float rw = mix(RIM_PX, ROAM_RIM_PX, uEye.z) * length(fwidth(vUV));
   float edgeNear = 1.0 - rimAlpha(vUV + moonUV * rw * 0.4, tex.a);
   float edgeFar = 1.0 - rimAlpha(vUV + moonUV * rw, tex.a);
   // Thin stems and blades are open on the far side too: they take a trace of the rim, not a white outline.
   float thin = 1.0 - rimAlpha(vUV - moonUV * rw, tex.a);
   float rimBand = sat(0.7 * edgeNear + 0.3 * edgeFar) * (1.0 - shaded * 0.3) * (1.0 - 0.85 * thin);
   float dark = 1.0 - smoothstep(0.0, RIM_DARK_LUMA, luma(lit));
-  lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * RIM_STRENGTH * (0.3 + 0.7 * dark) * (1.0 - back) * (1.0 - 0.6 * hazed);
+  lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * mix(RIM_STRENGTH, ROAM_RIM_STRENGTH, uEye.z) * (0.3 + 0.7 * dark) * (1.0 - back) * (1.0 - 0.6 * hazed);
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);
