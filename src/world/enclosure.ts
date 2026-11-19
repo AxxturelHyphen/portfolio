@@ -5,20 +5,26 @@ import { BORDER, COPING, PIER_PROUD, SHADE_JITTER, TILE_ORIGIN_X, WALL_TILE, cut
 
 /**
  * The closed garden of free roam (cook/ROAM_ART.md section 3, task 5): the back wall cut at its low stretches and at the
- * Salida door, piers, two end walls facing inward and a low coped kerb along the front. Every run gets a stone base
+ * Salida door (a doorway under a stone lintel, so no sky opens over it), piers, two end walls facing inward and a low
+ * coped kerb along the front. Every run gets a stone base
  * course (tile/wall-base) and a coping (tile/coping) over the wall stone, so the wall has a foot and a top edge. Three
  * batches, one per tile page, painted base, then wall stone, then coping. Built at load, only under free roam: the
  * rail keeps its own wall (wall.ts).
  */
 
-/** A straight run of wall from (x, z) along (cos yaw, -sin yaw), facing (sin yaw, cos yaw), len long and h high. */
-export interface Run { x: number; z: number; yaw: number; len: number; h: number; pier: boolean }
+/**
+ * A straight run of wall from (x, z) along (cos yaw, -sin yaw), facing (sin yaw, cos yaw), len long and h high. Its stone
+ * starts at `from`: 0 stands on the ground, above 0 is a lintel over an opening (no base course, a coped soffit).
+ */
+export interface Run { x: number; z: number; yaw: number; len: number; h: number; from: number; pier: boolean }
 
 const BASE_TILE = 'tile/wall-base';
 const COPING_TILE = 'tile/coping';
 /** Flats overlap at their joins so the small yaw never opens a seam onto the sky. */
 const OVERLAP = 0.4;
 const PIER_W = 0.5;
+/** Height of the Salida doorway under its lintel; the hedge behind it (enclosure.hedge.top) stands at least this high. */
+export const DOOR_TOP = 2.3;
 /** The base course stands a little proud of the face (a foot), the mossy stone darker than the wall. */
 /**
  * It starts a little under the ground and is painted under the wall stone, which overlaps its top by `under`: no soft
@@ -50,20 +56,25 @@ export function enclosureRuns(e: EnclosureData, wallZ: number, wallH: number, fl
     const n = Math.max(1, Math.round((b - a) / flatW));
     const w = (b - a) / n;
     for (let k = 0; k < n; k++) {
-      const from = a + k * w - (a + k * w > x0 && a + k * w !== e.door[1] ? OVERLAP / 2 : 0);
-      const to = a + (k + 1) * w + (a + (k + 1) * w < x1 && a + (k + 1) * w !== e.door[0] ? OVERLAP / 2 : 0);
-      runs.push({ x: from, z: wallZ, yaw: (e.flatYaw[flip] ?? 0) * DEG, len: to - from, h, pier: false });
+      // The stretch's own ends exactly, so a flat that meets the door gap is never pushed into it by rounding.
+      const left = k === 0 ? a : a + k * w;
+      const right = k === n - 1 ? b : a + (k + 1) * w;
+      const from = left - (left > x0 && left !== e.door[1] ? OVERLAP / 2 : 0);
+      const to = right + (right < x1 && right !== e.door[0] ? OVERLAP / 2 : 0);
+      runs.push({ x: from, z: wallZ, yaw: (e.flatYaw[flip] ?? 0) * DEG, len: to - from, h, from: 0, pier: false });
       flip = 1 - flip;
     }
   }
   for (const px of e.piers) {
     const h = Math.max(backHeightAt(e, wallH, px - PIER_W), backHeightAt(e, wallH, px + PIER_W));
-    runs.push({ x: px - PIER_W / 2, z: wallZ + PIER_PROUD, yaw: 0, len: PIER_W, h, pier: true });
+    runs.push({ x: px - PIER_W / 2, z: wallZ + PIER_PROUD, yaw: 0, len: PIER_W, h, from: 0, pier: true });
   }
-  runs.push({ x: x0, z: e.front, yaw: 90 * DEG, len: e.front - wallZ, h: e.endH, pier: false });
-  runs.push({ x: x1, z: wallZ, yaw: -90 * DEG, len: e.front - wallZ, h: e.endH, pier: false });
-  runs.push({ x: x0, z: e.front, yaw: 0, len: x1 - x0, h: e.kerbH, pier: false });
-  for (const px of e.x) runs.push({ x: px - PIER_W / 2, z: e.front + PIER_PROUD, yaw: 0, len: PIER_W, h: e.endH, pier: true });
+  const [d0, d1] = e.door;
+  runs.push({ x: d0 - OVERLAP / 2, z: wallZ, yaw: 0, len: d1 - d0 + OVERLAP, h: wallH, from: DOOR_TOP, pier: false });
+  runs.push({ x: x0, z: e.front, yaw: 90 * DEG, len: e.front - wallZ, h: e.endH, from: 0, pier: false });
+  runs.push({ x: x1, z: wallZ, yaw: -90 * DEG, len: e.front - wallZ, h: e.endH, from: 0, pier: false });
+  runs.push({ x: x0, z: e.front, yaw: 0, len: x1 - x0, h: e.kerbH, from: 0, pier: false });
+  for (const px of e.x) runs.push({ x: px - PIER_W / 2, z: e.front + PIER_PROUD, yaw: 0, len: PIER_W, h: e.endH, from: 0, pier: true });
   return runs;
 }
 
@@ -142,9 +153,15 @@ export function writeEnclosure(runs: readonly Run[], baseH: number, m: AtlasMani
     }
     return t.n;
   };
-  const stone = (r: Run, shade: number): void => t.tile(r, Math.min(baseH - BASE.under, r.h), r.h, 0, 0, STONE_TINT, shade);
-  const foot = (r: Run, shade: number): void => t.tile(r, -BASE.sink, Math.min(baseH, r.h), 0, r.pier ? 0 : BASE.proud, BASE.tint, shade);
-  const cap = (r: Run, shade: number): void => t.tile(r, r.h - COPING.h * 0.5, r.h + COPING.h * 0.5, COPING.overhang, COPING.proud, COPING.tint, shade);
+  const stone = (r: Run, shade: number): void => t.tile(r, Math.max(r.from, Math.min(baseH - BASE.under, r.h)), r.h, 0, 0, STONE_TINT, shade);
+  const foot = (r: Run, shade: number): void => {
+    if (r.from === 0) t.tile(r, -BASE.sink, Math.min(baseH, r.h), 0, r.pier ? 0 : BASE.proud, BASE.tint, shade);
+  };
+  const band = (r: Run, y: number, shade: number): void => t.tile(r, y - COPING.h * 0.5, y + COPING.h * 0.5, COPING.overhang, COPING.proud, COPING.tint, shade);
+  const cap = (r: Run, shade: number): void => {
+    band(r, r.h, shade);
+    if (r.from > 0) band(r, r.from, shade);
+  };
   const wall = createBatch(wallRect.page, pass(wallRect, null, stone));
   const base = createBatch(baseRect.page, pass(baseRect, null, foot));
   const coping = createBatch(copingRect.page, pass(copingRect, null, cap));

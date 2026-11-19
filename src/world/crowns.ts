@@ -5,8 +5,8 @@ import { hash01 } from './wall.ts';
 
 /**
  * What stands beyond the back wall under free roam (cook/ROAM_ART.md section 3, task 4): three groups of tree crowns
- * from the shipped ov/trees plates, far and cool, and a clipped hedge strip behind the two low stretches, cut in code
- * from the solid part of the v/hedge plate so the ground beyond never shows over the parapets. One batch each (crowns
+ * from the shipped ov/trees plates, far and cool, and a clipped hedge strip behind the Salida door and any low stretch,
+ * cut in code from the solid part of the v/hedge plate so the ground beyond never shows through them. One batch each (crowns
  * on shared page 0, the hedge on page 1), both painted before the wall. Built at load, only under free roam.
  */
 
@@ -18,7 +18,7 @@ const HEDGE_SPRITE = 'v/hedge';
 const HEDGE_CROP = { u: [0.04, 0.28], v: [0.02, 0.42] } as const;
 /**
  * Pieces overlap by `overlap` and alternate in depth, so no straight vertical seam lines up across the strip. The strip
- * stands low and leafy over the parapets, a step lighter than the plate, so it reads as dark foliage, not a black slab.
+ * stands leafy behind the openings, a step lighter than the plate, so it reads as dark foliage, not a black slab.
  */
 const HEDGE = { quadW: 0.85, overlap: 0.3, stagger: 0.12, jitter: 0.08, tint: [0.82, 0.96, 0.86] } as const;
 /** Far things are cooler (cook/ROAM_ART.md depth rule); the view-depth haze lifts them further. */

@@ -40,7 +40,8 @@
           "group": "D",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "es/lichen-1",

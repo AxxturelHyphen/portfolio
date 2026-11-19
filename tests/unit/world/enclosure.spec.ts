@@ -3,7 +3,7 @@ import type { BedId } from '../../../src/types.ts';
 import { expect, test } from '@playwright/test';
 import { Vector3 } from 'three';
 import { ROAM } from '../../../src/core/motion.ts';
-import { enclosureRuns } from '../../../src/world/enclosure.ts';
+import { DOOR_TOP, enclosureRuns } from '../../../src/world/enclosure.ts';
 import { followPose, framingFor, moonElevation, SIDE_SKY_DEG, viewLimitsOf, WALL_SHARE, wallShare, type Framing } from '../../../src/world/follow.ts';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../../content/beds/rosaleda.json' with { type: 'json' };
@@ -101,16 +101,23 @@ test('the walk area sits inside the walls and the visitor reaches each of its ed
   }
 });
 
-test('the enclosure runs close the garden: end walls, front kerb, a door gap at the Salida path end', () => {
+test('the enclosure runs close the garden: end walls, front kerb, a doorway under a lintel at the Salida path end', () => {
   const runs = enclosureRuns(enc, ground.wall.z, ground.wall.h, ground.wall.flatW);
   const ends = runs.filter((u) => Math.abs(Math.abs(u.yaw) - Math.PI / 2) < 1e-6);
   expect(ends.map((u) => u.x).sort((a, b) => a - b)).toEqual([...enc.x]);
   for (const u of ends) expect(u.len).toBeCloseTo(enc.front - ground.wall.z, 6);
   expect(runs.some((u) => u.z === enc.front && !u.pier && u.h === enc.kerbH && u.len === enc.x[1] - enc.x[0])).toBe(true);
-  const back = runs.filter((u) => !u.pier && u.z === ground.wall.z);
+  const back = runs.filter((u) => !u.pier && u.from === 0 && u.z === ground.wall.z);
   const covers = (x: number): boolean => back.some((u) => x >= u.x && x <= u.x + u.len);
   for (let x = enc.x[0]; x <= enc.x[1]; x += 0.05) expect(covers(x) || Math.min(Math.abs(x - enc.door[0]), Math.abs(x - enc.door[1])) < 0.02, `back wall at ${x.toFixed(2)}`).toBe(!(x > enc.door[0] + 0.02 && x < enc.door[1] - 0.02));
   expect((enc.door[0] + enc.door[1]) / 2).toBeCloseTo(ground.path.points.at(-1)?.[0] ?? 0, 1);
+  const lintel = runs.filter((u) => u.from > 0);
+  expect(lintel.length).toBe(1);
+  expect(lintel[0]!.x).toBeLessThan(enc.door[0]);
+  expect(lintel[0]!.x + lintel[0]!.len).toBeGreaterThan(enc.door[1]);
+  expect(lintel[0]!.h).toBe(ground.wall.h);
+  const hedged = enc.hedge.spans.some(([a, b]) => a <= enc.door[0] && b >= enc.door[1]);
+  expect(hedged && enc.hedge.top >= DOOR_TOP, 'a hedge at least as high as the doorway stands behind it').toBe(true);
 });
 
 /** Moon azimuth per place, read from src/garden/place.ts (PLACE_LIGHT), so the test follows any retune. */
