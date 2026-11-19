@@ -262,9 +262,21 @@
 
 /*
  * Free roam: every sign is placed by transform from the top left, phones too. A planted label stands on its own cane
- * (.px-sign-pole, stretched by transform from the lashing to the ground) over a small contact shadow; the cane inside
- * the label shows only while the sign is docked at an edge (data-off), cut short so it never reads as a pole.
+ * (.px-sign-pole, stretched by transform from the lashing to the ground) over a small contact shadow; a docked label
+ * (data-off) has no cane drawn, so no stub ever peeks out over, under or behind its plate. The signs come and go
+ * whole, with no fade, so an assisted walk never shows a ghost of them. A tucked label (data-tucked: no room, or under the open plant tag or
+ * plan) is transparent and lets clicks through, but keeps its Tab stop and shows while it has keyboard focus.
  */
+.px-signs[data-roam],
+.px-signs[data-roam][data-shown] {
+  transition: none;
+}
+
+.px-signs[data-roam] .px-sign[data-tucked]:not(:focus-visible) {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .px-signs[data-roam] .px-sign:not([data-docked]) {
   top: 0;
   right: auto;
@@ -273,10 +285,6 @@
 }
 
 .px-signs[data-roam] .px-sign-cane {
-  height: calc(var(--tip) + 36px);
-}
-
-.px-signs[data-roam] .px-sign:not([data-off]) .px-sign-cane {
   display: none;
 }
 
@@ -294,9 +302,9 @@
 }
 
 /*
- * Portrait free roam: the docked labels stand in a band beside the visitor (ui/signs.stake.ts dockAround). Names run on
+ * Portrait free roam: the docked labels stand in a band under the visitor (ui/signs.dock.ts dockAround). Names run on
  * one line, or on the two the rule breaks them into, never wrapped by the width, with a little less room at the ends so
- * both fit on one row at 360 px; the docked cane shows only a short tip so it never reaches up to the visitor's shoes.
+ * both fit on one row at 360 px.
  */
 @media (max-aspect-ratio: 4/5) {
   .px-signs[data-roam] .px-sign {
@@ -311,10 +319,6 @@
 
   .px-signs[data-roam] .px-sign-name br {
     display: inline;
-  }
-
-  .px-signs[data-roam] .px-sign[data-off] {
-    --tip: 10px;
   }
 }
 
