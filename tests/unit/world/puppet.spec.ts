@@ -98,13 +98,19 @@ test('every part hangs from its parent pin within a pixel, in every pose, view, 
   }
 });
 
-test('the contact shadow lies at the ground point, on the empty patch, and the hands stay at the grip', () => {
+test('the contact shadow lies at the ground point and its paper, the halo, is centred on the flame', () => {
   const puppet = createPuppet(rects);
   puppet.place(gaitOf('back', 0, true), 3, -2, 1, 1);
   const shadow = puppet.quads[SLOT.shadow]!;
   expect([shadow.y, shadow.z, shadow.py]).toEqual([0, -2, 0]);
   expect(Math.abs(shadow.x - 3)).toBeLessThan(0.02);
-  expect(Array.from(shadow.uv)).toEqual(rects['fg/void'].uv);
+  expect(Array.from(shadow.uv)).toEqual(rects['fg/glow'].uv);
+  puppet.halo(2.8, 0.45);
+  /** The decal stays at the quad's x and z (under the soles); the paper's centre moves to the flame. */
+  expect(Math.abs(shadow.x - 3)).toBeLessThan(0.02);
+  const centre = at(shadow, [0.5, 0.5]);
+  expect(centre[0]).toBeCloseTo(2.8, 6);
+  expect(centre[1]).toBeCloseTo(0.45, 6);
 });
 
 const mirrored = (p: Pose, back: boolean): Pose => ({
@@ -132,7 +138,7 @@ test('the carrying arm turns at most a degree between poses, so the lantern bobs
       if (prev !== null) {
         expect(Math.abs(now[2] - prev[2])).toBeLessThanOrEqual(1 * DEG + 1e-9);
         /** The grip follows the body over the planted foot and its rise and fall (readable from behind): a step, not a jump. */
-        expect(Math.hypot(now[0] - prev[0], now[1] - prev[1])).toBeLessThan(0.05);
+        expect(Math.hypot(now[0] - prev[0], now[1] - prev[1])).toBeLessThan(0.06);
       }
       prev = now;
     }
@@ -220,13 +226,17 @@ test('walking south toward the lens keeps the profile of the last sideways walk,
 
 test('the free arm swings opposite the legs within a few degrees of hanging, never held out from the body', () => {
   for (const [poses, rest] of [[BACK_POSES, REST.freeArm], [SIDE_POSES, REST.sideFree]] as const) {
-    for (const p of [...poses, IDLE]) expect(Math.abs(rest - p.free)).toBeLessThanOrEqual(12);
+    for (const p of [...poses, IDLE]) expect(Math.abs(rest - p.free)).toBeLessThanOrEqual(18);
   }
   expect(Math.abs(REST.freeArm)).toBeLessThanOrEqual(4);
   const backSwing = BACK_POSES.map((p) => p.free);
   expect(Math.sign(backSwing[0]!)).toBe(-Math.sign(backSwing[2]!));
-  /** The swing reads at 120 px: well over ten degrees from one step to the next. */
-  expect(Math.abs(backSwing[0]! - backSwing[2]!)).toBeGreaterThanOrEqual(15);
+  /** The swing reads at 120 px: over twenty-five degrees from one step to the next, from behind and in profile. */
+  expect(Math.abs(backSwing[0]! - backSwing[2]!)).toBeGreaterThanOrEqual(25);
+  expect(Math.abs(SIDE_POSES[0]!.free - SIDE_POSES[2]!.free)).toBeGreaterThanOrEqual(25);
+  /** The profile step stays calm: the legs within 15 degrees of upright, the passing knee folded well past 30. */
+  for (const p of SIDE_POSES) expect(Math.max(Math.abs(p.hipA), Math.abs(p.hipB))).toBeLessThanOrEqual(15);
+  expect(Math.max(SIDE_POSES[1]!.kneeA, SIDE_POSES[3]!.kneeB)).toBeGreaterThanOrEqual(30);
   expect(BACK_POSES[0]!.freeH).not.toBe(BACK_POSES[2]!.freeH);
   const puppet = createPuppet(rects);
   for (const view of ['back', 'side'] as const) {
@@ -234,7 +244,7 @@ test('the free arm swings opposite the legs within a few degrees of hanging, nev
       puppet.place(gaitOf(view, i, false), 0, 0, 1, 1);
       const arm = puppet.quads[view === 'back' ? 7 : 2]!;
       const fromHanging = Math.abs(arm.rot) / DEG;
-      expect(fromHanging, `${view} ${i} free arm`).toBeLessThanOrEqual(12);
+      expect(fromHanging, `${view} ${i} free arm`).toBeLessThanOrEqual(18);
     }
   }
 });

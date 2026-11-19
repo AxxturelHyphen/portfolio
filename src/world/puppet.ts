@@ -9,14 +9,14 @@
  * plane. Nothing is allocated per frame.
  */
 import type { InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
-import { BACK_POSES, IDLE, REST, SETTLE, SIDE_POSES, type Pose } from './puppet.poses.ts';
+import { BACK_POSES, IDLE, PINS, PIVOTS, REST, SETTLE, SIDE_POSES, type FigureRects, type Pose } from './puppet.poses.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export const FIGURE = {
   /** Head top above the ground point (m) at scale 1, drawn at portraitK on portrait screens; stepped at fps. */
   topM: 1.3, portraitK: 1.2 / 1.3, fps: 12,
-  /** Walked distance per pose (m): two poses a step of 0.54 m. */
-  strideM: 0.27,
+  /** Walked distance per pose (m): two poses a calm step of 0.42 m. */
+  strideM: 0.21,
   /** Under walkFrom (m/s) for idleAfterS the figure stands; hips sway over the planted foot; shins stretch by `stretch`. */
   walkFrom: 0.3, idleAfterS: 0.25, hipSwayM: 0.014, stretch: 0.15,
   /** Heading counts above viewFrom (m/s): profile past sideOnDeg from north, back under backOnDeg. */
@@ -25,38 +25,25 @@ export const FIGURE = {
   shiftMinS: 4.5, shiftSpanS: 2, shiftDeg: 1.5, shiftM: 0.008,
   /**
    * Width share of the side torso; back view: each sleeve hangs armOut of its width out from its shoulder pin, beside
-   * the smock and under its edge, armSlim wide (slim sleeves, not puffed panels), armDropM (m) under the smock's top.
+   * the smock and under its edge, armSlim wide (slim sleeves, not puffed panels), armDropM (m) under the smock's sloped
+   * shoulder. The smock is drawn torsoW of its cut width; the carrying sleeve carryH of its length (the forearm comes
+   * forward to hold the lantern at the hip).
    */
-  sideTorso: 0.78, armOut: 0.3, armSlim: 0.8, armDropM: 0.05,
+  sideTorso: 0.78, armOut: 0.24, armSlim: 0.8, armDropM: 0.035, torsoW: 0.92, carryH: 0.86,
   /** Drawn size of the bare head against its sprite, and its lift above the neck pin (m): a neck shows under the hair. */
   headK: 1.19, headLiftM: 0.03,
   /** Side view: head shifted toward the heading, hips either side of the hip centre; back: hips drawn in by hipInM (m). */
   headFwdM: 0.02, hipM: 0.012, hipInM: 0.01,
-  /** Contact shadow: carrier width (the shader spreads it 1.5 x 0.9) and opacity (the lantern lights the ground). */
+  /**
+   * Contact shadow: carrier width (the shader spreads it 1.5 x 0.9) and opacity (the lantern lights the ground). The
+   * carrier's paper is the lantern's halo, a soft warm disc of that size round the flame.
+   */
   shadowW: 0.46, shadowA: 1,
   /** Atlas page side in px: the sole sits `pad` px above a shin quad's bottom edge. */
   pagePx: 512,
 } as const;
 
-export const FIGURE_SPRITES = ['fg/torso', 'fg/head', 'fg/scarf', 'fg/arm', 'fg/arm-bent', 'fg/hand', 'fg/thigh-l', 'fg/shin-l', 'fg/thigh-r', 'fg/shin-r',
-  'fg/void'] as const;
-export type FigureRects = Readonly<Record<(typeof FIGURE_SPRITES)[number], SpriteRect>>;
-
-/** Child pins as fractions of the parent sprite, y up (cook/look/r14figure/handoff.json, measured on the sprites). */
-export const PINS = {
-  neck: [0.7246, 0.8901], shoulderL: [0.1944, 0.7514], shoulderR: [0.896, 0.6944], hipL: [0.2492, 0.0746], hipR: [0.7246, 0.0746],
-  sideShoulder: [0.62, 0.73], cuff: [0.4962, 0.0715], cuffBent: [0.4923, 0.1203], grip: [0.4923, 0.4367], kneeL: [0.4639, 0.0953],
-  kneeR: [0.5541, 0.1092] } as const;
-
-/**
- * Each part's pin to its parent, as a fraction of its sprite (y up). The manifest centres every pivot, so the rig
- * keeps the measured ones (handoff.json pivotFrac).
- */
-export const PIVOTS: Readonly<Record<(typeof FIGURE_SPRITES)[number], readonly [number, number]>> = {
-  'fg/torso': [0.4881, 0.0852], 'fg/head': [0.4875, 0.1918], 'fg/scarf': [0.494, 0.4742], 'fg/arm': [0.4962, 0.8174], 'fg/arm-bent': [0.4923, 0.7534],
-  'fg/hand': [0.4923, 0.7967], 'fg/thigh-l': [0.5082, 0.9497], 'fg/shin-l': [0.4855, 0.8692], 'fg/thigh-r': [0.523, 0.9506], 'fg/shin-r': [0.497, 0.872],
-  'fg/void': [0.5, 0],
-};
+export { FIGURE_SPRITES, PINS, PIVOTS, type FigureRects } from './puppet.poses.ts';
 
 const DEG = Math.PI / 180;
 /**
@@ -201,7 +188,7 @@ const S = { Torso: 0, Head: 1, Scarf: 2, FreeArm: 3, FreeHand: 4, CarryArm: 5, C
 const BACK_ORDER = [S.ShinB, S.ThighB, S.ShinA, S.ThighA, S.FreeHand, S.CarryHand, S.FreeArm, S.CarryArm, S.Head, S.Torso, S.Scarf] as const;
 /** Side: the far arm behind the body, the near (carrying) arm in front of it, each fist under its cuff. */
 const SIDE_ORDER = [S.FreeHand, S.FreeArm, S.ShinA, S.ThighA, S.ShinB, S.ThighB, S.Head, S.Torso, S.Scarf, S.CarryHand, S.CarryArm] as const;
-/** Instance indices: the shadow, the eleven body parts in paint order, then (the visitor's) handle and lantern. */
+/** Instance indices: the shadow and halo, the eleven body parts in paint order, then (the visitor's) handle and lantern. */
 export const SLOT = { shadow: 0, handle: 12, lantern: 13, count: 14 } as const;
 
 export interface Puppet {
@@ -214,6 +201,11 @@ export interface Puppet {
    * carrying arm with the lantern's swing (world degrees, counter-clockwise).
    */
   place(g: Gait, x: number, z: number, k: number, mirror: number, carryDeg?: number): void;
+  /**
+   * Centres the halo on the flame at world (x, y), after place(): the carrier's quad keeps its foot at the ground point,
+   * so its shadow stays under the soles, and its paper is shifted by the pivot.
+   */
+  halo(x: number, y: number): void;
   /** Writes the shadow and the body into their slots. */
   write(w: InstanceWriter): void;
 }
@@ -231,7 +223,7 @@ export function createPuppet(rects: FigureRects): Puppet {
       tint: new Float32Array([1, 1, 1, 1]), phase: flags });
   }
   const shadow = quads[SLOT.shadow]!;
-  shadow.uv = rects['fg/void'].uv;
+  shadow.uv = rects['fg/glow'].uv;
   shadow.phase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.hung);
   (shadow.tint as Float32Array)[3] = FIGURE.shadowA;
   const grip = new Float32Array(2);
@@ -301,7 +293,7 @@ export function createPuppet(rects: FigureRects): Puppet {
     k = scale;
     const p = poseOf(g);
     const side = g.view === 'side';
-    const torsoW = TURN.torso[g.turn]! * (side ? FIGURE.sideTorso : 1);
+    const torsoW = TURN.torso[g.turn]! * (side ? FIGURE.sideTorso : 1) * FIGURE.torsoW;
     const armW = TURN.arm[g.turn]! * FIGURE.armSlim;
     const drop = FIGURE.armDropM * k;
     const torso = parts[S.Torso]!;
@@ -320,14 +312,14 @@ export function createPuppet(rects: FigureRects): Puppet {
       const sx = pin[0]!;
       const sy = pin[1]!;
       set(freeArm, sx, sy - drop, REST.sideFree + p.free, armW, p.freeH, false);
-      set(carryArm, sx, sy - drop, REST.sideCarry + p.carry + mirror * carryDeg, armW, 1, false);
+      set(carryArm, sx, sy - drop, REST.sideCarry + p.carry + mirror * carryDeg, armW, FIGURE.carryH, false);
     } else {
       const outL = FIGURE.armOut * freeArm.sprite.rect.size[0] * k * armW;
       const outR = FIGURE.armOut * carryArm.sprite.rect.size[0] * k * armW;
       pinOf(torso, PINS.shoulderL);
       set(freeArm, pin[0]! - outL, pin[1]! - drop, REST.freeArm - p.free, armW, p.freeH, true);
       pinOf(torso, PINS.shoulderR);
-      set(carryArm, pin[0]! + outR, pin[1]! - drop, REST.carryArm + p.carry + mirror * carryDeg, armW, 1, false);
+      set(carryArm, pin[0]! + outR, pin[1]! - drop, REST.carryArm + p.carry + mirror * carryDeg, armW, FIGURE.carryH, false);
     }
     hand(freeArm, parts[S.FreeHand]!, PINS.cuff);
     hand(carryArm, parts[S.CarryHand]!, PINS.cuffBent);
@@ -391,6 +383,10 @@ export function createPuppet(rects: FigureRects): Puppet {
     grip,
     quads,
     place,
+    halo(fx, fy) {
+      shadow.px = 0.5 - (fx - shadow.x) / shadow.w;
+      shadow.y = fy - shadow.h * 0.5;
+    },
     write(w) {
       w.set(SLOT.shadow, shadow);
       for (let i = 1; i < SLOT.handle; i++) w.set(i, quads[i]!);
