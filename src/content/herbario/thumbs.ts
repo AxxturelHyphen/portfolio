@@ -10,7 +10,7 @@ import { esc } from './html.ts';
  *    prerendered page carries (thumbBlock), so both renders show the same specimens.
  */
 
-export interface Thumb { project: string; file: string; source: string; title: string; latin: string }
+export interface Thumb { project: string; file: string; source: string; title: string }
 export type ThumbIndex = ReadonlyMap<string, Thumb>;
 
 const MANIFEST = 'public/thumbs/manifest.json';
@@ -22,9 +22,9 @@ function toThumb(v: unknown): Thumb | null {
   if (typeof v !== 'object' || v === null) return null;
   const t = v as Record<string, unknown>;
   const title = t['title'] ?? t['plateTitle'];
-  const { project, file, source, latin } = t;
-  if (typeof project !== 'string' || typeof file !== 'string' || typeof source !== 'string' || typeof latin !== 'string' || typeof title !== 'string') return null;
-  return { project, file, source, title, latin };
+  const { project, file, source } = t;
+  if (typeof project !== 'string' || typeof file !== 'string' || typeof source !== 'string' || typeof title !== 'string') return null;
+  return { project, file, source, title };
 }
 
 function parse(json: string | undefined): Thumb[] {
@@ -70,7 +70,7 @@ export function thumbBlock(index: ThumbIndex): string {
 const EAGER = 2;
 
 /**
- * The mounted specimen with its plate's Latin name and credit, or '' when the project has no thumbnail yet. `order` is
+ * The mounted specimen with its plate's credit, or '' when the project has no thumbnail yet. `order` is
  * the specimen's place on the page: the first two load eagerly at high priority. Width and height hold the box.
  */
 export function specimen(t: Thumb | undefined, l: Lang, order: number): string {
@@ -78,6 +78,6 @@ export function specimen(t: Thumb | undefined, l: Lang, order: number): string {
   const load = order < EAGER ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
   return `<figure class="h-specimen">
 <img class="h-specimen-img" src="thumbs/${esc(t.file)}" alt="" width="480" height="480" ${load} decoding="async">
-<figcaption class="h-specimen-cap"><span class="h-specimen-latin" lang="la">${esc(t.latin)}</span><span class="h-specimen-credit">${CREDIT[l]}: ${esc(t.title)}</span></figcaption>
+<figcaption class="h-specimen-cap"><span class="h-specimen-credit">${CREDIT[l]}: ${esc(t.title)}</span></figcaption>
 </figure>`;
 }

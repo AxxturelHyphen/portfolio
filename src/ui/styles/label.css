@@ -107,14 +107,6 @@
   text-wrap: balance;
 }
 
-.lb-latin {
-  font-family: var(--font-ui);
-  font-size: 0.9375rem;
-  font-style: italic;
-  line-height: 1.4;
-  color: var(--tag-ink-2);
-}
-
 .lb-oneliner {
   margin-top: 10px;
   font-size: 1rem;

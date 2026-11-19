@@ -8,7 +8,7 @@ import { createMover } from './xform.ts';
 /**
  * The plant tag of the focused flower (cook/ART.md section 4, S08): an aged card tag with a reinforced eyelet at the
  * top centre, tied there with twine to a zinc rod that runs down behind it into the soil. The name, the one-liner and
- * the stack (a plain comma list) in Kalnia, the Latin name in italic, "View" as an inked line in the tag's ink over a
+ * the stack (a plain comma list) in Kalnia, "View" as an inked line in the tag's ink over a
  * hand-ruled stroke, and the status as a small rubber stamp set askew in the bottom corner.
  * Owner gaps read as in the panel (content/herbario/case.ts BLANK_GAPS): a quiet blank without its note, a field that
  * is nothing but a gap left out. The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
@@ -73,7 +73,6 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   const card = node('div', 'lb', el);
   card.id = LABEL_ID;
   const title = node('p', 'lb-title', card);
-  const latin = node('p', 'lb-latin', card);
   const oneLiner = node('p', 'lb-oneliner', card);
   const stack = node('p', 'lb-stack', card);
   const view = node('p', 'lb-view', card);
@@ -108,10 +107,6 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
     show(v: SlotView): void {
       const p = v.project;
       title.textContent = p?.title ?? v.alt;
-      const latinKey = p === undefined ? '' : `flower.${p.flower}.latin`;
-      const latinName = latinKey === '' ? latinKey : text.t(latinKey);
-      latin.textContent = latinName === latinKey ? '' : latinName;
-      latin.hidden = latin.textContent === '';
       const line = p === undefined ? '' : text.tr(p.oneLiner);
       oneLiner.innerHTML = blank(line);
       oneLiner.hidden = line === '' || onlyFill(line);

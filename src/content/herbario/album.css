@@ -224,7 +224,7 @@
     mix-blend-mode: multiply;
   }
 
-  /* The collection label: Latin and plate on a hand-ruled line at the foot of the mount. Every label holds four
+  /* The collection label: the plate on a hand-ruled line at the foot of the mount. Every label holds four
      lines and sets from the top, so the first lines and the rules share one baseline across the row. */
   #herbario .h-specimen-cap {
     align-content: start;

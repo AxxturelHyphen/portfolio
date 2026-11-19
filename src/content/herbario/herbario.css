@@ -3,7 +3,7 @@
  * sit on a 12-column grid; the specimens hang in one row below, a track each, every bed spanning its own specimens.
  * The page is paper with tooth, foxing and uneven tone, drawn by CSS and one tiny inline SVG noise (no image
  * weight). Specimens are mounted on gummed corners with a ruled collection label, never in bordered or shadowed
- * boxes. Kalnia for names, Schibsted Grotesk for text, Latin in italic. Zero layout shift: every box is sized by
+ * boxes. Kalnia for names, Schibsted Grotesk for text. Zero layout shift: every box is sized by
  * CSS before images or fonts arrive. This file holds the typography shared with print and the layout print.css
  * builds on; the album's screen layout, paper and mounts live in album.css, so the printed CV never inherits them.
  */

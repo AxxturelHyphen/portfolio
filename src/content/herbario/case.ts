@@ -2,7 +2,7 @@ import type { Lang, Project } from '../../types.ts';
 import { blank, esc, isFill, link, list, onlyFill, text } from './html.ts';
 
 /**
- * The case of one project as HTML strings: the head (name, Latin name, one-liner, status) and the body in the
+ * The case of one project as HTML strings: the head (name, one-liner, status) and the body in the
  * fixed panel order of spec section 7: Problem, Why the naive approach fails, What I built, Stack, Result, Links, Media.
  * Used by the project panel and by the no-JS <details> inside each Herbario article.
  */
@@ -24,13 +24,6 @@ export const MARKED_GAPS: Gaps = { text, omit: () => false };
 export const BLANK_GAPS: Gaps = { text: blank, omit: onlyFill };
 
 const LINK_KEYS = ['repo', 'live', 'video', 'spotify'] as const;
-
-/** The flower's Latin name, or '' when the kind has none yet (pod and bud until their source plate names one). */
-export function latinOf(p: Project, s: Lookup): string {
-  const key = `flower.${p.flower}.latin`;
-  const name = s(key);
-  return name === key ? '' : name;
-}
 
 function prose(p: Project, key: 'problem' | 'naiveFails' | 'built' | 'result', l: Lang, s: Lookup, g: Gaps): string {
   const body = p[key][l];
@@ -76,11 +69,10 @@ function meta(term: string, value: string, g: Gaps): string {
 }
 
 export function renderCaseHead(p: Project, l: Lang, s: Lookup, titleId: string, g: Gaps = MARKED_GAPS): string {
-  const latin = latinOf(p, s);
   const oneLiner = p.oneLiner[l];
   return `<header class="c-head">
 <h2 class="c-title" id="${titleId}" tabindex="-1">${esc(p.title)}</h2>
-${latin === '' ? '' : `<p class="c-latin" lang="la">${esc(latin)}</p>\n`}${g.omit(oneLiner) ? '' : `<p class="c-oneliner">${g.text(oneLiner)}</p>\n`}<dl class="c-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="c-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div>${meta(s('project.year'), String(p.year), g)}${meta(s('project.role'), p.role[l], g)}</dl>
+${g.omit(oneLiner) ? '' : `<p class="c-oneliner">${g.text(oneLiner)}</p>\n`}<dl class="c-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="c-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div>${meta(s('project.year'), String(p.year), g)}${meta(s('project.role'), p.role[l], g)}</dl>
 </header>`;
 }
 

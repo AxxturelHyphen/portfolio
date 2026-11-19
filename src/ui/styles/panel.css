@@ -215,7 +215,7 @@
 
 /*
  * Case content: shared by the panel and the no-JS details in the Herbario. The plant-tag hierarchy: the name in
- * Kalnia, the Latin in italic, field names in Kalnia like a hand on a label, body in Schibsted at reading size.
+ * Kalnia, field names in Kalnia like a hand on a label, body in Schibsted at reading size.
  * One column, no ruled table: space separates the fields.
  */
 
@@ -239,12 +239,6 @@
 
 .c-title:focus {
   outline: none;
-}
-
-.c-latin {
-  font-size: 1.125rem;
-  font-style: italic;
-  color: var(--ink-2);
 }
 
 .c-oneliner {

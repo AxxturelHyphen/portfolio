@@ -3,7 +3,7 @@ import type { Lang, Project, ProjectBed } from '../../types.ts';
 import { lookup } from '../i18n.ts';
 import { projectsOf } from '../load.ts';
 import type { HerbarioContent } from '../schema.ts';
-import { latinOf, renderCaseBody } from './case.ts';
+import { renderCaseBody } from './case.ts';
 import { esc, link, list, text } from './html.ts';
 import { loadThumbs, specimen, thumbBlock, type ThumbIndex } from './thumbs.ts';
 
@@ -42,21 +42,17 @@ function frontispiece(c: HerbarioContent, thumbs: ThumbIndex): string {
 function mountOf(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex, order: Order): string {
   const shown = specimen(thumbs.get(p.id), l, order.get(p.id) ?? Number.MAX_SAFE_INTEGER);
   if (shown !== '') return `<div class="h-mount h-mount-full" data-flower-slot>${shown}</div>`;
-  const latin = esc(latinOf(p, s));
-  return `<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}${latin === '' ? '' : `<span class="h-mount-latin" lang="la">${latin}</span>`}</p></div>`;
+  return `<div class="h-mount" data-flower-slot><span class="h-corners"></span><span class="h-corners h-corners-low"></span><p class="h-mount-note">${esc(s('specimen.pending'))}</p></div>`;
 }
 
 function renderSheet(p: Project, l: Lang, s: Lookup, thumbs: ThumbIndex, order: Order): string {
   const id = esc(p.id);
-  const latin = esc(latinOf(p, s));
-  /** With a mounted specimen its plate names the Latin; the label then does not repeat a second, vaguer one. */
-  const labelLatin = latin === '' || thumbs.has(p.id) ? '' : `<p class="h-latin" lang="la">${latin}</p>\n`;
   const priv = p.private === true ? `<p class="h-private">${esc(s('project.private'))}</p>` : '';
   return `<article class="h-sheet" id="p-${id}" data-flower="${id}" data-kind="${p.flower}" data-status="${p.status}" aria-labelledby="p-${id}-t">
 ${mountOf(p, l, s, thumbs, order)}
 <div class="h-label">
 <h4 class="h-title" id="p-${id}-t"><a class="h-open" href="#/p/${id}">${esc(p.title)}</a></h4>
-${labelLatin}<p class="h-oneliner">${text(p.oneLiner[l])}</p>
+<p class="h-oneliner">${text(p.oneLiner[l])}</p>
 ${list(p.stack.slice(0, 4).map(text), 'h-tags')}
 <dl class="h-meta"><div><dt>${esc(s('project.status'))}</dt><dd class="h-status" data-status="${p.status}">${esc(s(`status.${p.status}`))}</dd></div><div><dt>${esc(s('project.year'))}</dt><dd class="h-year">${text(String(p.year))}</dd></div></dl>
 ${priv}
