@@ -19,8 +19,6 @@ const HAND = 'M3 5h7v15H3zM4.8 7.5v10M6.6 7.5v10M8.4 7.5v10M10 6.5c4-1.5 9-1.8 1
   + 'c-3 0-5-.8-7-1.4M14 9.2c3 0 6 .5 9 1.4M23 10.6c1.4.2 2.8.3 4 .3M13 12.6h3M13 15h3.6M13 17.4h3M39.6 6.6c1.3.3 2 .9 2.1 1.7';
 /** Twine lashing the label to the cane: two turns round the cane over the label's top edge, a knot and a tail. */
 const LASH = 'M3 10l18-5M3 16l18-5M21 5c3-.6 4 1.6 2.4 3.4M21 11c3 .4 3.4 4 1 7.5';
-/** Names longer than this break onto two lines at the space nearest their middle (free roam). */
-const LONG_CHARS = 12;
 
 export interface Sign {
   el: HTMLButtonElement;
@@ -123,17 +121,5 @@ export function makeSign(dir: -1 | 1, m: Machine): Sign {
     else if (sign.to !== null) m.send({ type: 'GOTO', place: { k: 'bed', bed: sign.to } });
   });
   return sign;
-}
-
-/** The sign's name; under free roam a long name gets a line break at its middle space, which only portrait CSS shows. */
-export function letter(s: Sign, title: string): void {
-  const mid = title.length / 2;
-  let at = -1;
-  for (let i = title.indexOf(' '); i >= 0; i = title.indexOf(' ', i + 1)) if (at < 0 || Math.abs(i - mid) < Math.abs(at - mid)) at = i;
-  if (s.stake === null || title.length <= LONG_CHARS || at < 0) {
-    s.name.textContent = title;
-    return;
-  }
-  s.name.replaceChildren(title.slice(0, at + 1), document.createElement('br'), title.slice(at + 1));
 }
 

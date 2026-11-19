@@ -3,7 +3,7 @@ import type { BedId, CameraRig, Machine, ScreenPt, SlotView, State } from '../ty
 import { uiText } from './copy.ts';
 import { covers } from './cover.ts';
 import { avoidOf, DOCK, dockAround, type DockRoom } from './signs.dock.ts';
-import { coveredBy, letter, makeSign, measureWhole, readTilt, tuck, type Sign } from './signs.label.ts';
+import { coveredBy, makeSign, measureWhole, readTilt, tuck, type Sign } from './signs.label.ts';
 import { clearOfVisitor, createStake, crossesVisitor, figureOf, SIGN_M, type FigureBox, type Stake } from './signs.stake.ts';
 import './styles/signs.css';
 
@@ -24,8 +24,8 @@ import './styles/signs.css';
  * and a cane down to the ground point with a contact shadow (ui/signs.stake.ts), lifted clear of the visitor. While
  * the ground point is off screen the label docks at the screen edge with a short cane (data-off). On portrait screens a
  * label stays planted only while it stands wholly over the visitor's hat; otherwise both docked labels share one band
- * under the visitor's shoes (ui/signs.dock.ts dockAround), so no label, cane or tip ever crosses the figure, the focused
- * flower or the nearest flower in front of the visitor, and a long name breaks onto two lines at its middle space by rule.
+ * under the visitor's shoes (ui/signs.dock.ts dockAround), so no label, cane or tip ever crosses the figure, a project
+ * flower or the focused slot. A docked name always runs on one line, set smaller on a phone so a pair fits one row.
  * While the plant sheet is up the band stays between the shoes and the sheet. A label that has no room there, or that
  * the open plant tag or plan would cover (ui/cover.ts), is tucked whole (data-tucked: transparent, its cane hidden)
  * and stays in the Tab order and the accessibility tree; keyboard focus shows it.
@@ -95,7 +95,8 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   /** The plant tag is a sheet over the bottom of a phone screen (a slot focused): docked labels stand over it meanwhile. */
   let sheet = false;
   let slots: readonly SlotView[] = [];
-  const avoid: FigureBox[] = [{ l: 0, r: 0, t: 0, b: 0 }, { l: 0, r: 0, t: 0, b: 0 }];
+  /** One box per slot of the entered bed, grown in setSlots, never per frame. */
+  const avoid: FigureBox[] = [];
   const room: DockRoom = { fig: figure, vw, vh, safeLeft: 0, safeRight: 0, floor: vh, avoid, avoidN: 0 };
   /** covers.rev at the last placing: an opened, moved or closed tag or plan re-places the signs. */
   let seenRev = -1;
@@ -143,7 +144,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       }
       if (s.to === null) continue;
       const title = s.to === 'cv' ? uiText(null, lang, 'sign.cv') : (next?.title ?? '');
-      letter(s, title);
+      s.name.textContent = title;
       if (s.to === 'cv') {
         delete s.el.dataset.bed;
         s.el.removeAttribute('aria-label');
@@ -206,7 +207,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   }
 
   /** Portrait free roam: both docked labels in their band under the figure, or tucked when the band has no room. */
-  function dockPair(rig: CameraRig, at: Float32Array): void {
+  function dockPair(rig: CameraRig): void {
     const [prev, next] = signs;
     if (!prev.dock.on && !next.dock.on) return;
     for (let i = 0; i < signs.length; i++) {
@@ -219,7 +220,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     room.safeLeft = safeLeft;
     room.safeRight = safeRight;
     room.floor = !sheet ? vh : covers.card.on ? covers.card.t : vh - APPROACH_FIT.phoneTagPx;
-    room.avoidN = avoidOf(slots, m.state.phase === 'focus' ? m.state.slot : null, rig, at, avoid);
+    room.avoidN = avoidOf(slots, m.state.phase === 'focus' ? m.state.slot : null, rig, avoid);
     const fits = dockAround(room, prev.dock, next.dock);
     for (let i = 0; i < signs.length; i++) {
       const s = signs[i]!;
@@ -312,7 +313,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       if (visitor === null) return;
       tuck(signs[0], false);
       tuck(signs[1], false);
-      if (portrait) dockPair(rig, visitor);
+      if (portrait) dockPair(rig);
       for (let i = 0; i < signs.length; i++) {
         const s = signs[i]!;
         const placed = s.anchor >= 0 && !s.el.hidden;
@@ -322,6 +323,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     },
     setSlots(next) {
       slots = next;
+      while (avoid.length < next.length) avoid.push({ l: 0, r: 0, t: 0, b: 0 });
     },
     setVisitor(at) {
       visitor = at;

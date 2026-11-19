@@ -296,15 +296,10 @@
   padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 
-/* A long name's line break (ui/signposts.ts) shows only on portrait screens; elsewhere the name runs on one line. */
-.px-signs[data-roam] .px-sign-name br {
-  display: none;
-}
-
 /*
- * Portrait free roam: the docked labels stand in a band under the visitor (ui/signs.dock.ts dockAround). Names run on
- * one line, or on the two the rule breaks them into, never wrapped by the width, with a little less room at the ends so
- * both fit on one row at 360 px.
+ * Portrait free roam: the docked labels stand in a band under the visitor (ui/signs.dock.ts dockAround). A name always
+ * runs on one line, so a label stays one plate high and keeps off the flowers at the visitor's feet; with a little less
+ * room at the ends.
  */
 @media (max-aspect-ratio: 4/5) {
   .px-signs[data-roam] .px-sign {
@@ -316,9 +311,25 @@
   .px-signs[data-roam] .px-sign[data-dir="prev"] {
     padding-inline: 0.5rem 1.5rem;
   }
+}
 
-  .px-signs[data-roam] .px-sign-name br {
-    display: inline;
+/*
+ * Portrait phones: the lettering scales with the width, 13 px at 360 and 14 at 390, never under 13, so the longest pair
+ * (La Puerta and Estanque de la Luna) shares one row; the manicule shrinks with it.
+ */
+@media (max-aspect-ratio: 4/5) and (max-width: 44.99rem) {
+  .px-signs[data-roam] .px-sign {
+    font-size: clamp(0.8125rem, 3.6vw, 1.0625rem);
+  }
+
+  .px-signs[data-roam] .px-sign-hand {
+    width: 1.25rem;
+    height: 0.625rem;
+    margin-inline-start: 0.25rem;
+  }
+
+  .px-signs[data-roam] .px-sign[data-dir="prev"] .px-sign-hand {
+    margin-inline: 0 0.25rem;
   }
 }
 

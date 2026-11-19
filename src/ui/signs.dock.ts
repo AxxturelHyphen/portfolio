@@ -28,7 +28,7 @@ export interface DockRoom {
   safeRight: number;
   /** The lowest the labels' feet may reach: the top of the plant sheet on phones, else vh. */
   floor: number;
-  /** Boxes a docked label never covers: the focused flower and the nearest project flower in front of the visitor. */
+  /** Boxes a docked label never covers: every project flower on screen and the focused slot (avoidOf). */
   avoid: readonly FigureBox[];
   avoidN: number;
 }
@@ -70,8 +70,7 @@ function tryAt(r: Readonly<DockRoom>, prev: DockBox, next: DockBox, top: number,
  * Places the docked pair. Both on one row when their whole boxes keep DOCK.pairPx apart with at least edgeMinPx to the
  * sides (the gap shrinks to pairMinPx only once the sides are at that floor): the row centred on the screen (so 16 px
  * or more to the sides wherever the width allows), the way on a step lower; else the way on stands under the way back, each at its own side. One label alone stands on its own side of the
- * middle. The band's top is just under the visitor's shoes; where it would cover the focused flower or the nearest
- * flower in front, it slides sideways within the side margins, then drops by up to one label height, never under the
+ * middle. The band's top is just under the visitor's shoes; where it would cover a flower (DockRoom.avoid), it slides sideways within the side margins, then drops by up to one label height, never under the
  * plan corner, the sheet or the bottom edge. With no sheet up and no room under the shoes, the band stands over the
  * hat instead. Returns false when nothing fits: the caller hides the labels (still reachable by keyboard), which then
  * stand under the top row.
@@ -116,6 +115,12 @@ export function dockAround(r: Readonly<DockRoom>, prev: DockBox, next: DockBox):
 
 const at3: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
 
+/**
+ * What a project flower takes of the garden past its hit box (m): its stem and bloom stand from the ground up to at
+ * least stemTopM (a slot planted at y 0 has its hit box round the ground point), its leaves spread leafSpanM across.
+ */
+const PLANT = { stemTopM: 1.2, leafSpanM: 0.8 } as const;
+
 /** A slot's hit box on screen (px), as its proxy ellipse stands; false while it is off screen. */
 function slotBox(v: SlotView, rig: CameraRig, out: FigureBox): boolean {
   rig.project(v.world[0], v.world[1], v.world[2], at3);
@@ -129,27 +134,32 @@ function slotBox(v: SlotView, rig: CameraRig, out: FigureBox): boolean {
   return true;
 }
 
+/** A project flower's whole plant on screen (px), from the ground under it to the top of its bloom; false off screen. */
+function plantBox(v: SlotView, rig: CameraRig, out: FigureBox): boolean {
+  const [x, y, z] = v.world;
+  rig.project(x, Math.max(y + v.hit[1] / 2, PLANT.stemTopM), z, at3);
+  if (!at3.visible) return false;
+  out.t = at3.y;
+  rig.project(x, 0, z, at3);
+  if (!at3.visible) return false;
+  const hw = (Math.max(v.hit[0], PLANT.leafSpanM) * at3.scale) / 2;
+  out.l = at3.x - hw;
+  out.r = at3.x + hw;
+  out.b = at3.y;
+  return true;
+}
+
 /**
- * The flowers a docked label keeps off, as screen boxes into `out`: the focused slot, and the project flower nearest the
- * visitor at [x, z] among those in front of it (nearer the camera). Returns how many were written.
+ * The flowers a docked label keeps off, as screen boxes into `out` (room for one per slot): every project flower on
+ * screen as its whole plant, and the focused slot when it is not a flower (a prop) as its hit box. Returns how many
+ * were written.
  */
-export function avoidOf(slots: readonly SlotView[], focused: SlotId | null, rig: CameraRig, at: Float32Array, out: readonly FigureBox[]): number {
+export function avoidOf(slots: readonly SlotView[], focused: SlotId | null, rig: CameraRig, out: readonly FigureBox[]): number {
   let n = 0;
-  let near: SlotView | null = null;
-  let best = Infinity;
-  for (let i = 0; i < slots.length; i++) {
+  for (let i = 0; i < slots.length && n < out.length; i++) {
     const v = slots[i]!;
-    if (v.id === focused) {
-      if (slotBox(v, rig, out[n]!)) n++;
-      continue;
-    }
-    if (v.kind !== 'project' || v.world[2] <= at[1]!) continue;
-    const d = Math.hypot(v.world[0] - at[0]!, v.world[2] - at[1]!);
-    if (d < best) {
-      best = d;
-      near = v;
-    }
+    const box = out[n]!;
+    if (v.kind === 'project' ? plantBox(v, rig, box) : v.id === focused && slotBox(v, rig, box)) n++;
   }
-  if (near !== null && slotBox(near, rig, out[n]!)) n++;
   return n;
 }
