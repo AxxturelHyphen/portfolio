@@ -31,6 +31,12 @@ const float SOIL_SHARE = 0.85;
 const vec3 LAWN_DRY = vec3(1.35, 1.0, 0.55);          // the drier lawn tone: toward straw at the same value
 const float LAWN_DRY_SCALE = 0.32;
 const float ROAM_FILL_GREY = 0.6;                     // share of the near fill's cool cast taken out under roam
+// Free roam walks on the near lawn the rail keeps dark to frame its beds: there the lawn is an olive grass green over
+// warm earth, darkened toward the lens only to ROAM_NEAR_DIM, and the near fill lights the ground's own colours
+// (ROAM_FILL_LIT times its albedo) instead of laying the ambient's grey over them.
+const vec3 ROAM_LAWN = vec3(0.033, 0.037, 0.019);     // #333725 a muted olive lawn
+const float ROAM_NEAR_DIM = 0.55;
+const float ROAM_FILL_LIT = 10.0;
 const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
@@ -113,7 +119,7 @@ void main() {
   float z = p.y;
   float grain = fbm3(p * 1.7);
   float patchN = fbm3(p * PATCH_SCALE + 3.0);
-  vec3 base = mix(EARTH, MOSS_FLOOR, smoothstep(0.38, 0.62, patchN));
+  vec3 base = mix(EARTH, mix(MOSS_FLOOR, ROAM_LAWN, uEye.z), smoothstep(0.38, 0.62, patchN));
   base *= 1.0 + PATCH_CONTRAST * (2.0 * fbm3(p * PATCH_SCALE * 1.9 + 11.0) - 1.0);
   if (uEye.z > 0.0) {
     float dry = smoothstep(0.4, 0.65, fbm3(p * LAWN_DRY_SCALE + 23.0));
@@ -126,7 +132,7 @@ void main() {
   }
   vec4 clod = voronoi(p * 9.0);
   float pebble = smoothstep(0.22, 0.1, clod.x + 0.08 * valueNoise(p * 40.0)) * step(0.88, hash12(clod.zw));
-  base *= (0.72 + 0.56 * grain) * (0.85 + 0.3 * valueNoise(p * 23.0)) * (1.0 + 0.5 * pebble) * mix(1.0, 0.32, sat((z + 1.0) / 4.5));
+  base *= (0.72 + 0.56 * grain) * (0.85 + 0.3 * valueNoise(p * 23.0)) * (1.0 + 0.5 * pebble) * mix(1.0, mix(0.32, ROAM_NEAR_DIM, uEye.z), sat((z + 1.0) / 4.5));
   base *= mix(0.45, 1.0, smoothstep(uWallZ, uWallZ + WALL_FADE, z + 0.08 * valueNoise(p * 7.0)));
   vec3 n = vec3(0.0, 1.0, 0.0);
 
@@ -192,7 +198,8 @@ void main() {
   col = mix(col, vec3(luma(col)), LAMP_GREEN_FADE * sat(luma(lamp) / LAMP_CEIL * 4.0));
   col += lamp / (1.0 + luma(lamp) / LAMP_CEIL);
   // Under roam the near fill loses most of its cool cast, so the lawn reads as grass at dusk, not teal felt.
-  col += mix(neutralise(uAmbient), vec3(luma(uAmbient)), ROAM_FILL_GREY * uEye.z) * GROUND_FILL * fillAt(vDepth);
+  vec3 fill = mix(neutralise(uAmbient), vec3(luma(uAmbient)), ROAM_FILL_GREY * uEye.z) * GROUND_FILL * fillAt(vDepth);
+  col += mix(fill, albedo * luma(fill) * ROAM_FILL_LIT, uEye.z);
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;

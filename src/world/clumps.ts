@@ -15,6 +15,8 @@ const LEAN_DEG = [6, 12, 18] as const;
 const DEG = Math.PI / 180;
 /** Per-clump tints (viridian, olive, dusty rose-grey, moonlit straw), picked by a hash of the index so neighbours differ. */
 const TINTS: readonly (readonly [number, number, number])[] = [[0.62, 0.78, 0.66], [0.78, 0.76, 0.52], [0.74, 0.62, 0.64], [0.9, 0.86, 0.72], [0.5, 0.64, 0.6]];
+/** Free roam walks among the tufts: only live greens (fresh, olive, sap), so none reads as grey dead stalks. */
+const ROAM_TINTS: readonly (readonly [number, number, number])[] = [[0.66, 0.8, 0.56], [0.8, 0.8, 0.5], [0.72, 0.84, 0.6], [0.86, 0.84, 0.56], [0.6, 0.76, 0.5]];
 
 export function clumpSprite(m: AtlasManifest, variant: number): string | null {
   const id = `sh/clump-${variant + 1}`;
@@ -27,6 +29,7 @@ export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, cre
   const page = m.sprites[first]?.page ?? 0;
   const batch = createBatch(page, g.clumpCount * CARDS);
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: [0, 0, 0, 0], sway: 0.04, phase: 0, lift: 0, facing: 0, tint: [1, 1, 1, 1] };
+  const tints = g.mode === 'roam' ? ROAM_TINTS : TINTS;
   let at = 0;
   for (let i = 0; i < g.clumpCount; i++) {
     const o = i * CLUMP_STRIDE;
@@ -36,7 +39,7 @@ export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, cre
     if (rect === undefined || rect.page !== page) continue;
     const h = g.clumps[o + 4] ?? 0.3;
     const side = (i * 7) % 3 === 0 ? -1 : 1;
-    const tint = TINTS[(i * 5 + variant * 3) % TINTS.length] ?? TINTS[0];
+    const tint = tints[(i * 5 + variant * 3) % tints.length] ?? tints[0];
     const flags = QUAD_FLAG.noShadow | turnFlag(g.clumps[o + 1] ?? 0, wallZ, true);
     for (let c = 0; c < 3; c++) (q.tint as number[])[c] = tint?.[c] ?? 1;
     for (let k = 0; k < CARDS; k++) {

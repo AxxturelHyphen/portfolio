@@ -11,10 +11,11 @@ import type { GroundData } from './layout.ts';
  */
 export const DRESS_STRIDE = 6;
 /**
- * Dressing pieces: grass clumps (three variants), a low leafy plant, its leaves lying flat, a petal, the low edging along
- * the path under roam (EDGE_PLANTS), lawn plants (LAWN_PLANTS).
+ * Dressing pieces: grass clumps (three variants), a low leafy plant, its leaves lying flat, a petal, the low ground cover
+ * of the lawn under roam (COVER_PLANTS, up to six), the low edging along the path under roam (EDGE_PLANTS), lawn plants
+ * (LAWN_PLANTS).
  */
-export const DRESS_KIND = { clump: 0, leafy: 3, litter: 4, petal: 5, edge: 6, plant: 11 } as const;
+export const DRESS_KIND = { clump: 0, leafy: 3, litter: 4, petal: 5, cover: 6, edge: 12, plant: 17 } as const;
 
 /** Dressing starts this far west of the gate (m). */
 export const DRESS_FROM_X = -1.5;

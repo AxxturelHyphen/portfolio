@@ -1,6 +1,7 @@
 import type { Tier } from '../types.ts';
 import { DRESS_FROM_X, DRESS_KIND, clearOf, pathDistance, pathZAt, rng } from './groundplan.ts';
 import type { BedScene3, GroundData } from './layout.ts';
+import { cover } from './cover.ts';
 import { builtIn, type WorldMode } from './mode.ts';
 
 /**
@@ -13,13 +14,16 @@ import { builtIn, type WorldMode } from './mode.ts';
  * south as well as east to west. Kept clear: the path and 0.5 m either side, 1 m round each flower slot and its
  * approach from the path, the pond rim, puddles, the foot of bed items and LAWN.wallClear inside the closed garden's
  * end walls. A lawn plant never repeats the plate of a bed's fading foreground frame within LAWN.frameClear, so one
- * view never holds the same cutout twice up close. A few flat leaves and petals lie round each group.
+ * view never holds the same cutout twice up close. A few flat leaves and petals lie round each group, and the low ground
+ * cover (cover.ts) runs in drifts under all of it.
  */
 export const LAWN = {
   clear: 0.5, farZ: 7.8, wallClear: 0.6, radius: 0.6, lane: 1.5, tries: 1500, slotClear: 1, itemClear: 0.7, accentEvery: 3,
   few: 4, more: 4, litter: 2, groups: [3, 5], twin: 1.2, emptyChance: 0.1, frameClear: 4,
 } as const;
 const LAWN_APART = LAWN.radius * 2 + LAWN.lane;
+/** The ground cover keeps this far (m) from the feet of the bed items and the signposts. */
+const COVER_ITEM_CLEAR = 0.35;
 const GOLDEN = 2.399963;
 
 /** Lawn plants (kind DRESS_KIND.plant + index): the low species, then the accents. Heights in metres. */
@@ -135,6 +139,8 @@ export function buildLawn(g: GroundData, scenes: readonly BedScene3[], mode: Wor
     }
   });
   edging(g, scenes, mode, tier, pieces);
+  const coverKeep = keepsOf(g, scenes, mode, COVER_ITEM_CLEAR);
+  cover(g, tier, (x, z) => clearOf(g, x, z) && !kept(coverKeep, x, z, 0), pieces);
   pieces.sort((a, b) => (a[1] ?? 0) - (b[1] ?? 0));
   return pieces.flat();
 }

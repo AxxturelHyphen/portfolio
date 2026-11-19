@@ -1,5 +1,6 @@
 import type { AtlasManifest, CutoutBatch, QuadParams, SpriteRect } from '../types.ts';
 import { clumpSprite } from './clumps.ts';
+import { COVER_PLANTS } from './cover.ts';
 import { DRESS_KIND, DRESS_STRIDE, EDGE_PLANTS, LAWN_PLANTS, type GroundBuild } from './ground.ts';
 import { RENDER_ORDER } from './order.ts';
 import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
@@ -11,7 +12,8 @@ import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
  * On the rail, nearer pieces are mixed toward the night shade so the foreground frames the picture instead of
  * competing with it. Under free roam (the lawn, ground.ts) nothing is a silhouette: every piece stays lit with a
  * slight green, straw or warm cast, standing pieces clear of the wall foot turn as standees, and the wild plants of the
- * second shared page draw in a second batch hung under the first (one more draw call, roam only).
+ * second shared page draw in a second batch hung under the first (one more draw call, roam only). The lawn's ground cover
+ * (cover.ts) draws in the same two batches.
  */
 
 const CLUMP_CARDS = 2;
@@ -24,6 +26,8 @@ const PETALS = ['sh/petal-1', 'sh/petal-2', 'sh/petal-3'] as const;
 /** Lawn tints, picked by the piece's tone: a green cast, straw, a warm one. Never dark: the scene light does the rest. */
 const LAWN_TINT = [[0.9, 1, 0.9], [1, 0.97, 0.84], [1, 0.92, 0.82]] as const;
 const LAWN_PICK = [0.5, 0.85] as const;
+/** The ground cover's tints: the ivy plates lean blue-green, so under the cool dusk they take a sun-warmed cast instead. */
+const COVER_TINT = [[1, 0.95, 0.72], [0.96, 0.9, 0.68], [1, 0.9, 0.76]] as const;
 /** The lawn's wild plants (w/*) share one page of the shared atlas. */
 const WILD_PROBE = 'w/poppy';
 
@@ -31,9 +35,15 @@ function lawnTint(pick: number): readonly number[] {
   return LAWN_TINT[pick < LAWN_PICK[0] ? 0 : pick < LAWN_PICK[1] ? 1 : 2] ?? LAWN_TINT[0];
 }
 
+/** The ground-cover plant a kind draws, if it is one (roam's lawn, cover.ts). */
+function coverOf(kind: number): (typeof COVER_PLANTS)[number] | undefined {
+  return kind >= DRESS_KIND.cover && kind < DRESS_KIND.edge ? COVER_PLANTS[kind - DRESS_KIND.cover] : undefined;
+}
+
 function spriteOf(m: AtlasManifest, kind: number, i: number): string | null {
   if (kind >= DRESS_KIND.plant) return LAWN_PLANTS[kind - DRESS_KIND.plant]?.sprite ?? null;
   if (kind >= DRESS_KIND.edge) return EDGE_PLANTS[kind - DRESS_KIND.edge]?.sprite ?? null;
+  if (kind >= DRESS_KIND.cover) return coverOf(kind)?.sprite ?? null;
   if (kind < DRESS_KIND.leafy) return clumpSprite(m, kind - DRESS_KIND.clump);
   if (kind === DRESS_KIND.petal) return PETALS[i % PETALS.length] ?? null;
   return 'sh/ivy';
@@ -66,12 +76,12 @@ function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, bat
     const rect: SpriteRect | undefined = id === null ? undefined : m.sprites[id];
     if (rect === undefined || rect.page !== page) continue;
     const shade = g.dress[o + 5] ?? 1;
-    const lawn = roam ? lawnTint(shade) : null;
+    const lawn = !roam ? null : coverOf(kind) === undefined ? lawnTint(shade) : (COVER_TINT[Math.floor(shade * COVER_TINT.length)] ?? COVER_TINT[0]);
     for (let c = 0; c < 3; c++) tint[c] = lawn === null ? (NIGHT[c] ?? 0) + (1 - (NIGHT[c] ?? 0)) * shade * shade : (lawn[c] ?? 1);
-    const flat = kind === DRESS_KIND.litter || kind === DRESS_KIND.petal;
+    const flat = kind === DRESS_KIND.litter || kind === DRESS_KIND.petal || coverOf(kind)?.flat === true;
     const grass = kind < DRESS_KIND.leafy || (id?.startsWith('sh/clump') ?? false);
     const cards = grass ? CLUMP_CARDS : 1;
-    const upright = kind >= DRESS_KIND.edge && !grass;
+    const upright = kind >= DRESS_KIND.cover && !grass && !flat;
     const h = g.dress[o + 4] ?? 0.3;
     const side = i % 2 === 0 ? 1 : -1;
     /** The nearest pieces are true dark framing: their night tint is applied uncapped. */
