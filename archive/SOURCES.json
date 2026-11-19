@@ -2918,8 +2918,7 @@
    "category": "figure",
    "sha256": "bda9088cf21325ec089655ca7a390029ac95af369a65ccd082c5cda32f43f94d",
    "usedIn": [
-    "fg/crook",
-    "fg/void"
+    "fg/crook"
    ],
    "edits": [
     {
@@ -2931,16 +2930,6 @@
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
      "note": "fg/crook: all GM #1b1a3a/#3a2f2a/#7d6a55, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/void: raw (forced: crayon lithograph hat over a face and a spade: alpha from the hand matte round crown and brim), crop 0.166667,0.131191,0.17,0.133814"
-    },
-    {
-     "stage": "sprite",
-     "tool": "painted out",
-     "note": "fg/void: 0.1625,0.127911,0.175,0.13775"
     }
    ]
   },
@@ -2957,10 +2946,11 @@
    "file": "archive/raw/figure/fig-figure2-sheet.png",
    "need": "roam figure parts, second cut",
    "category": "figure",
-   "sha256": "f5a5b1ac58fd8648a79f3163171338d6b6a728e94d5e294d34a387465297f48d",
+   "sha256": "a112b48bbfa608c61f58a11cf052c0f65b8ba8d6a64ca17114bf1ddead6cd1f7",
    "usedIn": [
     "fg/arm",
     "fg/arm-bent",
+    "fg/glow",
     "fg/hand",
     "fg/head",
     "fg/scarf",
@@ -2974,7 +2964,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/torso: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.015455,0.066536,0.159545,0.76908"
+     "note": "fg/torso: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.015455,0.066536,0.151818,0.776908"
     },
     {
      "stage": "tint",
@@ -2984,7 +2974,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/head: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.172273,0.066536,0.221818,0.336595"
+     "note": "fg/head: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.164545,0.066536,0.214091,0.336595"
     },
     {
      "stage": "tint",
@@ -2994,7 +2984,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/scarf: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.234545,0.066536,0.31,0.209393"
+     "note": "fg/scarf: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.226818,0.066536,0.302273,0.209393"
     },
     {
      "stage": "tint",
@@ -3004,7 +2994,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/arm: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.322727,0.066536,0.381364,0.780822"
+     "note": "fg/arm: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.315,0.066536,0.364545,0.757339"
     },
     {
      "stage": "tint",
@@ -3014,7 +3004,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/arm-bent: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.394091,0.066536,0.450909,0.64775"
+     "note": "fg/arm-bent: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.377273,0.066536,0.426818,0.606654"
     },
     {
      "stage": "tint",
@@ -3024,7 +3014,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/hand: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.463636,0.066536,0.501364,0.25636"
+     "note": "fg/hand: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.439545,0.066536,0.470909,0.27593"
     },
     {
      "stage": "tint",
@@ -3034,7 +3024,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/thigh-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.514091,0.066536,0.581818,0.917808"
+     "note": "fg/thigh-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.540909,0.066536,0.608636,0.917808"
     },
     {
      "stage": "tint",
@@ -3044,7 +3034,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/thigh-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.594545,0.066536,0.677727,0.933464"
+     "note": "fg/thigh-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.621364,0.066536,0.703636,0.933464"
     },
     {
      "stage": "tint",
@@ -3054,7 +3044,7 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/shin-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.690455,0.066536,0.751818,0.579256"
+     "note": "fg/shin-l: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.716364,0.066536,0.777727,0.579256"
     },
     {
      "stage": "tint",
@@ -3064,12 +3054,22 @@
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "fg/shin-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.764545,0.066536,0.838636,0.559687"
+     "note": "fg/shin-r: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.790455,0.066536,0.864545,0.559687"
     },
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
      "note": "fg/shin-r: all GM #121119/#262424/#48433d, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "fg/glow: raw (forced: retouch sheet on a transparent ground (scripts/py/figure2_sheet.py): alpha comes with the sheet, no key, no matte), crop 0.483636,0.066536,0.528182,0.258317"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "fg/glow: all GM #e0a050/#f6cc80/#fff2d0, amount 1"
     }
    ]
   },

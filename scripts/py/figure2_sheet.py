@@ -130,15 +130,25 @@ def add(pid, tone, m, pins, size, tint):
     parts[pid] = dict(tone=tone, m=m, pins=pins, size=size, tint=tint)
 
 
-# ---------- torso (1842): smock only, hem trimmed straight, no flare ----------
-TORSO = [(1075, 1078), (1140, 1066), (1196, 1078), (1226, 1112), (1240, 1150), (1222, 1200), (1215, 1260),
-         (1222, 1330), (1236, 1375), (1238, 1404), (1170, 1410), (1085, 1412), (1000, 1408), (938, 1402),
-         (936, 1360), (955, 1300), (960, 1220), (962, 1150), (988, 1122), (1030, 1098)]  # shoulders rounded, dropped
+# ---------- torso (1842): smock only; shoulders slope down from the collar, the hem rounds into the hips ----------
+TORSO = [(1078, 1078), (1140, 1066), (1178, 1074), (1198, 1092), (1212, 1122), (1220, 1168), (1215, 1260),
+         (1220, 1330), (1230, 1366), (1229, 1390), (1212, 1407), (1170, 1414), (1085, 1416), (1000, 1412),
+         (960, 1405), (943, 1388), (944, 1356), (957, 1300), (963, 1230), (967, 1184), (978, 1150), (1002, 1120),
+         (1040, 1094)]
 box = (920, 1050, 1260, 1425)
-t, m = part_from(P42, box, TORSO)
+
+
+def hem_shade(tone, m, x0, y0):
+    """A soft fold just above the rounded hem: the smock reads as a jacket ending over the trousers."""
+    yy = np.mgrid[0:m.shape[0], 0:m.shape[1]][0] + y0
+    band = ndi.gaussian_filter(((yy > 1384) & (yy < 1392) & (m > 0.5)).astype(np.float32), 1.2) * 0.5
+    return tone * (1 - band) + INK * band
+
+
+t, m = part_from(P42, box, TORSO, extra=hem_shade)
 O = lambda p, b=box: (p[0] - b[0], p[1] - b[1])
-add("fg/torso", t, m, {"pin": O((1085, 1392)), "neck": O((1162, 1096)), "shoulderL": O((989, 1147)),
-                       "shoulderR": O((1218, 1168)), "hipL": O((1007, 1396)), "hipR": O((1162, 1396))}, None, "smock")
+add("fg/torso", t, m, {"pin": O((1085, 1392)), "neck": O((1162, 1096)), "shoulderL": O((1000, 1142)),
+                       "shoulderR": O((1204, 1132)), "hipL": O((1007, 1396)), "hipR": O((1162, 1396))}, None, "smock")
 
 # ---------- head (1842): bare, seen from behind: a full crown of hair, nape, two ears, collar ----------
 # Plate window mapped at 0.743 onto 104 x 114 (the second cut's cell), then TOP rows of hair added above it so the
@@ -200,20 +210,17 @@ t, m = part_from(P42, AB, cap, line=3)
 ang = math.degrees(math.atan2(CU[1] - SH[1], CU[0] - SH[0]))  # about 55: turn it to 90 (hanging)
 tr, mr, fwd = rotate_part(t, m, 90 - ang, O(SH, AB))
 sh_r, cu_r = fwd(*O(SH, AB)), fwd(*O(CU, AB))
-# tidy: drop the ballooning underside, keep a calm tapered sleeve
+# tidy: a round shoulder cap, the sleeve tapering to a narrow cuff, a slight outward turn at the elbow and a notch
+# under it on the body side, so the arm reads as an arm and not as a board
 L = cu_r[1] - sh_r[1]
-taper = capsule((sh_r[0], sh_r[1]), (sh_r[0], cu_r[1]), 1)
+cx_ = sh_r[0]
+cap_arc = [(cx_ + 48 * math.cos(t_), sh_r[1] - 8 - 44 * math.sin(t_)) for t_ in np.linspace(0, math.pi, 15)]
+SLEEVE = cap_arc + [(cx_ - 46, sh_r[1] + 0.3 * L), (cx_ - 38, sh_r[1] + 0.54 * L), (cx_ - 36, sh_r[1] + 0.64 * L),
+                    (cx_ - 30, cu_r[1] - 6), (cx_ - 26, cu_r[1] + 16), (cx_ + 28, cu_r[1] + 16), (cx_ + 34, cu_r[1] - 6),
+                    (cx_ + 42, sh_r[1] + 0.64 * L), (cx_ + 48, sh_r[1] + 0.52 * L), (cx_ + 48, sh_r[1] + 0.3 * L)]
 im = Image.new("L", (mr.shape[1], mr.shape[0]), 0)
-ImageDraw.Draw(im).polygon([(sh_r[0] - 58, sh_r[1] - 10), (sh_r[0] - 30, sh_r[1] - 58), (sh_r[0] + 30, sh_r[1] - 58),
-                            (sh_r[0] + 58, sh_r[1] - 10), (sh_r[0] + 56, cu_r[1] - 10), (sh_r[0] + 40, cu_r[1] + 22),
-                            (sh_r[0] - 40, cu_r[1] + 22), (sh_r[0] - 54, cu_r[1] - 10)], fill=255)
+ImageDraw.Draw(im).polygon(SLEEVE, fill=255)
 trim = np.asarray(im, np.float32) / 255.0
-# shoulder cap: the top corners rounded into an arc (same extremes, so the sprite keeps its size and pins)
-cap_arc = [(sh_r[0] + 58 * math.cos(t_), sh_r[1] - 10 - 48 * math.sin(t_)) for t_ in np.linspace(0, math.pi, 15)]
-im = Image.new("L", (mr.shape[1], mr.shape[0]), 0)
-ImageDraw.Draw(im).polygon(cap_arc + [(sh_r[0] - 54, cu_r[1] - 10), (sh_r[0] - 40, cu_r[1] + 22),
-                                      (sh_r[0] + 40, cu_r[1] + 22), (sh_r[0] + 56, cu_r[1] - 10)], fill=255)
-trim = np.maximum(np.minimum(trim, np.asarray(im, np.float32) / 255.0), trim * 0.03)
 
 
 def sleeve(tone, mask, cx, top):
@@ -230,7 +237,11 @@ def sleeve(tone, mask, cx, top):
     fold = ndi.gaussian_filter(((dist > 4) & (dist < 6.5) & body).astype(np.float32), 0.6) * 0.85
     t = t * (1 - fold) + INK * fold
     im = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(im).arc([cx - 50, top + 14, cx + 50, top + 64], 200, 340, fill=190, width=2)  # cap seam
+    d = ImageDraw.Draw(im)
+    d.arc([cx - 44, top + 14, cx + 44, top + 60], 200, 340, fill=190, width=2)  # cap seam
+    elbow = top + 58 + 0.54 * L
+    if elbow < h - 20:
+        d.arc([cx + 8, elbow - 14, cx + 44, elbow + 10], 110, 200, fill=200, width=3)  # the crease of the elbow
     seam = ndi.gaussian_filter(np.asarray(im, np.float32) / 255.0, 0.6)
     t = t * (1 - seam) + INK * seam
     a = np.where(body, mask * np.clip(0.06 + dist / 7.0, 0, 1), mask)
@@ -244,32 +255,41 @@ add("fg/arm", tr2, mr2a, {"pin": sh_r, "cuff": (cu_r[0], cu_r[1] + 6)}, None, "s
 # bent: the forearm points forward (away from the camera), so the sleeve shows foreshortened to the elbow
 el = (sh_r[0], sh_r[1] + L * 0.6)
 im = Image.new("L", (mr.shape[1], mr.shape[0]), 0)
-ImageDraw.Draw(im).polygon(capsule((sh_r[0], sh_r[1] - 10), el, 56), fill=255)
-mb = np.minimum(mr, np.asarray(im, np.float32) / 255.0)
+ImageDraw.Draw(im).polygon(capsule((sh_r[0], sh_r[1] - 10), el, 48), fill=255)
+mb = np.minimum(mr2, np.asarray(im, np.float32) / 255.0)
 tb, mba = sleeve(tr, mb, sh_r[0], sh_r[1] - 62)
 add("fg/arm-bent", tb, mba, {"pin": sh_r, "cuff": (el[0], el[1] + 30)}, None, "smock")
 
-# ---------- fist: closed hand, code-drawn, smock shade ----------
-fh, fw = 96, 84
-fist = poly_mask((fh, fw), [(22, 6), (62, 6), (74, 22), (78, 48), (72, 72), (58, 88), (30, 90), (14, 76), (8, 50),
-                             (10, 24)])
-tone = np.full((fh, fw), 150.0, np.float32)
-tone += (np.linspace(18, -22, fh)[:, None])  # top lit, knuckles in shade
+# ---------- hand: the back of a hanging hand, code-drawn in the nape's skin paper ----------
+# A narrow wrist under the cuff, the back of the hand widening, the fingers closed together into a rounded end and
+# the thumb standing off on the body side: a hand at walking size, not a paddle.
+fh, fw = 100, 80
+hand = poly_mask((fh, fw), [(30, 2), (54, 2), (58, 20), (64, 40), (66, 62), (61, 82), (50, 96), (37, 95), (29, 84),
+                            (27, 70), (19, 68), (10, 58), (11, 46), (21, 37), (27, 22)])
+tone = np.full((fh, fw), 178.0, np.float32)
+tone += (np.linspace(14, -18, fh)[:, None])  # top lit, fingertips in shade
 im = Image.new("L", (fw, fh), 0)
 d = ImageDraw.Draw(im)
-for y in (52, 64, 76):
-    d.line([(22, y), (60, y + 2)], fill=150, width=3)  # curled fingers
-d.line([(14, 34), (36, 46), (44, 62)], fill=210, width=4)  # thumb over the fingers
+for x_ in (40, 48, 56):
+    d.line([(x_, 64), (x_ - 1, 88)], fill=160, width=2)  # the closed fingers
+d.line([(28, 40), (26, 52), (28, 66)], fill=200, width=3)  # the thumb's root against the back of the hand
 lines = ndi.gaussian_filter(np.asarray(im, np.float32) / 255.0, 0.6)
 tone = tone * (1 - lines) + INK * lines
-s = stroke(fist, 3)
+s = stroke(hand, 3)
 tone = tone * (1 - s) + INK * s
-add("fg/hand", tone, fist, {"pin": (42, 14), "grip": (42, 56)}, 30, "fist")
+add("fg/hand", tone, hand, {"pin": (42, 12), "grip": (46, 84)}, 34, "fist")
+
+# ---------- halo: a soft round glow drawn in code, the paper the contact shadow's quad carries round the lantern ----------
+gs = 96
+yy, xx = np.mgrid[0:gs, 0:gs]
+r2 = ((xx - (gs - 1) / 2) ** 2 + (yy - (gs - 1) / 2) ** 2) / (gs * 0.2) ** 2
+add("fg/glow", np.full((gs, gs), 250.0, np.float32), np.clip(0.6 * np.exp(-r2 / 2) - 0.03, 0, 1), {"pin": (gs / 2, gs / 2)}, 32,
+    "glow")
 
 # ---------- legs (1842): tidy trouser legs, inner outlines closed, heels drawn ----------
 THL = [(940, 1380), (1072, 1380), (1076, 1480), (1072, 1620), (1066, 1740), (1052, 1792), (1005, 1802),
-       (958, 1792), (946, 1720), (942, 1560)]
-THR = [(1070, 1380), (1238, 1386), (1240, 1480), (1232, 1620), (1218, 1740), (1196, 1800), (1150, 1810),
+       (962, 1792), (954, 1720), (949, 1600), (944, 1470)]  # the outer seam tapers from the hip to the knee
+THR = [(1070, 1380), (1238, 1386), (1236, 1470), (1229, 1600), (1218, 1730), (1200, 1798), (1150, 1810),
        (1104, 1798), (1086, 1730), (1074, 1560)]
 SHL = [(946, 1740), (1066, 1740), (1068, 1820), (1062, 1900), (1058, 1952), (1004, 1958), (952, 1952), (948, 1880)]
 SHR = [(1090, 1742), (1232, 1742), (1238, 1820), (1240, 1900), (1236, 1944), (1165, 1950), (1100, 1944), (1094, 1860)]
@@ -305,6 +325,11 @@ def leg(pid, poly, pins, hem_y=None, heel_x=None):
         m = np.maximum(m, np.maximum(heel, sole))
         t = np.where(heel > 0.5, shoe, t)
         t = np.where(sole > 0.5, 34, t)
+    else:
+        # the jacket's hem shades the trouser top, so jacket and trousers read as two garments
+        yy = np.mgrid[0:m.shape[0], 0:m.shape[1]][0] + b[1]
+        shade = np.clip((1446 - yy) / 36.0, 0, 1) * 0.22
+        t = t * (1 - shade)
     add(pid, t, m, {k: (v[0] - b[0], v[1] - b[1]) for k, v in pins.items()}, None, "trousers")
 
 

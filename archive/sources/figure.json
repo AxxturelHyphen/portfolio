@@ -278,7 +278,7 @@
       "fig-rijks-jongen-rug-1842",
       "fig-rijks-jardinier-1825-front"
     ],
-    "notes": "Made by scripts/py/figure2_sheet.py from the two plates (https://id.rijksmuseum.nl/200196889, https://id.rijksmuseum.nl/200228151): parts cut, paper flattened to one tone per garment, outlines closed with ruled strokes; nape, under-brim mass, fists and heels drawn in code. No image generator.",
+    "notes": "Made by scripts/py/figure2_sheet.py from the two plates (https://id.rijksmuseum.nl/200196889, https://id.rijksmuseum.nl/200228151): parts cut, paper flattened to one tone per garment, outlines closed with ruled strokes; nape, under-brim mass, fists and heels drawn in code. Later cut: the smock's shoulders slope from the collar and its hem rounds into the hips with a soft fold above it; the sleeves taper from a round cap to a narrow cuff with an elbow turn and crease; the thighs taper from hip to knee and take the hem's shade at the top; the fist is replaced by the back of a hanging hand with a thumb, drawn in code in the nape's skin paper; a soft round halo drawn in code is carried round the lantern by the contact shadow's quad (the empty fg/void patch from the 1825 plate is no longer cut). No image generator.",
     "parts": [
       {
         "sprite": "fg/torso",
