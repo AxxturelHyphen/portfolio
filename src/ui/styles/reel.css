@@ -294,10 +294,19 @@
 }
 
 /* Phones: the sheet with the film stays about as tall as it was without it, so the garden still shows above; its
- * record scrolls inside. The film sits tighter there, so the next heading still shows. */
+ * record scrolls inside. The head and the film sit tighter there, so the film's buttons show whole under a long
+ * one-liner and the next heading still shows. */
 @media (max-width: 44.99rem) {
   .pn-page:has(.rl) {
     max-height: 65dvh;
+  }
+
+  .pn-page:has(.rl) .c-head {
+    padding-bottom: 1.25rem;
+  }
+
+  .pn-page:has(.rl) .c-oneliner {
+    font-size: 1.125rem;
   }
 
   .rl {
