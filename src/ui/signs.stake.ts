@@ -13,8 +13,9 @@ export const SIGN_M = 1.6;
 const VISITOR = { halfW: 0.45, h: 1.4 } as const;
 /** Room between a lifted label and the top of the visitor (px). */
 const CLEAR_PX = 8;
-/** The cane's slant-cut tip above the lashing, and its laid-out length that the transform scales (px). */
-const TIP_PX = 18;
+/** The cane's slant-cut tip above the lashing, kept under the twine so no stub shows over the label, and its laid-out
+ * length that the transform scales (px). */
+const TIP_PX = 4;
 const CANE_PX = 100;
 /** Contact shadow: laid-out width in px and its width in the world (m). */
 const FOOT_PX = 40;
@@ -112,50 +113,6 @@ export function figureOf(rig: CameraRig, at: Float32Array, out: FigureBox): Figu
   out.t = vt.y;
   out.b = vg.y;
   return out;
-}
-
-/** A docked label's whole box (label turned by its tilt, lashing and cane included): its size in, its top-left out (px). */
-export interface DockBox { w: number; h: number; x: number; y: number; on: boolean }
-
-/** The docked labels' band (px): gaps, the docked cane tip, the step between the pair, side inset, top row, plan corner. */
-export const DOCK = { gapPx: 8, tipPx: 10, stepPx: 14, sidePx: 8, topPx: 120, edgePx: 16, planW: 184, planPx: 132 } as const;
-
-/** The lowest top (px) of a docked label: over the folded plan where it reaches the left corner, else over the edge. */
-const floorOf = (b: Readonly<DockBox>, vh: number): number => vh - (b.x < DOCK.planW ? DOCK.planPx : DOCK.edgePx) - b.h;
-
-/**
- * Portrait free roam: where the docked labels stand. Their foot band is under the visitor's shoes, the way back flush
- * to the left edge over the folded plan, the way on flush to the right edge and a little lower, both inset by sidePx
- * past the safe area; only where their whole boxes cannot keep gapPx apart on one row does the way on stand under the
- * way back. The short cane tip above a docked label (DOCK.tipPx) stays clear of the
- * shoes. Where the band under the figure has no room (the visitor low in the frame), both stand over the hat instead.
- * While the plant tag is a sheet over the bottom of the screen (`high`), both hang high, under the top row of tags,
- * where the focused flower and the visitor never stand. Returns false when no band fits (the caller keeps the labels
- * where they were).
- */
-export function dockAround(fig: Readonly<FigureBox>, vw: number, vh: number, prev: DockBox, next: DockBox, high = false, safeLeft = 0,
-  safeRight = 0): boolean {
-  const D = DOCK;
-  prev.x = safeLeft + D.sidePx;
-  next.x = vw - safeRight - D.sidePx - next.w;
-  const both = prev.on && next.on;
-  const apart = !both || prev.x + prev.w + D.gapPx <= next.x;
-  const first = prev.on ? prev : next;
-  const second = both ? next : null;
-  const drop = second === null ? 0 : apart ? D.stepPx : first.h + D.gapPx + D.tipPx;
-  const tall = drop + (second === null ? first.h : second.h);
-  const under = fig.b + D.gapPx + D.tipPx;
-  if (high) {
-    first.y = D.topPx;
-  } else if (under + drop <= floorOf(second ?? first, vh) && under <= floorOf(first, vh)) {
-    first.y = under;
-  } else if (fig.t - D.gapPx - tall >= D.topPx) {
-    first.y = fig.t - D.gapPx - tall;
-  } else {
-    return false;
-  }
-  if (second !== null) second.y = first.y + drop;
-  return true;
 }
 
 /** The cane's x at screen height py, on the line from its tip (x, tipY) to its ground point. */
