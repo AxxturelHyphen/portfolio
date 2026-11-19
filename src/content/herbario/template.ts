@@ -1,3 +1,4 @@
+import { CREDITS_HASH } from '../../core/router.ts';
 import type { Lang, Project, ProjectBed } from '../../types.ts';
 import { lookup } from '../i18n.ts';
 import { projectsOf } from '../load.ts';
@@ -122,6 +123,6 @@ ${fact('h-contact', s('section.contact'), list(contact, 'h-contact-list'))}
 ${BEDS.map((b) => renderBed(c, b, l, s, thumbs, order)).join('\n')}
 </section>
 </main>
-<footer class="h-footer"><p>${esc(s('footer.type'))}</p></footer>
+<footer class="h-footer"><p>${esc(s('footer.type'))} <a class="h-credits" href="${CREDITS_HASH}">${esc(s('credits.link'))}</a></p></footer>
 ${thumbBlock(thumbs)}`;
 }

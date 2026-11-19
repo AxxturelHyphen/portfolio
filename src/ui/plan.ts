@@ -1,4 +1,5 @@
 import { loadContent, projectsOf } from '../content/load.ts';
+import { CREDITS_HASH } from '../core/router.ts';
 import type { BedId, Machine, ProjectBed, State } from '../types.ts';
 import { uiText } from './copy.ts';
 import { clearCover, covers, setCover } from './cover.ts';
@@ -12,8 +13,8 @@ import { gapFree, hasGap } from './welcome.rules.ts';
  * plate folds into here), one button per project in bed order, then a strip plan drawn in pencil line on card
  * (hatched wall, winding path, pond, beds, tree) with one button per place, and a small moth in pale rose over the
  * place where the visitor is (in free roam it follows the visitor along the strip, between the places by their
- * anchors). A place button travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT (detail: the
- * project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Esc folds the plan
+ * anchors), and in the lower right corner the link to the credits (ui/credits.route.ts opens them). A place button
+ * travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT (detail: the project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Esc folds the plan
  * first (the garden's own Esc then waits for the next press), and focus returns to the label. No visited marks and no
  * grotto. While open, the box the sheet and its corner take is written to ui/cover.ts for the cane labels.
  */
@@ -103,7 +104,10 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   const places = document.createElement('ul');
   places.className = 'pl-places';
   map.append(drawing, moth, places);
-  sheet.append(name, about, workTitle, work, title, map);
+  const credits = document.createElement('a');
+  credits.className = 'pl-credits';
+  credits.href = CREDITS_HASH;
+  sheet.append(name, about, workTitle, work, title, map, credits);
   root.append(sheet, tag);
   parent.append(root);
 
@@ -194,6 +198,7 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       workTitle.textContent = text('section.projects');
       title.textContent = text('plan.title');
       tag.textContent = text('plan.tag');
+      credits.textContent = text('credits.link');
       tag.setAttribute('aria-label', text('plan.label'));
       sheet.setAttribute('aria-label', text('plan.label'));
       work.replaceChildren(...next.flatMap((b) => (isProjectBed(b.id) ? projectsOf(b.id, content.projects) : [])).filter((p) => !hasGap(p.title)).map((p) => {

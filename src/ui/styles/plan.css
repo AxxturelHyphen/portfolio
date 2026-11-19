@@ -229,6 +229,25 @@
   text-underline-offset: 4px;
 }
 
+/* The colophon in the lower right corner, clear of the dog-ear that covers the sheet's lower left. */
+.pl-credits {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  min-height: var(--target);
+  margin: 0 0 0 auto;
+  padding: 0 14px;
+  color: var(--tag-ink-2);
+  font-size: var(--text-sm);
+  text-decoration: underline 1px rgb(27 26 25 / 0.35);
+  text-underline-offset: 4px;
+}
+
+.pl-credits:hover {
+  text-decoration-color: var(--enamel-rose);
+  text-decoration-thickness: 2px;
+}
+
 @media (max-width: 44.99rem) {
   .pl-tag {
     width: 128px;

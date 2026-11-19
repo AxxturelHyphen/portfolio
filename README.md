@@ -196,5 +196,4 @@ Also checked:
 - The mandala sundial strobe.
 - The moth beyond its first stub.
 - Audio (the system exists, off by default; no recordings yet).
-- The credits page itself: the data exists, the page is not on the site yet.
 - CI files and deploy. Nothing is published.
