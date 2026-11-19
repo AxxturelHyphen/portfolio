@@ -127,8 +127,6 @@ test('every flower out of the grotto can be focused by walking up to it, from it
     }
   }
   expect(missed, missed.join(', ')).toEqual([]);
-  const lily = SCENES.estanque.slots.find((s) => s.id === 'lily-a');
-  expect(lily?.stand, 'the pond lily has a stand point on the bank').toBeDefined();
   const shots = traceLayout.shots as Record<string, { visitor?: [number, number] }>;
   for (const [id, s] of Object.entries(shots)) {
     if (s.visitor !== undefined) expect(free(...s.visitor) && reached(...s.visitor), `roam shot ${id} stands on open ground`).toBe(true);

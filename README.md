@@ -195,5 +195,6 @@ Also checked:
 - The stereoscope depth portrait.
 - The mandala sundial strobe.
 - The moth beyond its first stub.
+- Music, parked on purpose: the album and the producer line sit in `content/parked/music.json` with the steps to bring them back.
 - Audio (the system exists, off by default; no recordings yet).
 - CI files and deploy. Nothing is published.

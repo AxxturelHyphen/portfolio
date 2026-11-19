@@ -3,8 +3,8 @@
   "alias": "Guija",
   "location": { "en": "Vigo, Spain", "es": "Vigo, España" },
   "headline": {
-    "en": "Developer, currently working [FILL: role and company, only what can be public]. Studying ML math, heading toward AI engineering. Music producer.",
-    "es": "Desarrollador, trabajando actualmente [FILL: role and company, only what can be public]. Estudiando matemáticas de ML, en camino hacia la ingeniería de IA. Productor musical."
+    "en": "Developer, currently working [FILL: role and company, only what can be public]. Studying ML math, heading toward AI engineering.",
+    "es": "Desarrollador, trabajando actualmente [FILL: role and company, only what can be public]. Estudiando matemáticas de ML, en camino hacia la ingeniería de IA."
   },
   "about": { "en": "[FILL]", "es": "[FILL]" },
   "education": [

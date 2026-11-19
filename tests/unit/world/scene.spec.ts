@@ -47,7 +47,7 @@ test('the rail has five bed stops and four gap keys; each bed pose is its key', 
 test('every project binds to a slot of its bed, at its world position', () => {
   const bound = BED_IDS.flatMap((b) => bind(b).filter((v) => v.kind === 'project').map((v) => [v.project?.id, v.id]));
   expect(Object.fromEntries(bound)).toEqual({
-    garagic: 'rosaleda/rose-a', 'php-playground': 'rosaleda/rose-b', 'adhd-guija': 'estanque/lily-a', 'ml-math': 'semillero/pod-a', 'ai-engineering': 'semillero/bud-a',
+    garagic: 'rosaleda/rose-a', 'php-playground': 'rosaleda/rose-b', 'ml-math': 'semillero/pod-a', 'ai-engineering': 'semillero/bud-a',
   });
   // The bloom's pedicel sits where the plate's flower was cut from the stem (R02 finding 1: no bloom in mid-air).
   expect(bind('rosaleda').find((v) => v.id === 'rosaleda/rose-a')?.world).toEqual([11.88, 1.39, -1.63]);
@@ -57,8 +57,8 @@ test('every project binds to a slot of its bed, at its world position', () => {
 });
 
 test('more projects than slots fails with a readable error', () => {
-  const extra = projectsFor('estanque').flatMap((p) => [p, { ...p, id: `${p.id}-2` }, { ...p, id: `${p.id}-3` }]);
-  expect(() => bind('estanque', extra)).toThrow(/no free "lily" slot/);
+  const extra = projectsFor('semillero').flatMap((p) => [p, { ...p, id: `${p.id}-2` }, { ...p, id: `${p.id}-3` }]);
+  expect(() => bind('semillero', extra)).toThrow(/no free "pod" slot/);
 });
 
 test('Rosaleda follows ART 2.2: hero at its pot, at most 18 cutout sprites, gap vignettes at most 5', () => {

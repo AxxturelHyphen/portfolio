@@ -12,8 +12,8 @@ type Box = { x: number; y: number; width: number; height: number };
 
 const profile = JSON.parse(readFileSync('content/profile.json', 'utf8')) as { name: string; headline: Record<'en' | 'es', string> };
 const LINE = {
-  en: 'Studying ML math, heading toward AI engineering. Music producer.',
-  es: 'Estudiando matemáticas de ML, en camino hacia la ingeniería de IA. Productor musical.',
+  en: 'Studying ML math, heading toward AI engineering.',
+  es: 'Estudiando matemáticas de ML, en camino hacia la ingeniería de IA.',
 } as const;
 /** Half the figure's width and its height with the hat and the raised lantern (m), a little generous. */
 const FIGURE_HALF_W = 0.5;

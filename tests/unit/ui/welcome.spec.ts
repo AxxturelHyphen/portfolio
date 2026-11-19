@@ -15,7 +15,7 @@ test('sentences split at a full stop and a space, never inside a gap', () => {
 });
 
 test('a sentence with an owner gap never shows; the others keep their order', () => {
-  expect(gapFree('Developer, currently working [FILL: role]. Studying ML math. Music producer.')).toBe('Studying ML math. Music producer.');
+  expect(gapFree('Developer, currently working [FILL: role]. Studying ML math.')).toBe('Studying ML math.');
   expect(gapFree('[FILL]')).toBe('');
   expect(gapFree('Only filled text.')).toBe('Only filled text.');
   expect(hasGap('[FILL: something]')).toBe(true);
@@ -23,8 +23,8 @@ test('a sentence with an owner gap never shows; the others keep their order', ()
 });
 
 test('the shipped headline shows its gap-free sentences today, and the first one once the owner fills it', () => {
-  expect(gapFree(profile.headline.en)).toBe('Studying ML math, heading toward AI engineering. Music producer.');
-  expect(gapFree(profile.headline.es)).toBe('Estudiando matemáticas de ML, en camino hacia la ingeniería de IA. Productor musical.');
+  expect(gapFree(profile.headline.en)).toBe('Studying ML math, heading toward AI engineering.');
+  expect(gapFree(profile.headline.es)).toBe('Estudiando matemáticas de ML, en camino hacia la ingeniería de IA.');
   const filled = profile.headline.en.replace(/\[FILL[^\]]*\]/, 'at a studio');
   expect(gapFree(filled).startsWith('Developer, currently working at a studio.')).toBe(true);
 });

@@ -16,7 +16,7 @@ test('bench tour visits every bed, opens and closes projects, and aggregates con
     rec: { start: (l) => void (label = l), stop: report },
     info: () => ({ calls: 0, triangles: 0, textures: 0, geometries: 0, programs: 0, texBytes: 2 ** 20 * 40, targetBytes: 2 ** 20 * 10 }),
     heapMB: () => 12.345,
-    projects: { rosaleda: 'garagic', estanque: 'adhd-guija' },
+    projects: { rosaleda: 'garagic', semillero: 'ml-math' },
   };
   const line = await runTour(deps);
   for (const bed of TOUR_BEDS) expect(visited).toContain(`#/b/${bed}`);

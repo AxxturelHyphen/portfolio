@@ -91,8 +91,8 @@ test('showcase: Enter on a flower in reach opens it; the arrow keys pull the str
 
 test('showcase: reduced motion opens the flower at once and changes frames without a slide or a stop button', async ({ page, jardin }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await enterRoam(jardin, '#/b/estanque');
-  await jardin.goto('#/p/adhd-guija');
+  await enterRoam(jardin, '#/b/semillero');
+  await jardin.goto('#/p/ml-math');
   expect(await unfurl(jardin)).toBe(1);
   await expectFilm(page);
   await expect(page.locator('#panel .rl-stop')).toHaveCount(0);

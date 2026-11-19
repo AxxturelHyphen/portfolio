@@ -1,13 +1,14 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../helpers/jardin.ts';
-import { enterRoam, roamAt } from '../helpers/roam.ts';
-import estanque from '../../content/beds/estanque.json' with { type: 'json' };
+import { enterRoam, roamAt, untilStill } from '../helpers/roam.ts';
+import semillero from '../../content/beds/semillero.json' with { type: 'json' };
 
 // Assisted walking in free roam (cook/ROAM_PLAN.md P6): a signpost walks the visitor along the path to the next bed's
 // stand point at up to about 6 m/s and the arrival is said once; any steering cancels a walk at once; frozen time lands
 // it in the first frame; Tab walks the visitor to a flower out of reach; the plan's moth follows the visitor.
 
-const LILY_STAND = (estanque.slots.find((s) => s.id === 'lily-a')?.stand ?? [0, 0]) as [number, number];
+const POD = semillero.slots.find((s) => s.id === 'pod-a') ?? { x: 0, z: 0 };
+const POD_STAND: [number, number] = [POD.x, POD.z + 1.2];
 
 type Sample = { t: number; x: number; z: number; strip: number; phase: string };
 
@@ -97,23 +98,26 @@ test('assisted walk: in frozen time it lands in the first frame', async ({ jardi
 });
 
 test('Tab onto a flower out of reach walks the visitor there, it is focused on arrival and said once, Enter opens', async ({ page, jardin }) => {
-  await enterRoam(jardin, '#/b/estanque');
+  await enterRoam(jardin, '#/b/semillero');
+  await jardin.withApi((api) => api.walkTo(27.5, 1.2));
+  await untilStill(page);
   const start = await roamAt(jardin);
+  expect(Math.hypot(start.x - POD.x, start.z - POD.z), 'the pod is out of reach').toBeGreaterThan(2.5);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   let slot: string | null = null;
   for (let i = 0; i < 12 && slot === null; i++) {
     await page.keyboard.press('Tab');
     slot = await page.evaluate(() => {
       const n = document.activeElement as HTMLElement | null;
-      return n?.dataset.slot === 'estanque/lily-a' ? n.dataset.slot : null;
+      return n?.dataset.slot === 'semillero/pod-a' ? n.dataset.slot : null;
     });
   }
-  expect(slot, 'the pond lily is a Tab stop').toBe('estanque/lily-a');
-  await expect.poll(() => jardin.withApi((api) => api.state().slot), { timeout: 10000, message: 'focused on arrival' }).toBe('estanque/lily-a');
+  expect(slot, 'the Semillero pod is a Tab stop').toBe('semillero/pod-a');
+  await expect.poll(() => jardin.withApi((api) => api.state().slot), { timeout: 10000, message: 'focused on arrival' }).toBe('semillero/pod-a');
   const at = await roamAt(jardin);
   expect(Math.hypot(at.x - start.x, at.z - start.z), 'the visitor walked').toBeGreaterThan(1);
-  expect(Math.hypot(at.x - LILY_STAND[0], at.z - LILY_STAND[1]), 'to the lily\'s stand point on the bank').toBeLessThan(0.3);
-  const name = await page.locator('#proxies [data-slot="estanque/lily-a"]').textContent();
+  expect(Math.hypot(at.x - POD_STAND[0], at.z - POD_STAND[1]), 'in front of the pod').toBeLessThan(0.3);
+  const name = await page.locator('#proxies [data-slot="semillero/pod-a"]').textContent();
   await expect(page.locator('#proxies .px-live')).toHaveText(name ?? '');
   await page.keyboard.press('Enter');
   await expect.poll(() => jardin.isPanelOpen()).toBe(true);

@@ -49,29 +49,6 @@
     "featured": false
   },
   {
-    "id": "adhd-guija",
-    "title": "ADHD guija*",
-    "bed": "estanque",
-    "flower": "lily",
-    "status": "shipped",
-    "importance": 2,
-    "private": false,
-    "year": "[FILL]",
-    "oneLiner": {
-      "en": "Album with featured artists, released on Spotify. [FILL: owner confirms it goes in]",
-      "es": "Álbum con artistas invitados, publicado en Spotify. [FILL: owner confirms it goes in]"
-    },
-    "problem": { "en": "[FILL]", "es": "[FILL]" },
-    "naiveFails": { "en": "[FILL]", "es": "[FILL]" },
-    "built": { "en": "[FILL]", "es": "[FILL]" },
-    "result": { "en": "[FILL]", "es": "[FILL]" },
-    "stack": ["FL Studio", "DistroKid"],
-    "role": { "en": "[FILL]", "es": "[FILL]" },
-    "links": { "spotify": "[FILL]" },
-    "media": [{ "type": "image", "src": "[FILL]", "alt": { "en": "[FILL]", "es": "[FILL]" } }],
-    "featured": false
-  },
-  {
     "id": "ml-math",
     "title": "ML math",
     "bed": "semillero",
