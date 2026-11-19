@@ -32,6 +32,7 @@ out float vPlaneDepth; // view depth of the hand light's plane
 out float vFocusDepth; // view depth of the fall-back plane (the focused flower or the bed's flowers)
 out float vFade;       // paper opacity factor: under 1 while a fading card covers the visitor
 out float vHung;       // 1: a hung cutout's paper (the carried lantern), lit from its own flame
+out float vStone;      // 1: wall and coping stone, never weighed as a leaf
 
 const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the camera pitch)
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
@@ -129,6 +130,7 @@ void main() {
   vWorld = world;
   vTint = aTint;
   vSilhouette = bit(flags, 16.0);
+  vStone = bit(flags, 256.0);
   vMirror = step(aSize.x, 0.0);
   vFrame = vec4(cos(aPos.w), sin(aPos.w), aUV.z < aUV.x ? -1.0 : 1.0, kind);
   vOrient = vec4(cy, sy, lean, flat_);

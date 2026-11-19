@@ -89,7 +89,7 @@ class RunTiler {
 
   constructor() {
     this.tint[3] = 1;
-    this.q = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: this.uv, sway: 0, phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow), lift: 0, facing: 0, tint: this.tint };
+    this.q = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: this.uv, sway: 0, phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow | QUAD_FLAG.stone), lift: 0, facing: 0, tint: this.tint };
   }
 
   begin(rect: SpriteRect, batch: CutoutBatch | null): void {

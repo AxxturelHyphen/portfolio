@@ -23,6 +23,7 @@ in float vMirror;
 in float vPlaneDepth;
 in float vFocusDepth;
 in float vHung;
+in float vStone;
 
 out vec4 outColor;
 
@@ -160,9 +161,10 @@ void main() {
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n);
-  // Leaf weight from a coarse mip of the plate, so block noise in a pale leaf never flips it on and off.
+  // Leaf weight from a coarse mip of the plate, so block noise in a pale leaf never flips it on and off. Mossy stone
+  // sits on the leaf threshold, where its coarse blocks would flip between amber and teal: stone is never a leaf.
   vec3 coarse = texture(uColor, vUV, LEAF_MIP_BIAS).rgb;
-  float leaf = leafWeight(coarse);
+  float leaf = leafWeight(coarse) * (1.0 - vStone);
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
   if (vHung > 0.5) {
     vec2 q = (vUV - vRect.xy) / max(vRect.zw - vRect.xy, vec2(1e-5));

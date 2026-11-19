@@ -96,7 +96,7 @@ export function writeWall(g: GroundBuild, wallZ: number, m: AtlasManifest, creat
   const tint = new Float32Array(4);
   tint[3] = 1;
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv, sway: 0, phase: 0, lift: 0, facing: 0, tint };
-  q.phase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow);
+  q.phase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow | QUAD_FLAG.stone);
   let n = 0;
   let rowA = 0;
   let rowB = 0;
