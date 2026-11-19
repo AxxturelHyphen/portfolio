@@ -2,8 +2,9 @@
  * The project film in the notebook (src/ui/reel.ts). Its strip takes the garden's travel strip: a dark base
  * (#17120e) with worn, uneven sprocket holes (#5a4a3a) along both edges. Each frame is its own cell, 80 % of the
  * gate, set off by a dark frame line, so the neighbours' edges show and it reads as a strip; both ends of the gate
- * fade out like film running off. A blank frame is clear amber stock, unexposed: its own grain and scratches per
- * cell, the caption inked dark on it. The project's flower stands against the strip's end, cut from paper with a warm
+ * fade out like film running off. An owner gap shows an archival flower plate printed on that stock, hand-tinted:
+ * the same grain, flicker and scratches per cell, the gate's darker edge, the plate's name inked small in a corner. A
+ * gap with no plate is clear amber stock, unexposed. The project's flower stands against the strip's end, cut from paper with a warm
  * lit edge; its hand tint warms and cools slowly. The controls are small paper tags with pen-drawn marks. Everything
  * moving is transform or opacity; reduced motion and stills ([data-still]) hold it all still.
  */
@@ -77,17 +78,32 @@
   background: var(--rl-stock);
 }
 
-/* Clear stock, unexposed: flat amber with its own grain and scratches, the edges a touch darker from the gate. */
-.rl-blank {
+/* Film stock: amber with its own grain and scratches, the edges a touch darker from the gate. */
+.rl-film {
   position: relative;
   overflow: hidden;
   background: var(--rl-stock);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55), inset 0 0 10px rgb(74 48 22 / 0.35);
 }
 
-.rl-blank > span {
+.rl-film > span {
   position: absolute;
   pointer-events: none;
+}
+
+.rl-film::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 10px rgb(74 48 22 / 0.35);
+  pointer-events: none;
+}
+
+/* A plate printed on the stock: the picture fills the frame under the stock's grain and light. */
+.rl-plate > .rl-media {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* The exposure flicker: a pale wash that comes and goes a little. */
@@ -123,15 +139,22 @@
 .rl-frame:nth-child(4) .rl-s1 { left: 34%; }
 .rl-frame:nth-child(4) .rl-s2 { left: 76%; bottom: 45%; }
 
+/* The plate's name, inked small on a scrap of stock in the frame's corner. */
 .rl-cap {
-  left: 0;
-  right: 0;
-  bottom: 12%;
-  text-align: center;
+  left: 6px;
+  bottom: 6px;
+  max-width: calc(100% - 12px);
+  padding: 1px 6px 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgb(214 194 156 / 0.86);
   font-family: var(--font-display);
   font-synthesis: none;
-  font-size: 1rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: var(--rl-ink);
 }
 
@@ -288,6 +311,14 @@
 
   .rl-frame > * {
     aspect-ratio: 11 / 5;
+  }
+
+  .rl-cap {
+    left: 4px;
+    bottom: 4px;
+    max-width: calc(100% - 8px);
+    padding: 0 4px 1px;
+    font-size: 0.625rem;
   }
 
   .rl-btn {

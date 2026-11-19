@@ -1,7 +1,8 @@
 import './styles/reel.css';
+import plateIndex from '../content/frames.json' with { type: 'json' };
 import { esc } from '../content/herbario/html.ts';
 import type { Lang, Project } from '../types.ts';
-import { framesOf, PULL_MS, REST_S, runs, stepOf, type Frame, type Motion } from './reel.model.ts';
+import { framesOf, PULL_MS, REST_S, runs, stepOf, type Frame, type Motion, type Plate } from './reel.model.ts';
 
 /**
  * The project film (loaded with the panel, never at first load): a short strip of two to four frames pulled through
@@ -12,10 +13,12 @@ import { framesOf, PULL_MS, REST_S, runs, stepOf, type Frame, type Motion } from
  * itself slowly while the panel shows and nobody is pointing at it, focused in it or has stopped it. Looping parks an
  * end frame beside the current one with CSS order (no cloned frames), slides, and puts it back.
  * Clips play only while the film runs by itself; under reduced motion or a still they wait for the Run tag.
+ * An owner gap shows an archival flower plate, hand-tinted like the stock, its name printed small on the frame; the
+ * plates and their index come with this chunk, never at first load.
  */
 
 export interface ReelOptions {
-  project: Pick<Project, 'media' | 'title'>;
+  project: Pick<Project, 'id' | 'media' | 'title'>;
   lang: Lang;
   s: (key: string) => string;
   /** The project's flower cutout, or null when it has none. */
@@ -59,17 +62,33 @@ function tag(cls: string, label: string, marks: string): string {
   return `<button type="button" class="rl-btn ${cls}"><span class="rl-sr">${esc(label)}</span>${marks}</button>`;
 }
 
-function blankFrame(caption: string): string {
-  return `<div class="rl-blank" role="img" aria-label="${esc(caption)}"><span class="rl-light"></span><span class="rl-grain"></span><span class="rl-scratch rl-s1"></span><span class="rl-scratch rl-s2"></span><span class="rl-cap" aria-hidden="true">${esc(caption)}</span></div>`;
+/** The plates for a project's gaps, in strip order. */
+function platesOf(id: string): Plate[] {
+  return plateIndex.frames.filter((f) => f.project === id).map((f) => ({ src: `frames/${f.file}`, title: f.plateTitle, name: f.name }));
+}
+
+/** The stock's own life over a frame: the exposure flicker, the grain and two scratches. */
+const STOCK = '<span class="rl-light"></span><span class="rl-grain"></span><span class="rl-scratch rl-s1"></span><span class="rl-scratch rl-s2"></span>';
+
+const imgHtml = (f: Frame, i: number): string =>
+  `<img class="rl-media" src="${esc(f.src)}" alt="${esc(f.alt)}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">`;
+
+function bodyHtml(f: Frame, i: number): string {
+  switch (f.kind) {
+    case 'blank':
+      return `<div class="rl-film rl-blank" role="img" aria-label="${esc(f.alt)}">${STOCK}</div>`;
+    case 'plate':
+      return `<div class="rl-film rl-plate">${imgHtml(f, i)}${STOCK}<span class="rl-cap" aria-hidden="true">${esc(f.caption)}</span></div>`;
+    case 'image':
+      return imgHtml(f, i);
+    case 'video':
+      return `<video class="rl-media" src="${esc(f.src)}" aria-label="${esc(f.alt)}" muted loop playsinline preload="${i === 0 ? 'metadata' : 'none'}"></video>`;
+  }
 }
 
 function frameHtml(f: Frame, i: number, n: number, s: (key: string) => string): string {
   const label = esc(s('film.slide').replace('{n}', String(i + 1)).replace('{total}', String(n)));
-  const body = f.kind === 'blank'
-    ? blankFrame(f.alt)
-    : f.kind === 'image'
-      ? `<img class="rl-media" src="${esc(f.src)}" alt="${esc(f.alt)}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">`
-      : `<video class="rl-media" src="${esc(f.src)}" aria-label="${esc(f.alt)}" muted loop playsinline preload="${i === 0 ? 'metadata' : 'none'}"></video>`;
+  const body = bodyHtml(f, i);
   return `<div class="rl-frame" role="group" aria-roledescription="${esc(s('film.frame'))}" aria-label="${label}">${body}</div>`;
 }
 
@@ -85,7 +104,7 @@ function decoded(img: HTMLImageElement | null): Promise<void> {
 
 export function createReel(o: ReelOptions): Reel {
   const { s, motion } = o;
-  const frames = framesOf(o.project, o.lang, s('film.blank'));
+  const frames = framesOf(o.project, o.lang, s('film.blank'), platesOf(o.project.id));
   const n = frames.length;
   const el = document.createElement('section');
   el.className = 'c-part rl';

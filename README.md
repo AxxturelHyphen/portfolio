@@ -60,7 +60,7 @@ measures frame times, `npm run stills` renders the reference shots.
 - `content/strings.json`: every interface word, in `en` and `es`.
 - `content/beds/*.json`: one file per bed, with its sprites and its flower slots (see The garden below).
 - Gaps are written as `[FILL]` or `[FILL: hint]`. They show on the page as quiet pencil blanks, never as invented
-  text, and a media entry whose `src` is a gap shows as a blank frame. `npm run fills` lists every one that is still
+  text, and a media entry whose `src` is a gap shows an archival flower plate in its frame. `npm run fills` lists every one that is still
   open.
 
 ### Add a project
@@ -83,9 +83,10 @@ same files in the case.
   "es" } }`. `type` is `image` or `video`. `src` is the path inside `public/` without a leading slash, so it works
   from any path: `"shots/garagic-1.avif"`.
 - Videos play muted, looped and inline, with no controls: keep them short screen recordings with no sound.
-- The strip shows 2 to 4 frames: entries after the fourth are left out, and blank frames pad a project with fewer
-  than 2.
-- Any `src` still written as `[FILL]` stays a blank frame. An `alt` that is a gap is read as the project's title.
+- The strip shows 2 to 4 frames: entries after the fourth are left out, and gaps pad a project with fewer than 2.
+- A gap (a `src` still written as `[FILL]`) shows an archival flower plate under its real title, a different one per
+  frame and project (`npm run assets frames`, chosen in `scripts/stages/frames.ts`); your own file replaces it. An
+  `alt` that is a gap is read as the project's title.
 - Your own screenshots and recordings must be declared in `archive/OWN.json` (for example `["public/shots/*"]`), or
   `npm run licence` fails on them.
 

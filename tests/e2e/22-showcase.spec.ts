@@ -3,8 +3,8 @@ import { expect, test, type Jardin } from '../helpers/jardin.ts';
 import { enterRoam, focusIn, projectOfSlot, untilStill } from '../helpers/roam.ts';
 
 // The project film and the flower (src/ui/reel.ts, src/world/flower.ts): entering a project from its flower unfurls
-// that flower in the garden and folds it again on close; the panel shows a strip of frames (blank film for every
-// owner gap) with the project's flower lit behind it. The strip moves on by key, click, tap and swipe, rests while
+// that flower in the garden and folds it again on close; the panel shows a strip of frames (an archive plate for
+// every owner gap) with the project's flower lit behind it. The strip moves on by key, click, tap and swipe, rests while
 // pointed at, and holds still under reduced motion and frozen time.
 
 const film = (page: Page) => page.locator('#panel .rl');
@@ -14,9 +14,11 @@ const unfurl = (j: Jardin): Promise<number> => j.withApi((api) => api.unfurl());
 async function expectFilm(page: Page): Promise<void> {
   await expect(film(page)).toBeVisible();
   expect(await page.locator('#panel .rl-frame').count()).toBeGreaterThanOrEqual(2);
-  await expect(page.locator('#panel .rl-frame').first().locator('.rl-blank'), 'a gap is blank film').toHaveAttribute('aria-label', 'Frame to come');
-  await expect(page.locator('#panel .rl-frame').first().locator('.rl-cap')).toBeVisible();
-  expect(await page.locator('#panel .rl img:not(.rl-bloom):not(.rl-tint), #panel .rl video').count(), 'no picture invented for a gap').toBe(0);
+  const plate = page.locator('#panel .rl-frame').first().locator('.rl-plate');
+  await expect(plate.locator('img.rl-media'), 'a gap shows an archive plate under its real title').toHaveAttribute('alt', /\S/);
+  await expect(plate.locator('.rl-cap'), 'the plate is named on its frame').toBeVisible();
+  await expect.poll(() => plate.locator('img.rl-media').evaluate((n) => (n as HTMLImageElement).naturalWidth), { message: 'the plate loads with the film' }).toBeGreaterThan(0);
+  expect(await page.locator('#panel .rl-frame > img, #panel .rl video, #panel .rl-blank').count(), 'no project picture invented for a gap').toBe(0);
   await expect.poll(() => page.locator('#panel .rl-bloom').evaluate((n) => (n as HTMLImageElement).naturalWidth), { message: 'the flower cutout loads with the panel' }).toBeGreaterThan(0);
   const box = await film(page).boundingBox();
   const width = await page.evaluate(() => document.documentElement.clientWidth);

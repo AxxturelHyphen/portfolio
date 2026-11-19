@@ -3,18 +3,28 @@ import type { Lang, Project } from '../types.ts';
 
 /**
  * What the project film shows and when it moves, without the DOM. A media entry with a real src becomes a frame of
- * its kind; an owner gap becomes a blank frame on the projector's light, never a picture. The strip always carries
- * at least MIN_FRAMES (blank frames pad it) and at most MAX_FRAMES.
+ * its kind; an owner gap becomes a plate frame: an archival flower plate of its own, named by its real title, never
+ * passed off as the project. A gap with no plate left stays blank film. The strip always carries at least MIN_FRAMES
+ * (gaps pad it) and at most MAX_FRAMES.
  */
 
-export type FrameKind = 'image' | 'video' | 'blank';
+export type FrameKind = 'image' | 'video' | 'plate' | 'blank';
 
 export interface Frame {
   kind: FrameKind;
   /** '' for a blank frame. */
   src: string;
-  /** What a screen reader hears for the frame. */
+  /** What a screen reader hears for the frame: a plate's real title. */
   alt: string;
+  /** The plate's short name, printed on the frame; '' for every other kind. */
+  caption: string;
+}
+
+/** An archive plate an owner gap shows (src/content/frames.json, written by `npm run assets frames`). */
+export interface Plate {
+  src: string;
+  title: string;
+  name: string;
 }
 
 export const MIN_FRAMES = 2;
@@ -27,17 +37,24 @@ export const PULL_MS = 420;
 
 type Media = Project['media'][number];
 
-/** The frame a media entry becomes. `blankAlt` names a blank frame, `fallbackAlt` a real one whose alt is a gap. */
+const blank = (alt: string): Frame => ({ kind: 'blank', src: '', alt, caption: '' });
+
+/** The frame a media entry becomes. `blankAlt` names a gap, `fallbackAlt` a real frame whose alt is a gap. */
 export function frameOf(m: Media, l: Lang, blankAlt: string, fallbackAlt: string): Frame {
-  if (isFill(m.src) || m.src.trim() === '') return { kind: 'blank', src: '', alt: blankAlt };
+  if (isFill(m.src) || m.src.trim() === '') return blank(blankAlt);
   const alt = m.alt[l];
-  return { kind: m.type, src: m.src, alt: onlyFill(alt) || alt.trim() === '' ? fallbackAlt : alt };
+  return { kind: m.type, src: m.src, alt: onlyFill(alt) || alt.trim() === '' ? fallbackAlt : alt, caption: '' };
 }
 
-export function framesOf(p: Pick<Project, 'media' | 'title'>, l: Lang, blankAlt: string): Frame[] {
+/** The strip: real media first as given, gaps padded to MIN_FRAMES, each gap given the next plate while any are left. */
+export function framesOf(p: Pick<Project, 'media' | 'title'>, l: Lang, blankAlt: string, plates: readonly Plate[]): Frame[] {
   const out = p.media.slice(0, MAX_FRAMES).map((m) => frameOf(m, l, blankAlt, p.title));
-  while (out.length < MIN_FRAMES) out.push({ kind: 'blank', src: '', alt: blankAlt });
-  return out;
+  while (out.length < MIN_FRAMES) out.push(blank(blankAlt));
+  let next = 0;
+  return out.map((f) => {
+    const plate = f.kind === 'blank' ? plates[next++] : undefined;
+    return plate === undefined ? f : { kind: 'plate', src: plate.src, alt: plate.title, caption: plate.name };
+  });
 }
 
 /** The index one step on, wrapping at both ends. */
