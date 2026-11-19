@@ -1,7 +1,7 @@
 import type { Tier } from '../types.ts';
 import { DRESS_FROM_X, DRESS_KIND, clearOf, pathDistance, pathZAt, rng } from './groundplan.ts';
 import type { BedScene3, GroundData } from './layout.ts';
-import { cover } from './cover.ts';
+import { COVER, cover, type CoverNear } from './cover.ts';
 import { builtIn, type WorldMode } from './mode.ts';
 
 /**
@@ -14,8 +14,8 @@ import { builtIn, type WorldMode } from './mode.ts';
  * south as well as east to west. Kept clear: the path and 0.5 m either side, 1 m round each flower slot and its
  * approach from the path, the pond rim, puddles, the foot of bed items and LAWN.wallClear inside the closed garden's
  * end walls. A lawn plant never repeats the plate of a bed's fading foreground frame within LAWN.frameClear, so one
- * view never holds the same cutout twice up close. A few flat leaves and petals lie round each group, and the low ground
- * cover (cover.ts) runs in drifts under all of it.
+ * view never holds the same cutout twice up close. A few flat leaves lie round each group, petals only under its flowers,
+ * and the low ground cover (cover.ts) runs in drifts under all of it.
  */
 export const LAWN = {
   clear: 0.5, farZ: 7.8, wallClear: 0.6, radius: 0.6, lane: 1.5, tries: 1500, slotClear: 1, itemClear: 0.7, accentEvery: 3,
@@ -33,6 +33,8 @@ export const LAWN_PLANTS: readonly { sprite: string; h: readonly [number, number
   { sprite: 'w/gallica', h: [0.85, 1.1] }, { sprite: 'w/cane', h: [0.9, 1.1] },
 ];
 const LOW_SPECIES = 5;
+/** Plates that flower: fallen petals lie only under these. */
+const FLOWERING: ReadonlySet<string> = new Set(['w/buttercup', 'w/poppy', 'w/gallica', 'w/cane']);
 
 /**
  * The low edging of free roam (cook/ROAM_LOOK.md F): broken runs of grass, fern and small flowers close along both
@@ -81,6 +83,17 @@ function lawnFree(g: GroundData, keep: readonly Keep[], x: number, z: number, ed
   if (x < e[0] + LAWN.wallClear || x > e[1] - LAWN.wallClear) return false;
   if (!Number.isFinite(pz) || z < pz + edge || z > LAWN.farZ || !clearOf(g, x, z)) return false;
   return !kept(keep, x, z, pad);
+}
+
+/** The plate a lawn or edging kind draws, or null for the dressing's own kinds. */
+function plateOf(kind: number): string | null {
+  if (kind >= DRESS_KIND.plant) return LAWN_PLANTS[kind - DRESS_KIND.plant]?.sprite ?? null;
+  return kind >= DRESS_KIND.edge ? (EDGE_PLANTS[kind - DRESS_KIND.edge]?.sprite ?? null) : null;
+}
+
+/** True when a flowering lawn or edging plant stands within `reach` of (x, z). */
+function blooms(pieces: readonly number[][], x: number, z: number, reach: number): boolean {
+  return pieces.some((p) => FLOWERING.has(plateOf(p[2] ?? -1) ?? '') && Math.hypot((p[0] ?? 0) - x, (p[1] ?? 0) - z) < reach);
 }
 
 /** True when a piece of this kind already stands within `d` of (x, z). */
@@ -135,12 +148,19 @@ export function buildLawn(g: GroundData, scenes: readonly BedScene3[], mode: Wor
       const x = cx + (r() * 2 - 1) * LAWN.radius * 1.4;
       const z = cz + (r() * 2 - 1) * LAWN.radius * 1.4;
       const petal = r() < 0.4;
-      if (lawnFree(g, keep, x, z, g.path.width / 2 + 0.1, 0)) pieces.push([x, z, petal ? DRESS_KIND.petal : DRESS_KIND.litter, r() * 2 - 1, petal ? 0.1 : 0.34, r()]);
+      if (!lawnFree(g, keep, x, z, g.path.width / 2 + 0.1, 0)) continue;
+      const piece = [x, z, petal ? DRESS_KIND.petal : DRESS_KIND.litter, r() * 2 - 1, petal ? 0.1 : 0.34, r()];
+      if (!petal || blooms(pieces, x, z, COVER.petalReach)) pieces.push(piece);
     }
   });
   edging(g, scenes, mode, tier, pieces);
   const coverKeep = keepsOf(g, scenes, mode, COVER_ITEM_CLEAR);
-  cover(g, tier, (x, z) => clearOf(g, x, z) && !kept(coverKeep, x, z, 0), pieces);
+  const planted = pieces.filter((p) => (p[2] ?? 0) >= DRESS_KIND.edge);
+  const near: CoverNear = {
+    anchor: (x, z, reach) => kept(coverKeep, x, z, reach) || planted.some((p) => Math.hypot((p[0] ?? 0) - x, (p[1] ?? 0) - z) < reach),
+    bloom: (x, z, reach) => blooms(planted, x, z, reach),
+  };
+  cover(g, tier, (x, z) => clearOf(g, x, z) && !kept(coverKeep, x, z, 0), near, pieces);
   pieces.sort((a, b) => (a[1] ?? 0) - (b[1] ?? 0));
   return pieces.flat();
 }

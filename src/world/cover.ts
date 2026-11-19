@@ -12,6 +12,10 @@ import type { GroundData } from './layout.ts';
  * own size, every piece its own height, yaw and tint, and an upright piece never stands within COVER.twin of another of
  * its plate, so nothing reads as stamped. No upright piece passes 0.34 m, so none hides the visitor, a signpost or a
  * flower; `free` keeps them off puddles, the pond, the slots and their approach, and the bed items' feet.
+ *
+ * Nothing lies loose on open lawn: leaves lying flat are kept only in a drift centred within COVER.pathAnchor of the
+ * path edge or COVER.anchorReach of a lawn plant, the edging or a bed item's foot (`near.anchor`), as if they fell
+ * there; a petal lies only within COVER.petalReach of a flowering plant (`near.bloom`).
  */
 export const COVER_PLANTS: readonly { sprite: string; h: readonly [number, number]; flat: boolean }[] = [
   { sprite: 'sh/ivy-2', h: [0.34, 0.56], flat: true },
@@ -35,8 +39,15 @@ const MAKES: readonly (readonly number[])[] = [
 
 export const COVER = {
   pathClear: 0.35, front: 0.4, wallClear: 0.5, apart: 1.25, radius: [0.4, 0.8], tries: { high: 900, low: 450 },
-  pieces: { high: [6, 11], low: [3, 5] }, emptyChance: 0.12, twin: 0.5, squash: 0.75,
+  pieces: { high: [6, 11], low: [3, 5] }, emptyChance: 0.12, twin: 0.5, squash: 0.75, pathAnchor: 0.6, anchorReach: 0.5,
+  petalReach: 0.45,
 } as const;
+
+/** What a piece may lie beside: anything planted or built within `reach` (m), a flowering plant within `reach`. */
+export interface CoverNear {
+  anchor(x: number, z: number, reach: number): boolean;
+  bloom(x: number, z: number, reach: number): boolean;
+}
 
 function pickOf(make: readonly number[], u: number): number {
   let acc = 0;
@@ -48,7 +59,7 @@ function pickOf(make: readonly number[], u: number): number {
 }
 
 /** Pushes the cover pieces ([x, z, kind, yaw, height, tone]) onto `pieces`, on its own seed so the lawn stays as laid. */
-export function cover(g: GroundData, tier: Tier, free: (x: number, z: number) => boolean, pieces: number[][]): void {
+export function cover(g: GroundData, tier: Tier, free: (x: number, z: number) => boolean, near: CoverNear, pieces: number[][]): void {
   const r = rng(0x636f7665);
   const span = (lo: number, hi: number): number => lo + r() * (hi - lo);
   const [ex0, ex1] = g.enclosure.x;
@@ -76,6 +87,7 @@ export function cover(g: GroundData, tier: Tier, free: (x: number, z: number) =>
     const radius = span(COVER.radius[0], COVER.radius[1]);
     const n = n0 + Math.floor(r() * (n1 - n0 + 1));
     const turn = r() * Math.PI * 2;
+    const fell = cz - pathZAt(g.path.points, cx) - g.path.width / 2 < COVER.pathAnchor || near.anchor(cx, cz, COVER.anchorReach);
     for (let i = 0; i < n; i++) {
       const a = turn + i * 2.399963 + (r() - 0.5) * 0.8;
       const d = radius * Math.sqrt((i + 0.5) / n);
@@ -85,14 +97,15 @@ export function cover(g: GroundData, tier: Tier, free: (x: number, z: number) =>
       const pick = pickOf(make, r());
       const plant = COVER_PLANTS[pick];
       if (plant === undefined) {
-        pieces.push([x, z, DRESS_KIND.petal, r() * 2 - 1, span(PETAL_H[0], PETAL_H[1]), r()]);
+        const petal = [x, z, DRESS_KIND.petal, r() * 2 - 1, span(PETAL_H[0], PETAL_H[1]), r()];
+        if (near.bloom(x, z, COVER.petalReach)) pieces.push(petal);
         continue;
       }
       const kind = DRESS_KIND.cover + pick;
       if (!plant.flat && upright.some((p) => p[2] === kind && Math.hypot((p[0] ?? 0) - x, (p[1] ?? 0) - z) < COVER.twin)) continue;
       const piece = [x, z, kind, (r() * 2 - 1) * (plant.flat ? 1 : 0.5), span(plant.h[0], plant.h[1]), r()];
       if (!plant.flat) upright.push(piece);
-      pieces.push(piece);
+      if (!plant.flat || fell) pieces.push(piece);
     }
   }
 }
