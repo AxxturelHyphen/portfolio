@@ -100,6 +100,14 @@ async function main(): Promise<number> {
               .catch(() => undefined);
             await page.evaluate(() => (window as unknown as { __jardin: { settled(): Promise<void> } }).__jardin.settled());
           }
+          // A roam shot sees the neighbour beds too: wait until none is still streaming, so the still never depends on load.
+          type RoamApi = { roam(): unknown; residency(): Record<string, string>; settled(): Promise<void> };
+          if (await page.evaluate(() => (window as unknown as { __jardin: RoamApi }).__jardin.roam() !== null)) {
+            await page
+              .waitForFunction(() => !Object.values((window as unknown as { __jardin: RoamApi }).__jardin.residency()).includes('loading'), undefined, { timeout: 30000, polling: 100 })
+              .catch(() => undefined);
+            await page.evaluate(() => (window as unknown as { __jardin: RoamApi }).__jardin.settled());
+          }
         }
         await page.evaluate(() => new Promise<void>((ok) => requestAnimationFrame(() => requestAnimationFrame(() => ok()))));
         // Owner rule: the canvas fills the whole viewport. Assert it before every capture (S10 is the DOM-only Herbario).
