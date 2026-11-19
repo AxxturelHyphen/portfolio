@@ -95,7 +95,122 @@
               0.18,
               0.22
             ]
-          }
+          },
+          "only": "rail"
+        },
+        {
+          "sprite": "sh/ivy",
+          "x": 15.71,
+          "y": 0,
+          "z": -5.75,
+          "scale": 1,
+          "h": 1.7,
+          "hinge": 4,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/ivy-2",
+          "x": 15.72,
+          "y": 1.11,
+          "z": -5.85,
+          "scale": 1,
+          "h": 1.14,
+          "hinge": 7,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/ivy-2",
+          "x": 17.24,
+          "y": 0,
+          "z": -5.84,
+          "scale": 1,
+          "h": 1.75,
+          "hinge": -8,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/ivy",
+          "x": 17.04,
+          "y": 1.21,
+          "z": -5.9,
+          "scale": 1,
+          "h": 1.06,
+          "hinge": -9,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "flip": true,
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/ivy",
+          "x": 20.96,
+          "y": 0,
+          "z": -5.8,
+          "scale": 1,
+          "h": 0.86,
+          "hinge": 9,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "flip": true,
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/ivy-2",
+          "x": 26.18,
+          "y": 0,
+          "z": -5.84,
+          "scale": 1,
+          "h": 1.78,
+          "hinge": 4,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/ivy",
+          "x": 26.14,
+          "y": 1.25,
+          "z": -5.85,
+          "scale": 1,
+          "h": 1.12,
+          "hinge": 8,
+          "lean": 0,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
         }
       ]
     },
@@ -139,7 +254,7 @@
           "hinge": -6,
           "lean": 0,
           "size": "hero",
-          "group": "L",
+          "group": "M",
           "foot": "none",
           "shadow": true,
           "react": false,
@@ -151,7 +266,12 @@
               0.84
             ]
           },
-          "only": "roam"
+          "only": "roam",
+          "tint": [
+            0.58,
+            0.56,
+            0.66
+          ]
         },
         {
           "sprite": "es/peacock-crest",
@@ -179,11 +299,16 @@
           "hinge": -6,
           "lean": 0,
           "size": "small",
-          "group": "L",
+          "group": "M",
           "foot": "none",
           "shadow": false,
           "react": false,
-          "only": "roam"
+          "only": "roam",
+          "tint": [
+            0.58,
+            0.56,
+            0.66
+          ]
         },
         {
           "sprite": "es/typha-blade-1",
@@ -408,41 +533,6 @@
           "only": "roam"
         },
         {
-          "sprite": "es/papyrus",
-          "x": 17.3,
-          "y": 0,
-          "z": -3.9,
-          "scale": 1,
-          "h": 1.6,
-          "hinge": 6,
-          "lean": 8,
-          "size": "medium",
-          "group": "M",
-          "foot": "clump",
-          "shadow": true,
-          "react": false,
-          "sway": 0.03,
-          "only": "roam"
-        },
-        {
-          "sprite": "es/papyrus",
-          "x": 24.7,
-          "y": 0,
-          "z": -4.3,
-          "scale": 1,
-          "h": 1.6,
-          "hinge": -8,
-          "lean": 8,
-          "size": "medium",
-          "group": "M",
-          "foot": "clump",
-          "shadow": true,
-          "react": false,
-          "sway": 0.03,
-          "flip": true,
-          "only": "roam"
-        },
-        {
           "sprite": "es/lotus-leaf",
           "x": 19.8,
           "y": 0.01,
@@ -479,12 +569,12 @@
           "only": "roam"
         },
         {
-          "sprite": "w/poppy",
+          "sprite": "w/fiddle",
           "x": 18.23,
           "y": 0,
           "z": -4.66,
           "scale": 1,
-          "h": 0.68,
+          "h": 0.39,
           "hinge": -1,
           "lean": 8,
           "size": "medium",
@@ -496,12 +586,12 @@
           "only": "roam"
         },
         {
-          "sprite": "w/poppy",
+          "sprite": "w/buttercup",
           "x": 18.7,
           "y": 0,
           "z": -4.29,
           "scale": 1,
-          "h": 0.68,
+          "h": 0.46,
           "hinge": 0,
           "lean": 8,
           "size": "medium",
@@ -532,12 +622,12 @@
           "only": "roam"
         },
         {
-          "sprite": "w/buttercup",
+          "sprite": "w/fungi",
           "x": 17.53,
           "y": 0,
           "z": -4.76,
           "scale": 1,
-          "h": 0.62,
+          "h": 0.19,
           "hinge": 2,
           "lean": 8,
           "size": "medium",
@@ -568,12 +658,12 @@
           "only": "roam"
         },
         {
-          "sprite": "w/poppy",
+          "sprite": "w/fiddle",
           "x": 23.58,
           "y": 0,
           "z": -4.75,
           "scale": 1,
-          "h": 0.71,
+          "h": 0.44,
           "hinge": 10,
           "lean": 8,
           "size": "medium",
@@ -603,12 +693,12 @@
           "only": "roam"
         },
         {
-          "sprite": "w/buttercup",
+          "sprite": "w/poppy",
           "x": 24.63,
           "y": 0,
           "z": -4.43,
           "scale": 1,
-          "h": 0.51,
+          "h": 0.81,
           "hinge": 9,
           "lean": 8,
           "size": "medium",
@@ -621,12 +711,12 @@
           "only": "roam"
         },
         {
-          "sprite": "w/buttercup",
+          "sprite": "w/fungi",
           "x": 24.7,
           "y": 0,
           "z": -4.98,
           "scale": 1,
-          "h": 0.53,
+          "h": 0.14,
           "hinge": -4,
           "lean": 8,
           "size": "medium",
@@ -653,6 +743,40 @@
           "shadow": true,
           "react": false,
           "sway": 0.03,
+          "only": "roam",
+          "flip": true
+        },
+        {
+          "sprite": "es/typha-blade-2",
+          "x": 17.25,
+          "y": 0,
+          "z": -3.85,
+          "scale": 1,
+          "h": 1.45,
+          "hinge": 5,
+          "lean": 8,
+          "size": "medium",
+          "group": "M",
+          "foot": "clump",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "es/typha-blade-3",
+          "x": 24.75,
+          "y": 0,
+          "z": -4.25,
+          "scale": 1,
+          "h": 1.4,
+          "hinge": -7,
+          "lean": 8,
+          "size": "medium",
+          "group": "M",
+          "foot": "clump",
+          "shadow": true,
+          "react": false,
+          "flip": true,
           "only": "roam"
         }
       ]
@@ -809,7 +933,8 @@
               0.3,
               0.22
             ]
-          }
+          },
+          "only": "rail"
         },
         {
           "sprite": "es/typha-blade-2",
@@ -877,7 +1002,8 @@
           "shadow": false,
           "react": false,
           "flat": true,
-          "rot": -17
+          "rot": -17,
+          "only": "rail"
         },
         {
           "sprite": "sh/board",
@@ -950,6 +1076,22 @@
             0.16
           ],
           "only": "roam"
+        },
+        {
+          "sprite": "es/typha-blade-1",
+          "x": 23.9,
+          "y": 0,
+          "z": -1,
+          "scale": 1,
+          "h": 1.3,
+          "hinge": -4,
+          "lean": 8,
+          "size": "medium",
+          "group": "M",
+          "foot": "clump",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
         }
       ]
     },
@@ -977,12 +1119,12 @@
           "only": "rail"
         },
         {
-          "sprite": "w/gallica",
-          "x": 17.9,
+          "sprite": "w/poppy",
+          "x": 18.5,
           "y": 0,
-          "z": 4.7,
+          "z": 5.05,
           "scale": 1,
-          "h": 1.4,
+          "h": 1.25,
           "hinge": 8,
           "lean": 8,
           "size": "medium",
@@ -991,33 +1133,15 @@
           "shadow": true,
           "react": false,
           "sway": 0.02,
-          "fade": true,
-          "only": "roam"
-        },
-        {
-          "sprite": "w/poppy",
-          "x": 18.7,
-          "y": 0,
-          "z": 4.95,
-          "scale": 1,
-          "h": 0.95,
-          "hinge": -4,
-          "lean": 8,
-          "size": "medium",
-          "group": "L",
-          "foot": "none",
-          "shadow": true,
-          "react": false,
-          "sway": 0.02,
-          "flip": true,
+          "flip": false,
           "fade": true,
           "only": "roam"
         },
         {
           "sprite": "w/cane",
-          "x": 25,
+          "x": 24.6,
           "y": 0,
-          "z": 4.6,
+          "z": 5.17,
           "scale": 1,
           "h": 1.5,
           "hinge": -8,
