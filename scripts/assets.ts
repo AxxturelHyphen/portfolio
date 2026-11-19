@@ -4,7 +4,7 @@
 // places that no recipe makes yet), sprites (the real archive sprites of archive/recipes/*.json), pack, encode,
 // thumbs (Herbario specimens), frames (the plates of the project film's empty frames), merge (archive/SOURCES.json,
 // after the atlases, thumbs and frames so usedIn and shipped are current), credits. `sheets` (contact sheets of every
-// real sprite on the night ground) runs only when named. With no argument every default stage runs; each one skips
+// real sprite on the night ground) and `sound` (the garden's recordings, needs ffmpeg) run only when named. With no argument every default stage runs; each one skips
 // work whose inputs are unchanged (archive/work/cache.json). Ends with the per-bed payload and GPU memory report.
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
@@ -19,10 +19,11 @@ import { RECIPE_DIR } from './stages/recipe.ts';
 import { runSheets } from './stages/sheets.ts';
 import { THUMB_OUT, runThumbs, type ThumbEntry } from './stages/thumbs.ts';
 import { runFrames } from './stages/frames.ts';
+import { runSound } from './stages/sound.ts';
 import { REAL_CATALOG, realPng, runSprites, type RealCatalog } from './stages/sprites.ts';
 
-const STAGES = ['vendor', 'placeholder', 'sprites', 'pack', 'encode', 'thumbs', 'frames', 'merge', 'credits', 'sheets'] as const;
-const ON_DEMAND: readonly Stage[] = ['sheets'];
+const STAGES = ['vendor', 'placeholder', 'sprites', 'pack', 'encode', 'thumbs', 'frames', 'sound', 'merge', 'credits', 'sheets'] as const;
+const ON_DEMAND: readonly Stage[] = ['sound', 'sheets'];
 type Stage = (typeof STAGES)[number];
 const BASIS_SRC = 'node_modules/three/examples/jsm/libs/basis';
 const BASIS_OUT = 'public/basis';
@@ -128,6 +129,7 @@ async function main(): Promise<void> {
     }
     if (run('thumbs')) console.log(runThumbs(archiveSources()));
     if (run('frames')) console.log(runFrames(archiveSources(), specimenSources()));
+    if (run('sound')) console.log(runSound());
     if (run('merge')) console.log(runMerge(cache));
     if (run('credits')) console.log(runCredits());
     if (run('sheets')) console.log(runSheets());

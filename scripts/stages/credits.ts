@@ -1,7 +1,8 @@
 /// <reference types="node" />
 // Credits stage: archive/SOURCES.json and public/fonts/LICENSES to src/content/credits.json, the data of the credits
-// view (src/credits/). Only sources that ship (non-empty usedIn) are credited, grouped by the holder of the original,
-// each with the full attribution line as printed, its licence, the link back to the record and what was changed.
+// view (src/credits/). Only sources that ship (non-empty usedIn) are credited: images grouped by the holder of the
+// original, the garden's recordings apart, each with the full attribution line as printed, its licence, the link back
+// to the record and what was changed.
 // The fonts come from the licence texts that ship beside them; the owner's own files are listed apart.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,11 +13,11 @@ export const CREDITS_OUT = 'src/content/credits.json';
 const FONT_LICENCES = 'public/fonts/LICENSES';
 
 /** What the pipeline did to a plate, in the words the credits view prints (content/strings.json credits.change.*). */
-export type Change = 'cropped' | 'cutout' | 'tinted' | 'screened' | 'retouched';
+export type Change = 'cropped' | 'cutout' | 'tinted' | 'screened' | 'retouched' | 'trimmed';
 export interface Credit { id: string; title: string; creator: string; license: string; licenseUrl: string; attribution: string; sourceUrl: string; changes: Change[]; usedIn: string[] }
 export interface CreditsGroup { institution: string; items: Credit[] }
 export interface FontCredit { family: string; copyright: string; license: string; licenseUrl: string; sourceUrl: string; file: string }
-export interface CreditsFile { generated: string; groups: CreditsGroup[]; fonts: FontCredit[]; own: string[] }
+export interface CreditsFile { generated: string; groups: CreditsGroup[]; sounds: Credit[]; fonts: FontCredit[]; own: string[] }
 
 /** One holder per museum or library: the merged records name the same one in several ways. */
 const HOLDERS: readonly [RegExp, string][] = [
@@ -70,18 +71,28 @@ function fontsIn(dir: string): FontCredit[] {
   return readdirSync(dir).sort().flatMap((f) => fontOf(f, readFileSync(join(dir, f), 'utf8')) ?? []);
 }
 
+/** A recording the garden plays (the sound stage cut, filtered and levelled it). */
+const isSound = (s: MergedSource): boolean => s.usedIn.some((u) => u.startsWith('sound:'));
+
 /** Pure transform, sorted so the output is stable across runs. */
 export function creditsOf(src: SourcesFile, fonts: readonly FontCredit[] = []): CreditsFile {
   const groups = new Map<string, Credit[]>();
+  const sounds: Credit[] = [];
   for (const s of src.sources) {
     if (s.usedIn.length === 0) continue;
-    const item: Credit = { id: s.id, title: s.title, creator: s.creator, license: s.license, licenseUrl: s.licenseUrl, attribution: s.attribution, sourceUrl: s.sourceUrl, changes: changesOf(s.edits), usedIn: [...s.usedIn].sort() };
+    const sound = isSound(s);
+    const item: Credit = { id: s.id, title: s.title, creator: s.creator, license: s.license, licenseUrl: s.licenseUrl, attribution: s.attribution, sourceUrl: s.sourceUrl, changes: sound ? ['trimmed'] : changesOf(s.edits), usedIn: [...s.usedIn].sort() };
+    if (sound) {
+      sounds.push(item);
+      continue;
+    }
     const holder = holderOf(s.institution);
     groups.set(holder, [...(groups.get(holder) ?? []), item]);
   }
   return {
     generated: 'npm run assets (credits stage) from archive/SOURCES.json and public/fonts/LICENSES; do not edit by hand',
     groups: [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([institution, items]) => ({ institution, items: items.sort((a, b) => a.id.localeCompare(b.id)) })),
+    sounds: sounds.sort((a, b) => a.id.localeCompare(b.id)),
     fonts: [...fonts],
     own: src.own.map((o) => o.note).sort(),
   };
@@ -92,5 +103,5 @@ export function runCredits(out = CREDITS_OUT): string {
   if (!existsSync(SOURCES_OUT)) return `credits: no ${SOURCES_OUT} yet, run the merge stage first`;
   const c = creditsOf(readJson<SourcesFile>(SOURCES_OUT), fontsIn(FONT_LICENCES));
   writeJson(out, c);
-  return `credits: ${c.groups.reduce((s, g) => s + g.items.length, 0)} sources from ${c.groups.length} holders, ${c.fonts.length} fonts, ${c.own.length} own files -> ${out}`;
+  return `credits: ${c.groups.reduce((s, g) => s + g.items.length, 0)} sources from ${c.groups.length} holders, ${c.sounds.length} recordings, ${c.fonts.length} fonts, ${c.own.length} own files -> ${out}`;
 }

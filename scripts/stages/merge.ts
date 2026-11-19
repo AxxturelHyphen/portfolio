@@ -1,11 +1,12 @@
 /// <reference types="node" />
 // Merge stage: archive/sources/*.json (SourceEntry[], one file per category) into archive/SOURCES.json with the
 // licence allowlist (PD, CC0, CC BY, CC BY-SA; never NC or ND), attribution required, unique ids, the raw file on
-// disk and its sha256. usedIn comes from the sprite sources of the shipped atlas manifests; own files from
-// archive/OWN.json. Never hand-edit the output. An entry that breaks a rule is left out of SOURCES.json with a warning;
-// it is an error when a shipped atlas uses it (licence-check then trusts SOURCES.json alone).
+// disk and its sha256. usedIn comes from the sprite sources of the shipped atlas manifests and the garden's recordings
+// (src/audio/sounds.ts, once their file is in public/audio/); own files from archive/OWN.json. Never hand-edit the
+// output. An entry that breaks a rule is left out of SOURCES.json with a warning; it is an error when a shipped atlas uses it (licence-check then trusts SOURCES.json alone).
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { SOUNDS, fileOf, type SoundId } from '../../src/audio/sounds.ts';
 import type { AtlasManifest } from '../../src/types.ts';
 import { ATLAS_OUT, rawPath, readJson, sha256, writeJson, type Cache } from './common.ts';
 import { EDITS, type Edit } from './sprites.ts';
@@ -43,6 +44,16 @@ function shipUse(): Map<string, Set<string>> {
   return use;
 }
 
+/** The shipped recordings per source id: what each is in the garden ('sound:<id>') and its file. */
+function soundUse(): Map<string, { use: string; file: string }> {
+  const use = new Map<string, { use: string; file: string }>();
+  for (const id of Object.keys(SOUNDS) as SoundId[]) {
+    const file = join('public', fileOf(id));
+    if (existsSync(file)) use.set(SOUNDS[id].source, { use: `sound:${id}`, file });
+  }
+  return use;
+}
+
 /** Shipped files per source id: the Herbario thumbnails (thumbs stage) and the film's plate frames (frames stage). */
 function fileUse(): Map<string, string[]> {
   const use = new Map<string, string[]>();
@@ -68,6 +79,8 @@ export function runMerge(cache: Cache): string {
   const sources: MergedSource[] = [];
   const use = shipUse();
   const shippedFiles = fileUse();
+  const sounds = soundUse();
+  for (const [id, s] of sounds) (use.get(id) ?? use.set(id, new Set()).get(id))?.add(s.use);
   const edits = existsSync(EDITS) ? readJson<Record<string, Edit[]>>(EDITS) : {};
   const files = existsSync(SOURCES_DIR) ? readdirSync(SOURCES_DIR).filter((f) => f.endsWith('.json')).sort() : [];
   for (const f of files) {
@@ -111,7 +124,8 @@ export function runMerge(cache: Cache): string {
         cache.set(key, stamp);
         cache.set(`${key}:v`, digest);
       }
-      const shipped = shippedFiles.get(e.id);
+      const sound = sounds.get(e.id);
+      const shipped = sound === undefined ? shippedFiles.get(e.id) : [sound.file];
       sources.push({ ...e, license, file, category, sha256: digest, usedIn: [...(use.get(e.id) ?? [])].sort(), ...(shipped === undefined ? {} : { shipped }), edits: use.has(e.id) ? (edits[e.id] ?? []) : [] });
     }
   }

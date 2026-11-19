@@ -2303,6 +2303,98 @@
    ]
   }
  ],
+ "sounds": [
+  {
+   "id": "ia-aporee-24288-crickets-colchester",
+   "title": "Crickets in the Bushes (Colchester, UK)",
+   "creator": "philipmill6 (as published)",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Crickets in the Bushes (Colchester, UK), philipmill6 (as published), via Internet Archive, Public Domain Mark 1.0",
+   "sourceUrl": "https://archive.org/details/aporee_24288_28196",
+   "changes": [
+    "trimmed"
+   ],
+   "usedIn": [
+    "sound:crickets"
+   ]
+  },
+  {
+   "id": "ia-aporee-58600-spring-source-grzybowska",
+   "title": "Water source, Dolina Grzybowska (Zabierzow, Poland)",
+   "creator": "Piotrek Zyla",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Water source, Dolina Grzybowska (Zabierzow, Poland), Piotrek Zyla, via Internet Archive, Public Domain Mark 1.0",
+   "sourceUrl": "https://archive.org/details/aporee_58600_67232",
+   "changes": [
+    "trimmed"
+   ],
+   "usedIn": [
+    "sound:water"
+   ]
+  },
+  {
+   "id": "ia-aporee-60828-long-eared-owl-utena",
+   "title": "Long-eared owl in the park (Utena, Lithuania)",
+   "creator": "alas23/sala",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Long-eared owl in the park (Utena, Lithuania), alas23/sala, via Internet Archive, Public Domain Mark 1.0",
+   "sourceUrl": "https://archive.org/details/aporee_60828_69913",
+   "changes": [
+    "trimmed"
+   ],
+   "usedIn": [
+    "sound:owl"
+   ]
+  },
+  {
+   "id": "ia-nightingale-song-may-2012",
+   "title": "Nightingale song May 2012",
+   "creator": "Adam Clark",
+   "license": "CC0-1.0",
+   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "attribution": "Nightingale song May 2012, Adam Clark, via Internet Archive, CC0 1.0",
+   "sourceUrl": "https://archive.org/details/NightingaleSongMay2012",
+   "changes": [
+    "trimmed"
+   ],
+   "usedIn": [
+    "sound:nightingale"
+   ]
+  },
+  {
+   "id": "wc-musicbox-wound-clock-schlafe-prinzchen",
+   "title": "Lullaby wound up clock \"Schlafe, mein Prinzchen, schlaf ein\"",
+   "creator": "stephan (PDSounds.org)",
+   "license": "PD",
+   "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-author",
+   "attribution": "Lullaby wound up clock \"Schlafe, mein Prinzchen, schlaf ein\", stephan (PDSounds.org), Wikimedia Commons, Public domain (author release)",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lullaby_wound_up_clock.ogg",
+   "changes": [
+    "trimmed"
+   ],
+   "usedIn": [
+    "sound:musicbox"
+   ]
+  },
+  {
+   "id": "wc-winding-a-music-box",
+   "title": "Winding a music box",
+   "creator": "ezwa (PDSounds.org)",
+   "license": "PD",
+   "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-author",
+   "attribution": "Winding a music box, ezwa (PDSounds.org), Wikimedia Commons, Public domain (author release)",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Winding_a_music_box.ogg",
+   "changes": [
+    "trimmed"
+   ],
+   "usedIn": [
+    "sound:winding"
+   ]
+  }
+ ],
  "fonts": [
   {
    "family": "Kalnia",

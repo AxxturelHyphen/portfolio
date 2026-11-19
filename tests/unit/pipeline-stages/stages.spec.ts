@@ -77,6 +77,20 @@ test('credits list only shipped sources, grouped and sorted', () => {
   expect(c.groups[0]!.items[0]!.usedIn).toEqual(['w', 'y']);
 });
 
+test('credits list the recordings the garden plays apart from the images, each marked as cut', () => {
+  const base = { title: 't', creator: 'c', date: 'd', sourceUrl: 'u', license: 'PD', licenseUrl: '', attribution: 'a', file: 'f', need: 'n', category: 'k', sha256: 's', edits: [] };
+  const sources: MergedSource[] = [
+    { ...base, id: 'owl', institution: 'Internet Archive', usedIn: ['sound:owl'] },
+    { ...base, id: 'bird', institution: 'Internet Archive', usedIn: ['sound:nightingale'] },
+    { ...base, id: 'plate', institution: 'Internet Archive', usedIn: ['x'] },
+    { ...base, id: 'unused', institution: 'Internet Archive', usedIn: [] },
+  ];
+  const c = creditsOf({ generated: '', sources, own: [] });
+  expect(c.sounds.map((s) => s.id)).toEqual(['bird', 'owl']);
+  expect(c.sounds.every((s) => s.changes.join() === 'trimmed')).toBe(true);
+  expect(c.groups.flatMap((g) => g.items.map((i) => i.id))).toEqual(['plate']);
+});
+
 test('credits name one holder per museum, tell what changed, and read the fonts from their OFL texts', () => {
   expect(holderOf('Rijksmuseum, Amsterdam (via Wikimedia Commons)')).toBe('Rijksmuseum, Amsterdam');
   expect(holderOf('Scan of Flora Batava via Wikimedia Commons')).toBe('Wikimedia Commons');

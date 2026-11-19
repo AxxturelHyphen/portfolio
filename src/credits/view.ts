@@ -7,7 +7,8 @@ import './credits.css';
 
 /**
  * The credits view: one native modal <dialog> holding a printed register on paper, built from src/content/credits.json
- * (written by the credits stage of npm run assets). Images by the holder of the original, then the fonts. Each entry
+ * (written by the credits stage of npm run assets). Images by the holder of the original, then the recordings the
+ * garden plays, then the fonts. Each entry
  * names its title (linked to the original), its maker, its licence (linked to the licence) and what the pipeline
  * changed; a CC BY or BY-SA entry also prints its full attribution line. This chunk and its data load lazily
  * (ui/credits.route.ts). Esc, the close button and a click outside close it; onClose then puts the URL back.
@@ -67,6 +68,8 @@ function render(strings: Strings, lang: Lang): string {
 <p class="cr-intro">${esc(s('credits.intro'))}</p>
 <section class="cr-part" aria-labelledby="cr-images"><h3 class="cr-part-title" id="cr-images">${esc(s('credits.images'))}</h3>
 <div class="cr-groups">${groups.join('')}</div></section>
+${credits.sounds.length === 0 ? '' : `<section class="cr-part" aria-labelledby="cr-sounds"><h3 class="cr-part-title" id="cr-sounds">${esc(s('credits.sounds'))}</h3>
+<ul class="cr-list cr-sounds">${credits.sounds.map((c) => item(c, s, lang)).join('')}</ul></section>`}
 <section class="cr-part" aria-labelledby="cr-fonts"><h3 class="cr-part-title" id="cr-fonts">${esc(s('credits.fonts'))}</h3>
 <ul class="cr-list cr-fonts">${credits.fonts.map((f) => font(f, s)).join('')}</ul></section>`;
 }

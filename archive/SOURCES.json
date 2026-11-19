@@ -9420,7 +9420,12 @@
    "need": "audio-night-garden-crickets",
    "category": "textures",
    "sha256": "737f272fdb8a541856d48d5971e8c17c1c71eb9f415eef1bdfa01ef68780cb2e",
-   "usedIn": [],
+   "usedIn": [
+    "sound:crickets"
+   ],
+   "shipped": [
+    "public/audio/ia-aporee-24288-crickets-colchester.webm"
+   ],
    "edits": []
   },
   {
@@ -9437,7 +9442,12 @@
    "need": "audio-water",
    "category": "textures",
    "sha256": "2caf41d5f32d90cbb5ae53f10b90285af5331fe7b70bee998a79337094493a13",
-   "usedIn": [],
+   "usedIn": [
+    "sound:water"
+   ],
+   "shipped": [
+    "public/audio/ia-aporee-58600-spring-source-grzybowska.webm"
+   ],
    "edits": []
   },
   {
@@ -9471,7 +9481,12 @@
    "need": "audio-bird-call",
    "category": "textures",
    "sha256": "c73929aa864bb39054433e597166c0ad452929fffeadceda5c536450adcf7fa5",
-   "usedIn": [],
+   "usedIn": [
+    "sound:nightingale"
+   ],
+   "shipped": [
+    "public/audio/ia-nightingale-song-may-2012.webm"
+   ],
    "edits": []
   },
   {
@@ -9488,7 +9503,12 @@
    "need": "audio-bird-call",
    "category": "textures",
    "sha256": "55c65d72061c33017bfdc0b7d2bad66e113cb639e4c5aa7625db4499affd32c4",
-   "usedIn": [],
+   "usedIn": [
+    "sound:owl"
+   ],
+   "shipped": [
+    "public/audio/ia-aporee-60828-long-eared-owl-utena.webm"
+   ],
    "edits": []
   },
   {
@@ -9522,7 +9542,12 @@
    "need": "audio-music-box",
    "category": "textures",
    "sha256": "b5438fa33d4dade9e374a4181bb940e04e8f42d279fe7afd28aec53151c118fe",
-   "usedIn": [],
+   "usedIn": [
+    "sound:musicbox"
+   ],
+   "shipped": [
+    "public/audio/wc-musicbox-wound-clock-schlafe-prinzchen.webm"
+   ],
    "edits": []
   },
   {
@@ -9624,7 +9649,12 @@
    "need": "audio-music-box",
    "category": "textures",
    "sha256": "bf58350bb79b73c77df470ba725b8c2aeee4dce75a55aeff59972cf93bdbef45",
-   "usedIn": [],
+   "usedIn": [
+    "sound:winding"
+   ],
+   "shipped": [
+    "public/audio/wc-winding-a-music-box.webm"
+   ],
    "edits": []
   },
   {
