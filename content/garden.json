@@ -105,7 +105,7 @@
       "low": [[18.2, 24.4, 1.2], [38.5, 44.4, 1.1]],
       "door": [44.65, 45.75],
       "piers": [-3.5, 5.5, 6.3, 13.8, 18.2, 24.4, 26.8, 37.5, 38.5, 44.4, 46, 46.5],
-      "hedge": {"z": -6.7, "top": 3.1, "spans": [[18, 24.6], [38.3, 46.2]]},
+      "hedge": {"z": -6.7, "top": 1.75, "spans": [[18, 24.6], [38.3, 46.2]]},
       "crowns": [],
       "occluders": [
         {"bed": "puerta", "sprite": "pu/leaf-l", "aspect": 0.423},
@@ -141,7 +141,7 @@
     "S13": {"hash": "#/b/puerta", "t": 12.5, "visitor": [1.2, -0.55]},
     "S14": {"hash": "#/b/rosaleda", "t": 12.5, "visitor": [11.6, -0.3]},
     "S15": {"hash": "#/b/estanque", "t": 12.5, "visitor": [21.5, 1.2]},
-    "S16": {"hash": "#/b/semillero", "t": 12.5, "visitor": [29.9, 0.9]},
+    "S16": {"hash": "#/b/semillero", "t": 12.5, "visitor": [30.1, 1.8]},
     "S17": {"hash": "#/b/salida", "t": 12.5, "visitor": [42, -2]},
     "S18": {"hash": "#/b/rosaleda", "t": 12.5, "visitor": [11.6, -0.3], "viewport": [390, 844]}
   }
