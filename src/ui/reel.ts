@@ -6,10 +6,12 @@ import { framesOf, PULL_MS, REST_S, runs, stepOf, type Frame, type Motion } from
 /**
  * The project film (loaded with the panel, never at first load): a short strip of two to four frames pulled through
  * a gate one frame at a time, in the look of the garden's travel strip (dark base, lit sprocket holes, a warm edge on
- * the frame bars). Beside and behind it stands the project's own flower, softly lit like a lantern behind paper.
+ * the frame bars), with the edges of the neighbouring frames showing at both sides of the gate. Beside it stands the
+ * project's own flower, cut out of paper, its tint warming and cooling slowly like a lamp turned up behind it.
  * Frames change by the buttons, a click or tap on the picture, the arrow keys and a swipe; the strip also moves on by
  * itself slowly while the panel shows and nobody is pointing at it, focused in it or has stopped it. Looping parks an
  * end frame beside the current one with CSS order (no cloned frames), slides, and puts it back.
+ * Clips play only while the film runs by itself; under reduced motion or a still they wait for the Run tag.
  */
 
 export interface ReelOptions {
@@ -34,11 +36,15 @@ const SWIPE_PX = 40;
 /** Gate weave during a pull, in px: the strip settles into the gate with a small vertical jump. */
 const WEAVE: readonly [number, number] = [1.5, -1];
 
-const at = (i: number): string => `translate3d(${-100 * i}%, 0, 0)`;
-const atWeave = (i: number, y: number): string => `translate3d(${(-100 * i).toFixed(2)}%, ${y}px, 0)`;
+/** One frame is CELL percent of the gate; the neighbours show PEEK percent at each side (matches reel.css). */
+const CELL = 80;
+const PEEK = (100 - CELL) / 2;
+const xOf = (i: number): string => `${(PEEK - CELL * i).toFixed(2)}%`;
+const at = (i: number): string => `translate3d(${xOf(i)}, 0, 0)`;
+const atWeave = (i: number, y: number): string => `translate3d(${xOf(i)}, ${y}px, 0)`;
 
 function blankFrame(caption: string): string {
-  return `<div class="rl-blank" role="img" aria-label="${esc(caption)}"><span class="rl-light"></span><span class="rl-grain"></span><span class="rl-dust rl-d1"></span><span class="rl-dust rl-d2"></span><span class="rl-dust rl-d3"></span><span class="rl-scratch"></span><span class="rl-cap" aria-hidden="true">${esc(caption)}</span></div>`;
+  return `<div class="rl-blank" role="img" aria-label="${esc(caption)}"><span class="rl-light"></span><span class="rl-grain"></span><span class="rl-scratch rl-s1"></span><span class="rl-scratch rl-s2"></span><span class="rl-cap" aria-hidden="true">${esc(caption)}</span></div>`;
 }
 
 function frameHtml(f: Frame, i: number, n: number, s: (key: string) => string): string {
@@ -54,7 +60,7 @@ function frameHtml(f: Frame, i: number, n: number, s: (key: string) => string): 
 function flowerHtml(src: string | null): string {
   if (src === null) return '';
   const u = esc(src);
-  return `<div class="rl-flower" aria-hidden="true"><img class="rl-glow" src="${u}" alt="" decoding="async"><img class="rl-bloom" src="${u}" alt="" decoding="async"></div>`;
+  return `<div class="rl-flower" aria-hidden="true"><img class="rl-bloom" src="${u}" alt="" decoding="async"><img class="rl-tint" src="${u}" alt="" decoding="async"></div>`;
 }
 
 function decoded(img: HTMLImageElement | null): Promise<void> {
@@ -71,12 +77,18 @@ export function createReel(o: ReelOptions): Reel {
   el.setAttribute('aria-label', s('film.label'));
   el.dataset.at = '0';
   if (!motion.pull) el.dataset.still = '';
-  el.innerHTML = `<div class="rl-controls">
+  const hasClip = frames.some((f) => f.kind === 'video');
+  /** Without auto-advance the film starts stopped: the toggle then only plays or pauses a clip. */
+  let stopped = !motion.auto;
+  const toggle = motion.auto || hasClip
+    ? `<button type="button" class="rl-btn rl-stop${stopped ? ' is-stopped' : ''}"><span class="rl-sr">${esc(s(stopped ? 'film.run' : 'film.stop'))}</span></button>`
+    : '';
+  el.innerHTML = `<div class="rl-stage"><div class="rl-gate" role="group" tabindex="0" aria-label="${esc(s('film.gate'))}"><div class="rl-strip">${frames.map((f, i) => frameHtml(f, i, n, s)).join('')}</div></div>${flowerHtml(o.flower)}</div>
+<div class="rl-controls">
 <button type="button" class="rl-btn rl-prev"><span class="rl-sr">${esc(s('film.prev'))}</span></button>
-${motion.auto ? `<button type="button" class="rl-btn rl-stop"><span class="rl-sr">${esc(s('film.stop'))}</span></button>` : ''}
+${toggle}
 <button type="button" class="rl-btn rl-next"><span class="rl-sr">${esc(s('film.next'))}</span></button>
 </div>
-<div class="rl-stage">${flowerHtml(o.flower)}<div class="rl-gate" role="group" tabindex="0" aria-label="${esc(s('film.gate'))}"><div class="rl-strip">${frames.map((f, i) => frameHtml(f, i, n, s)).join('')}</div></div></div>
 <p class="rl-sr" role="status" aria-live="polite"></p>`;
 
   const strip = el.querySelector<HTMLElement>('.rl-strip')!;
@@ -90,7 +102,6 @@ ${motion.auto ? `<button type="button" class="rl-btn rl-stop"><span class="rl-sr
   let shown = false;
   let pointing = false;
   let focused = false;
-  let stopped = false;
   let timer = 0;
   let pull: Animation | null = null;
   let settlePull: (() => void) | null = null;
@@ -203,6 +214,7 @@ ${motion.auto ? `<button type="button" class="rl-btn rl-stop"><span class="rl-sr
   });
   el.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
     go(e.key === 'ArrowLeft' ? -1 : 1, true);
   });
@@ -243,9 +255,15 @@ ${motion.auto ? `<button type="button" class="rl-btn rl-stop"><span class="rl-sr
     dispose() {
       shown = false;
       clearTimeout(timer);
+      if (pull !== null) pull.onfinish = null;
       settlePull?.();
       document.removeEventListener('visibilitychange', onVisibility);
-      for (const v of videos) v?.pause();
+      for (const v of videos) {
+        if (v === null) continue;
+        v.pause();
+        v.removeAttribute('src');
+        v.load();
+      }
     },
   };
 }

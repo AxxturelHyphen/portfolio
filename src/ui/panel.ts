@@ -43,6 +43,9 @@ const loadReel = (): Promise<ReelModule | null> => (reelChunk ??= import('./reel
 const TITLE_ID = 'pn-title';
 const STEPS = 100;
 const EXIT_TIMEOUT_MS = 1000;
+/** The panel shows after this even if the film's flower or first frame has not decoded yet. */
+const FILM_WAIT_MS = 1500;
+const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 /** From this step of setProgress the sections fade up (once per opening). */
 const UNFOLD_STEP = 50;
 
@@ -92,7 +95,9 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   let shownStep = -1;
   let selfClosed = false;
   let reel: Reel | null = null;
-  const keyOf = (id: ProjectId, s: State): string => `${id}:${s.lang}:${s.mode}`;
+  /** Bumped whenever the film is dropped: a mount still waiting for the chunk then lets go. */
+  let mountGen = 0;
+  const keyOf = (id: ProjectId, s: State): string => `${id}:${s.lang}:${s.mode}:${s.reduced ? 1 : 0}`;
 
   el.setAttribute('aria-labelledby', TITLE_ID);
   const barEl = document.createElement('div');
@@ -139,17 +144,36 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   }
 
   function dropReel(): void {
+    mountGen++;
     reel?.dispose();
     reel = null;
   }
 
-  /** The film under the case head; resolves when its flower and first frame are decoded, or at once without it. */
+  /** Paints the case and wires its media list; resolves when the first listed picture shows. */
+  function paintCase(p: Project, lang: Lang, withMedia: boolean): Promise<void> {
+    body.innerHTML = render(p, lang, TITLE_ID, withMedia);
+    const media = el.querySelectorAll<HTMLImageElement>('img[data-media]');
+    media.forEach((img, i) => {
+      if (i > 0) img.addEventListener('load', () => void reveal(img), { once: true });
+    });
+    const first = media[0];
+    return first === undefined ? Promise.resolve() : reveal(first);
+  }
+
+  /** The film under the case head; resolves when its flower and first frame are decoded. Without the chunk the case
+   * gets its media list back instead. */
   async function mountReel(p: Project, lang: Lang, forKey: string): Promise<void> {
     if (film === null) return;
+    const gen = mountGen;
     const mod = await loadReel();
-    if (mod === null || key !== forKey) return;
+    if (gen !== mountGen || key !== forKey) return;
+    if (mod === null) {
+      await paintCase(p, lang, true);
+      return;
+    }
     const s = (k: string): string => c.strings[lang][k] ?? k;
     const next = mod.createReel({ project: p, lang, s, flower: film.flowerOf(p.id), motion: motionOf(m.state.reduced, film.still) });
+    reel?.dispose();
     body.querySelector('.c-head')?.after(next.el);
     reel = next;
     showReel(m.state);
@@ -184,17 +208,11 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
         current = id;
         paintChrome(lang);
         dropReel();
-        body.innerHTML = render(p, lang, TITLE_ID, !withFilm);
+        const shown = paintCase(p, lang, !withFilm);
         if (hadFocus) el.querySelector<HTMLElement>(`#${TITLE_ID}`)?.focus({ preventScroll: true });
         paintMode(barEl, m.state.mode, isPending(m.state), c.strings, lang);
         page.scrollTop = 0;
-        const media = el.querySelectorAll<HTMLImageElement>('img[data-media]');
-        media.forEach((img, i) => {
-          if (i > 0) img.addEventListener('load', () => void reveal(img), { once: true });
-        });
-        const first = media[0];
-        const shown = first === undefined ? Promise.resolve() : reveal(first);
-        ready = withFilm ? Promise.all([shown, mountReel(p, lang, next)]).then(() => undefined) : shown;
+        ready = withFilm ? Promise.race([Promise.all([shown, mountReel(p, lang, next)]).then(() => undefined), wait(FILM_WAIT_MS)]) : shown;
       }
       /** Repeat calls share one promise; PANEL_READY always carries the newest gen asked for. */
       return ready.then(() => {

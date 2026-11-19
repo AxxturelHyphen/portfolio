@@ -7,6 +7,7 @@ import type { Texture } from 'three';
 import { spring } from '../core/spring.ts';
 import { OPEN_HALF, STREAM, wingOpacityOf } from '../core/motion.ts';
 import { buildBed, type BuildAtlas, type FlowerRef, type WingRef } from './bed.build.ts';
+import { UNFURL } from './flower.ts';
 import type { GardenRig } from './camera.ts';
 import type { BedScene3 } from './layout.ts';
 import type { GardenMemory } from './memory.ts';
@@ -234,6 +235,7 @@ export class StreamBed implements Bed {
 
   leave(): void {
     if (this.state === 'active') this.state = 'ready';
+    this.leaveEntered();
   }
 
   setLang(lang: Lang): void {
@@ -260,11 +262,16 @@ export class StreamBed implements Bed {
       const f = this.flowers[i];
       if (f === undefined) continue;
       const entering = s.project !== null && s.slot === f.flower.slot.id && ENTERING.includes(s.phase);
-      f.flower.setEntered(entering ? ch.open.value / OPEN_HALF : 0, entering && s.phase !== 'closing');
+      f.flower.setEntered(entering ? ch.open.value / (OPEN_HALF * UNFURL.lead) : 0, entering && s.phase !== 'closing');
       f.flower.update(c);
       if (f.flower.dirty) f.batch.writer.commit(f.at, f.at + f.flower.write(f.batch.writer, f.at));
     }
     this.behaviour?.update?.(c);
+  }
+
+  /** No flower stays entered once the bed is left or freed. */
+  private leaveEntered(): void {
+    for (let i = 0; i < this.flowers.length; i++) this.flowers[i]?.flower.setEntered(0, false);
   }
 
   /** The entered project's flower: its unfurl, or 0 when none is entered (test hook). */
@@ -306,6 +313,7 @@ export class StreamBed implements Bed {
 
   /** Frees every GPU object and the prefetched bytes; gpuBytes returns to 0. */
   dispose(): void {
+    this.leaveEntered();
     this.gen = -1;
     this.pageBytes = null;
     this.abort?.abort();

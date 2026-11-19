@@ -16,7 +16,7 @@ async function expectFilm(page: Page): Promise<void> {
   expect(await page.locator('#panel .rl-frame').count()).toBeGreaterThanOrEqual(2);
   await expect(page.locator('#panel .rl-frame').first().locator('.rl-blank'), 'a gap is blank film').toHaveAttribute('aria-label', 'Frame to come');
   await expect(page.locator('#panel .rl-frame').first().locator('.rl-cap')).toBeVisible();
-  expect(await page.locator('#panel .rl img:not(.rl-bloom):not(.rl-glow), #panel .rl video').count(), 'no picture invented for a gap').toBe(0);
+  expect(await page.locator('#panel .rl img:not(.rl-bloom):not(.rl-tint), #panel .rl video').count(), 'no picture invented for a gap').toBe(0);
   await expect.poll(() => page.locator('#panel .rl-bloom').evaluate((n) => (n as HTMLImageElement).naturalWidth), { message: 'the flower cutout loads with the panel' }).toBeGreaterThan(0);
   const box = await film(page).boundingBox();
   const width = await page.evaluate(() => document.documentElement.clientWidth);
