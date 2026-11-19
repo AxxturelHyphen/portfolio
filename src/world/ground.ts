@@ -97,7 +97,62 @@ function buildClumps(g: GroundData, scenes: readonly BedScene3[], tier: Tier, mo
     const [x, z] = inside[i] as [number, number];
     out.push(x, z, Math.floor(r() * 3), (r() * 2 - 1) * 0.5, CLUMP.h[0] + r() * (CLUMP.h[1] - CLUMP.h[0]));
   }
+  if (mode === 'roam') roamBands(g, tier === 'low' ? ROAM_BANDS.low : ROAM_BANDS.high, out);
   return out;
+}
+
+/**
+ * Free roam's extra grass in bands, not a scatter (cook/ROAM_LOOK.md F): an irregular low edging 0.3 to 1.2 m off both
+ * path edges, taller tufts along the wall foot and a few islands on the lawn, by these shares, on their own seed so the
+ * lawn planted after them stays as it was. Nothing lands on the path, in a puddle or in the pond.
+ */
+export const ROAM_BANDS = {
+  high: 270, low: 120, edge: 0.6, wall: 0.25,
+  edgeOff: [0.3, 1.2], edgeH: [0.15, 0.3], wallZ: [0.3, 1.0], wallH: [0.3, 0.5], islandH: [0.2, 0.4], islandNearZ: 6.5, tries: 20,
+} as const;
+
+/** Ground distance from (x, z) to the path's centre line. */
+export function pathDistance(points: readonly [number, number][], x: number, z: number): number {
+  let d = Infinity;
+  for (let i = 0; i + 1 < points.length; i++) {
+    const [x0, z0] = points[i] as [number, number];
+    const [x1, z1] = points[i + 1] as [number, number];
+    const dx = x1 - x0;
+    const dz = z1 - z0;
+    const t = Math.min(1, Math.max(0, ((x - x0) * dx + (z - z0) * dz) / Math.max(1e-9, dx * dx + dz * dz)));
+    d = Math.min(d, Math.hypot(x - x0 - t * dx, z - z0 - t * dz));
+  }
+  return d;
+}
+
+function roamBands(g: GroundData, count: number, out: number[]): void {
+  const r = rng(0x62616e64);
+  const b = ROAM_BANDS;
+  const half = g.path.width / 2;
+  const [ex0, ex1] = g.enclosure.x;
+  const span = (lo: number, hi: number): number => lo + r() * (hi - lo);
+  for (let i = 0; i < count; i++) {
+    const pick = i / count;
+    for (let t = 0; t < b.tries; t++) {
+      const x = span(ex0 + CLUMP_WALL_CLEAR, ex1 - CLUMP_WALL_CLEAR);
+      let z: number;
+      let h: number;
+      if (pick < b.edge) {
+        const off = half + span(b.edgeOff[0], b.edgeOff[1]);
+        z = pathZAt(g.path.points, x) + (r() < 0.5 ? -off : off);
+        h = span(b.edgeH[0], b.edgeH[1]);
+      } else if (pick < b.edge + b.wall) {
+        z = g.wall.z + span(b.wallZ[0], b.wallZ[1]);
+        h = span(b.wallH[0], b.wallH[1]);
+      } else {
+        z = span(pathZAt(g.path.points, x) + half + 1.5, b.islandNearZ);
+        h = span(b.islandH[0], b.islandH[1]);
+      }
+      if (!Number.isFinite(z) || pathDistance(g.path.points, x, z) < half + b.edgeOff[0] || !clearOf(g, x, z)) continue;
+      out.push(x, z, Math.floor(r() * 3), (r() * 2 - 1) * 0.5, h);
+      break;
+    }
+  }
 }
 
 /**

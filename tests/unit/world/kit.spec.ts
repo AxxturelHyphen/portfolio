@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type { AtlasManifest, BedId, SpriteRect } from '../../../src/types.ts';
-import { CLUMP_STRIDE, WALL_STRIDE, buildGround, shadowLengthAt, wallHeightAt } from '../../../src/world/ground.ts';
+import { CLUMP_STRIDE, ROAM_BANDS, WALL_STRIDE, buildGround, pathDistance, shadowLengthAt, wallHeightAt } from '../../../src/world/ground.ts';
+import { builtIn } from '../../../src/world/mode.ts';
 import type { BedScene3, WorldLayout } from '../../../src/world/layout.ts';
 import { MEMORY_KEY, createMemory, type KeyValue } from '../../../src/world/memory.ts';
 import { placedSize, resolveSprite } from '../../../src/world/sprites.ts';
@@ -18,7 +19,7 @@ test('clumps: at most 150 (80 on low), every cutout foot marked clump gets two, 
   expect(high.clumpCount).toBeLessThanOrEqual(150);
   expect(high.clumpCount).toBeGreaterThan(100);
   expect(low.clumpCount).toBeLessThanOrEqual(80);
-  const feet = scenes.flatMap((s) => s.layers.flatMap((l) => l.items)).filter((i) => i.foot === 'clump').length;
+  const feet = scenes.flatMap((s) => s.layers.flatMap((l) => l.items)).filter((i) => i.foot === 'clump' && builtIn(i, 'rail')).length;
   expect(high.clumps.length).toBe(high.clumpCount * CLUMP_STRIDE);
   expect(high.clumpCount).toBeGreaterThanOrEqual(feet * 2);
   expect(high.wall.length).toBe(high.wallCount * WALL_STRIDE);
@@ -27,6 +28,31 @@ test('clumps: at most 150 (80 on low), every cutout foot marked clump gets two, 
   expect(wallHeightAt(garden.ground, 40)).toBe(1.1);
   expect(shadowLengthAt(garden.ground, garden.anchors, 11)).toBe(0.5);
   expect(shadowLengthAt(garden.ground, garden.anchors, 42)).toBe(1.1);
+});
+
+test('free roam adds its grass bands: mostly along the path edges, never on the path, in the pond or past the end walls', () => {
+  for (const tier of ['high', 'low'] as const) {
+    const rail = buildGround(garden.ground, scenes, tier, 'rail');
+    const roam = buildGround(garden.ground, scenes, tier, 'roam');
+    const base = roam.clumpCount - ROAM_BANDS[tier];
+    expect(base, tier).toBeLessThanOrEqual(garden.ground.clumps[tier]);
+    expect(roam.clumpCount, tier).toBeGreaterThan(rail.clumpCount);
+    expect(base, tier).toBeGreaterThan(0);
+    expect(buildGround(garden.ground, scenes, tier, 'roam').dress).toEqual(roam.dress);
+    const half = garden.ground.path.width / 2;
+    const p = garden.ground.pond;
+    let edge = 0;
+    for (let i = base; i < roam.clumpCount; i++) {
+      const x = roam.clumps[i * CLUMP_STRIDE]!;
+      const z = roam.clumps[i * CLUMP_STRIDE + 1]!;
+      const d = pathDistance(garden.ground.path.points, x, z);
+      expect(d).toBeGreaterThanOrEqual(half + ROAM_BANDS.edgeOff[0] - 1e-6);
+      expect(((x - p.x) / p.rx) ** 2 + ((z - p.z) / p.rz) ** 2).toBeGreaterThan(1);
+      expect(x > garden.ground.enclosure.x[0] && x < garden.ground.enclosure.x[1]).toBe(true);
+      if (d < half + ROAM_BANDS.edgeOff[1] + 0.3) edge++;
+    }
+    expect(edge / ROAM_BANDS[tier]).toBeGreaterThan(0.5);
+  }
 });
 
 function store(initial: string | null, fail = false): KeyValue & { data: string | null } {
