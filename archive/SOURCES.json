@@ -1473,7 +1473,8 @@
    "category": "birds",
    "sha256": "1ee8d50b143aa5915b62511917386fbe7d1a73c6842fb2c0ec9e2037c5468aee",
    "usedIn": [
-    "sa/swallow-hero"
+    "sa/swallow-hero",
+    "salida"
    ],
    "edits": [
     {
@@ -1591,7 +1592,8 @@
    "category": "birds",
    "sha256": "3a7e78a4a7fd38a04cefa16b9129aeeaebfc15ff9ce86f13707c763f89a12cd6",
    "usedIn": [
-    "sa/nightingale"
+    "sa/nightingale",
+    "salida"
    ],
    "edits": [
     {
@@ -1859,7 +1861,8 @@
    "category": "birds",
    "sha256": "5a05cdd0c37b743f155d8b1bb8e04dbfa83751196cf8ca3a9aaa52b762dd1dd7",
    "usedIn": [
-    "sa/swallow-pair"
+    "sa/swallow-pair",
+    "salida"
    ],
    "edits": [
     {
@@ -3156,8 +3159,7 @@
    "category": "garden",
    "sha256": "c8d44ed8b7bf6efc4378a2f85dbcbf7a810aaefa4638a349947c71a658f17722",
    "usedIn": [
-    "gr/door",
-    "gruta"
+    "gr/door"
    ],
    "edits": [
     {
@@ -3637,7 +3639,8 @@
    "category": "garden",
    "sha256": "4b4bc5b890724c2192827e6e1350cfafcbbd82c8fc9944db652511c45ba3e230",
    "usedIn": [
-    "sa/canopy"
+    "sa/canopy",
+    "salida"
    ],
    "edits": [
     {
@@ -3673,6 +3676,7 @@
    "sha256": "fb14d2e78466bed216547b0c4a95834884d2451b4b5969e6864d09436f6516e2",
    "usedIn": [
     "sa/branch",
+    "salida",
     "semillero",
     "v/cypress"
    ],
@@ -5142,7 +5146,8 @@
    "usedIn": [
     "gr/rosette-1",
     "gr/rosette-2",
-    "gr/rosette-3"
+    "gr/rosette-3",
+    "gruta"
    ],
    "edits": [
     {
@@ -5867,6 +5872,7 @@
    "sha256": "54fcb3437aa9592809aef177318f5d55c5ad2d950b04be2c5b2845af1c34de46",
    "usedIn": [
     "fg/lantern",
+    "salida",
     "sh/lantern-globe"
    ],
    "edits": [
@@ -6691,7 +6697,8 @@
    "category": "props",
    "sha256": "d3aef76e18e1de9c01f4a23cee97f47fd74758a1460098da107ad99946a4e4c6",
    "usedIn": [
-    "sa/sign"
+    "sa/sign",
+    "salida"
    ],
    "edits": [
     {
@@ -7561,6 +7568,9 @@
     "in/leaf",
     "in/rose"
    ],
+   "shipped": [
+    "public/frames/garagic-2.avif"
+   ],
    "edits": [
     {
      "stage": "cutout",
@@ -7602,6 +7612,9 @@
     "ro/comp-white",
     "rosaleda"
    ],
+   "shipped": [
+    "public/frames/php-playground-2.avif"
+   ],
    "edits": [
     {
      "stage": "cutout",
@@ -7634,6 +7647,9 @@
     "ro/comp-dark-foot",
     "ro/leaf-wing",
     "rosaleda"
+   ],
+   "shipped": [
+    "public/frames/php-playground-1.avif"
    ],
    "edits": [
     {
@@ -7675,6 +7691,9 @@
    "usedIn": [
     "rosaleda",
     "w/gallica"
+   ],
+   "shipped": [
+    "public/frames/garagic-1.avif"
    ],
    "edits": [
     {
@@ -9747,6 +9766,9 @@
     "semillero",
     "sh/clump-3"
    ],
+   "shipped": [
+    "public/frames/ai-engineering-2.avif"
+   ],
    "edits": [
     {
      "stage": "cutout",
@@ -9884,6 +9906,9 @@
     "se/bud-b",
     "semillero"
    ],
+   "shipped": [
+    "public/frames/ai-engineering-1.avif"
+   ],
    "edits": [
     {
      "stage": "cutout",
@@ -9963,7 +9988,8 @@
    "category": "water",
    "sha256": "79eaa118c8a015a9d1959c2f9142a3151cf59b3f8a57aa854a7a12f18afa1da8",
    "usedIn": [
-    "es/lotus-leaf"
+    "es/lotus-leaf",
+    "estanque"
    ],
    "edits": [
     {
@@ -10066,6 +10092,9 @@
     "se/physalis",
     "semillero"
    ],
+   "shipped": [
+    "public/frames/ml-math-1.avif"
+   ],
    "edits": [
     {
      "stage": "cutout",
@@ -10096,6 +10125,9 @@
    "usedIn": [
     "se/drawer-1",
     "semillero"
+   ],
+   "shipped": [
+    "public/frames/ml-math-2.avif"
    ],
    "edits": [
     {
@@ -10521,6 +10553,9 @@
     "es/lily-c",
     "es/lily-d"
    ],
+   "shipped": [
+    "public/frames/adhd-guija-1.avif"
+   ],
    "edits": [
     {
      "stage": "cutout",
@@ -10649,6 +10684,9 @@
    "sha256": "bfd13122cef2bc49fab4cc491c23429c321102483af3741cbdfe7c5a62d5325e",
    "usedIn": [
     "es/lily-b"
+   ],
+   "shipped": [
+    "public/frames/adhd-guija-2.avif"
    ],
    "edits": [
     {

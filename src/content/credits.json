@@ -95,7 +95,8 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/nightingale"
+      "sa/nightingale",
+      "salida"
      ]
     },
     {
@@ -149,7 +150,8 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/swallow-hero"
+      "sa/swallow-hero",
+      "salida"
      ]
     },
     {
@@ -403,7 +405,8 @@
       "retouched"
      ],
      "usedIn": [
-      "sa/sign"
+      "sa/sign",
+      "salida"
      ]
     },
     {
@@ -510,6 +513,7 @@
      ],
      "usedIn": [
       "fg/lantern",
+      "salida",
       "sh/lantern-globe"
      ]
     },
@@ -1114,6 +1118,7 @@
      ],
      "usedIn": [
       "sa/branch",
+      "salida",
       "semillero",
       "v/cypress"
      ]
@@ -1322,8 +1327,7 @@
       "retouched"
      ],
      "usedIn": [
-      "gr/door",
-      "gruta"
+      "gr/door"
      ]
     },
     {
@@ -1692,7 +1696,8 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/canopy"
+      "sa/canopy",
+      "salida"
      ]
     },
     {
@@ -1815,7 +1820,8 @@
       "tinted"
      ],
      "usedIn": [
-      "es/lotus-leaf"
+      "es/lotus-leaf",
+      "estanque"
      ]
     },
     {
@@ -2100,7 +2106,8 @@
      "usedIn": [
       "gr/rosette-1",
       "gr/rosette-2",
-      "gr/rosette-3"
+      "gr/rosette-3",
+      "gruta"
      ]
     },
     {
@@ -2232,7 +2239,8 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/swallow-pair"
+      "sa/swallow-pair",
+      "salida"
      ]
     },
     {

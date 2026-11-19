@@ -37,6 +37,13 @@ export function writeFile(path: string, data: string | Uint8Array): void {
 
 export const writeJson = (path: string, v: unknown): void => writeFile(path, `${JSON.stringify(v, null, 1)}\n`);
 
+/** archive/raw/<category>/<file>; entries may give the path relative to archive/raw/ or to their category folder. */
+export function rawPath(file: string, category: string): string {
+  if (file.startsWith('archive/')) return file;
+  const inCategory = join('archive/raw', category, file);
+  return existsSync(inCategory) ? inCategory : join('archive/raw', file);
+}
+
 export const BED_DIR = 'content/beds';
 
 export function bedFiles(): string[] {

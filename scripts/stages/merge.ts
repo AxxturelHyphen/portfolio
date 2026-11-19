@@ -7,8 +7,9 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import type { AtlasManifest } from '../../src/types.ts';
-import { ATLAS_OUT, readJson, sha256, writeJson, type Cache } from './common.ts';
+import { ATLAS_OUT, rawPath, readJson, sha256, writeJson, type Cache } from './common.ts';
 import { EDITS, type Edit } from './sprites.ts';
+import { FRAME_MANIFEST, FRAME_OUT, type FrameEntry } from './frames.ts';
 import { THUMB_OUT, type ThumbEntry } from './thumbs.ts';
 
 export interface SourceEntry { id: string; title: string; creator: string; date: string; institution: string; sourceUrl: string; license: string; licenseUrl: string; attribution: string; file: string; need: string }
@@ -32,13 +33,6 @@ export function normalizeLicence(raw: string): string | null {
   return null;
 }
 
-/** archive/raw/<category>/<file>; entries may give the path relative to archive/raw/ or to their category folder. */
-function rawPath(file: string, category: string): string {
-  if (file.startsWith('archive/')) return file;
-  const inCategory = join('archive/raw', category, file);
-  return existsSync(inCategory) ? inCategory : join('archive/raw', file);
-}
-
 function shipUse(): Map<string, Set<string>> {
   const use = new Map<string, Set<string>>();
   if (!existsSync(ATLAS_OUT)) return use;
@@ -49,12 +43,13 @@ function shipUse(): Map<string, Set<string>> {
   return use;
 }
 
-/** Herbario thumbnails per source id (public/thumbs/manifest.json, written by the thumbs stage). */
-function thumbUse(): Map<string, string[]> {
+/** Shipped files per source id: the Herbario thumbnails (thumbs stage) and the film's plate frames (frames stage). */
+function fileUse(): Map<string, string[]> {
   const use = new Map<string, string[]>();
-  const manifest = join(THUMB_OUT, 'manifest.json');
-  if (!existsSync(manifest)) return use;
-  for (const t of readJson<{ thumbs: ThumbEntry[] }>(manifest).thumbs) use.set(t.source, [...(use.get(t.source) ?? []), join(THUMB_OUT, t.file)]);
+  const add = (source: string, file: string): void => void use.set(source, [...(use.get(source) ?? []), file]);
+  const thumbs = join(THUMB_OUT, 'manifest.json');
+  if (existsSync(thumbs)) for (const t of readJson<{ thumbs: ThumbEntry[] }>(thumbs).thumbs) add(t.source, join(THUMB_OUT, t.file));
+  if (existsSync(FRAME_MANIFEST)) for (const f of readJson<{ frames: FrameEntry[] }>(FRAME_MANIFEST).frames) add(f.source, join(FRAME_OUT, f.file));
   return use;
 }
 
@@ -72,7 +67,7 @@ export function runMerge(cache: Cache): string {
   const seen = new Set<string>();
   const sources: MergedSource[] = [];
   const use = shipUse();
-  const thumbs = thumbUse();
+  const shippedFiles = fileUse();
   const edits = existsSync(EDITS) ? readJson<Record<string, Edit[]>>(EDITS) : {};
   const files = existsSync(SOURCES_DIR) ? readdirSync(SOURCES_DIR).filter((f) => f.endsWith('.json')).sort() : [];
   for (const f of files) {
@@ -116,7 +111,7 @@ export function runMerge(cache: Cache): string {
         cache.set(key, stamp);
         cache.set(`${key}:v`, digest);
       }
-      const shipped = thumbs.get(e.id);
+      const shipped = shippedFiles.get(e.id);
       sources.push({ ...e, license, file, category, sha256: digest, usedIn: [...(use.get(e.id) ?? [])].sort(), ...(shipped === undefined ? {} : { shipped }), edits: use.has(e.id) ? (edits[e.id] ?? []) : [] });
     }
   }

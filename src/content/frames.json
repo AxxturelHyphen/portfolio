@@ -1,0 +1,74 @@
+{
+ "frames": [
+  {
+   "project": "garagic",
+   "file": "garagic-1.avif",
+   "source": "cma_1955_471",
+   "plateTitle": "Les Roses: Rosa Gallica",
+   "name": "Rosa Gallica"
+  },
+  {
+   "project": "garagic",
+   "file": "garagic-2.avif",
+   "source": "cma_1959_14",
+   "plateTitle": "Cabbage Rose (Rosa Centifolia Simplex)",
+   "name": "Cabbage Rose"
+  },
+  {
+   "project": "php-playground",
+   "file": "php-playground-1.avif",
+   "source": "cma_1965_293",
+   "plateTitle": "The Roses: Rosa Gallica Purpurea Velutina Parva",
+   "name": "Rosa Gallica Purpurea"
+  },
+  {
+   "project": "php-playground",
+   "file": "php-playground-2.avif",
+   "source": "cma_1965_291",
+   "plateTitle": "Les Roses: Rosa Damascena, subalba",
+   "name": "Rosa Damascena, subalba"
+  },
+  {
+   "project": "adhd-guija",
+   "file": "adhd-guija-1.avif",
+   "source": "com-victoria-regia-pl4-opening-stages",
+   "plateTitle": "Victoria regia, or, The great water lily of America, plate 4 (second-night opening stages)",
+   "name": "Victoria regia, plate 4"
+  },
+  {
+   "project": "adhd-guija",
+   "file": "adhd-guija-2.avif",
+   "source": "com-victoria-regia-pl6-bud-opening",
+   "plateTitle": "Victoria regia, or, The great water lily of America, plate 6 (bud opening)",
+   "name": "Victoria regia, plate 6"
+  },
+  {
+   "project": "ml-math",
+   "file": "ml-math-1.avif",
+   "source": "wel-zee8ph2h-chinese-lantern-watercolour",
+   "plateTitle": "Chinese lantern (Physalis alkekengi): fruiting stem. Watercolour by B. Bird.",
+   "name": "Chinese lantern"
+  },
+  {
+   "project": "ml-math",
+   "file": "ml-math-2.avif",
+   "source": "wel-fkrcnr8h-magnolia-fruit",
+   "plateTitle": "A Magnolia species: flowering stem with labelled floral segments, fruit and seed. Coloured etching by G. D. Ehret, c.1737, after himself.",
+   "name": "Magnolia"
+  },
+  {
+   "project": "ai-engineering",
+   "file": "ai-engineering-1.avif",
+   "source": "cma-132619-garden-hyacinth",
+   "plateTitle": "The Botanical Magazine or Flower Garden Displayed:  Garden Hyacinth",
+   "name": "Garden Hyacinth"
+  },
+  {
+   "project": "ai-engineering",
+   "file": "ai-engineering-2.avif",
+   "source": "cma-118176-japanese-iris",
+   "plateTitle": "Japanese Iris (Large Blue Iris)",
+   "name": "Japanese Iris"
+  }
+ ]
+}

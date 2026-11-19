@@ -2,7 +2,8 @@
 // npm run assets [stage ...]: the incremental, cached asset pipeline (cook/ARCH.md section 3).
 // Stages in order: vendor (Basis transcoder into public/basis/), placeholder (flat sprites for whatever a bed
 // places that no recipe makes yet), sprites (the real archive sprites of archive/recipes/*.json), pack, encode,
-// thumbs (Herbario specimens), merge (archive/SOURCES.json, after the atlases and thumbs so usedIn and shipped are current), credits. `sheets` (contact sheets of every
+// thumbs (Herbario specimens), frames (the plates of the project film's empty frames), merge (archive/SOURCES.json,
+// after the atlases, thumbs and frames so usedIn and shipped are current), credits. `sheets` (contact sheets of every
 // real sprite on the night ground) runs only when named. With no argument every default stage runs; each one skips
 // work whose inputs are unchanged (archive/work/cache.json). Ends with the per-bed payload and GPU memory report.
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
@@ -16,10 +17,11 @@ import { SOURCES_DIR, runMerge } from './stages/merge.ts';
 import { pageFiles, runPack } from './stages/pack.ts';
 import { RECIPE_DIR } from './stages/recipe.ts';
 import { runSheets } from './stages/sheets.ts';
-import { runThumbs } from './stages/thumbs.ts';
+import { THUMB_OUT, runThumbs, type ThumbEntry } from './stages/thumbs.ts';
+import { runFrames } from './stages/frames.ts';
 import { REAL_CATALOG, realPng, runSprites, type RealCatalog } from './stages/sprites.ts';
 
-const STAGES = ['vendor', 'placeholder', 'sprites', 'pack', 'encode', 'thumbs', 'merge', 'credits', 'sheets'] as const;
+const STAGES = ['vendor', 'placeholder', 'sprites', 'pack', 'encode', 'thumbs', 'frames', 'merge', 'credits', 'sheets'] as const;
 const ON_DEMAND: readonly Stage[] = ['sheets'];
 type Stage = (typeof STAGES)[number];
 const BASIS_SRC = 'node_modules/three/examples/jsm/libs/basis';
@@ -62,6 +64,12 @@ function pack(cache: Cache): { line: string; ids: AtlasManifest['id'][] } {
 function archiveSources(): { id: string; file: string; title: string; notes?: string; category: string }[] {
   if (!existsSync(SOURCES_DIR)) return [];
   return readdirSync(SOURCES_DIR).filter((f) => f.endsWith('.json')).flatMap((f) => readJson<{ id: string; file: string; title: string; notes?: string }[]>(join(SOURCES_DIR, f)).map((e) => ({ ...e, category: basename(f, '.json') })));
+}
+
+/** The plates the Herbario specimens are cut from: the film's frames leave them to the Herbario. */
+function specimenSources(): Set<string> {
+  const manifest = join(THUMB_OUT, 'manifest.json');
+  return new Set(existsSync(manifest) ? readJson<{ thumbs: ThumbEntry[] }>(manifest).thumbs.map((t) => t.source) : []);
 }
 
 const readJsonOr = (p: string): AtlasManifest => (existsSync(p) ? readJson<AtlasManifest>(p) : { id: 'shared', hash: '', pages: [], sprites: {}, blooms: {} });
@@ -119,6 +127,7 @@ async function main(): Promise<void> {
       for (const l of report(ids)) console.log(l);
     }
     if (run('thumbs')) console.log(runThumbs(archiveSources()));
+    if (run('frames')) console.log(runFrames(archiveSources(), specimenSources()));
     if (run('merge')) console.log(runMerge(cache));
     if (run('credits')) console.log(runCredits());
     if (run('sheets')) console.log(runSheets());
