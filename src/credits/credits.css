@@ -1,0 +1,218 @@
+/*
+ * The credits register (src/credits/view.ts): one modal <dialog>, a sheet of the Herbario's paper over the garden or
+ * the album, scrolling inside itself. The title row with the close button stays at the top while the list scrolls.
+ * Images by holder flow in up to three columns, every entry kept whole; one column on phones. It enters with
+ * opacity and transform only, and not at all under reduced motion.
+ */
+
+/* Wide screens: the sheet hangs below the row of tags (language, Download CV, Exit), clear of them. */
+.cr {
+  --cr-top: 96px;
+  width: min(76rem, calc(100vw - 2 * var(--edge)));
+  max-width: none;
+  max-height: calc(100dvh - var(--cr-top) - var(--edge));
+  margin: var(--cr-top) auto auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  box-shadow: var(--shadow-sheet), 0 30px 80px -30px rgb(13 10 30 / 0.7);
+  overflow: auto;
+  overscroll-behavior: contain;
+  opacity: 0;
+  transition: opacity var(--dur-ui) var(--ease-out), transform var(--dur-ui) var(--ease-out);
+}
+
+.cr[open] {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.cr::backdrop {
+  background: rgb(13 10 30 / 0.45);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cr {
+    transform: translate3d(0, 12px, 0);
+  }
+
+  .cr[open] {
+    transform: none;
+
+    @starting-style {
+      transform: translate3d(0, 12px, 0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cr {
+    transition: none;
+  }
+}
+
+.cr-head {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px var(--gutter) 14px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--sheet);
+}
+
+.cr-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--display-md);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.cr-close {
+  flex: none;
+  min-height: var(--target);
+  padding: 0 18px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-md);
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out);
+}
+
+.cr-close:hover {
+  border-color: var(--rose);
+  color: var(--rose-ink);
+}
+
+.cr :focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 2px;
+}
+
+.cr-intro {
+  max-width: var(--measure);
+  margin: 20px var(--gutter) 0;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.cr-part {
+  padding: 0 var(--gutter);
+}
+
+.cr-part:last-child {
+  padding-bottom: 40px;
+}
+
+.cr-part-title {
+  margin: 32px 0 4px;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--display-sm);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.cr-groups,
+.cr-fonts {
+  columns: 3 18rem;
+  column-gap: 40px;
+}
+
+.cr-holder {
+  margin: 20px 0 2px;
+  color: var(--rose-ink);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--text-lg);
+  font-weight: 400;
+  line-height: 1.25;
+  break-after: avoid;
+}
+
+.cr-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cr-item {
+  padding: 8px 0 9px;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  break-inside: avoid;
+}
+
+.cr-item p {
+  margin: 0;
+}
+
+.cr-item a {
+  color: inherit;
+  text-decoration: underline 1px rgb(29 27 24 / 0.35);
+  text-underline-offset: 3px;
+}
+
+.cr-item a:hover {
+  color: var(--rose-ink);
+  text-decoration-color: var(--rose);
+}
+
+.cr-name {
+  color: var(--ink);
+}
+
+.cr-who {
+  color: var(--ink-2);
+}
+
+.cr-lic,
+.cr-line {
+  color: var(--ink-3);
+}
+
+.cr-change {
+  white-space: nowrap;
+}
+
+.cr-line {
+  margin-top: 2px;
+  font-style: italic;
+}
+
+@media (max-width: 44.99rem) {
+  .cr {
+    --cr-top: 8px;
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .cr-head {
+    padding-top: 12px;
+    padding-bottom: 10px;
+  }
+
+  .cr-title {
+    font-size: var(--display-sm);
+  }
+}

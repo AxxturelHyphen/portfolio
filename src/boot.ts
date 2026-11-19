@@ -15,6 +15,7 @@ import { channelsSettled, createLoop } from './core/loop.ts';
 import { createMachine, type GardenGeo } from './core/machine.ts';
 import { panelOf } from './core/motion.ts';
 import { startRouter } from './core/router.ts';
+import { startCreditsRoute } from './ui/credits.route.ts';
 import { createPanel, type CaseRenderer, type FilmSource } from './ui/panel.ts';
 import { createToggles, disableGarden } from './ui/toggles.ts';
 import type { Content, Lang, Mode } from './types.ts';
@@ -145,6 +146,7 @@ const machine = createMachine(content, {
 });
 const loop = createLoop(q);
 startRouter(machine, content);
+startCreditsRoute(machine, content.strings);
 const toggles = togglesEl ? createToggles(togglesEl, machine, content.strings) : null;
 toggles?.setLang(lang);
 const panel = dialog instanceof HTMLDialogElement ? createPanel(dialog, content, machine, renderCase, film) : null;

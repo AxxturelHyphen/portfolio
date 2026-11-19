@@ -7,10 +7,13 @@ import { causeOf } from './machine.ts';
  * The URL mirrors state.intent at all times and is written when the intent changes, never when a transition settles.
  * User place changes push; CLOSE and BACK go back when the previous entry is the target, else replace; mode,
  * language and scroll changes replace; popstate sends ROUTE and only writes to normalise.
+ * The credits hash is an overlay, not a place (ui/credits.route.ts owns it): at load it stands over the overview, it
+ * is never rewritten (mode and language still write the query), and arriving on it by popstate moves nobody.
  */
 
 const BED_IDS: readonly string[] = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'];
 const OVERVIEW: Place = { k: 'overview' };
+export const CREDITS_HASH = '#/credits';
 
 function parsePlace(hash: string, projects: readonly Pick<Project, 'id'>[]): Place {
   const bed = /^#\/b\/([a-z]+)$/.exec(hash);
@@ -67,7 +70,10 @@ export function startRouter(m: Machine, c: { readonly projects: readonly Pick<Pr
   let pendingBack = false;
 
   const here = (): string => loc.search + loc.hash;
-  const urlOf = (s: State): string => formatRoute(s.intent, s.mode, s.lang, new URLSearchParams(loc.search));
+  const urlOf = (s: State): string => {
+    const url = formatRoute(s.intent, s.mode, s.lang, new URLSearchParams(loc.search));
+    return loc.hash === CREDITS_HASH ? url.slice(0, url.indexOf('#')) + CREDITS_HASH : url;
+  };
   const replace = (url: string): void => h.replaceState({ prev: prevOf(h.state) } satisfies Entry, '', url);
   const push = (url: string): void => h.pushState({ prev: here() } satisfies Entry, '', url);
 
@@ -100,6 +106,7 @@ export function startRouter(m: Machine, c: { readonly projects: readonly Pick<Pr
       sync('push');
       return;
     }
+    if (loc.hash === CREDITS_HASH) return;
     m.send({ type: 'ROUTE', route: parseRoute(loc.href, c) });
     sync('replace');
   });

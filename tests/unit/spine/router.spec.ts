@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { startRouter } from '../../../src/core/router.ts';
+import { CREDITS_HASH, startRouter } from '../../../src/core/router.ts';
 import { content, expectUrlMatches, FakeHost, machine, run, settle } from './fixture.ts';
 
 function boot(url: string, mode: 'garden' | 'herbario' = 'garden') {
@@ -75,4 +75,20 @@ test('a new intent while history.back() is pending is pushed once back lands', (
   expect(host.entries.length).toBe(3);
   expectUrlMatches(m, host);
   settle(m);
+});
+
+test('the credits hash is an overlay: kept on a deep link and a language change; back or forward to it moves nobody', () => {
+  const { host, m } = boot(CREDITS_HASH);
+  expect(m.state.intent).toEqual({ k: 'overview' });
+  expect(host.url).toBe(`?mode=garden${CREDITS_HASH}`);
+  m.send({ type: 'SET_LANG', lang: 'es' });
+  expect(host.url).toBe(`?mode=garden&lang=es${CREDITS_HASH}`);
+  host.history.replaceState({ prev: null }, '', '?mode=garden&lang=es#/');
+  m.send({ type: 'GOTO', place: { k: 'bed', bed: 'estanque' } });
+  host.history.pushState({ prev: host.url }, '', `?mode=garden&lang=es${CREDITS_HASH}`);
+  host.go(-1);
+  expect(m.state.intent).toEqual({ k: 'bed', bed: 'estanque' });
+  host.go(1);
+  expect(m.state.intent).toEqual({ k: 'bed', bed: 'estanque' });
+  expect(host.url).toBe(`?mode=garden&lang=es${CREDITS_HASH}`);
 });
