@@ -1,24 +1,23 @@
 import type { BedId, Tier } from '../types.ts';
 import type { BedScene3, GroundData } from './layout.ts';
 import { builtIn, worldMode, type WorldMode } from './mode.ts';
+import { DRESS_FROM_X, DRESS_KIND, DRESS_STRIDE, clearOf, pathDistance, pathZAt, rng } from './groundplan.ts';
+import { buildLawn } from './lawn.ts';
+
+export { DRESS_KIND, DRESS_STRIDE, pathDistance, pathZAt, rng } from './groundplan.ts';
+export { EDGE_PLANTS, EDGING, LAWN, LAWN_PLANTS } from './lawn.ts';
 
 /**
  * The ground kit of cook/ART.md section 1 that world places, built once at load as flat instance arrays: the wall
  * flats and piers (for gl's wall batch) and the grass clumps (three parallel blade cards each, never crossed). The
- * path and the puddles live in garden.json ground for gl's ground shader. Pure and deterministic (seeded).
+ * path and the puddles live in garden.json ground for gl's ground shader; free roam's lawn and edging are laid by
+ * lawn.ts. Pure and deterministic (seeded).
  */
 
 /** Floats per wall piece: x0, x1, yaw (rad), height (m), pier 0|1. */
 export const WALL_STRIDE = 5;
 /** Floats per clump: x, z, variant 0..2, yaw (rad), height (m). */
 export const CLUMP_STRIDE = 5;
-/**
- * Floats per dressing piece: x, z, kind (DRESS_KIND), yaw (rad), height (m), and a tone 0..1: on the rail the shade
- * (1 = as drawn), under roam the pick of the lawn tint (dressing.ts).
- */
-export const DRESS_STRIDE = 6;
-/** Dressing pieces: grass clumps (three variants), a low leafy plant, its leaves lying flat, a petal, lawn plants (LAWN_PLANTS). */
-export const DRESS_KIND = { clump: 0, leafy: 3, litter: 4, petal: 5, plant: 6 } as const;
 
 export interface GroundBuild {
   wall: Float32Array; wallCount: number;
@@ -31,18 +30,6 @@ export interface GroundBuild {
 
 const CLUMP = { wallInset: 0.3, wallStep: [0.35, 1.9], rimCount: 18, footSpread: 0.25, h: [0.2, 0.55] } as const;
 const DEG = Math.PI / 180;
-
-/** Seeded uniform 0..1 (mulberry32). */
-export function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 /** Contact shadow length (times the cutout height) at world x: the place whose anchor is nearest. */
 export function shadowLengthAt(g: GroundData, anchors: Record<BedId, number>, x: number): number {
@@ -104,26 +91,14 @@ function buildClumps(g: GroundData, scenes: readonly BedScene3[], tier: Tier, mo
 /**
  * Free roam's extra grass in bands, not a scatter (cook/ROAM_LOOK.md F): an irregular low edging 0.3 to 1.2 m off both
  * path edges, taller tufts along the wall foot and a few islands on the lawn, by these shares, on their own seed so the
- * lawn planted after them stays as it was. Nothing lands on the path, in a puddle or in the pond.
+ * lawn planted after them stays as it was. The edging tufts stand in tight groups of 3 or 5 (`group`, metres across),
+ * never in an even row. Nothing lands on the path, in a puddle or in the pond.
  */
 export const ROAM_BANDS = {
   high: 270, low: 120, edge: 0.6, wall: 0.25,
   edgeOff: [0.3, 1.2], edgeH: [0.15, 0.3], wallZ: [0.3, 1.0], wallH: [0.3, 0.5], islandH: [0.2, 0.4], islandNearZ: 6.5, tries: 20,
+  group: [0.5, 0.18],
 } as const;
-
-/** Ground distance from (x, z) to the path's centre line. */
-export function pathDistance(points: readonly [number, number][], x: number, z: number): number {
-  let d = Infinity;
-  for (let i = 0; i + 1 < points.length; i++) {
-    const [x0, z0] = points[i] as [number, number];
-    const [x1, z1] = points[i + 1] as [number, number];
-    const dx = x1 - x0;
-    const dz = z1 - z0;
-    const t = Math.min(1, Math.max(0, ((x - x0) * dx + (z - z0) * dz) / Math.max(1e-9, dx * dx + dz * dz)));
-    d = Math.min(d, Math.hypot(x - x0 - t * dx, z - z0 - t * dz));
-  }
-  return d;
-}
 
 function roamBands(g: GroundData, count: number, out: number[]): void {
   const r = rng(0x62616e64);
@@ -131,15 +106,27 @@ function roamBands(g: GroundData, count: number, out: number[]): void {
   const half = g.path.width / 2;
   const [ex0, ex1] = g.enclosure.x;
   const span = (lo: number, hi: number): number => lo + r() * (hi - lo);
+  let left = 0;
+  let gx = 0;
+  let goff = 0;
+  const regroup = (): void => {
+    gx = span(ex0 + CLUMP_WALL_CLEAR, ex1 - CLUMP_WALL_CLEAR);
+    goff = (half + span(b.edgeOff[0], b.edgeOff[1])) * (r() < 0.5 ? -1 : 1);
+  };
   for (let i = 0; i < count; i++) {
     const pick = i / count;
+    if (pick < b.edge && left === 0) {
+      left = r() < 0.55 ? 3 : 5;
+      regroup();
+    }
+    if (pick < b.edge) left--;
     for (let t = 0; t < b.tries; t++) {
-      const x = span(ex0 + CLUMP_WALL_CLEAR, ex1 - CLUMP_WALL_CLEAR);
+      if (pick < b.edge && t > 0 && t % 5 === 0) regroup();
+      const x = pick < b.edge ? gx + span(-0.5, 0.5) * b.group[0] : span(ex0 + CLUMP_WALL_CLEAR, ex1 - CLUMP_WALL_CLEAR);
       let z: number;
       let h: number;
       if (pick < b.edge) {
-        const off = half + span(b.edgeOff[0], b.edgeOff[1]);
-        z = pathZAt(g.path.points, x) + (r() < 0.5 ? -off : off);
+        z = pathZAt(g.path.points, x) + goff + span(-0.5, 0.5) * b.group[1];
         h = span(b.edgeH[0], b.edgeH[1]);
       } else if (pick < b.edge + b.wall) {
         z = g.wall.z + span(b.wallZ[0], b.wallZ[1]);
@@ -160,27 +147,7 @@ function roamBands(g: GroundData, count: number, out: number[]): void {
  * Pieces grow and darken toward the camera so the nearest read as foreground framing; nothing lands on the path,
  * in a puddle or in the pond.
  */
-const DRESS = { from: -1.5, stepMin: 0.7, stepSpan: 1.5, gapChance: 0.2, pathClear: 0.3, nearZ: 5.6, puddleClear: 0.7, pondClear: 0.4, edgeBand: 0.6, fieldStep: 0.8 } as const;
-
-/** Near edge (largest z) of the path centre line at x, or -Infinity where the path does not pass. */
-export function pathZAt(points: readonly [number, number][], x: number): number {
-  let z = -Infinity;
-  for (let i = 0; i + 1 < points.length; i++) {
-    const [x0, z0] = points[i] as [number, number];
-    const [x1, z1] = points[i + 1] as [number, number];
-    if (x < Math.min(x0, x1) || x > Math.max(x0, x1) || x0 === x1) continue;
-    z = Math.max(z, z0 + ((x - x0) / (x1 - x0)) * (z1 - z0));
-  }
-  return z;
-}
-
-function clearOf(g: GroundData, x: number, z: number): boolean {
-  for (const [px, pz] of g.puddles) if (Math.hypot(px - x, pz - z) < DRESS.puddleClear) return false;
-  const p = g.pond;
-  const ex = (x - p.x) / (p.rx + DRESS.pondClear);
-  const ez = (z - p.z) / (p.rz + DRESS.pondClear);
-  return ex * ex + ez * ez > 1;
-}
+const DRESS = { from: DRESS_FROM_X, stepMin: 0.7, stepSpan: 1.5, gapChance: 0.2, pathClear: 0.3, nearZ: 5.6, edgeBand: 0.6, fieldStep: 0.8 } as const;
 
 function dressKind(r: () => number): number {
   const k = r();
@@ -229,96 +196,13 @@ function buildDressing(g: GroundData, tier: Tier, length: number, r: () => numbe
   return pieces.flat();
 }
 
-/**
- * The lawn under free roam (cook/ROAM_ART.md 2, revised by blind pairs). The follow camera fills its lower third with
- * the few metres of lawn south of the visitor, so the band from the path to LAWN.farZ is planted as a place to walk
- * through: clusters of 4 to 7 lit plants of 2 or 3 species, 0.25 to 0.9 m, every third cluster with an accent up to
- * 1.1 m, taller behind lower. Cluster centres stand LAWN.apart apart (twice the radius plus a 1.5 m lane), so a lit
- * lane runs between any two clusters north to south as well as east to west. Kept clear: the path and 0.5 m either
- * side, 1 m round each flower slot and its approach from the path, the pond rim, puddles, the foot of bed items and
- * LAWN.wallClear inside the closed garden's end walls. A few flat leaves and petals lie round each cluster.
- */
-export const LAWN = { clear: 0.5, farZ: 7.8, wallClear: 0.6, radius: 0.6, lane: 1.5, tries: 1500, slotClear: 1, itemClear: 0.7, accentEvery: 3, few: 4, more: 4, litter: 2 } as const;
-const LAWN_APART = LAWN.radius * 2 + LAWN.lane;
-
-/** Lawn plants (kind DRESS_KIND.plant + index): the low species, then the accents. Heights in metres. */
-export const LAWN_PLANTS: readonly { sprite: string; h: readonly [number, number] }[] = [
-  { sprite: 'sh/clump-1', h: [0.25, 0.5] }, { sprite: 'sh/clump-3', h: [0.3, 0.6] }, { sprite: 'w/buttercup', h: [0.4, 0.7] },
-  { sprite: 'w/poppy', h: [0.5, 0.9] }, { sprite: 'w/fiddle', h: [0.25, 0.45] },
-  { sprite: 'w/gallica', h: [0.85, 1.1] }, { sprite: 'w/cane', h: [0.9, 1.1] },
-];
-const LOW_SPECIES = 5;
-
-type Keep = [x: number, z: number, r: number];
-
-/** What the planting stays clear of: slots and their approach from the path, and the feet of the built bed items. */
-function keepsOf(g: GroundData, scenes: readonly BedScene3[], mode: WorldMode): Keep[] {
-  const keep: Keep[] = [];
-  for (const s of scenes) {
-    for (const sl of s.slots) {
-      const pz = pathZAt(g.path.points, sl.x);
-      const to = Number.isFinite(pz) ? pz : sl.z;
-      const steps = Math.ceil(Math.abs(to - sl.z) / 0.5);
-      for (let i = 0; i <= steps; i++) keep.push([sl.x, sl.z + ((to - sl.z) * i) / Math.max(1, steps), LAWN.slotClear]);
-    }
-    for (const l of s.layers) for (const it of l.items) if (builtIn(it, mode) && it.flat !== true && it.y === 0) keep.push([it.x, it.z, LAWN.itemClear]);
-  }
-  return keep;
-}
-
-function lawnFree(g: GroundData, keep: readonly Keep[], x: number, z: number, edge: number, pad: number): boolean {
-  const pz = pathZAt(g.path.points, x);
-  const e = g.enclosure.x;
-  if (x < e[0] + LAWN.wallClear || x > e[1] - LAWN.wallClear) return false;
-  if (!Number.isFinite(pz) || z < pz + edge || z > LAWN.farZ || !clearOf(g, x, z)) return false;
-  for (const [kx, kz, kr] of keep) if (Math.hypot(kx - x, kz - z) < kr + pad) return false;
-  return true;
-}
-
-function buildLawn(g: GroundData, scenes: readonly BedScene3[], mode: WorldMode, length: number, r: () => number): number[] {
-  const keep = keepsOf(g, scenes, mode);
-  const edge = g.path.width / 2 + LAWN.clear;
-  const centres: [number, number][] = [];
-  for (let t = 0; t < LAWN.tries; t++) {
-    const x = DRESS.from + r() * (length + 1 - DRESS.from);
-    const z = r() * LAWN.farZ;
-    if (!lawnFree(g, keep, x, z, edge + LAWN.radius, LAWN.radius) || centres.some(([cx, cz]) => Math.hypot(cx - x, cz - z) < LAWN_APART)) continue;
-    centres.push([x, z]);
-  }
-  const pieces: number[][] = [];
-  centres.forEach(([cx, cz], c) => {
-    const n = LAWN.few + Math.floor(r() * LAWN.more);
-    const species = [Math.floor(r() * LOW_SPECIES), Math.floor(r() * LOW_SPECIES), Math.floor(r() * LOW_SPECIES)];
-    const heights: [number, number][] = [];
-    for (let i = 0; i < n; i++) {
-      const kind = c % LAWN.accentEvery === 0 && i === 0 ? LOW_SPECIES + Math.floor(r() * 2) : (species[i % (2 + (c % 2))] ?? 0);
-      const [h0, h1] = LAWN_PLANTS[kind]?.h ?? [0.3, 0.5];
-      heights.push([kind, h0 + r() * (h1 - h0)]);
-    }
-    heights.sort((p, q) => q[1] - p[1]);
-    heights.forEach(([kind, h], i) => {
-      const x = cx + (r() * 2 - 1) * LAWN.radius;
-      const z = cz - LAWN.radius * 0.6 + (LAWN.radius * 1.2 * i) / Math.max(1, n - 1) + (r() - 0.5) * 0.15;
-      if (lawnFree(g, keep, x, z, edge, 0)) pieces.push([x, z, DRESS_KIND.plant + kind, (r() * 2 - 1) * 0.5, h, r()]);
-    });
-    for (let i = 0; i < LAWN.litter; i++) {
-      const x = cx + (r() * 2 - 1) * LAWN.radius * 1.4;
-      const z = cz + (r() * 2 - 1) * LAWN.radius * 1.4;
-      const petal = r() < 0.4;
-      if (lawnFree(g, keep, x, z, g.path.width / 2 + 0.1, 0)) pieces.push([x, z, petal ? DRESS_KIND.petal : DRESS_KIND.litter, r() * 2 - 1, petal ? 0.1 : 0.34, r()]);
-    }
-  });
-  pieces.sort((a, b) => (a[1] ?? 0) - (b[1] ?? 0));
-  return pieces.flat();
-}
-
 /** The ground kit for one camera mode (mode.ts): the rail keeps its framing dressing, free roam gets the lawn. */
 export function buildGround(g: GroundData, scenes: readonly BedScene3[], tier: Tier, mode: WorldMode = worldMode()): GroundBuild {
   const length = g.length;
   const r = rng(0x6a617264);
   const wall = buildWall(g, length);
   const clumps = buildClumps(g, scenes, tier, mode, length, r);
-  const dress = mode === 'roam' ? buildLawn(g, scenes, mode, length, r) : buildDressing(g, tier, length, r);
+  const dress = mode === 'roam' ? buildLawn(g, scenes, mode, tier, length, r) : buildDressing(g, tier, length, r);
   return {
     wall: new Float32Array(wall), wallCount: wall.length / WALL_STRIDE,
     clumps: new Float32Array(clumps), clumpCount: clumps.length / CLUMP_STRIDE,

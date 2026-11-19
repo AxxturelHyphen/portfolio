@@ -1,7 +1,7 @@
 import type { AtlasManifest, CutoutBatch, QuadParams, SpriteRect } from '../types.ts';
 import type { EnclosureData } from './layout.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
-import { BORDER, COPING, PIER_PROUD, SHADE_JITTER, TILE_ORIGIN_X, WALL_TILE, WALL_TINT, cuts, hash01 } from './wall.ts';
+import { BORDER, COPING, PIER_PROUD, SHADE_JITTER, TILE_ORIGIN_X, WALL_TILE, cuts, hash01 } from './wall.ts';
 
 /**
  * The closed garden of free roam (cook/ROAM_ART.md section 3, task 5): the back wall cut at its low stretches and at the
@@ -25,6 +25,8 @@ const PIER_W = 0.5;
  * tile edge is left at the foot or on the course line to catch the moon rim.
  */
 const BASE = { proud: 0.04, sink: 0.06, under: 0.05, tint: [0.62, 0.64, 0.58] } as const;
+/** The closed garden's stone: warmer than the rail's wall (wall.ts WALL_TINT) at about its value, so the darker dusk keeps the wall far. */
+const STONE_TINT = [0.8, 0.74, 0.64] as const;
 const DEG = Math.PI / 180;
 
 /** Wall height on the back line at x: full, a low stretch, or 0 in the door gap. */
@@ -140,7 +142,7 @@ export function writeEnclosure(runs: readonly Run[], baseH: number, m: AtlasMani
     }
     return t.n;
   };
-  const stone = (r: Run, shade: number): void => t.tile(r, Math.min(baseH - BASE.under, r.h), r.h, 0, 0, WALL_TINT, shade);
+  const stone = (r: Run, shade: number): void => t.tile(r, Math.min(baseH - BASE.under, r.h), r.h, 0, 0, STONE_TINT, shade);
   const foot = (r: Run, shade: number): void => t.tile(r, -BASE.sink, Math.min(baseH, r.h), 0, r.pier ? 0 : BASE.proud, BASE.tint, shade);
   const cap = (r: Run, shade: number): void => t.tile(r, r.h - COPING.h * 0.5, r.h + COPING.h * 0.5, COPING.overhang, COPING.proud, COPING.tint, shade);
   const wall = createBatch(wallRect.page, pass(wallRect, null, stone));

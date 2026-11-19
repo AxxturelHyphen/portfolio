@@ -41,7 +41,8 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const rump = { x: bodyAt?.x ?? 20, y: (bodyAt?.y ?? 0) + RUMP.up * bodyH, z: (bodyAt?.z ?? -3.4) - RUMP.back };
   const fanScale = bodyH / BODY_H;
 
-  const tint = [1, 1, 1, 1];
+  // The bird's own tint (free roam dusks the white plate), shared by the plumes so fan and body stay one paper.
+  const tint = [...(bodyAt?.tint ?? [1, 1, 1]), 1];
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: plumeA.uv, sway: 0, phase: 0, lift: 0, facing: 0, tint };
   const stillFlags = QUAD_FLAG.noLean | QUAD_FLAG.noShadow;
   const lastPose = PEACOCK.openPoses + STAGGER_POSES;

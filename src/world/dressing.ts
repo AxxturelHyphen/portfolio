@@ -1,6 +1,6 @@
 import type { AtlasManifest, CutoutBatch, QuadParams, SpriteRect } from '../types.ts';
 import { clumpSprite } from './clumps.ts';
-import { DRESS_KIND, DRESS_STRIDE, LAWN_PLANTS, type GroundBuild } from './ground.ts';
+import { DRESS_KIND, DRESS_STRIDE, EDGE_PLANTS, LAWN_PLANTS, type GroundBuild } from './ground.ts';
 import { RENDER_ORDER } from './order.ts';
 import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
 
@@ -33,6 +33,7 @@ function lawnTint(pick: number): readonly number[] {
 
 function spriteOf(m: AtlasManifest, kind: number, i: number): string | null {
   if (kind >= DRESS_KIND.plant) return LAWN_PLANTS[kind - DRESS_KIND.plant]?.sprite ?? null;
+  if (kind >= DRESS_KIND.edge) return EDGE_PLANTS[kind - DRESS_KIND.edge]?.sprite ?? null;
   if (kind < DRESS_KIND.leafy) return clumpSprite(m, kind - DRESS_KIND.clump);
   if (kind === DRESS_KIND.petal) return PETALS[i % PETALS.length] ?? null;
   return 'sh/ivy';
@@ -70,7 +71,7 @@ function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, bat
     const flat = kind === DRESS_KIND.litter || kind === DRESS_KIND.petal;
     const grass = kind < DRESS_KIND.leafy || (id?.startsWith('sh/clump') ?? false);
     const cards = grass ? CLUMP_CARDS : 1;
-    const upright = kind >= DRESS_KIND.plant && !grass;
+    const upright = kind >= DRESS_KIND.edge && !grass;
     const h = g.dress[o + 4] ?? 0.3;
     const side = i % 2 === 0 ? 1 : -1;
     /** The nearest pieces are true dark framing: their night tint is applied uncapped. */
@@ -81,7 +82,7 @@ function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, bat
       q.y = 0;
       q.z = (g.dress[o + 1] ?? 0) + k * 0.03;
       q.facing = g.dress[o + 3] ?? 0;
-      q.rot = flat ? (g.dress[o + 3] ?? 0) * 3 : side * (upright ? 2 : 6 + 10 * k) * DEG;
+      q.rot = flat ? (g.dress[o + 3] ?? 0) * 3 : side * (upright ? 2 + 10 * Math.abs(g.dress[o + 3] ?? 0) : 6 + 10 * k) * DEG;
       q.h = h * (1 - k * 0.15);
       q.w = q.h * (rect.size[0] / rect.size[1]) * (side < 0 && !flat ? -1 : 1);
       q.px = rect.pivot[0];

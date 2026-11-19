@@ -11,10 +11,16 @@ import { hash01 } from './wall.ts';
  */
 
 const HEDGE_SPRITE = 'v/hedge';
-/** The solid leafy part of the hedge plate, as shares of its rect: left of the arch, below the engraved sky band. */
-const HEDGE_CROP = { u: [0.04, 0.28], v: [0.02, 0.8] } as const;
-/** Pieces overlap by `overlap` and alternate in depth, so no straight vertical seam lines up across the strip. */
-const HEDGE = { quadW: 0.85, overlap: 0.3, stagger: 0.12, jitter: 0.1, tint: [0.55, 0.62, 0.58] } as const;
+/**
+ * The solid leafy part of the hedge plate, as shares of its rect: left of the arch, under the pale scratch halfway up the
+ * plate (repeated on every piece it read as a row of magenta dashes after the grade).
+ */
+const HEDGE_CROP = { u: [0.04, 0.28], v: [0.02, 0.42] } as const;
+/**
+ * Pieces overlap by `overlap` and alternate in depth, so no straight vertical seam lines up across the strip. The strip
+ * stands low and leafy over the parapets, a step lighter than the plate, so it reads as dark foliage, not a black slab.
+ */
+const HEDGE = { quadW: 0.85, overlap: 0.3, stagger: 0.12, jitter: 0.08, tint: [0.82, 0.96, 0.86] } as const;
 /** Far things are cooler (cook/ROAM_ART.md depth rule); the view-depth haze lifts them further. */
 const CROWN_TINT = [0.82, 0.82, 0.96] as const;
 
