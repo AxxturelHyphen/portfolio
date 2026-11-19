@@ -333,6 +333,30 @@
   }
 }
 
+/* Short screens wider than a phone (a tablet or phone on its side): the label set nearer a phone's size, on one line. */
+@media (min-width: 45rem) and (max-height: 30rem) {
+  .px-signs .px-sign {
+    min-height: var(--target);
+    padding-block: 4px 5px;
+    padding-inline: 1.875rem 0.75rem;
+    font-size: 1.1875rem;
+  }
+
+  .px-signs .px-sign[data-dir="prev"] {
+    padding-inline: 0.75rem 1.875rem;
+  }
+
+  .px-signs .px-sign-hand {
+    width: 2rem;
+    height: 1rem;
+    margin-inline-start: 0.5rem;
+  }
+
+  .px-signs .px-sign[data-dir="prev"] .px-sign-hand {
+    margin-inline: 0 0.5rem;
+  }
+}
+
 .px-sign-pole,
 .px-sign-foot {
   position: absolute;

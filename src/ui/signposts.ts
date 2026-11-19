@@ -3,7 +3,7 @@ import type { BedId, CameraRig, Machine, ScreenPt, SlotView, State } from '../ty
 import { uiText } from './copy.ts';
 import { covers } from './cover.ts';
 import { avoidOf, DOCK, dockAround, type DockRoom } from './signs.dock.ts';
-import { coveredBy, makeSign, measureWhole, readTilt, tuck, type Sign } from './signs.label.ts';
+import { coveredBy, makeSign, measureWhole, meetsPlate, readTilt, tuck, type Sign } from './signs.label.ts';
 import { clearOfVisitor, createStake, crossesVisitor, figureOf, SIGN_M, type FigureBox, type Stake } from './signs.stake.ts';
 import './styles/signs.css';
 
@@ -22,7 +22,8 @@ import './styles/signs.css';
  * stands higher than the way on, so the pair never reads as one row.
  * Free roam (setVisitor, ?roam=1, phones too): each sign is planted at its board, the label SIGN_M above the ground
  * and a cane down to the ground point with a contact shadow (ui/signs.stake.ts), lifted clear of the visitor. While
- * the ground point is off screen the label docks at the screen edge with a short cane (data-off). On portrait screens a
+ * the ground point is off screen, or the label would meet the first-visit plate (ui/welcome.ts), the label docks at the
+ * screen edge with a short cane (data-off), at a height that keeps it off the figure and the plate. On portrait screens a
  * label stays planted only while it stands wholly over the visitor's hat; otherwise both docked labels share one band
  * under the visitor's shoes (ui/signs.dock.ts dockAround), so no label, cane or tip ever crosses the figure, a project
  * flower or the focused slot. A docked name always runs on one line, set smaller on a phone so a pair fits one row.
@@ -70,6 +71,8 @@ const PORTRAIT_SIDE_PX = 20;
 const LASH_OUT_PX = 4;
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
 const foot: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
+/** A planted label's box before its tilt, for the first-visit plate check. */
+const want: FigureBox = { l: 0, r: 0, t: 0, b: 0 };
 
 export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   const group = document.createElement('div');
@@ -88,6 +91,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   let visitor: Float32Array | null = null;
   /** Portrait free roam this frame: docked labels share the band under the figure and stand nearer the sides. */
   let portrait = false;
+  /** Free roam: the visitor's figure on screen this frame. */
   const figure: FigureBox = { l: 0, r: 0, t: 0, b: 0 };
   /** The screen's safe-area insets at the sides (px), read from the group's padding on resize. */
   let safeLeft = 0;
@@ -161,22 +165,49 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     }
   }
 
-  /** Turns the label's wanted top-left (x, y) into its transform, pulling it in where the tilt would carry it too near a
-   * side; returns the screen x the label's left edge lands on. */
-  function settle(s: Sign, x: number, y: number): number {
-    // Where the tilt turns (x, y) to on screen; only a label nearer a side than SIDE_PX is pulled in.
-    const vy = x * s.sin + y * s.cos;
+  /** Where the tilt turns the label's wanted top-left (x, y) to on screen, pulled in where it would come too near a
+   * side: writes the label's box and returns the screen x its left edge lands on. No DOM write. */
+  function turn(s: Sign, x: number, y: number): number {
     let vx = x * s.cos - y * s.sin;
     const inset = (portrait ? PORTRAIT_SIDE_PX : SIDE_PX) + Math.ceil(s.h * Math.abs(s.sin));
     const maxVx = vw - inset - s.w;
     vx = vx < inset ? inset : vx > maxVx ? maxVx : vx;
-    s.mover.move(Math.round(vx * s.cos + vy * s.sin), Math.round(vy * s.cos - vx * s.sin), 1);
     const lean = Math.abs(s.w * s.sin);
     s.box.l = vx - LASH_OUT_PX;
     s.box.r = vx + s.w + LASH_OUT_PX;
     s.box.t = y - lean - LASH_OUT_PX;
     s.box.b = y + s.h + lean;
     return vx;
+  }
+
+  /** Turns the label's wanted top-left (x, y) into its transform (see turn); returns the screen x of its left edge. */
+  function settle(s: Sign, x: number, y: number): number {
+    const vx = turn(s, x, y);
+    const vy = x * s.sin + y * s.cos;
+    s.mover.move(Math.round(vx * s.cos + vy * s.sin), Math.round(vy * s.cos - vx * s.sin), 1);
+    return vx;
+  }
+
+  /** Whether the box meets the visitor's figure, DOCK.gapPx around it. */
+  const meetsFigure = (b: Readonly<FigureBox>): boolean =>
+    b.l < figure.r + DOCK.gapPx && b.r > figure.l - DOCK.gapPx && b.t < figure.b + DOCK.gapPx && b.b > figure.t - DOCK.gapPx;
+
+  /**
+   * Landscape free roam: the top of a label docked at its side, the first of its wanted height, just under the
+   * visitor's shoes and just over the hat whose box keeps off the figure and the first-visit plate; the wanted height
+   * when none does (sync then tucks it).
+   */
+  function sideY(s: Sign, want: number): number {
+    const x = s.dir < 0 ? EDGE_PX : vw - EDGE_PX - s.w;
+    const maxY = vh - EDGE_PX - s.h;
+    const lean = Math.abs(s.w * s.sin);
+    for (let i = 0; i < 3; i++) {
+      let y = i === 0 ? want : i === 1 ? figure.b + DOCK.gapPx * 2 + lean + LASH_OUT_PX : figure.t - DOCK.gapPx * 2 - s.h - lean;
+      y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
+      turn(s, x, y);
+      if (!meetsFigure(s.box) && !meetsPlate(s.box)) return y;
+    }
+    return want < TOP_PX ? TOP_PX : want > maxY ? maxY : want;
   }
 
   /** Free roam: the label on its cane at the board, or docked at the edge while the board's foot is off screen, the
@@ -189,8 +220,12 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     const maxY = vh - EDGE_PX - s.h;
     let y = clearOfVisitor(rig, at, x, pt.y, s.w, s.h);
     y = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
+    want.l = x;
+    want.r = x + s.w;
+    want.t = y;
+    want.b = y + s.h;
     const off = !foot.visible || x < EDGE_PX - s.w / 2 || x > vw - EDGE_PX - s.w / 2 || crossesVisitor(rig, at, x, y, s.w, s.h, pt.x, foot)
-      || (portrait && (sheet || y + s.h > figure.t - DOCK.gapPx));
+      || meetsPlate(want) || (portrait && (sheet || y + s.h > figure.t - DOCK.gapPx));
     if (off !== s.off) {
       s.off = off;
       s.el.toggleAttribute('data-off', off);
@@ -198,8 +233,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     s.dock.on = off && portrait;
     if (s.dock.on) return;
     if (off) {
-      const dock = vh * DOCK_FOOT - s.h + s.dir * STEP_PX;
-      settle(s, s.dir < 0 ? EDGE_PX : vw - EDGE_PX - s.w, dock < TOP_PX ? TOP_PX : dock);
+      settle(s, s.dir < 0 ? EDGE_PX : vw - EDGE_PX - s.w, sideY(s, vh * DOCK_FOOT - s.h + s.dir * STEP_PX));
       return;
     }
     const left = settle(s, x, y);
@@ -303,7 +337,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       resized = false;
       seenRev = covers.rev;
       portrait = visitor !== null && vw / vh < PORTRAIT;
-      if (portrait && visitor !== null) figureOf(rig, visitor, figure);
+      if (visitor !== null) figureOf(rig, visitor, figure);
       for (let i = 0; i < signs.length; i++) {
         const s = signs[i];
         if (s === undefined) continue;
@@ -317,7 +351,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       for (let i = 0; i < signs.length; i++) {
         const s = signs[i]!;
         const placed = s.anchor >= 0 && !s.el.hidden;
-        if (placed && coveredBy(s)) tuck(s, true);
+        if (placed && (coveredBy(s) || (!portrait && s.off && meetsFigure(s.box)))) tuck(s, true);
         s.stake?.show(placed && !s.off && !s.tucked);
       }
     },

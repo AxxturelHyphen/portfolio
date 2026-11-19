@@ -4,6 +4,7 @@ import { APPROACH_FIT } from '../../../src/core/motion.ts';
 import { DOCK, dockAround, type DockBox, type DockRoom } from '../../../src/ui/signs.dock.ts';
 import type { FigureBox } from '../../../src/ui/signs.stake.ts';
 import { clearCover, covers, meetsCover, setCover } from '../../../src/ui/cover.ts';
+import { meetsPlate } from '../../../src/ui/signs.label.ts';
 import { blendFraming, followPose, moonElevation, paramsFor, viewLimitsOf, type Framing, type FramingParams } from '../../../src/world/follow.ts';
 import { FIGURE } from '../../../src/world/puppet.ts';
 import type { RigPose } from '../../../src/world/rail.ts';
@@ -205,6 +206,17 @@ test('an open tag or plan reports its box once per change, and a label it touche
   clearCover(covers.card);
   expect(meetsCover(covers.card, 380, 300, 560, 360), 'a closed tag covers nothing').toBe(false);
   expect(covers.rev).toBe(rev + 2);
+});
+
+test('a label meeting the first-visit card or its hint slip is seen as covered, and only while they stand', () => {
+  setCover(covers.plate, 16, 80, 376, 240);
+  setCover(covers.slip, 38, 250, 340, 336);
+  expect(meetsPlate({ l: 200, t: 330, r: 330, b: 360 }), 'a label under the hint slip').toBe(true);
+  expect(meetsPlate({ l: 200, t: 345, r: 330, b: 380 })).toBe(false);
+  clearCover(covers.slip);
+  expect(meetsPlate({ l: 200, t: 330, r: 330, b: 360 }), 'the hint gone, the label stands clear').toBe(false);
+  expect(meetsPlate({ l: 0, t: 230, r: 40, b: 260 }), 'the card still stands').toBe(true);
+  clearCover(covers.plate);
 });
 
 test('phone labels keep 44 px targets, run on one line or two by rule, and at most two signs exist', () => {

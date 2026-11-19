@@ -79,9 +79,14 @@ export function tuck(s: Sign, on: boolean): void {
   s.el.toggleAttribute('data-tucked', on);
 }
 
+/** Whether the box meets the first-visit card or its hint slip (ui/welcome.ts). */
+export const meetsPlate = (b: Readonly<FigureBox>): boolean =>
+  meetsCover(covers.plate, b.l, b.t, b.r, b.b) || meetsCover(covers.slip, b.l, b.t, b.r, b.b);
+
 export const coveredBy = (s: Sign): boolean => {
   const b = s.box;
-  return meetsCover(covers.card, b.l, b.t, b.r, b.b) || meetsCover(covers.rod, b.l, b.t, b.r, b.b) || meetsCover(covers.plan, b.l, b.t, b.r, b.b);
+  return meetsCover(covers.card, b.l, b.t, b.r, b.b) || meetsCover(covers.rod, b.l, b.t, b.r, b.b) || meetsCover(covers.plan, b.l, b.t, b.r, b.b)
+    || meetsPlate(b);
 };
 
 function drawing(cls: string, box: string, d: string): SVGSVGElement {
