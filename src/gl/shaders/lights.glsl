@@ -68,9 +68,10 @@ vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
 
 // A lantern's throw: a soft core windowed to zero at its reach (about 3 m across the ground, shorter upward), with
 // the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc. Standing
-// lanterns throw smaller pools, so several of them read as lamps along the beds, not one wash.
+// lanterns throw smaller, dimmer pools (STAND_GAIN), so the carried one leads and the rest read as lamps along the beds.
 const vec3 LAMP_REACH = vec3(3.0, 1.8, 3.0);
-const vec3 STAND_REACH = vec3(2.4, 1.6, 2.4);
+const vec3 STAND_REACH = vec3(2.0, 1.4, 2.0);
+const float STAND_GAIN = 0.7;
 const float LAMP_CORE = 1.5;
 const float LAMP_POSTS = 0.22;
 float lampFall(vec3 d, vec3 reach) {
@@ -83,7 +84,7 @@ float lampFall(vec3 d, vec3 reach) {
 // The carried lantern's own base shades the ground straight below it: a soft dark dot inside its pool.
 const vec2 LAMP_FOOT = vec2(0.3, 0.06);   // radius where the dot starts and inside which it is darkest (m)
 const float LAMP_FOOT_DARK = 0.9;
-vec3 lampLights(vec3 p, vec3 n) {
+vec3 lampLightsGain(vec3 p, vec3 n, float carried) {
   float c = 0.0;
   for (int i = 0; i < 6; i++) {
     if (uLamp[i].w <= 0.0) continue;
@@ -91,12 +92,13 @@ vec3 lampLights(vec3 p, vec3 n) {
     vec3 reach = i == 0 ? LAMP_REACH : STAND_REACH;
     vec3 e = dl / reach;
     if (dot(e, e) >= 1.0) continue;   // outside the pool: lampFall is 0 there
-    float l = uLamp[i].w * lampFall(dl, reach) * wrapLight(dot(n, normalize(dl + vec3(0.0, 1e-3, 0.0))), 0.5);
+    float l = uLamp[i].w * (i == 0 ? carried : STAND_GAIN) * lampFall(dl, reach) * wrapLight(dot(n, normalize(dl + vec3(0.0, 1e-3, 0.0))), 0.5);
     if (i == 0) l *= 1.0 - LAMP_FOOT_DARK * (1.0 - smoothstep(LAMP_FOOT.y, LAMP_FOOT.x, length(dl.xz))) * step(0.3, dl.y);
     c += l;
   }
   return uLampColor * c;
 }
+vec3 lampLights(vec3 p, vec3 n) { return lampLightsGain(p, n, 1.0); }
 
 // The near-foreground fill under free roam: full nearer than FILL_NEAR metres from the lens, gone past FILL_FAR.
 const vec2 FILL_DEPTH = vec2(8.0, 12.0);

@@ -37,6 +37,7 @@ const float EDGE_DARK = 0.38;
 const vec3 PAPER_RIM = vec3(0.815, 0.716, 0.597);    // #e9dccb pale paper edge, linear
 const float PAPER_RIM_STRENGTH = 0.4;
 const float TINT_FLOOR = 0.65;                        // shaded layers darken by 35 % at most
+const float ROAM_TINT_FLOOR = 0.5;                    // free roam's dusk lets a pale plate (the peacock, the cards) sink further
 const float SHADED_FROM = 0.75;                       // tints darker than this luma count as a shaded layer
 const float SILHOUETTE_HAZE = 0.3;                    // how far a shaded layer turns toward the haze hue
 const vec3 COOL_RIM = vec3(0.30, 0.36, 0.46);         // moonlit rim on the shaded layers
@@ -95,6 +96,9 @@ const vec2 GLOW_FLAME = vec2(0.4, 0.3);               // the flame's height in t
 const float GLOW = 0.13;
 const float FRAME_DARK = 0.35;
 const float HUNG_OPACITY = 0.95;                       // the soft shadow straight below a hanging cutout
+// The flame's heart is past the paper's shoulder: a warm near-white core the clamp would flatten to yellow.
+const vec3 FLAME_CORE = vec3(1.0, 0.8, 0.52);
+const vec2 FLAME_CORE_FROM = vec2(0.5, 0.92);         // share of the core glow where the white starts and is full
 
 vec4 decal() {
   if (vFrame.w < -0.5) {
@@ -128,7 +132,7 @@ void main() {
   vec3 n = vec3(nxy, sqrt(max(1.0 - dot(nxy, nxy), 0.05)));
   // Shaded layers keep their plate: the place tint is capped and turned toward the haze hue, not a brown multiply.
   float shaded = sat((SHADED_FROM - luma(vTint.rgb)) / (SHADED_FROM - TINT_FLOOR)) * (1.0 - vSilhouette);
-  vec3 albedo = tex.rgb * max(vTint.rgb, vec3(TINT_FLOOR * (1.0 - vSilhouette)));
+  vec3 albedo = tex.rgb * max(vTint.rgb, vec3(mix(TINT_FLOOR, ROAM_TINT_FLOOR, uEye.z) * (1.0 - vSilhouette)));
   vec3 haze = neutralise(uDepthFade.rgb);
   vec3 hazeHue = mix(vec3(1.0), haze / max(luma(haze), 1e-3), 0.5);
   albedo = mix(albedo, luma(albedo) * hazeHue, shaded * SILHOUETTE_HAZE);
@@ -157,6 +161,7 @@ void main() {
     float glass = smoothstep(0.02, 0.12, luma(tex.rgb)) * (0.25 + 0.75 * core);
     vec3 glow = uLampColor * GLOW * (0.35 + core) * mix(vec3(1.0), albedo / max(luma(albedo), 1e-3), 0.3);
     lit = paperShoulder(mix(albedo * (ambient + key) * FRAME_DARK, glow, glass) + albedo * hand * 0.15 * (1.0 - glass));
+    lit = mix(lit, FLAME_CORE, smoothstep(FLAME_CORE_FROM.x, FLAME_CORE_FROM.y, core) * glass);
   }
 
   // The light that moves the edges and shadows: the hand where it reaches, else the key.

@@ -22,6 +22,15 @@ out vec4 outColor;
 
 const vec3 EARTH = vec3(0.031, 0.025, 0.012);        // #312c1c bare earth
 const vec3 MOSS_FLOOR = vec3(0.025, 0.042, 0.034);   // #2c3a33 moss patches, 1.5 to 3 m across
+// Free roam only: worked soil in the beds and along both path edges, and a drier second lawn tone in broad drifts, so
+// the ground reads as a planted garden rather than one felt.
+const vec3 SOIL = vec3(0.036, 0.024, 0.013);          // #352a1e dark loam
+const vec2 SOIL_EDGE = vec2(0.95, 0.3);               // soil from the path edge out to this distance from the centre, its wobble
+const vec2 SOIL_BEDS = vec2(-0.9, -1.7);              // z where the beds' soil starts and is full, north of the path
+const float SOIL_SHARE = 0.85;
+const vec3 LAWN_DRY = vec3(1.35, 1.0, 0.55);          // the drier lawn tone: toward straw at the same value
+const float LAWN_DRY_SCALE = 0.32;
+const float ROAM_FILL_GREY = 0.6;                     // share of the near fill's cool cast taken out under roam
 const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
@@ -31,7 +40,8 @@ const float WALL_FADE = 0.4;                          // soft dark join where th
 const vec3 POOL_SHAPE = vec3(0.35, 1.5, 0.75);        // the hand's throw: shift into the scene, length, width (radii)
 const float POOL = 0.45;
 const float POOL_GREY = 0.8;
-const float LAMP_CEIL = 0.2;                          // linear luma the lantern pools on the ground roll off toward
+const float LAMP_CEIL = 0.26;                         // linear luma the lantern pools on the ground roll off toward
+const float CARRIED_POOL = 1.35;                      // the carried lantern's pool leads every other light on the ground
 const float LAMP_GREEN_FADE = 0.8;                    // how far the moss under a lantern pool loses its green
 const float LAMP_GRAIN = 0.35;
 const float LAMP_LAWN = 0.08;                         // the darkest value a lantern sees on the lawn: light on grass, no smudge
@@ -105,6 +115,15 @@ void main() {
   float patchN = fbm3(p * PATCH_SCALE + 3.0);
   vec3 base = mix(EARTH, MOSS_FLOOR, smoothstep(0.38, 0.62, patchN));
   base *= 1.0 + PATCH_CONTRAST * (2.0 * fbm3(p * PATCH_SCALE * 1.9 + 11.0) - 1.0);
+  if (uEye.z > 0.0) {
+    float dry = smoothstep(0.4, 0.65, fbm3(p * LAWN_DRY_SCALE + 23.0));
+    base = mix(base, base * LAWN_DRY, dry * uEye.z);
+    float pd = pathDist(p);
+    float edgeSoil = smoothstep(HALF_WIDTH, HALF_WIDTH + 0.1, pd) * (1.0 - smoothstep(SOIL_EDGE.x, SOIL_EDGE.x + SOIL_EDGE.y, pd + SOIL_EDGE.y * (valueNoise(p * 2.1) - 0.5)));
+    float bedSoil = smoothstep(SOIL_BEDS.x, SOIL_BEDS.y, z + 0.5 * (valueNoise(p * 1.3 + 9.0) - 0.5));
+    vec3 soil = SOIL * (0.7 + 0.6 * valueNoise(p * 13.0)) * (0.85 + 0.3 * grain);
+    base = mix(base, soil, max(edgeSoil, bedSoil) * SOIL_SHARE * uEye.z);
+  }
   vec4 clod = voronoi(p * 9.0);
   float pebble = smoothstep(0.22, 0.1, clod.x + 0.08 * valueNoise(p * 40.0)) * step(0.88, hash12(clod.zw));
   base *= (0.72 + 0.56 * grain) * (0.85 + 0.3 * valueNoise(p * 23.0)) * (1.0 + 0.5 * pebble) * mix(1.0, 0.32, sat((z + 1.0) / 4.5));
@@ -168,11 +187,12 @@ void main() {
   vec3 col = base * (0.5 + 1.6 * key) + keyLit(grey, hand * uHandThrow);
   // The lanterns' pools on the ground's own value (fully grey: amber on moss must not turn olive), broken by its grain
   // and rolled off toward LAMP_CEIL so lit stone keeps its edges.
-  vec3 lamp = vec3(max(luma(albedo), LAMP_LAWN)) * lampLights(vWorld, n) * (1.0 - LAMP_GRAIN + LAMP_GRAIN * 2.0 * fbm3(p * 1.7));
+  vec3 lamp = vec3(max(luma(albedo), LAMP_LAWN)) * lampLightsGain(vWorld, n, CARRIED_POOL) * (1.0 - LAMP_GRAIN + LAMP_GRAIN * 2.0 * fbm3(p * 1.7));
   // The moss's own green fades where a lantern reaches, so amber over green never sums to olive.
   col = mix(col, vec3(luma(col)), LAMP_GREEN_FADE * sat(luma(lamp) / LAMP_CEIL * 4.0));
   col += lamp / (1.0 + luma(lamp) / LAMP_CEIL);
-  col += neutralise(uAmbient) * GROUND_FILL * fillAt(vDepth);
+  // Under roam the near fill loses most of its cool cast, so the lawn reads as grass at dusk, not teal felt.
+  col += mix(neutralise(uAmbient), vec3(luma(uAmbient)), ROAM_FILL_GREY * uEye.z) * GROUND_FILL * fillAt(vDepth);
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;
