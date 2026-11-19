@@ -1,0 +1,309 @@
+/*
+ * The project film in the notebook (src/ui/reel.ts). Its strip takes the garden's travel strip: a dark base
+ * (#17120e), lit sprocket holes (#5a4a3a) along both edges and a warm hairline (#8b663a) around each picture. One
+ * cell is exactly the gate's width, its dark bars split on both sides, so a pull is one translate step. A blank frame
+ * is film with nothing printed on it yet: the projector's light breathing on it, grain, a little dust and now and then
+ * a scratch. Behind the strip's corner stands the project's flower, lit softly from behind. Everything moving here is
+ * transform or opacity; reduced motion and stills ([data-still]) hold it all still.
+ */
+
+.rl {
+  --rl-base: #17120e;
+  --rl-edge: rgb(139 102 58 / 0.6);
+  --rl-perf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='14'%3E%3Crect x='5' y='3.5' width='12' height='7' rx='2' fill='%235a4a3a'/%3E%3C/svg%3E");
+  --rl-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16 0 0 0 0 .12 0 0 0 0 .09 0 0 0 .55 -.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  display: grid;
+  grid-template-areas: "stage" "controls";
+  gap: 0.75rem;
+}
+
+.rl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.rl-stage {
+  grid-area: stage;
+  position: relative;
+  container-type: inline-size;
+  padding-top: min(22cqi, 124px);
+}
+
+.rl-gate {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--rl-base);
+  box-shadow: 0 2px 3px rgb(31 23 19 / 0.3), 0 12px 24px -14px rgb(31 23 19 / 0.6);
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.rl-gate:focus-visible {
+  outline: 2px solid var(--note-rose);
+  outline-offset: 3px;
+}
+
+.rl-strip {
+  display: flex;
+  will-change: transform;
+}
+
+.rl-frame {
+  flex: 0 0 100%;
+  padding: 14px 5px;
+  background:
+    var(--rl-perf) left top / 22px 14px repeat-x,
+    var(--rl-perf) left bottom / 22px 14px repeat-x,
+    var(--rl-base);
+}
+
+.rl-frame > * {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  box-shadow: 0 0 0 1px var(--rl-edge);
+}
+
+.rl-media {
+  object-fit: cover;
+  background: #bdb3a2;
+}
+
+/* Blank film on the projector's light. */
+.rl-blank {
+  position: relative;
+  overflow: hidden;
+  background: #a2967f;
+}
+
+.rl-blank > span {
+  position: absolute;
+  pointer-events: none;
+}
+
+.rl-light {
+  inset: 0;
+  background: radial-gradient(ellipse 70% 75% at 50% 46%, rgb(246 238 220 / 0.95), rgb(218 204 176 / 0.6) 55%, rgb(64 51 40 / 0.45));
+  opacity: 0.86;
+}
+
+.rl-grain {
+  inset: -24px;
+  background: var(--rl-grain) 0 0 / 180px 180px;
+  opacity: 0.75;
+}
+
+.rl-dust {
+  background: #2a211c;
+  opacity: 0;
+}
+
+.rl-d1 {
+  top: 22%;
+  left: 18%;
+  width: 4px;
+  height: 3px;
+  border-radius: 60% 40% 55% 45%;
+}
+
+.rl-d2 {
+  top: 58%;
+  left: 64%;
+  width: 15px;
+  height: 1.5px;
+  border-radius: 1px;
+  transform: rotate(-24deg);
+}
+
+.rl-d3 {
+  top: 34%;
+  left: 78%;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+}
+
+.rl-scratch {
+  top: 0;
+  bottom: 0;
+  left: 63%;
+  width: 1px;
+  background: rgb(244 236 218 / 0.85);
+  opacity: 0;
+}
+
+.rl-cap {
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: 1.0625rem;
+  color: #2a211c;
+}
+
+/* The project's flower behind the strip's corner, lit like a lantern behind paper. */
+.rl-flower {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 5%;
+  width: min(34cqi, 196px);
+  aspect-ratio: 1;
+  transform-origin: 50% 85%;
+}
+
+.rl-flower > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.rl-glow {
+  filter: blur(18px) sepia(0.5) saturate(1.8) brightness(1.5);
+  opacity: 0.45;
+  transform: scale(1.16);
+}
+
+.rl-bloom {
+  filter: drop-shadow(0 4px 6px rgb(31 23 19 / 0.28));
+}
+
+.rl-controls {
+  grid-area: controls;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rl-btn {
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--zinc-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* A dark knob with a cut mark, the size of a projector's thumbwheel. */
+.rl-btn::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--note-ink);
+  box-shadow: inset 0 0 0 1px rgb(243 230 207 / 0.18), 0 1px 2px rgb(31 23 19 / 0.35);
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+
+.rl-btn::after {
+  content: "";
+  grid-area: 1 / 1;
+  width: 12px;
+  height: 12px;
+  background: currentcolor;
+}
+
+.rl-prev::after {
+  clip-path: polygon(78% 0, 78% 100%, 12% 50%);
+}
+
+.rl-next::after {
+  clip-path: polygon(22% 0, 88% 50%, 22% 100%);
+}
+
+.rl-stop::after {
+  clip-path: polygon(12% 0, 40% 0, 40% 100%, 12% 100%, 12% 0, 60% 0, 88% 0, 88% 100%, 60% 100%, 60% 0);
+}
+
+.rl-stop.is-stopped::after {
+  clip-path: polygon(22% 0, 88% 50%, 22% 100%);
+}
+
+.rl-btn:hover::before {
+  transform: scale(1.06);
+}
+
+.rl-btn:active::before {
+  transform: scale(0.96);
+}
+
+.rl-btn:focus-visible {
+  outline: 2px solid var(--note-rose);
+  outline-offset: 0;
+}
+
+@keyframes rl-breathe {
+  from { opacity: 0.74; }
+  to { opacity: 1; }
+}
+
+@keyframes rl-flicker {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-11px, 7px, 0); }
+  50% { transform: translate3d(6px, -9px, 0); }
+  75% { transform: translate3d(-4px, -13px, 0); }
+}
+
+@keyframes rl-drift-a {
+  0%, 8% { opacity: 0; transform: translate3d(0, 0, 0); }
+  12%, 30% { opacity: 0.7; }
+  34%, 100% { opacity: 0; transform: translate3d(46px, 22px, 0); }
+}
+
+@keyframes rl-drift-b {
+  0%, 52% { opacity: 0; transform: rotate(-24deg) translate3d(0, 0, 0); }
+  56%, 70% { opacity: 0.55; }
+  74%, 100% { opacity: 0; transform: rotate(-12deg) translate3d(-30px, 12px, 0); }
+}
+
+@keyframes rl-drift-c {
+  0%, 70% { opacity: 0; transform: translate3d(0, 0, 0); }
+  73%, 86% { opacity: 0.8; }
+  89%, 100% { opacity: 0; transform: translate3d(-18px, 30px, 0); }
+}
+
+@keyframes rl-scratch {
+  0%, 31% { opacity: 0; transform: translate3d(0, 0, 0); }
+  31.5%, 33% { opacity: 0.8; transform: translate3d(0, 0, 0); }
+  33.5%, 71% { opacity: 0; transform: translate3d(-40px, 0, 0); }
+  71.5%, 72.5% { opacity: 0.6; transform: translate3d(-40px, 0, 0); }
+  73%, 100% { opacity: 0; transform: translate3d(-40px, 0, 0); }
+}
+
+@keyframes rl-glow {
+  from { opacity: 0.3; }
+  to { opacity: 0.62; }
+}
+
+@keyframes rl-sway {
+  from { transform: rotate(-1.2deg); }
+  to { transform: rotate(1.4deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rl:not([data-still]) {
+    .rl-light { animation: rl-breathe 5.2s ease-in-out infinite alternate; }
+    .rl-grain { animation: rl-flicker 0.5s steps(1) infinite; }
+    .rl-d1 { animation: rl-drift-a 11s linear infinite; }
+    .rl-d2 { animation: rl-drift-b 13s linear infinite; }
+    .rl-d3 { animation: rl-drift-c 9s linear infinite; }
+    .rl-scratch { animation: rl-scratch 9.5s steps(1) infinite; }
+    .rl-glow { animation: rl-glow 5.6s ease-in-out infinite alternate; }
+    .rl-flower { animation: rl-sway 7.5s ease-in-out infinite alternate; }
+  }
+}
