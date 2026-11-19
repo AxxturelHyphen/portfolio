@@ -37,16 +37,17 @@ const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
  * Free roam's dusk (cook/ROAM_LOOK.md B): the walker sees each bed from 7 to 14 m, so the rail's night ambients left two
  * thirds of the frame under luma 45. Under roam the ambients sit at a blue hour, low enough that the lanterns' pools
  * lead (the far lawn and wall about a third under the first dusk pass), and every sky gets a blue-violet band over the
- * wall, kept clear of rose so the film grade cannot turn it magenta; the shadows and moons stay the rail's. The grotto
- * keeps its own light.
+ * wall, kept clear of rose so the film grade cannot turn it magenta; the shadows and moons stay the rail's. A later pass
+ * lifted the ambients a step (still a blue hour, not a golden one) so the lawn and the flowers read between the
+ * lanterns. The grotto keeps its own light.
  */
 const ROAM_SKY = { skyTop: '#141a46', skyHorizon: '#3f528a' } as const;
 const ROAM_DUSK: Readonly<Partial<Record<BedId, Pick<PlaceLight, 'skyTop' | 'skyHorizon' | 'ambient'>>>> = {
-  puerta: { ...ROAM_SKY, ambient: '#45494f' },
-  rosaleda: { ...ROAM_SKY, ambient: '#393c48' },
-  estanque: { ...ROAM_SKY, ambient: '#323745' },
-  semillero: { ...ROAM_SKY, ambient: '#343742' },
-  salida: { ...ROAM_SKY, ambient: '#363944' },
+  puerta: { ...ROAM_SKY, ambient: '#4d505a' },
+  rosaleda: { ...ROAM_SKY, ambient: '#424554' },
+  estanque: { ...ROAM_SKY, ambient: '#3b4051' },
+  semillero: { ...ROAM_SKY, ambient: '#3d404e' },
+  salida: { ...ROAM_SKY, ambient: '#3f4250' },
 };
 /** The overview (S02): the moon right of centre over the pond, x 68, y 26 of the frame. */
 const OVERVIEW_MOON = [14.5, 10] as const;

@@ -98,7 +98,7 @@ const DEPTH_CUT = 0.02;
 /** The near-foreground lift under free roam (lights.glsl fillAt), so ground the lanterns miss is never crushed black. */
 const ROAM_FILL = 1;
 /** Free roam's dusk key and rim (cook/ROAM_LOOK.md B): the walker's wider view needs more moon on the beds than the rail. */
-const ROAM_MOON = { colour: '#b3aacb', strength: 1.0 } as const;
+const ROAM_MOON = { colour: '#b3aacb', strength: 1.15 } as const;
 const ROAM_RIM = { colour: '#c9c4d8', strength: 0.65 } as const;
 export function setRoamLight(): void {
   sharedUniforms.uDepthCut.value = DEPTH_CUT;

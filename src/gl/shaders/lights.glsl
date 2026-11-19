@@ -70,8 +70,8 @@ vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
 // the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc. Standing
 // lanterns throw smaller, dimmer pools (STAND_GAIN), so the carried one leads and the rest read as lamps along the beds.
 const vec3 LAMP_REACH = vec3(3.0, 1.8, 3.0);
-const vec3 STAND_REACH = vec3(2.0, 1.4, 2.0);
-const float STAND_GAIN = 0.7;
+const vec3 STAND_REACH = vec3(2.4, 1.6, 2.4);
+const float STAND_GAIN = 0.8;
 const float LAMP_CORE = 1.5;
 const float LAMP_POSTS = 0.22;
 float lampFall(vec3 d, vec3 reach) {
@@ -116,6 +116,7 @@ const vec2 FAR_BAND = vec2(0.5, 3.0);                // metres behind the hand's
 const vec2 ROAM_FAR_BAND = vec2(3.0, 8.0);
 const float FAR_COOL = 0.45;
 const float NEAR_DARK = 0.6;
+const float ROAM_NEAR_DARK = 0.85;                   // free roam walks on that near ground: it stays readable
 const float NEAR_RICH = 0.15;
 const float FOCUS_DARK = 0.38;
 vec3 layerAir(vec3 c, float rel, float back) {
@@ -124,7 +125,7 @@ vec3 layerAir(vec3 c, float rel, float back) {
   float near = smoothstep(0.3, 1.5, -rel);
   c = mix(c, luma(c) * FAR_HUE, far * FAR_COOL);
   c = mix(c, FAR_AIR, far * mix(FAR_AIR_MIX, ROAM_FAR_AIR_MIX, uEye.z));
-  c *= mix(1.0, NEAR_DARK, near);
+  c *= mix(1.0, mix(NEAR_DARK, ROAM_NEAR_DARK, uEye.z), near);
   c = max(mix(vec3(luma(c)), c, 1.0 + NEAR_RICH * near), 0.0);
   return c * (1.0 - FOCUS_DARK * back);
 }
