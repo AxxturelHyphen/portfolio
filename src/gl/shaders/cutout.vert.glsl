@@ -119,6 +119,8 @@ void main() {
     }
     gl_Position = uViewProj * vec4(world, 1.0);
     if (bit(flags, 64.0) * uEye.z > 0.5) vFade = 1.0 - (1.0 - FADE_TO) * coverOf(right, front, lean);
+    // A fading card keeps no depth: the figure drawn after the cutouts shows through its trace, never cut away by it.
+    if (vFade < 1.0) gl_Position.z = gl_Position.w;
   }
 
   vHung = kind > 0.5 ? bit(flags, 128.0) : 0.0;

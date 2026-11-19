@@ -191,13 +191,13 @@ export class StreamBed implements Bed {
     const out = buildBed({
       scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, mode: worldMode(), wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
       slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine,
-      createBatch: (from, page, capacity) => {
+      createBatch: (from, page, capacity, front) => {
         const t = from === 'shared' && shared !== null ? shared.tex : tex;
         const color = t.color[page];
         const normal = t.normal[page];
         if (color === undefined || normal === undefined) throw new Error(`bed ${this.id}: ${from} atlas has no page ${page}`);
         const batch = env.kit.createCutoutBatch(env.gfx, color, normal, capacity);
-        batch.mesh.renderOrder = order + this.batches.length;
+        batch.mesh.renderOrder = front ? RENDER_ORDER.front : order + this.batches.length;
         batch.mesh.frustumCulled = false;
         this.batches.push(batch);
         return batch;

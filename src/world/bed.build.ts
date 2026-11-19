@@ -11,7 +11,8 @@ import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
  * pages), quads sorted far to near inside a batch and batches ordered by depth, since paint order is depth order while
  * the renderer has no depth buffer. Hinge is the yaw; lean, ground-lying, decal and standee flags ride in the phase
  * (quadflags.ts).
- * Value groups D and M are mixed toward the place shadow colour by tint (cook/ART.md laws).
+ * Value groups D and M are mixed toward the place shadow colour by tint (cook/ART.md laws); under free roam far less,
+ * since from 7 to 14 m the rail's mix turned every plant but the project flowers into a violet ghost (cook/ROAM_LOOK.md).
  */
 
 export interface BuildAtlas { manifest: AtlasManifest; tex: AtlasTextures }
@@ -29,15 +30,16 @@ export interface BuildInput {
   /** Project id to visited, from the garden memory. */
   visited(id: string): boolean;
   reduced: { readonly state: { readonly reduced: boolean } };
-  createBatch(from: AtlasKey, page: number, capacity: number): CutoutBatch;
+  /** `front`: a batch of free roam's foreground frames, painted over the ground dressing (RENDER_ORDER.front). */
+  createBatch(from: AtlasKey, page: number, capacity: number, front: boolean): CutoutBatch;
 }
 
 export interface FlowerRef { flower: GardenFlower; batch: CutoutBatch; at: number }
 export interface WingRef { batch: CutoutBatch; at: number; quad: QuadParams; alpha: number }
 export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; skipped: number }
 
-/** Share of the place shadow colour mixed into each value group. */
-const GROUP_MIX: Record<ValueGroup, number> = { L: 0, M: 0.45, D: 0.7 };
+/** Share of the place shadow colour mixed into each value group, per camera. */
+const GROUP_MIX: Record<WorldMode, Record<ValueGroup, number>> = { rail: { L: 0, M: 0.45, D: 0.7 }, roam: { L: 0, M: 0.2, D: 0.3 } };
 /** Wings are near masks (ART.md 2.2): a dark cool silhouette, uncapped (QUAD_FLAG.silhouette), never a lit plate. */
 const WING_TINT: readonly number[] = [0.13, 0.11, 0.2, 1];
 /**
@@ -45,11 +47,17 @@ const WING_TINT: readonly number[] = [0.13, 0.11, 0.2, 1];
  * with an empty black centre that read as a hole in the garden.
  */
 const SIGN_BOARD: SpriteId = 'sh/board';
+/**
+ * Under free roam, cards standing south of this z (between the path and the lens: the foreground frames) are batched
+ * apart and painted after the ground dressing, since paint order is depth order and the lawn lies behind them. The low
+ * tier keeps them in their page's batch: one draw call per bed matters more there than that overlap.
+ */
+const FRONT_Z = 2;
 const FOOT_SPRAYS = 3;
 const FOOT_SPREAD = 0.18;
 
 type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; flower?: GardenFlower };
-interface Group { from: AtlasKey; page: number; entries: Entry[]; quads: number; zSum: number }
+interface Group { from: AtlasKey; page: number; front: boolean; entries: Entry[]; quads: number; zSum: number }
 
 export function hexRgb(hex: string, out: Float32Array): Float32Array {
   const n = Number.parseInt(hex.replace('#', ''), 16);
@@ -68,8 +76,9 @@ function flagsOf(it: Placement3, turn: number): number {
 /** The standee rule for a bed placement: upright, leaning and not a near mask. */
 const turnOf = (it: Placement3, wallZ: number): number => turnFlag(it.z, wallZ, it.flat !== true && it.lean !== 0 && it.wing !== true);
 
-function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade: Float32Array, turn: number, x = it.x, y = it.y, z = it.z, k = 1): QuadParams {
-  const m = GROUP_MIX[it.group];
+function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade: Float32Array, mix: Record<ValueGroup, number>, turn: number,
+  x = it.x, y = it.y, z = it.z, k = 1): QuadParams {
+  const m = mix[it.group];
   const t = it.tint ?? [1, 1, 1];
   const flags = flagsOf(it, turn);
   return {
@@ -96,21 +105,22 @@ const once = (q: QuadParams) => (b: CutoutBatch, at: number): number => {
 export function buildBed(i: BuildInput): BuildOutput {
   const { scene, bed, shared } = i;
   const shade = hexRgb(scene.shade, new Float32Array(3));
+  const mix = GROUP_MIX[i.mode];
   const groups = new Map<string, Group>();
   const size: [number, number] = [0, 0];
   let skipped = 0;
 
-  const groupOf = (from: AtlasKey, page: number): Group => {
-    const key = `${from}:${page}`;
+  const groupOf = (from: AtlasKey, page: number, front: boolean): Group => {
+    const key = `${from}:${page}${front ? ':front' : ''}`;
     let g = groups.get(key);
     if (g === undefined) {
-      g = { from, page, entries: [], quads: 0, zSum: 0 };
+      g = { from, page, front, entries: [], quads: 0, zSum: 0 };
       groups.set(key, g);
     }
     return g;
   };
   const add = (from: AtlasKey, page: number, e: Entry, quads: number): void => {
-    const g = groupOf(from, page);
+    const g = groupOf(from, page, i.mode === 'roam' && i.tier !== 'low' && e.z > FRONT_Z);
     g.entries.push(e);
     g.quads += quads;
     g.zSum += e.z;
@@ -129,7 +139,7 @@ export function buildBed(i: BuildInput): BuildOutput {
       if (r === null) { skipped++; continue; }
       placedSize(r.rect, it.h, it.w, it.scale, size);
       const turn = turnOf(it, i.wallZ);
-      const q = quadOf(it, r.rect, size, shade, turn);
+      const q = quadOf(it, r.rect, size, shade, mix, turn);
       add(r.from, r.rect.page, it.wing === true ? { z: it.z, write: once(q), wing: q } : { z: it.z, write: once(q) }, 1);
       if (it.foot !== 'sprays') continue;
       for (let f = 1; f <= FOOT_SPRAYS; f++) {
@@ -137,7 +147,7 @@ export function buildBed(i: BuildInput): BuildOutput {
         if (foot === null) continue;
         placedSize(foot.rect, undefined, undefined, 1, size);
         const dx = (f - 2) * FOOT_SPREAD * size[1];
-        add(foot.from, foot.rect.page, { z: it.z + 0.01 * f, write: once(quadOf(it, foot.rect, size, shade, turn, it.x + dx, 0, it.z + 0.01 * f, 1)) }, 1);
+        add(foot.from, foot.rect.page, { z: it.z + 0.01 * f, write: once(quadOf(it, foot.rect, size, shade, mix, turn, it.x + dx, 0, it.z + 0.01 * f, 1)) }, 1);
       }
     }
   }
@@ -158,7 +168,7 @@ export function buildBed(i: BuildInput): BuildOutput {
   const ordered = [...groups.values()].sort((a, b) => a.zSum / a.entries.length - b.zSum / b.entries.length);
   const out: BuildOutput = { batches: [], flowers: [], wings: [], skipped };
   for (const g of ordered) {
-    const batch = i.createBatch(g.from, g.page, Math.max(1, g.quads));
+    const batch = i.createBatch(g.from, g.page, Math.max(1, g.quads), g.front);
     g.entries.sort((a, b) => a.z - b.z);
     let at = 0;
     for (const e of g.entries) {
