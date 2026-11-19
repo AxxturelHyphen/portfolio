@@ -155,7 +155,10 @@
   display: none;
 }
 
-/* Phones: a full-width strip above the bottom edge, text at 16 px; no rod, no tie. */
+/*
+ * Phones: a full-width strip standing on the folded plan corner (ui/styles/plan.css, 90 px tall there), so "Projects"
+ * stays in its corner while a tag is up; text at 16 px; no rod, no tie.
+ */
 @media (max-width: 44.99rem) {
   #label {
     width: 100%;
@@ -166,7 +169,7 @@
     top: auto;
     left: max(10px, env(safe-area-inset-left, 0px));
     right: max(10px, env(safe-area-inset-right, 0px));
-    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
     width: auto;
     padding: 10px 16px 2px;
   }
@@ -174,6 +177,11 @@
   #label .lb,
   #label[data-side="left"] .lb {
     rotate: none;
+  }
+
+  /* The plan unfolds over the same band: the strip stands aside while it is open. */
+  #world:has(.pl[data-open]) #label {
+    visibility: hidden;
   }
 
   /* No punch: the hole's bruise moves off the card. */

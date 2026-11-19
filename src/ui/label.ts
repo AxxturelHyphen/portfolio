@@ -87,7 +87,7 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   let cw = 300;
   let chh = 180;
   /** Phones: the sheet's distance from the bottom edge (its CSS bottom, safe area included). */
-  let sheetBottom = 10;
+  let sheetBottom = 90;
   let reach = 0;
   let side: 'left' | 'right' | null = null;
 

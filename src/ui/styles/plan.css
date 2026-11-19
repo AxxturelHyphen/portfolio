@@ -256,12 +256,6 @@
     font-size: 1.125rem;
   }
 
-  /* The plant tag takes the bottom strip on phones: the plan steps aside while a flower is focused. */
-  #proxies[data-phase="focus"] .pl {
-    opacity: 0;
-    visibility: hidden;
-  }
-
   .pl-sheet {
     --plw: min(440px, calc(100vw - 32px));
     bottom: 66px;
