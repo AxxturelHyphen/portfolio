@@ -268,7 +268,7 @@
  * top. The corner takes its phone size and the sheet opens wide in two columns, who and the work on the left, the plan
  * on the right, folded once down the middle, so it stays clear of the tag band.
  */
-@media (min-width: 45rem) and (max-height: 30rem) {
+@media (orientation: landscape) and (max-height: 30rem) {
   .pl-tag {
     width: 128px;
     height: 90px;
@@ -282,8 +282,8 @@
     grid-template-columns: minmax(0, 1fr) var(--plw);
     grid-template-rows: repeat(3, auto) 1fr;
     column-gap: 8px;
-    bottom: 66px;
-    width: calc(var(--plw) * 2 + 20px);
+    bottom: 52px;
+    width: min(800px, calc(100vw - 16px - env(safe-area-inset-left, 0px)));
     transform-origin: 88px 100%;
   }
 

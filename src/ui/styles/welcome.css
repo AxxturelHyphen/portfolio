@@ -184,6 +184,58 @@
   }
 }
 
+/*
+ * Phones on their side and other short screens: the card small at the top left, left of the tags, and the slip (or the
+ * skip slip during the intro) beside it under the tags. Both end above the visitor, who stands in the lower middle, and well above the plan corner.
+ */
+@media (orientation: landscape) and (max-height: 30rem) {
+  .wl {
+    --hy: 12px;
+    top: calc(max(4px, env(safe-area-inset-top, 0px)) + 16px);
+    left: max(var(--edge), env(safe-area-inset-left, 0px));
+    width: min(300px, 46vw);
+  }
+
+  .wl-card {
+    padding: 22px 14px 10px;
+    rotate: -0.6deg;
+  }
+
+  .wl-name {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+
+  .wl-place {
+    margin-top: 0;
+    font-size: 0.8125rem;
+  }
+
+  .wl-line {
+    margin-top: 4px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .wl-hint,
+  .wl-skip {
+    position: absolute;
+    top: 50px;
+    left: calc(100% + 14px);
+    width: max-content;
+    max-width: min(420px, calc(100vw - 100% - 2 * var(--edge) - 14px));
+    margin: 0;
+    padding: 8px 12px 9px;
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+
+  /* The slip fades in where it stands: a rise would carry it up against the tags. */
+  .wl-hint {
+    translate: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wl-card,
   .wl-hint,

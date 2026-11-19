@@ -328,8 +328,11 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   }
 }
 
-/* Phones: smaller tags tucked close under the top edge; "Download CV" becomes "CV" and keeps its full name for assistive tech. */
-@media (max-width: 44.99rem) {
+/*
+ * Phones, upright or on their side: smaller tags tucked close under the top edge, so a short screen keeps its height for
+ * the plan and the plate; "Download CV" becomes "CV" and keeps its full name for assistive tech.
+ */
+@media (max-width: 44.99rem), (max-height: 30rem) {
   #toggles,
   .pn-bar {
     --tg-top: max(5px, env(safe-area-inset-top, 0px));
