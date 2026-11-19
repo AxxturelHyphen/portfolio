@@ -36,6 +36,7 @@
     "nav.controls": "Site controls",
     "nav.view": "View",
     "nav.lang": "Language",
+    "sound.label": "Sound",
     "mode.gardenShort": "Garden",
     "mode.gardenNote": "The garden is still growing. Everything is here in the Herbario for now.",
     "bed.rosaleda.gloss": "Rose garden",
@@ -73,8 +74,9 @@
     "welcome.work": "Every project is listed under Projects, bottom left.",
     "credits.link": "Credits",
     "credits.title": "Credits",
-    "credits.intro": "Every picture in the garden is cut from an old plate, print, photograph or texture. Each one is listed here with who made or holds it, a link to the original, its licence and what was changed.",
+    "credits.intro": "Every picture in the garden is cut from an old plate, print, photograph or texture. Each one is listed here with who made or holds it, a link to the original, its licence and what was changed. So is every sound you hear: field recordings and old music boxes.",
     "credits.images": "Images",
+    "credits.sounds": "Sounds",
     "credits.fonts": "Fonts",
     "credits.pd": "Public domain",
     "credits.changed": "Changed: {list}.",
@@ -83,6 +85,7 @@
     "credits.change.tinted": "re-tinted",
     "credits.change.screened": "redrawn as a line print",
     "credits.change.retouched": "retouched",
+    "credits.change.trimmed": "cut, filtered and levelled",
     "credits.fontText": "Licence text"
   },
   "es": {
@@ -122,6 +125,7 @@
     "nav.controls": "Controles del sitio",
     "nav.view": "Vista",
     "nav.lang": "Idioma",
+    "sound.label": "Sonido",
     "mode.gardenShort": "Jardín",
     "mode.gardenNote": "El jardín aún está creciendo. Por ahora, todo está aquí, en el herbario.",
     "bed.rosaleda.gloss": "Rosaleda",
@@ -159,8 +163,9 @@
     "welcome.work": "Todos los proyectos están en Proyectos, abajo a la izquierda.",
     "credits.link": "Créditos",
     "credits.title": "Créditos",
-    "credits.intro": "Cada imagen del jardín está recortada de una lámina, grabado, fotografía o textura antiguos. Aquí aparece cada una con quién la hizo o la conserva, un enlace al original, su licencia y qué se cambió.",
+    "credits.intro": "Cada imagen del jardín está recortada de una lámina, grabado, fotografía o textura antiguos. Aquí aparece cada una con quién la hizo o la conserva, un enlace al original, su licencia y qué se cambió. También cada sonido que se oye: grabaciones de campo y viejas cajas de música.",
     "credits.images": "Imágenes",
+    "credits.sounds": "Sonidos",
     "credits.fonts": "Tipografías",
     "credits.pd": "Dominio público",
     "credits.changed": "Cambios: {list}.",
@@ -169,6 +174,7 @@
     "credits.change.tinted": "reteñida",
     "credits.change.screened": "redibujada como grabado de líneas",
     "credits.change.retouched": "retocada",
+    "credits.change.trimmed": "recortada, filtrada y nivelada",
     "credits.fontText": "Texto de la licencia"
   }
 }

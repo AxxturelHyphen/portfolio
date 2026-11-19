@@ -1,3 +1,4 @@
+import { soundOn } from '../audio/pref.ts';
 import { panelOf } from '../core/motion.ts';
 import type { Content, Lang, Machine, Panel, Project, ProjectId, State } from '../types.ts';
 import { motionOf } from './reel.model.ts';
@@ -185,7 +186,7 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   }
 
   function paintChrome(lang: Lang): void {
-    barEl.innerHTML = renderToggles(c.strings, lang, c.profile.cv, 'pn');
+    barEl.innerHTML = renderToggles(c.strings, lang, c.profile.cv, 'pn', soundOn());
     closeEl.textContent = c.strings[lang]['panel.close'] ?? 'Close';
   }
 

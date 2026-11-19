@@ -25,3 +25,11 @@ test('without JS the garden button is disabled and its note explains why', () =>
   expect(html).toContain(S.es['mode.gardenNote'] ?? 'missing');
   expect(html).not.toContain(String.fromCharCode(0x2014));
 });
+
+test('the sound tag: hidden without JS, a toggle button that shows the choice once a script passes it', () => {
+  expect(renderToggles(S, 'en', 'cv.pdf')).toMatch(/<button type="button" class="tg-plate tg-sound" data-sound aria-pressed="true" hidden>/);
+  const on = renderToggles(S, 'es', 'cv.pdf', 'pn', true);
+  expect(on).toMatch(/data-sound aria-pressed="true">/);
+  expect(on).toContain(S.es['sound.label'] ?? 'missing');
+  expect(renderToggles(S, 'en', 'cv.pdf', 'tg', false)).toMatch(/data-sound aria-pressed="false">/);
+});

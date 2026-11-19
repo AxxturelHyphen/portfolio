@@ -1,5 +1,5 @@
 /*
- * The fixed controls (cook/ART.md section 4): three plant tags hung from one galvanised wire strung across the top
+ * The fixed controls (cook/ART.md section 4): plant tags hung from one galvanised wire strung across the top
  * right, in every mode and above the open notebook. Garden: dark weathered zinc tags, the words stamped in the display
  * serif in pale ink. Herbario: paper tags, the same cut, dark ink. Each tag hangs on its own short drop of wire from
  * the line, with its own tilt around its punched hole and a shadow cast on the scene. The stock is a masked layer
@@ -132,6 +132,25 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   --cut: polygon(11px 0, calc(100% - 9px) 0, calc(100% - 1px) 9px, 100% 100%, 1px calc(100% - 1px), 0 11px);
 }
 
+.tg-sound {
+  --tilt: 2.2deg;
+  --drop: 11px;
+  --sx: 2px;
+  --sy: 3px;
+  --cut: polygon(10px 1px, calc(100% - 10px) 0, 100% 10px, calc(100% - 1px) calc(100% - 1px), 1px 100%, 0 9px);
+}
+
+/* Sound off: the word struck through in the tag's mark colour, a label crossed out by hand. */
+.tg-sound[aria-pressed="false"] {
+  color: var(--tg-ink-2);
+  text-decoration: line-through 2px var(--tg-mark);
+}
+
+/* Shown only once a script knows the visitor's choice. */
+.tg-sound[hidden] {
+  display: none;
+}
+
 /* The stock: masked to the tag's cut, with the punched hole and a darker rim where the punch bruised it. */
 .tg-plate::before,
 .tg-cv::before,
@@ -191,11 +210,13 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
 }
 
 /* Touched, a tag swings back toward plumb; pressed, it gives a little. */
+.tg-sound:hover,
 .tg-cv:hover,
 .tg-exit:not([aria-disabled="true"]):hover {
   rotate: calc(var(--tilt) * -0.4);
 }
 
+.tg-sound:active,
 .tg-cv:active,
 .tg-exit:not([aria-disabled="true"]):active {
   scale: 0.98;
@@ -277,11 +298,13 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
     transition: none;
   }
 
+  .tg-sound:hover,
   .tg-cv:hover,
   .tg-exit:not([aria-disabled="true"]):hover {
     rotate: var(--tilt);
   }
 
+  .tg-sound:active,
   .tg-cv:active,
   .tg-exit:not([aria-disabled="true"]):active {
     scale: none;
