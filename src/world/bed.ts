@@ -1,11 +1,11 @@
 import type {
   AtlasManifest, AtlasTextures, Bed, BedBehaviour, BedCtx, BedId, BedModule, BedState, Channel, Clock, Content,
   CreateCutoutBatch, CutoutBatch, Gfx, Lang, LightRig, LoadAtlas, Machine, Moth, Project, ProjectBed,
-  Quality, SlotView, SpriteId, SpriteRect, State,
+  Phase, Quality, SlotView, SpriteId, SpriteRect, State,
 } from '../types.ts';
 import type { Texture } from 'three';
 import { spring } from '../core/spring.ts';
-import { STREAM, wingOpacityOf } from '../core/motion.ts';
+import { OPEN_HALF, STREAM, wingOpacityOf } from '../core/motion.ts';
 import { buildBed, type BuildAtlas, type FlowerRef, type WingRef } from './bed.build.ts';
 import type { GardenRig } from './camera.ts';
 import type { BedScene3 } from './layout.ts';
@@ -57,6 +57,8 @@ export interface Slicer { frame(): Promise<void>; upload(): Promise<void>; spent
 
 export { RENDER_ORDER };
 const ACTOR_CAPACITY = 64;
+/** Phases in which the focused project's flower unfurls (the open channel drives it). */
+const ENTERING: readonly Phase[] = ['opening', 'inspect', 'closing'];
 
 const behaviours = import.meta.glob<BedModule>('./behaviours/*.ts');
 
@@ -249,7 +251,7 @@ export class StreamBed implements Bed {
     return this.state === 'active' ? this.behaviour : null;
   }
 
-  update(c: Clock, _s: State, _ch: Machine['ch']): void {
+  update(c: Clock, s: State, ch: Machine['ch']): void {
     this.reveal.tick(c.dt);
     this.setUniformReveal(this.reveal.value);
     this.fadeWings(wingOpacityOf(this.env.rig.speed));
@@ -257,10 +259,21 @@ export class StreamBed implements Bed {
     for (let i = 0; i < this.flowers.length; i++) {
       const f = this.flowers[i];
       if (f === undefined) continue;
+      const entering = s.project !== null && s.slot === f.flower.slot.id && ENTERING.includes(s.phase);
+      f.flower.setEntered(entering ? ch.open.value / OPEN_HALF : 0, entering && s.phase !== 'closing');
       f.flower.update(c);
       if (f.flower.dirty) f.batch.writer.commit(f.at, f.at + f.flower.write(f.batch.writer, f.at));
     }
     this.behaviour?.update?.(c);
+  }
+
+  /** The entered project's flower: its unfurl, or 0 when none is entered (test hook). */
+  unfurl(): number {
+    for (let i = 0; i < this.flowers.length; i++) {
+      const f = this.flowers[i];
+      if (f !== undefined && f.flower.unfurl > 0) return f.flower.unfurl;
+    }
+    return 0;
   }
 
   /** Visited flowers rest open; called when the memory learns a new one. */

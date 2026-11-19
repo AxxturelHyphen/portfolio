@@ -4,6 +4,9 @@
  * 10 poses) and two per tick closing (375 ms), starting one tick after focus. The turn toward the camera runs at
  * full rate, from the slot's hinge to face the camera. A visited flower (garden memory) stays open instead of closing.
  * Frozen time (?t) and reduced motion show the target pose at once.
+ * Entering the project unfurls it further: on the open channel (setEntered), it opens to its last pose, swells and leans
+ * back a little in UNFURL_STEPS stop-motion steps while the iris closes on it, and folds back as the panel closes.
+ * Frozen time and reduced motion switch it open or shut at once.
  */
 import type { Clock, Flower, InstanceWriter, Project, QuadParams, SlotView, SpriteRect, BloomDef, SpriteId } from '../types.ts';
 import { BLOOM_POSES, EASE_OUT, STEP_FPS, UI, bloomAt, clamp01 } from '../core/motion.ts';
@@ -12,6 +15,8 @@ import { packPhase } from './quadflags.ts';
 const LAST_POSE = BLOOM_POSES.length - 1;
 const CLOSE_POSES_PER_TICK = 2;
 const WHITE: readonly number[] = [1, 1, 1, 1];
+/** The unfurl on entering: extra scale, lean in radians around the base, and the stop-motion steps it moves in. */
+export const UNFURL = { scale: 0.14, lean: 0.06, steps: 6 } as const;
 const NO_UV: readonly number[] = [0, 0, 0, 0];
 
 /** One scratch quad for every flower: write() fills it and hands it to the writer, which copies it. */
@@ -38,6 +43,17 @@ export interface GardenFlower extends Flower {
   readonly dirty: boolean;
   /** Visited this or an earlier visit: rests open. */
   setVisited(on: boolean): void;
+  /** Current unfurl 0..1, quantised to UNFURL.steps. */
+  readonly unfurl: number;
+  /** The project is being entered: `k` how far (the open channel up to the iris shut), `up` whether it is wanted open. */
+  setEntered(k: number, up: boolean): void;
+}
+
+/** The unfurl shown for an entering amount: stepped, or all or nothing under frozen time and reduced motion. */
+export function unfurlOf(k: number, up: boolean, instant: boolean): number {
+  if (instant) return up ? 1 : 0;
+  const n = UNFURL.steps - 1;
+  return Math.round(clamp01(k) * n) / n;
 }
 
 /** Bloom pose at rest for a status: rest values are pose fractions (cook/ART.md 3.5: idea 1, wip 7, shipped 9). */
@@ -72,9 +88,14 @@ export function createFlower(o: FlowerOptions): GardenFlower {
   let turn = 0;
   let openness = quantise(bloomAt(rest), bloom.steps);
   let dirty = true;
+  let enterK = 0;
+  let enterUp = false;
+  let unfurl = 0;
 
   function setQuad(rect: SpriteRect | undefined, z: number, rot: number, k: number): void {
-    const s = scale * k;
+    const u = EASE_OUT(unfurl);
+    const s = scale * k * (1 + UNFURL.scale * u);
+    rot += UNFURL.lean * u;
     quad.x = slot.world[0];
     quad.y = slot.world[1];
     quad.z = z;
@@ -93,14 +114,19 @@ export function createFlower(o: FlowerOptions): GardenFlower {
     quads,
     get openness() { return openness; },
     get dirty() { return dirty; },
+    get unfurl() { return unfurl; },
     setFocused(on) {
       focused = on;
     },
     setVisited(on) {
       visited = on;
     },
+    setEntered(k, up) {
+      enterK = k;
+      enterUp = up;
+    },
     update(c: Clock) {
-      const target = focused || visited ? LAST_POSE : rest;
+      const target = focused || visited || enterUp ? LAST_POSE : rest;
       const tick = Math.floor(c.t * STEP_FPS);
       if (c.frozen || env.state.reduced) {
         pose = target;
@@ -111,9 +137,11 @@ export function createFlower(o: FlowerOptions): GardenFlower {
       lastTick = tick;
       const nextOpen = quantise(bloomAt(pose), bloom.steps);
       const nextTurn = c.frozen ? (focused ? 1 : 0) : clamp01(turn + ((focused ? 1 : -1) * c.dt) / UI.flowerTurnS);
-      if (pose !== shownPose || nextOpen !== openness || nextTurn !== turn) dirty = true;
+      const nextUnfurl = unfurlOf(enterK, enterUp, c.frozen || env.state.reduced);
+      if (pose !== shownPose || nextOpen !== openness || nextTurn !== turn || nextUnfurl !== unfurl) dirty = true;
       openness = nextOpen;
       turn = nextTurn;
+      unfurl = nextUnfurl;
     },
     write(w: InstanceWriter, at: number) {
       dirty = false;
