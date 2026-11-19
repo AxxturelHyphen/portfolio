@@ -2,7 +2,7 @@
   "_doc": "Shot manifest for npm run stills and compare (spec section 13). Per shot: name, wait ('jardin' = window.__jardin.ready, 'dom' = DOM ready only), mode (forced ?mode, omit for the app's own), viewport [w,h], t (frozen content time, seconds), refs (reference ids to compare against, first is the pairing default). World builders override hash, pose, t and viewport in content/garden.json under 'shots' (ARCH 2.9, GardenLayout.shots); a shot there with a 'visitor' [x, z] is a free roam shot (the visitor stands there; every other shot keeps the rail world); garden.json wins over this file, this file fills what garden.json does not say.",
   "defaultViewport": [1920, 1080],
   "shots": {
-    "S01": { "name": "Kaleidoscope intro, mid-turn", "wait": "jardin", "t": 2.5, "refs": ["R01", "R02", "V01"] },
+    "S01": { "name": "Kaleidoscope intro, mid-turn", "wait": "jardin", "t": 1.667, "refs": ["R01", "R02", "V01"] },
     "S02": { "name": "Overview of the garden at dusk, moon up", "wait": "jardin", "t": 12.5, "refs": ["R04", "R06"] },
     "S03": { "name": "Rosaleda, a project rose mid-bloom", "wait": "jardin", "t": 12.5, "refs": ["R01", "R03", "R04"] },
     "S04": { "name": "Estanque, the white peacock fanning, moon on the water", "wait": "jardin", "t": 12.5, "refs": ["R09", "R04", "R06"] },

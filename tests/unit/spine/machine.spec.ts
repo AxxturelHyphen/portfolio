@@ -20,9 +20,9 @@ function focused(): Machine {
   return m;
 }
 
-test('intro plays its 3 s; any input hurries it to 0.3 s without a snap', () => {
+test('intro plays its 2 s; any input hurries it to 0.3 s without a snap', () => {
   const slow = machine();
-  run(slow, 2.9);
+  run(slow, 1.9);
   expect(slow.state.phase).toBe('intro');
   run(slow, 0.2);
   expect(slow.state.phase).toBe('overview');

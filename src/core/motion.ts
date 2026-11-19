@@ -344,14 +344,14 @@ export const LIGHT = { cursorTauS: 0.08, gatherInS: 0.4, gatherOutTauS: 0.35, sw
 export const MOTH = { tauS: 0.45, lead: 0.12, flapsPerS: 3, glideFlapsPerS: 1.5, posesPerFlap: 4, landAfterS: 1.2, landOpenPoses: 6, avoidPx: 96, introS: 0.5 } as const;
 export const FIREFLY = { inS: 0.4, outS: 1.1 } as const;
 
-// Intro (3 s): fade up, kaleidoscope turn, iris-out, moth
+// Intro (2 s): fade up, kaleidoscope turn, iris-out, moth
 
 export const INTRO = {
-  totalS: 3.0,
-  fadeUp: [0, 0.3],
-  turn: [0, 2.2],
-  irisOut: [2.2, 2.7],
-  moth: [2.5, 3.0],
+  totalS: 2.0,
+  fadeUp: [0, 0.25],
+  turn: [0, 1.4],
+  irisOut: [1.4, 1.8],
+  moth: [1.6, 2.0],
   beatS: 0.5,
   turnDegPerStep: 2.5,
   hubOrbit: 0.01,

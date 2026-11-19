@@ -11,6 +11,9 @@ import { gapFree, hintKeys, WELCOME } from './welcome.rules.ts';
  * or after WELCOME.hintMs, the card after WELCOME.cardMs or as soon as the visitor travels or opens a project. Folded,
  * the card stays as text in the DOM before the garden's controls (screen readers meet it there) and the name stays in
  * the plan sheet (ui/plan.ts). Once per session (sessionStorage): later loads keep only the folded card.
+ * While the kaleidoscope intro plays, on every load, the card stands from its first frame with a slip under it saying
+ * how to skip (any key or a tap), so the intro is never a nameless wait; the slip leaves with the intro. On a first
+ * visit the card then stays through the cold start until the plate comes up, unless a project opens first.
  */
 
 export interface WelcomeDeps {
@@ -23,7 +26,10 @@ export interface WelcomeDeps {
 }
 
 export interface Welcome {
-  /** Stage 'dom': comes up once settled; drops the hint once the visitor has walked a little. No allocation. */
+  /**
+   * Stage 'dom': stands with the intro, comes up once settled, drops the hint once the visitor has walked a little.
+   * No allocation.
+   */
   frame(): void;
 }
 
@@ -65,7 +71,9 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
   card.append(name, place, line);
   const hint = document.createElement('p');
   hint.className = 'wl-hint';
-  root.append(card, hint);
+  const skip = document.createElement('p');
+  skip.className = 'wl-skip';
+  root.append(card, skip, hint);
 
   const roam = d.visitor !== null;
   let stage: Stage = seen() ? 'folded' : 'wait';
@@ -73,6 +81,8 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
   let z0 = 0;
   let hintTimer = 0;
   let cardTimer = 0;
+  let intro = false;
+  let held = false;
 
   function paint(): void {
     const lang = machine.state.lang;
@@ -83,6 +93,22 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     line.hidden = line.textContent === '';
     const [move, work] = hintKeys(isTouch(), roam);
     hint.textContent = `${uiText(content.strings, lang, move)} ${uiText(content.strings, lang, work)}`;
+    skip.textContent = uiText(content.strings, lang, isTouch() ? 'intro.skipTouch' : 'intro.skipKeys');
+  }
+
+  /** The card and the skip slip while the intro plays (welcome.css [data-intro]), then the card alone ([data-held]). */
+  function setIntro(): void {
+    const s = machine.state;
+    const on = s.mode === 'garden' && s.phase === 'intro';
+    const hold = stage === 'wait' && s.mode === 'garden' && s.phase !== 'opening' && s.phase !== 'inspect' && (on || held);
+    if (on !== intro) {
+      intro = on;
+      root.toggleAttribute('data-intro', on);
+    }
+    if (hold !== held) {
+      held = hold;
+      root.toggleAttribute('data-held', hold);
+    }
   }
 
   /** Fades out, then leaves the a11y tree (the hint) or stays as text only (the card, clipped where it stood). */
@@ -114,6 +140,7 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
   }
 
   paint();
+  setIntro();
   if (stage === 'folded') {
     root.dataset.state = 'folded';
     hint.hidden = true;
@@ -136,6 +163,7 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
 
   return {
     frame() {
+      setIntro();
       if (stage === 'wait') {
         const s = machine.state;
         const at = s.phase === 'bed' || s.phase === 'focus' || (!roam && s.phase === 'overview');

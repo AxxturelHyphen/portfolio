@@ -71,7 +71,7 @@ const float DUST_SALT = 24.0;         // levels of the scene value (square root 
 const vec3 DUST_DARK = vec3(0.16, 0.12, 0.10);
 const vec3 DUST_LIGHT = vec3(0.86, 0.80, 0.68);
 const vec3 SCRATCH = vec3(0.84, 0.78, 0.66);
-const float INTRO_S = 3.0;
+const float INTRO_S = 2.0;
 
 vec3 encodeSRGB(vec3 c) {
   c = max(c, 0.0);
