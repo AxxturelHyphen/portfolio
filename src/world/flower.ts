@@ -15,8 +15,11 @@ import { packPhase } from './quadflags.ts';
 const LAST_POSE = BLOOM_POSES.length - 1;
 const CLOSE_POSES_PER_TICK = 2;
 const WHITE: readonly number[] = [1, 1, 1, 1];
-/** The unfurl on entering: extra scale, lean in radians around the base, and the stop-motion steps it moves in. */
-export const UNFURL = { scale: 0.14, lean: 0.06, steps: 6 } as const;
+/**
+ * The unfurl on entering: extra scale, lean in radians around the base, the stop-motion steps it moves in, and `lead`,
+ * the share of the iris's closing leg by which it is fully open (early, while the iris still shows the flower whole).
+ */
+export const UNFURL = { scale: 0.3, lean: 0.09, steps: 6, lead: 0.35 } as const;
 const NO_UV: readonly number[] = [0, 0, 0, 0];
 
 /** One scratch quad for every flower: write() fills it and hands it to the writer, which copies it. */

@@ -1,20 +1,20 @@
 /*
  * The project film in the notebook (src/ui/reel.ts). Its strip takes the garden's travel strip: a dark base
- * (#17120e), lit sprocket holes (#5a4a3a) along both edges and a warm hairline (#8b663a) around each picture. One
- * cell is exactly the gate's width, its dark bars split on both sides, so a pull is one translate step. A blank frame
- * is film with nothing printed on it yet: the projector's light breathing on it, grain, a little dust and now and then
- * a scratch. Behind the strip's corner stands the project's flower, lit softly from behind. Everything moving here is
- * transform or opacity; reduced motion and stills ([data-still]) hold it all still.
+ * (#17120e), sprocket holes (#5a4a3a) along both edges and a warm hairline (#8b663a) round each picture. A frame is
+ * 80 % of the gate, so the edges of its neighbours show at both sides and it reads as a strip, not one picture box.
+ * A blank frame is unexposed amber stock on the projector's light: grain, two fine scratches and a slight exposure
+ * flicker. The project's flower stands beside the strip, cut from paper with a pale cut edge; its hand tint warms and
+ * cools slowly. The controls are small paper tags. Everything moving is transform or opacity; reduced motion and
+ * stills ([data-still]) hold it all still.
  */
 
 .rl {
   --rl-base: #17120e;
   --rl-edge: rgb(139 102 58 / 0.6);
-  --rl-perf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='14'%3E%3Crect x='5' y='3.5' width='12' height='7' rx='2' fill='%235a4a3a'/%3E%3C/svg%3E");
-  --rl-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16 0 0 0 0 .12 0 0 0 0 .09 0 0 0 .55 -.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --rl-perf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='12'%3E%3Crect x='4' y='3' width='10' height='6' rx='1.6' fill='%235a4a3a'/%3E%3C/svg%3E");
+  --rl-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .96 0 0 0 0 .88 0 0 0 0 .72 0 0 0 .9 -.38'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   display: grid;
-  grid-template-areas: "stage" "controls";
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .rl-sr {
@@ -26,20 +26,23 @@
   white-space: nowrap;
 }
 
+/* Strip and flower side by side; the strip never taller than about a third of a phone screen. */
 .rl-stage {
-  grid-area: stage;
-  position: relative;
-  container-type: inline-size;
-  padding-top: min(22cqi, 124px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(64px, 24%, 132px);
+  align-items: end;
+  gap: 0.75rem;
 }
 
 .rl-gate {
   position: relative;
-  z-index: 1;
   overflow: hidden;
   border-radius: 2px;
-  background: var(--rl-base);
-  box-shadow: 0 2px 3px rgb(31 23 19 / 0.3), 0 12px 24px -14px rgb(31 23 19 / 0.6);
+  background:
+    var(--rl-perf) left top / 18px 12px repeat-x,
+    var(--rl-perf) left bottom / 18px 12px repeat-x,
+    var(--rl-base);
+  box-shadow: 0 2px 3px rgb(31 23 19 / 0.3), 0 10px 20px -12px rgb(31 23 19 / 0.6);
   cursor: pointer;
   touch-action: pan-y;
 }
@@ -55,31 +58,28 @@
 }
 
 .rl-frame {
-  flex: 0 0 100%;
-  padding: 14px 5px;
-  background:
-    var(--rl-perf) left top / 22px 14px repeat-x,
-    var(--rl-perf) left bottom / 22px 14px repeat-x,
-    var(--rl-base);
+  flex: 0 0 80%;
+  padding: 12px 4px;
 }
 
 .rl-frame > * {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
+  max-height: calc(30svh - 24px);
   box-shadow: 0 0 0 1px var(--rl-edge);
 }
 
 .rl-media {
   object-fit: cover;
-  background: #bdb3a2;
+  background: #3a3027;
 }
 
-/* Blank film on the projector's light. */
+/* Unexposed stock on the projector's light. */
 .rl-blank {
   position: relative;
   overflow: hidden;
-  background: #a2967f;
+  background: #3b2f22;
 }
 
 .rl-blank > span {
@@ -89,75 +89,51 @@
 
 .rl-light {
   inset: 0;
-  background: radial-gradient(ellipse 70% 75% at 50% 46%, rgb(246 238 220 / 0.95), rgb(218 204 176 / 0.6) 55%, rgb(64 51 40 / 0.45));
-  opacity: 0.86;
+  background: linear-gradient(100deg, rgb(201 160 104 / 0.42), rgb(232 196 140 / 0.58) 46%, rgb(176 132 82 / 0.4));
+  opacity: 0.92;
 }
 
 .rl-grain {
-  inset: -24px;
-  background: var(--rl-grain) 0 0 / 180px 180px;
-  opacity: 0.75;
-}
-
-.rl-dust {
-  background: #2a211c;
-  opacity: 0;
-}
-
-.rl-d1 {
-  top: 22%;
-  left: 18%;
-  width: 4px;
-  height: 3px;
-  border-radius: 60% 40% 55% 45%;
-}
-
-.rl-d2 {
-  top: 58%;
-  left: 64%;
-  width: 15px;
-  height: 1.5px;
-  border-radius: 1px;
-  transform: rotate(-24deg);
-}
-
-.rl-d3 {
-  top: 34%;
-  left: 78%;
-  width: 2.5px;
-  height: 2.5px;
-  border-radius: 50%;
+  inset: -20px;
+  background: var(--rl-grain) 0 0 / 160px 160px;
+  opacity: 0.55;
 }
 
 .rl-scratch {
   top: 0;
   bottom: 0;
-  left: 63%;
   width: 1px;
-  background: rgb(244 236 218 / 0.85);
-  opacity: 0;
+  background: rgb(250 238 214 / 0.55);
+}
+
+.rl-s1 {
+  left: 31%;
+  opacity: 0.7;
+}
+
+.rl-s2 {
+  left: 72%;
+  opacity: 0.35;
 }
 
 .rl-cap {
   left: 0;
   right: 0;
-  bottom: 12%;
+  bottom: 14%;
   text-align: center;
   font-family: var(--font-display);
   font-synthesis: none;
-  font-size: 1.0625rem;
-  color: #2a211c;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: #fbf1dc;
+  text-shadow: 0 1px 2px rgb(23 18 14 / 0.85);
 }
 
-/* The project's flower behind the strip's corner, lit like a lantern behind paper. */
+/* The flower beside the strip: a paper cutout with a pale cut edge; the tint above it is the slow light change. */
 .rl-flower {
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  right: 5%;
-  width: min(34cqi, 196px);
-  aspect-ratio: 1;
-  transform-origin: 50% 85%;
+  position: relative;
+  aspect-ratio: 3 / 4;
+  transform-origin: 50% 90%;
 }
 
 .rl-flower > img {
@@ -166,144 +142,138 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-
-.rl-glow {
-  filter: blur(18px) sepia(0.5) saturate(1.8) brightness(1.5);
-  opacity: 0.45;
-  transform: scale(1.16);
+  object-position: 50% 100%;
 }
 
 .rl-bloom {
-  filter: drop-shadow(0 4px 6px rgb(31 23 19 / 0.28));
+  filter: drop-shadow(0 0 0.6px #fbf4e4) drop-shadow(0 0 0.6px #fbf4e4) drop-shadow(1px 2px 1.5px rgb(31 23 19 / 0.32));
+}
+
+.rl-tint {
+  filter: sepia(0.6) saturate(1.5) brightness(1.18);
+  mix-blend-mode: multiply;
+  opacity: 0.3;
 }
 
 .rl-controls {
-  grid-area: controls;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
+/* A small paper tag on a 44 px target: chamfered cut, punched hole, the glyph in ink. */
 .rl-btn {
+  --cut: polygon(7px 0, 100% 1px, calc(100% - 1px) 100%, 7px calc(100% - 1px), 0 50%);
+  position: relative;
+  isolation: isolate;
   display: grid;
   place-items: center;
-  width: var(--target);
-  height: var(--target);
-  padding: 0;
+  width: 48px;
+  height: 44px;
+  padding: 0 0 0 6px;
   border: 0;
-  border-radius: 50%;
   background: none;
-  color: var(--zinc-ink);
+  color: var(--note-ink);
   cursor: pointer;
   touch-action: manipulation;
+  rotate: -2deg;
+  transition: rotate var(--dur-hover) var(--ease-out);
 }
 
-/* A dark knob with a cut mark, the size of a projector's thumbwheel. */
+.rl-stop {
+  rotate: 1.5deg;
+}
+
+.rl-next {
+  rotate: -0.5deg;
+}
+
 .rl-btn::before {
   content: "";
-  grid-area: 1 / 1;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--note-ink);
-  box-shadow: inset 0 0 0 1px rgb(243 230 207 / 0.18), 0 1px 2px rgb(31 23 19 / 0.35);
-  transition: transform var(--dur-hover) var(--ease-out);
+  position: absolute;
+  z-index: -1;
+  inset: 8px 2px;
+  background:
+    radial-gradient(circle at 9px 50%, transparent 2.2px, rgb(120 92 58 / 0.6) 2.7px, transparent 3.6px),
+    linear-gradient(176deg, #ead9b5, #dcc596);
+  clip-path: var(--cut);
+  -webkit-mask-image: radial-gradient(circle at 9px 50%, transparent 2.3px, #000 2.8px);
+  mask-image: radial-gradient(circle at 9px 50%, transparent 2.3px, #000 2.8px);
+  filter: drop-shadow(1px 1.5px 1px rgb(31 23 19 / 0.3));
 }
 
 .rl-btn::after {
   content: "";
-  grid-area: 1 / 1;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background: currentcolor;
 }
 
 .rl-prev::after {
-  clip-path: polygon(78% 0, 78% 100%, 12% 50%);
+  clip-path: polygon(80% 0, 80% 100%, 10% 50%);
 }
 
 .rl-next::after {
-  clip-path: polygon(22% 0, 88% 50%, 22% 100%);
+  clip-path: polygon(20% 0, 90% 50%, 20% 100%);
 }
 
 .rl-stop::after {
-  clip-path: polygon(12% 0, 40% 0, 40% 100%, 12% 100%, 12% 0, 60% 0, 88% 0, 88% 100%, 60% 100%, 60% 0);
+  clip-path: polygon(14% 0, 40% 0, 40% 100%, 14% 100%, 14% 0, 60% 0, 86% 0, 86% 100%, 60% 100%, 60% 0);
 }
 
 .rl-stop.is-stopped::after {
-  clip-path: polygon(22% 0, 88% 50%, 22% 100%);
+  clip-path: polygon(20% 0, 90% 50%, 20% 100%);
 }
 
-.rl-btn:hover::before {
-  transform: scale(1.06);
-}
-
-.rl-btn:active::before {
-  transform: scale(0.96);
+.rl-btn:hover {
+  rotate: 0deg;
 }
 
 .rl-btn:focus-visible {
   outline: 2px solid var(--note-rose);
-  outline-offset: 0;
+  outline-offset: -2px;
 }
 
-@keyframes rl-breathe {
-  from { opacity: 0.74; }
-  to { opacity: 1; }
+@keyframes rl-flicker-light {
+  0% { opacity: 0.92; }
+  13% { opacity: 0.84; }
+  27% { opacity: 0.95; }
+  41% { opacity: 0.88; }
+  58% { opacity: 0.97; }
+  74% { opacity: 0.86; }
+  88% { opacity: 0.93; }
 }
 
-@keyframes rl-flicker {
+@keyframes rl-grain-shift {
   0% { transform: translate3d(0, 0, 0); }
-  25% { transform: translate3d(-11px, 7px, 0); }
-  50% { transform: translate3d(6px, -9px, 0); }
-  75% { transform: translate3d(-4px, -13px, 0); }
+  25% { transform: translate3d(-9px, 6px, 0); }
+  50% { transform: translate3d(5px, -8px, 0); }
+  75% { transform: translate3d(-3px, -12px, 0); }
 }
 
-@keyframes rl-drift-a {
-  0%, 8% { opacity: 0; transform: translate3d(0, 0, 0); }
-  12%, 30% { opacity: 0.7; }
-  34%, 100% { opacity: 0; transform: translate3d(46px, 22px, 0); }
+@keyframes rl-scratch-jitter {
+  0% { transform: translate3d(0, 0, 0); }
+  33% { transform: translate3d(1.5px, 0, 0); }
+  66% { transform: translate3d(-1px, 0, 0); }
 }
 
-@keyframes rl-drift-b {
-  0%, 52% { opacity: 0; transform: rotate(-24deg) translate3d(0, 0, 0); }
-  56%, 70% { opacity: 0.55; }
-  74%, 100% { opacity: 0; transform: rotate(-12deg) translate3d(-30px, 12px, 0); }
-}
-
-@keyframes rl-drift-c {
-  0%, 70% { opacity: 0; transform: translate3d(0, 0, 0); }
-  73%, 86% { opacity: 0.8; }
-  89%, 100% { opacity: 0; transform: translate3d(-18px, 30px, 0); }
-}
-
-@keyframes rl-scratch {
-  0%, 31% { opacity: 0; transform: translate3d(0, 0, 0); }
-  31.5%, 33% { opacity: 0.8; transform: translate3d(0, 0, 0); }
-  33.5%, 71% { opacity: 0; transform: translate3d(-40px, 0, 0); }
-  71.5%, 72.5% { opacity: 0.6; transform: translate3d(-40px, 0, 0); }
-  73%, 100% { opacity: 0; transform: translate3d(-40px, 0, 0); }
-}
-
-@keyframes rl-glow {
-  from { opacity: 0.3; }
-  to { opacity: 0.62; }
-}
-
-@keyframes rl-sway {
-  from { transform: rotate(-1.2deg); }
-  to { transform: rotate(1.4deg); }
+@keyframes rl-tint {
+  from { opacity: 0.16; }
+  to { opacity: 0.42; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .rl:not([data-still]) {
-    .rl-light { animation: rl-breathe 5.2s ease-in-out infinite alternate; }
-    .rl-grain { animation: rl-flicker 0.5s steps(1) infinite; }
-    .rl-d1 { animation: rl-drift-a 11s linear infinite; }
-    .rl-d2 { animation: rl-drift-b 13s linear infinite; }
-    .rl-d3 { animation: rl-drift-c 9s linear infinite; }
-    .rl-scratch { animation: rl-scratch 9.5s steps(1) infinite; }
-    .rl-glow { animation: rl-glow 5.6s ease-in-out infinite alternate; }
-    .rl-flower { animation: rl-sway 7.5s ease-in-out infinite alternate; }
+    .rl-light { animation: rl-flicker-light 1.7s steps(1) infinite; }
+    .rl-grain { animation: rl-grain-shift 0.5s steps(1) infinite; }
+    .rl-scratch { animation: rl-scratch-jitter 0.4s steps(1) infinite; }
+    .rl-tint { animation: rl-tint 6s ease-in-out infinite alternate; }
+  }
+}
+
+/* Phones: the sheet with the film stays about as tall as it was without it, so the garden still shows above; its
+ * record scrolls inside. */
+@media (max-width: 44.99rem) {
+  .pn-page:has(.rl) {
+    max-height: 65dvh;
   }
 }
