@@ -3,7 +3,8 @@ import type { BedId, SpriteRect } from '../../../src/types.ts';
 import { ROAM } from '../../../src/core/motion.ts';
 import type { BedScene3, Placement3 } from '../../../src/world/layout.ts';
 import { builtIn } from '../../../src/world/mode.ts';
-import { propBlocks } from '../../../src/world/occluders.ts';
+import { PROP_STANDOFF, propBlocks } from '../../../src/world/occluders.ts';
+import { pathDistance } from '../../../src/world/ground.ts';
 import { createVisitor, pathZ, type WalkArea } from '../../../src/world/roam.ts';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../../content/beds/rosaleda.json' with { type: 'json' };
@@ -98,6 +99,29 @@ test('the visitor walking at a prop from any side stops outside it', () => {
     }
   }
   expect(inside).toEqual([]);
+});
+
+test('low props keep the visitor half a metre off their lens side, so the soles never stop on their feet row', () => {
+  const blocks = propBlocks(SCENES);
+  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks };
+  const bench = roamProps().find(({ it }) => it.sprite === 'v/bench')?.it;
+  expect(bench?.block).toBeDefined();
+  const front = bench!.z + bench!.block![2] / 2;
+  const v = createVisitor(area, bench!.x, front + 2);
+  v.walkTo(bench!.x, bench!.z);
+  for (let f = 0; f < 240; f++) v.step(1 / 60);
+  expect(v.pos[1]! - front).toBeGreaterThanOrEqual(PROP_STANDOFF.m + r - 1e-3);
+});
+
+test('the Rosaleda lanterns stand clear of the path and every stand point, never beside the carried one', () => {
+  const near: string[] = [];
+  const stand = traceLayout.anchors.rosaleda;
+  for (const { bed, it } of roamProps()) {
+    if (bed !== 'rosaleda' || !it.sprite.startsWith('sh/lantern-')) continue;
+    if (pathDistance(ground.path.points, it.x, it.z) < 1.5) near.push(`${it.sprite} at ${it.x}, ${it.z}`);
+    if (Math.hypot(it.x - stand, it.z - pathZ(ground.path.points, stand)) < 1.5) near.push(`${it.sprite} by the stand`);
+  }
+  expect(near).toEqual([]);
 });
 
 /** Half the figure's width on the ground (m), with its lantern held out to the side. */

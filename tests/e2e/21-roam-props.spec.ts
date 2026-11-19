@@ -1,6 +1,7 @@
 import { expect, test } from '../helpers/jardin.ts';
 import { enterRoam, roamAt } from '../helpers/roam.ts';
 import type { BedScene3 } from '../../src/world/layout.ts';
+import { builtIn } from '../../src/world/mode.ts';
 import rosaledaJson from '../../content/beds/rosaleda.json' with { type: 'json' };
 
 // What looked broken while walking (cook/look/r16broken): the visitor could stand inside the Rosaleda bench, and the
@@ -8,7 +9,7 @@ import rosaledaJson from '../../content/beds/rosaleda.json' with { type: 'json' 
 // visitor was still in it.
 
 const rosaleda = rosaledaJson as unknown as BedScene3;
-const bench = rosaleda.layers.flatMap((l) => l.items).find((it) => it.sprite === 'v/bench');
+const bench = rosaleda.layers.flatMap((l) => l.items).find((it) => it.sprite === 'v/bench' && builtIn(it, 'roam'));
 if (bench?.block === undefined) throw new Error('content/beds/rosaleda.json: the bench has no block');
 const [left, right, depth] = bench.block;
 const RADIUS = 0.3;

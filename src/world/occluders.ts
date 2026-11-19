@@ -47,9 +47,17 @@ export function occluderBlocks(e: EnclosureData, scenes: Readonly<Record<BedId, 
 }
 
 /**
+ * Low, wide props (under lowH tall, at least wide across: benches, barrows) keep the visitor `m` off their lens side, so
+ * the figure's soles never stop on the screen row of the prop's feet, where it covers the prop and reads as standing in
+ * it. Props narrower than the figure (pots, lanterns, cans) keep their plain box, so the walk along the path stays open.
+ */
+export const PROP_STANDOFF = { lowH: 1.2, wide: 0.6, m: 0.5 } as const;
+
+/**
  * Solid props (benches, cans, pots, lanterns, a barrow) are boxes the visitor walks round, so the figure never stands
  * inside one and the depth test always finds the prop wholly in front of the figure or wholly behind it. Each is the
- * item's `block` (reach left and right of its foot, depth) from the placements free roam builds.
+ * item's `block` (reach left and right of its foot, depth) from the placements free roam builds, reaching
+ * PROP_STANDOFF further south (toward the lens) for low props.
  */
 export function propBlocks(scenes: Readonly<Record<BedId, BedScene3>>): Float32Array {
   const out: number[] = [];
@@ -58,7 +66,8 @@ export function propBlocks(scenes: Readonly<Record<BedId, BedScene3>>): Float32A
       for (const it of l.items) {
         if (it.block === undefined || !builtIn(it, 'roam')) continue;
         const [left, right, depth] = it.block;
-        out.push(it.x - left, it.z - depth / 2, it.x + right, it.z + depth / 2);
+        const standoff = (it.h ?? 0) * it.scale < PROP_STANDOFF.lowH && left + right >= PROP_STANDOFF.wide ? PROP_STANDOFF.m : 0;
+        out.push(it.x - left, it.z - depth / 2, it.x + right, it.z + depth / 2 + standoff);
       }
     }
   }
