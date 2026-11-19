@@ -38,15 +38,17 @@ export const CROOK = {
   tint: [0.07, 0.05, 0.035], leanPerMS: 0.05, maxLean: 0.16, leanTauS: 0.25, pondNear: 1.6, sideTauS: 0.3,
 } as const;
 /**
- * The lantern in the figure's hand: its handle from fist to ring (m at figure scale 1), its plate scale on landscape
+ * The lantern in the figure's hand, held at the hip: its bail from the fingers to the ring (m at figure scale 1: the
+ * hand holds the ring, so hand and lantern read as one held object), its plate scale on landscape
  * and portrait screens, the ground velocity follower, the flame's ease from the planted crook to the hand when the
  * figure first appears, and how far the carrying arm follows the lantern's swing (a share of its angle, clamped in
  * degrees), taken on the figure's ticks. `carriedLight` is the share of the lantern's own light the actor batch takes,
- * so the figure sits level with the lit plants beside it; `glow` scales the lantern's own glow on that batch (under the
- * paper shoulder, so its flame core stays bright and the tin around it falls off instead of reading flat).
+ * so the figure sits level with the lit plants beside it; `glow` scales the lantern's own glow and its halo on that
+ * batch (the batch divides every lamp's strength by it, so the light on the figure is unchanged): the glass burns
+ * near white-yellow at the flame while the cap and foot, away from it, stay dark tin.
  */
-export const HELD = { handleM: 0.05, scaleWide: 0.8, scaleTall: 0.6, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
-  carriedLight: 0.3, glow: 0.5 } as const;
+export const HELD = { handleM: 0.03, scaleWide: 0.7, scaleTall: 0.52, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
+  carriedLight: 0.3, glow: 0.8 } as const;
 /** The solid patch of the lantern plate the crook is cut from (shares of the sprite's uv rect). */
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 
@@ -129,6 +131,8 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   const stick: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: patch, sway: 0, lift: 0, facing: 0, tint: crookTint, phase: 0 };
   const shaftPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette);
   const hookPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
+  /** In the hand the lantern casts no patch of its own: the one shadow on the ground is the figure's, under the soles. */
+  const heldPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.turn | QUAD_FLAG.hung | QUAD_FLAG.noShadow);
   const gait = createGait();
   const flameEase = new Float32Array(3);
   let writer: InstanceWriter | null = null;
@@ -240,9 +244,10 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     const hx = gx + Math.sin(pendulum.angle) * handle;
     const hy = gy - Math.cos(pendulum.angle) * handle;
     const w = writer!;
-    p.write(w);
     piece(SLOT.handle, gx, gy, hx, hy, CROOK.hookW * (scale / LANTERN.scaleWide), z, hookPhase);
     hang(SLOT.lantern, hx, hy, z);
+    p.halo(flame[0]!, flame[1]!);
+    p.write(w);
     for (let i = 0; i < 3; i++) {
       flameEase[i] = still ? 0 : follow(flameEase[i]!, 0, HELD.flameTauS, c.dt);
       flame[i]! += flameEase[i]!;
@@ -292,6 +297,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
         lamp.px = lantern.pivot[0];
         lamp.py = lantern.pivot[1];
         lamp.uv = lantern.uv;
+        lamp.phase = heldPhase;
         patch.set(handle.uv);
         scale = wide ? HELD.scaleWide : HELD.scaleTall;
         writer!.count = VISITOR_QUADS;
