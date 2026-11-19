@@ -52,6 +52,8 @@ const DEG = Math.PI / 180;
  * fists a step darker.
  */
 const TONES = [[0.8, 0.79, 0.78], [0.776, 0.766, 0.757]] as const;
+/** The smock and sleeves in work blue: under the amber lantern they go slate, never the tan of bare skin (luma ~0.73). */
+const CLOTH = [[0.62, 0.74, 1], [0.6, 0.72, 0.97]] as const;
 /** Ticks of the short settling step between the last stride and standing (then the turn). */
 const SETTLE_TICKS = 2;
 /**
@@ -176,7 +178,7 @@ const padOf = (r: SpriteRect): number => r.pad / ((r.uv[3] - r.uv[1]) * FIGURE.p
 
 /** One solved part: its rect, pivot (canonical figure plane, m), drawn size share, turn, width and height shares and mirroring. */
 interface Sprite { rect: SpriteRect; px: number; py: number; size: number }
-interface Part { sprite: Sprite; x: number; y: number; a: number; sx: number; sy: number; flip: boolean; far: boolean }
+interface Part { sprite: Sprite; x: number; y: number; a: number; sx: number; sy: number; flip: boolean; far: boolean; cloth: boolean }
 
 /** Body parts (cook/FIGURE_BUILD.md 4). */
 const S = { Torso: 0, Head: 1, Scarf: 2, FreeArm: 3, FreeHand: 4, CarryArm: 5, CarryHand: 6, ThighA: 7, ShinA: 8, ThighB: 9, ShinB: 10 } as const;
@@ -213,7 +215,8 @@ export interface Puppet {
 export function createPuppet(rects: FigureRects): Puppet {
   const sprite = (id: keyof FigureRects, size = 1): Sprite => ({ rect: rects[id], px: PIVOTS[id][0], py: PIVOTS[id][1], size });
   const sprites = { thighL: sprite('fg/thigh-l'), shinL: sprite('fg/shin-l'), thighR: sprite('fg/thigh-r'), shinR: sprite('fg/shin-r') };
-  const part = (id: keyof FigureRects, size = 1): Part => ({ sprite: sprite(id, size), x: 0, y: 0, a: 0, sx: 1, sy: 1, flip: false, far: false });
+  const part = (id: keyof FigureRects, size = 1): Part => ({ sprite: sprite(id, size), x: 0, y: 0, a: 0, sx: 1, sy: 1, flip: false, far: false,
+    cloth: id === 'fg/torso' || id === 'fg/arm' || id === 'fg/arm-bent' });
   const parts: Part[] = [part('fg/torso'), part('fg/head', FIGURE.headK), part('fg/scarf'), part('fg/arm'), part('fg/hand'), part('fg/arm-bent'),
     part('fg/hand'), part('fg/thigh-l'), part('fg/shin-l'), part('fg/thigh-r'), part('fg/shin-r')];
   const flags = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow);
@@ -376,7 +379,7 @@ export function createPuppet(rects: FigureRects): Puppet {
     uv[1] = r.uv[1];
     uv[2] = flip ? r.uv[0] : r.uv[2];
     uv[3] = r.uv[3];
-    (q.tint as Float32Array).set(TONES[p.far ? 1 : 0]);
+    (q.tint as Float32Array).set((p.cloth ? CLOTH : TONES)[p.far ? 1 : 0]);
   }
 
   return {
