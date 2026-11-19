@@ -265,8 +265,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
       settledMode = want;
       layers.settle(want);
     }
-    proxies.sync(rig);
     labels.frame(c);
+    proxies.sync(rig);
     welcome?.frame();
     if (work.step()) loop.wake();
     /**

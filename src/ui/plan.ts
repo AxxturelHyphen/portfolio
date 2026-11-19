@@ -1,6 +1,7 @@
 import { loadContent, projectsOf } from '../content/load.ts';
 import type { BedId, Machine, ProjectBed, State } from '../types.ts';
 import { uiText } from './copy.ts';
+import { clearCover, covers, setCover } from './cover.ts';
 import './styles/plan.css';
 import type { BedSign } from './signposts.ts';
 import { gapFree, hasGap } from './welcome.rules.ts';
@@ -14,7 +15,7 @@ import { gapFree, hasGap } from './welcome.rules.ts';
  * anchors). A place button travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT (detail: the
  * project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Esc folds the plan
  * first (the garden's own Esc then waits for the next press), and focus returns to the label. No visited marks and no
- * grotto.
+ * grotto. While open, the box the sheet and its corner take is written to ui/cover.ts for the cane labels.
  */
 
 export interface Plan {
@@ -124,9 +125,22 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     return beds.length - 1;
   }
 
+  /** The open sheet's laid-out box (transforms aside) from the corner's foot up; read on open, resize and sheet resize. */
+  function writeCover(): void {
+    if (!isOpen()) {
+      clearCover(covers.plan);
+      return;
+    }
+    const foot = root.getBoundingClientRect();
+    setCover(covers.plan, foot.left, foot.top + sheet.offsetTop, foot.left + Math.max(sheet.offsetWidth, tag.offsetWidth), foot.bottom);
+  }
+  new ResizeObserver(writeCover).observe(sheet);
+  addEventListener('resize', writeCover, { passive: true });
+
   function setOpen(open: boolean, refocus: boolean): void {
     shownCol = Number.NaN;
     root.toggleAttribute('data-open', open);
+    writeCover();
     tag.setAttribute('aria-expanded', String(open));
     sheet.inert = !open;
     if (!open && refocus && sheet.contains(document.activeElement)) tag.focus({ preventScroll: true });

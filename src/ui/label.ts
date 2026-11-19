@@ -1,6 +1,7 @@
 import { blank, onlyFill } from '../content/herbario/html.ts';
 import { UI } from '../core/motion.ts';
 import type { I18n, LabelCard, ScreenPt, SlotView } from '../types.ts';
+import { clearCover, covers, setCover } from './cover.ts';
 import './styles/label.css';
 import { createMover } from './xform.ts';
 
@@ -16,6 +17,7 @@ import { createMover } from './xform.ts';
  * Placement: beside the flower on the asked side, clear of its hit ellipse; it flips when that side has no room,
  * and docks inside the viewport (whole pixels) when the flower nears or leaves an edge. Phones: a full-width strip
  * above the bottom edge (CSS), so place() only fades it.
+ * The box it takes over the garden is written to ui/cover.ts on every place(), so the cane labels keep clear of it.
  * The tag is not interactive and is hidden from assistive tech: the proxy button carries the name and points at it
  * with aria-describedby, and a click on the flower is the "View".
  */
@@ -33,6 +35,10 @@ const EDGE_PX = 16;
 /** The fixed controls own the top band of the screen; the rod tip and the tie stand above the tag. */
 const TOP_PX = 96;
 const NARROW = '(max-width: 44.99rem)';
+/** What the tag takes over the garden (ui/cover.ts): the rod's tip and tie above it, a little room round it, the rod. */
+const ROD_TIP_PX = 34;
+const COVER_PAD_PX = 4;
+const ROD_HALF_PX = 4;
 const SVG = 'http://www.w3.org/2000/svg';
 
 /**
@@ -81,6 +87,8 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   let vh = innerHeight;
   let cw = 300;
   let chh = 180;
+  /** Phones: the sheet's distance from the bottom edge (its CSS bottom, safe area included). */
+  let sheetBottom = 10;
   let reach = 0;
   let side: 'left' | 'right' | null = null;
 
@@ -93,6 +101,7 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
     if (box === undefined) return;
     cw = box.inlineSize;
     chh = box.blockSize;
+    sheetBottom = Number.parseFloat(getComputedStyle(card).bottom) || sheetBottom;
   }).observe(card);
 
   return {
@@ -122,6 +131,7 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
     place(pt: ScreenPt, asked: 'left' | 'right'): void {
       if (narrow.matches) {
         anchor.move(0, 0, 1);
+        setCover(covers.card, 0, vh - sheetBottom - chh, vw, vh);
         return;
       }
       const clear = reach * pt.scale + GAP_PX;
@@ -138,7 +148,11 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
       const y = pt.y - chh / 2;
       const maxX = vw - EDGE_PX - cw;
       const maxY = vh - EDGE_PX - chh;
-      anchor.move(Math.round(x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x), Math.round(y < TOP_PX ? TOP_PX : y > maxY ? maxY : y), 1);
+      const left = Math.round(x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x);
+      const top = Math.round(y < TOP_PX ? TOP_PX : y > maxY ? maxY : y);
+      anchor.move(left, top, 1);
+      setCover(covers.card, left - COVER_PAD_PX, top - ROD_TIP_PX, left + cw + COVER_PAD_PX, top + chh + COVER_PAD_PX);
+      setCover(covers.rod, left + cw / 2 - ROD_HALF_PX, top + chh, left + cw / 2 + ROD_HALF_PX, vh);
     },
 
     setProgress(p: number): void {
@@ -150,6 +164,8 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
     hide(): void {
       delete el.dataset.shown;
       rise.fade(0);
+      clearCover(covers.card);
+      clearCover(covers.rod);
     },
   };
 }
