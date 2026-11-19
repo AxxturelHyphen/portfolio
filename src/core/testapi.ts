@@ -34,6 +34,8 @@ export interface TestApiDeps {
   figure(): boolean;
   /** The film strip's enable (uStrip.w): 1 while it runs. */
   strip(): number;
+  /** How far the entered project's flower has unfurled in its bed, 0..1. */
+  unfurl(): number;
 }
 
 /** The visitor's position and test-only steering (the same calls a click on the ground and held keys make). */
@@ -129,6 +131,7 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
     roam: () => (d.roam === null ? null : { x: d.roam.pos[0]!, z: d.roam.pos[1]! }),
     figure: () => d.figure(),
     strip: () => d.strip(),
+    unfurl: () => d.unfurl(),
     walkTo(x, z) {
       d.roam?.walkTo(x, z);
       loop.wake();

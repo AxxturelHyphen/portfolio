@@ -1,5 +1,7 @@
 import { panelOf } from '../core/motion.ts';
 import type { Content, Lang, Machine, Panel, Project, ProjectId, State } from '../types.ts';
+import { motionOf } from './reel.model.ts';
+import type { Reel } from './reel.ts';
 import { bindToggles, isPending, paintMode, renderToggles } from './toggles.ts';
 
 /**
@@ -15,10 +17,28 @@ import { bindToggles, isPending, paintMode, renderToggles } from './toggles.ts';
  * Its bar repeats the fixed controls at their own spot (the modal would otherwise make them inert). The page's
  * ribbon bookmark is the "Close" button. Esc, the ribbon and a click beside the page never close directly: they send
  * CLOSE (BACK when no project is the intent), and the state decides. Sections fade up once the page shows.
+ * Over the garden the case carries the project's film (ui/reel.ts, a lazy chunk fetched when a flower is first
+ * focused) under its head, and the media list is left to it; over the Herbario the case is unchanged.
  */
 
-/** Renders the case of one project (head and body); injected by the composition root so ui stays free of content. */
-export type CaseRenderer = (p: Project, lang: Lang, titleId: string) => string;
+/** Renders the case of one project (head and body); injected by the composition root so ui stays free of content.
+ * `media` false leaves the media section out (the film shows the media instead). */
+export type CaseRenderer = (p: Project, lang: Lang, titleId: string, media: boolean) => string;
+
+/** What the film needs from the composition root. */
+export interface FilmSource {
+  /** Frozen time (?t=) or a still (?shot=): the film holds its first frame and nothing moves. */
+  still: boolean;
+  /** The project's flower cutout url, or null. */
+  flowerOf(id: ProjectId): string | null;
+}
+
+type ReelModule = typeof import('./reel.ts');
+let reelChunk: Promise<ReelModule | null> | null = null;
+const loadReel = (): Promise<ReelModule | null> => (reelChunk ??= import('./reel.ts').catch(() => {
+  reelChunk = null;
+  return null;
+}));
 
 const TITLE_ID = 'pn-title';
 const STEPS = 100;
@@ -63,7 +83,7 @@ function returnFocus(id: ProjectId): void {
   document.querySelector<HTMLElement>(sel)?.focus({ preventScroll: true });
 }
 
-export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' | 'strings' | 'profile'>, m: Machine, render: CaseRenderer): Panel {
+export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' | 'strings' | 'profile'>, m: Machine, render: CaseRenderer, film: FilmSource | null = null): Panel {
   const sheet = matchMedia('(max-width: 44.99rem)');
   let current: ProjectId | null = null;
   let key = '';
@@ -71,6 +91,8 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   let readyGen = -1;
   let shownStep = -1;
   let selfClosed = false;
+  let reel: Reel | null = null;
+  const keyOf = (id: ProjectId, s: State): string => `${id}:${s.lang}:${s.mode}`;
 
   el.setAttribute('aria-labelledby', TITLE_ID);
   const barEl = document.createElement('div');
@@ -116,6 +138,28 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
     shownStep = -1;
   }
 
+  function dropReel(): void {
+    reel?.dispose();
+    reel = null;
+  }
+
+  /** The film under the case head; resolves when its flower and first frame are decoded, or at once without it. */
+  async function mountReel(p: Project, lang: Lang, forKey: string): Promise<void> {
+    if (film === null) return;
+    const mod = await loadReel();
+    if (mod === null || key !== forKey) return;
+    const s = (k: string): string => c.strings[lang][k] ?? k;
+    const next = mod.createReel({ project: p, lang, s, flower: film.flowerOf(p.id), motion: motionOf(m.state.reduced, film.still) });
+    body.querySelector('.c-head')?.after(next.el);
+    reel = next;
+    showReel(m.state);
+    await next.ready;
+  }
+
+  function showReel(s: State): void {
+    reel?.setShown(s.mode === 'garden' && s.phase === 'inspect' && el.open);
+  }
+
   function paintChrome(lang: Lang): void {
     barEl.innerHTML = renderToggles(c.strings, lang, c.profile.cv, 'pn');
     closeEl.textContent = c.strings[lang]['panel.close'] ?? 'Close';
@@ -129,7 +173,8 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
 
     prepare(id: ProjectId, gen: number): Promise<void> {
       const lang = m.state.lang;
-      const next = `${id}:${lang}`;
+      const next = keyOf(id, m.state);
+      const withFilm = film !== null && m.state.mode === 'garden';
       readyGen = gen;
       if (next !== key) {
         const p = c.projects.find((x) => x.id === id);
@@ -138,7 +183,8 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
         key = next;
         current = id;
         paintChrome(lang);
-        body.innerHTML = render(p, lang, TITLE_ID);
+        dropReel();
+        body.innerHTML = render(p, lang, TITLE_ID, !withFilm);
         if (hadFocus) el.querySelector<HTMLElement>(`#${TITLE_ID}`)?.focus({ preventScroll: true });
         paintMode(barEl, m.state.mode, isPending(m.state), c.strings, lang);
         page.scrollTop = 0;
@@ -147,7 +193,8 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
           if (i > 0) img.addEventListener('load', () => void reveal(img), { once: true });
         });
         const first = media[0];
-        ready = first === undefined ? Promise.resolve() : reveal(first);
+        const shown = first === undefined ? Promise.resolve() : reveal(first);
+        ready = withFilm ? Promise.all([shown, mountReel(p, lang, next)]).then(() => undefined) : shown;
       }
       /** Repeat calls share one promise; PANEL_READY always carries the newest gen asked for. */
       return ready.then(() => {
@@ -173,6 +220,7 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
       if (m.state.mode === 'garden') panel.setProgress(panelOf(m.ch.open.value));
       el.showModal();
       el.querySelector<HTMLElement>(`#${TITLE_ID}`)?.focus({ preventScroll: true });
+      showReel(m.state);
     },
 
     commitClosed(): void {
@@ -184,6 +232,7 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
       const id = current;
       current = null;
       key = '';
+      dropReel();
       if (id !== null) returnFocus(id);
     },
   };
@@ -197,7 +246,7 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   function reconcile(s: State): void {
     const id = wanted(s);
     if (id !== null) {
-      if (key !== `${id}:${s.lang}` || readyGen !== s.gen) void panel.prepare(id, s.gen);
+      if (key !== keyOf(id, s) || readyGen !== s.gen) void panel.prepare(id, s.gen);
       panel.commitOpen();
       return;
     }
@@ -222,7 +271,9 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
     } else if (s.gardenReady !== prev.gardenReady) {
       paintMode(barEl, s.mode, isPending(s), c.strings, s.lang);
     }
+    if (film !== null && s.mode === 'garden' && s.phase === 'focus') void loadReel();
     reconcile(s);
+    showReel(s);
   });
   reconcile(m.state);
   return panel;

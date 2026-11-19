@@ -7,6 +7,7 @@ import './content/herbario/sheet.css';
 import './content/herbario/print.css';
 import { BLANK_GAPS, renderCaseBody, renderCaseHead } from './content/herbario/case.ts';
 import { renderHerbario } from './content/herbario/template.ts';
+import { loadThumbs } from './content/herbario/thumbs.ts';
 import { initI18n, isLang, lookup, onLang, setLang } from './content/i18n.ts';
 import { loadContent } from './content/load.ts';
 import { parseDebug } from './core/debug.ts';
@@ -14,7 +15,7 @@ import { channelsSettled, createLoop } from './core/loop.ts';
 import { createMachine, type GardenGeo } from './core/machine.ts';
 import { panelOf } from './core/motion.ts';
 import { startRouter } from './core/router.ts';
-import { createPanel, type CaseRenderer } from './ui/panel.ts';
+import { createPanel, type CaseRenderer, type FilmSource } from './ui/panel.ts';
 import { createToggles, disableGarden } from './ui/toggles.ts';
 import type { Content, Lang, Mode } from './types.ts';
 
@@ -50,9 +51,18 @@ function renderLang(l: Lang): void {
   root.dataset.lang = l;
 }
 
-const renderCase: CaseRenderer = (p, l, titleId) => {
+const renderCase: CaseRenderer = (p, l, titleId, media) => {
   const s = (key: string): string => lookup(content.strings, l, key);
-  return renderCaseHead(p, l, s, titleId, BLANK_GAPS) + renderCaseBody(p, l, s, BLANK_GAPS);
+  return renderCaseHead(p, l, s, titleId, BLANK_GAPS) + renderCaseBody(p, l, s, BLANK_GAPS, media);
+};
+
+/** The project film: still under frozen time or a still shot; the flower is the project's specimen plate. */
+const film: FilmSource = {
+  still: q.t !== undefined || q.shot !== undefined,
+  flowerOf: (id) => {
+    const t = loadThumbs().get(id);
+    return t === undefined ? null : `thumbs/${t.file}`;
+  },
 };
 
 type GardenModule = typeof import('./garden/index.ts');
@@ -137,7 +147,7 @@ const loop = createLoop(q);
 startRouter(machine, content);
 const toggles = togglesEl ? createToggles(togglesEl, machine, content.strings) : null;
 toggles?.setLang(lang);
-const panel = dialog instanceof HTMLDialogElement ? createPanel(dialog, content, machine, renderCase) : null;
+const panel = dialog instanceof HTMLDialogElement ? createPanel(dialog, content, machine, renderCase, film) : null;
 
 loop.on('sim', (c) => {
   machine.tick(c);

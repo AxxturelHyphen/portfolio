@@ -84,7 +84,8 @@ ${latin === '' ? '' : `<p class="c-latin" lang="la">${esc(latin)}</p>\n`}${g.omi
 </header>`;
 }
 
-export function renderCaseBody(p: Project, l: Lang, s: Lookup, g: Gaps = MARKED_GAPS): string {
+/** `withMedia` false leaves the media section out: the garden's panel shows the media in its film. */
+export function renderCaseBody(p: Project, l: Lang, s: Lookup, g: Gaps = MARKED_GAPS, withMedia = true): string {
   const stack = p.stack.filter((w) => !g.omit(w));
   return [
     prose(p, 'problem', l, s, g),
@@ -93,6 +94,6 @@ export function renderCaseBody(p: Project, l: Lang, s: Lookup, g: Gaps = MARKED_
     stack.length === 0 && p.stack.length > 0 ? '' : part('c-stack', s('project.stack'), list(stack.map(g.text), 'h-tags')),
     prose(p, 'result', l, s, g),
     links(p, s, g),
-    media(p, l, s, g),
+    withMedia ? media(p, l, s, g) : '',
   ].join('\n');
 }

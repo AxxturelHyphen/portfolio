@@ -382,7 +382,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
 
   if (testApiEnabled(q)) {
     installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam, figure: () => lantern?.figure === true,
-      strip: () => gfx.film.uniforms.uStrip.value.w });
+      strip: () => gfx.film.uniforms.uStrip.value.w,
+      unfurl: () => (machine.state.bed === null ? 0 : garden.beds.get(machine.state.bed)?.unfurl() ?? 0) });
   }
   return { quality, ready };
 }
