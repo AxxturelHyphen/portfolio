@@ -1,7 +1,7 @@
 import type { BedId } from '../types.ts';
 import { ROAM } from '../core/motion.ts';
 import { framingFor, type Framing } from './follow.ts';
-import type { BedScene3, EnclosureData } from './layout.ts';
+import type { BedScene3, EnclosureData, Placement3 } from './layout.ts';
 import { builtIn } from './mode.ts';
 
 /**
@@ -47,11 +47,28 @@ export function occluderBlocks(e: EnclosureData, scenes: Readonly<Record<BedId, 
 }
 
 /**
- * Low, wide props (under lowH tall, at least wide across: benches, barrows) keep the visitor `m` off their lens side, so
- * the figure's soles never stop on the screen row of the prop's feet, where it covers the prop and reads as standing in
- * it. Props narrower than the figure (pots, lanterns, cans) keep their plain box, so the walk along the path stays open.
+ * Low, wide props (under lowH tall with whatever rests on them, at least wide across: benches, barrows) keep the visitor
+ * `m` off their lens side, so the figure's soles never stop on the screen row of the prop's feet, where it covers the
+ * prop and reads as standing in it. Props narrower than the figure (pots, lanterns, cans) keep their plain box, so the
+ * walk along the path stays open, and so does a tall stack (the armillary on the sundial's drum): its box is just the
+ * drawn footprint.
  */
 export const PROP_STANDOFF = { lowH: 1.2, wide: 0.6, m: 0.5 } as const;
+
+/** Items above this height (m) rest on something (the cat on the bench, the armillary on its drum). */
+const RESTING_Y = 0.05;
+
+/** The top of a prop with what rests on it: the highest item standing within its box above the ground. */
+function stackTop(it: Placement3, items: readonly Placement3[]): number {
+  const [left, right, depth] = it.block ?? [0, 0, 0];
+  let top = (it.h ?? 0) * it.scale;
+  for (const o of items) {
+    if (o === it || o.y <= RESTING_Y || !builtIn(o, 'roam')) continue;
+    if (o.x < it.x - left || o.x > it.x + right || Math.abs(o.z - it.z) > depth / 2) continue;
+    top = Math.max(top, o.y + (o.h ?? 0) * o.scale);
+  }
+  return top;
+}
 
 /**
  * Solid props (benches, cans, pots, lanterns, a barrow) are boxes the visitor walks round, so the figure never stands
@@ -62,13 +79,12 @@ export const PROP_STANDOFF = { lowH: 1.2, wide: 0.6, m: 0.5 } as const;
 export function propBlocks(scenes: Readonly<Record<BedId, BedScene3>>): Float32Array {
   const out: number[] = [];
   for (const scene of Object.values(scenes)) {
-    for (const l of scene.layers) {
-      for (const it of l.items) {
-        if (it.block === undefined || !builtIn(it, 'roam')) continue;
-        const [left, right, depth] = it.block;
-        const standoff = (it.h ?? 0) * it.scale < PROP_STANDOFF.lowH && left + right >= PROP_STANDOFF.wide ? PROP_STANDOFF.m : 0;
-        out.push(it.x - left, it.z - depth / 2, it.x + right, it.z + depth / 2 + standoff);
-      }
+    const items = scene.layers.flatMap((l) => l.items);
+    for (const it of items) {
+      if (it.block === undefined || !builtIn(it, 'roam')) continue;
+      const [left, right, depth] = it.block;
+      const standoff = left + right >= PROP_STANDOFF.wide && stackTop(it, items) < PROP_STANDOFF.lowH ? PROP_STANDOFF.m : 0;
+      out.push(it.x - left, it.z - depth / 2, it.x + right, it.z + depth / 2 + standoff);
     }
   }
   return new Float32Array(out);

@@ -3,10 +3,12 @@
  * velocity, driven by held directions, a walk target (click or tap) or an assisted move along the garden path. It
  * collides with the walkable rectangle and the pond ellipse by pushing out along the contact normal and removing the
  * normal velocity, so it slides along edges. A walk target whose straight line crosses the pond goes round it by the
- * nearer side; a target the body cannot reach is given up once it stalls. No allocation per frame.
+ * nearer side, one that runs into a solid prop goes round it (detour.ts) and one inside a prop stops at its face; a target
+ * the body cannot reach is given up once it stalls. No allocation per frame.
  */
 import type { BedId } from '../types.ts';
 import { ROAM } from '../core/motion.ts';
+import { detour, reachOf } from './detour.ts';
 
 /** Where the visitor may stand: the rectangle its body stays inside, the pond it never enters, the path (x, z) by x. */
 export interface WalkArea {
@@ -15,6 +17,8 @@ export interface WalkArea {
   path: readonly (readonly [number, number])[];
   /** Rectangles the body stays out of, as x0, z0, x1, z1 per box (tall cards' hidden strips, occluders.ts). */
   blocks?: Float32Array;
+  /** Solid props' boxes (occluders.ts propBlocks), same layout: the body stays out and walk targets steer round them. */
+  props?: Float32Array;
 }
 
 /** Held direction bits (screen and world agree: the camera never turns). */
@@ -124,9 +128,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   const nx = (x: number): number => (x - area.pond.x) / pa;
   const nz = (z: number): number => (z - area.pond.z) / pb;
 
-  /** Pushes the body out of each blocked box by the shortest way, removing velocity into it. */
-  function pushOutOfBlocks(): void {
-    const b = area.blocks;
+  /** Pushes the body out of each box by the shortest way, removing velocity into it. */
+  function pushOutOf(b: Float32Array | undefined): void {
     if (b === undefined) return;
     for (let i = 0; i + 3 < b.length; i += 4) {
       const x0 = b[i]! - r;
@@ -159,7 +162,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       if (pos[0]! > hx) { pos[0] = hx; if (vel[0]! > 0) vel[0] = 0; }
       if (pos[1]! < lz) { pos[1] = lz; if (vel[1]! < 0) vel[1] = 0; }
       if (pos[1]! > hz) { pos[1] = hz; if (vel[1]! > 0) vel[1] = 0; }
-      pushOutOfBlocks();
+      pushOutOf(area.blocks);
+      pushOutOf(area.props);
       const qx = nx(pos[0]!);
       const qz = nz(pos[1]!);
       const q = Math.hypot(qx, qz);
@@ -205,11 +209,12 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
     return Math.hypot(px + s * dx, pz + s * dz) < 1;
   }
 
-  /** Writes into aim the point to head for: the target, or a tangent point round the pond on the chosen side. */
+  /** Writes into aim the point to head for: the target, a tangent point round the pond or a corner round a prop. */
   function aimPoint(): void {
     if (!crossesPond()) {
       aim[0] = tx;
       aim[1] = tz;
+      if (area.props !== undefined) detour(area.props, r, area, pos[0]!, pos[1]!, tx, tz, aim);
       return;
     }
     const px = nx(pos[0]!);
@@ -287,6 +292,11 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       tx = x;
       tz = z;
       settleTarget();
+      if (area.props !== undefined) {
+        const s = reachOf(area.props, r, pos[0]!, pos[1]!, tx, tz);
+        tx = pos[0]! + (tx - pos[0]!) * s;
+        tz = pos[1]! + (tz - pos[1]!) * s;
+      }
       const px = nx(pos[0]!);
       const pz = nz(pos[1]!);
       const cross = px * nz(tz) - pz * nx(tx);

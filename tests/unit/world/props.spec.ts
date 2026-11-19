@@ -3,7 +3,7 @@ import type { BedId, SpriteRect } from '../../../src/types.ts';
 import { ROAM } from '../../../src/core/motion.ts';
 import type { BedScene3, Placement3 } from '../../../src/world/layout.ts';
 import { builtIn } from '../../../src/world/mode.ts';
-import { PROP_STANDOFF, propBlocks } from '../../../src/world/occluders.ts';
+import { occluderBlocks, PROP_STANDOFF, propBlocks } from '../../../src/world/occluders.ts';
 import { pathDistance } from '../../../src/world/ground.ts';
 import { createVisitor, pathZ, type WalkArea } from '../../../src/world/roam.ts';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
@@ -80,7 +80,7 @@ test('no prop collider lies across the middle of the garden path', () => {
 
 test('the visitor walking at a prop from any side stops outside it', () => {
   const blocks = propBlocks(SCENES);
-  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks };
+  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, props: blocks };
   const inside: string[] = [];
   for (let i = 0; i + 3 < blocks.length; i += 4) {
     const cx = (blocks[i]! + blocks[i + 2]!) / 2;
@@ -103,7 +103,7 @@ test('the visitor walking at a prop from any side stops outside it', () => {
 
 test('low props keep the visitor half a metre off their lens side, so the soles never stop on their feet row', () => {
   const blocks = propBlocks(SCENES);
-  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks };
+  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, props: blocks };
   const bench = roamProps().find(({ it }) => it.sprite === 'v/bench')?.it;
   expect(bench?.block).toBeDefined();
   const front = bench!.z + bench!.block![2] / 2;
@@ -137,4 +137,31 @@ test('a stand point never puts the figure between the follow camera and its flow
     }
   }
   expect(hidden).toEqual([]);
+});
+
+test('the sundial stands tall with its armillary, so its box is the drum\'s drawn footprint with no standoff', () => {
+  const drum = roamProps().find(({ it }) => it.sprite === 'es/drum-base')?.it;
+  expect(drum?.block).toBeDefined();
+  const [left, right, depth] = drum!.block!;
+  const blocks = propBlocks(SCENES);
+  const box: number[] = [];
+  for (let i = 0; i + 3 < blocks.length; i += 4) if (Math.abs(blocks[i]! - (drum!.x - left)) < 1e-4) box.push(...blocks.subarray(i, i + 4));
+  expect(box.map((v) => Number(v.toFixed(3)))).toEqual([drum!.x - left, drum!.z - depth / 2, drum!.x + right, drum!.z + depth / 2].map((v) => Number(v.toFixed(3))));
+});
+
+test('a click walk far left past the skep or the sundial goes round it and arrives (cook/look/r20qa bugs 7 and 8)', () => {
+  const area: WalkArea = {
+    ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points,
+    blocks: occluderBlocks(ground.enclosure, SCENES), props: propBlocks(SCENES),
+  };
+  const missed: string[] = [];
+  for (const [x0, z0, x1, z1] of [[37.5, 0.5, 31, 0.5], [19.7, 0.75, 14, 0.75], [37.5, 0.5, 33, 0.3], [34, 0.4, 37.6, 0.6]] as const) {
+    const v = createVisitor(area, x0, z0);
+    v.walkTo(x1, z1);
+    let t = 0;
+    for (; t < 8 && v.busy; t += 1 / 60) v.step(1 / 60);
+    const off = Math.hypot(v.pos[0]! - x1, v.pos[1]! - z1);
+    if (off > 0.1) missed.push(`${x0}, ${z0} to ${x1}, ${z1}: stopped at ${v.pos[0]!.toFixed(2)}, ${v.pos[1]!.toFixed(2)}`);
+  }
+  expect(missed).toEqual([]);
 });

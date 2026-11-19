@@ -110,12 +110,9 @@ function subjectOf(v: SlotView, scene: BedScene3 | undefined): Subject {
 export function createRoamDrive(d: RoamDeps): RoamDrive {
   const { machine, rig, light, loop, world } = d;
   const ground = world.ground;
-  const cards = occluderBlocks(ground.enclosure, SCENES);
+  const blocks = occluderBlocks(ground.enclosure, SCENES);
   const props = propBlocks(SCENES);
-  const blocks = new Float32Array(cards.length + props.length);
-  blocks.set(cards);
-  blocks.set(props, cards.length);
-  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks };
+  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks, props };
   const limits = viewLimitsOf(ground.enclosure, ground.wall.z);
   const beds = world.rail.keys.flatMap((k) => (k.bed === undefined ? [] : [k.bed]));
   const anchorOf = (b: BedId): number => world.anchors[b];
