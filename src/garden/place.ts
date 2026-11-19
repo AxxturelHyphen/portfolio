@@ -33,6 +33,19 @@ const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
   gruta: { skyTop: '#101338', skyHorizon: '#2c3058', ambient: '#312c1c', shadow: '#1d1710', shadowLength: 0.3, moon: [-8, 6] },
   salida: { skyTop: '#16193d', skyHorizon: '#3c4870', ambient: '#2e333d', shadow: '#2a1c38', shadowLength: 1.1, moon: [-8, 5.6] },
 };
+/**
+ * Free roam's dusk (cook/ROAM_LOOK.md B): the walker sees each bed from 7 to 14 m, so the rail's night ambients left two
+ * thirds of the frame under luma 45. Under roam the ambients lift to a blue hour and every sky gets a warm rose-lilac
+ * band over the wall; the shadows and moons stay the rail's. The grotto keeps its own light.
+ */
+const ROAM_SKY = { skyTop: '#1c1f44', skyHorizon: '#6e5a7c' } as const;
+const ROAM_DUSK: Readonly<Partial<Record<BedId, Pick<PlaceLight, 'skyTop' | 'skyHorizon' | 'ambient'>>>> = {
+  puerta: { ...ROAM_SKY, ambient: '#5f646c' },
+  rosaleda: { ...ROAM_SKY, ambient: '#4e5262' },
+  estanque: { ...ROAM_SKY, ambient: '#444b5e' },
+  semillero: { ...ROAM_SKY, ambient: '#484c5a' },
+  salida: { ...ROAM_SKY, ambient: '#4a4e5e' },
+};
 /** The overview (S02): the moon right of centre over the pond, x 68, y 26 of the frame. */
 const OVERVIEW_MOON = [14.5, 10] as const;
 
@@ -63,10 +76,11 @@ export interface PlaceLighting {
   frame(dt: number, snap: boolean): void;
 }
 
-/** Place lights parsed once at load, then eased per frame so a walk never pops the sky. */
-export function createPlaceLighting(): PlaceLighting {
+/** Place lights parsed once at load (free roam's dusk over the rail's table), then eased per frame so a walk never pops the sky. */
+export function createPlaceLighting(mode: WorldMode): PlaceLighting {
   const parsed = new Map<BedId, LinearLight>();
-  for (const [bed, p] of Object.entries(PLACE_LIGHT) as [BedId, PlaceLight][]) {
+  for (const [bed, rail] of Object.entries(PLACE_LIGHT) as [BedId, PlaceLight][]) {
+    const p = mode === 'roam' ? { ...rail, ...ROAM_DUSK[bed] } : rail;
     parsed.set(bed, {
       skyTop: linearHex(p.skyTop, new Vector3()),
       skyHorizon: linearHex(p.skyHorizon, new Vector3()),

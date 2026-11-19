@@ -49,6 +49,7 @@ const float GLINT_AZ = 0.1047;                        // 6 degrees
 const float GLINT = 0.16;                             // the moon streak in a puddle, broken into dashes
 const float WET_CEILING = 0.3;                        // nothing in the water above display luma about 150
 const float HAZE_START = 3.0;
+const float ROAM_HAZE_START = 7.0;                   // free roam sees the wall from 13 m: its haze starts later
 const float FIELDS_DEPTH = 34.0;                     // metres past the wall where the fields meet the horizon sky
 const float FIELDS_NEAR = 0.22;                       // share of the horizon sky in the near fields (a dusk silhouette)
 const float FIELDS_FAR = 0.6;
@@ -195,7 +196,7 @@ void main() {
   float tone = sat(luma(col) / 0.22);
   col *= 1.0 - LINE_CONTRAST * lineScreen(p, tone) * (1.0 - wet);
   vec3 haze = neutralise(uHaze.rgb);
-  col = mix(col, haze, 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uHaze.w));
+  col = mix(col, haze, 1.0 - exp(-max(vDepth - mix(HAZE_START, ROAM_HAZE_START, uEye.z), 0.0) * uHaze.w));
   float dist = length(vWorld - uCamPos);
   float back = uFocusBack.w * smoothstep(0.35, 1.6, dist - length(uFocusBack.xyz - uCamPos));
   col = layerAir(col, dist - length(uCursor.xyz - uCamPos), back);

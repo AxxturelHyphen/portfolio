@@ -1,4 +1,4 @@
-// Shared light chunk (src/gl/lights.ts): the hand light, the focus gather, up to 4 fireflies and 3 lanterns, all with a
+// Shared light chunk (src/gl/lights.ts): the hand light, the focus gather, up to 4 fireflies and 6 lanterns, all with a
 // soft falloff to zero at their reach. Linear colours.
 uniform vec4 uCursor;      // xyz, radius
 uniform vec3 uCursorColor;
@@ -7,7 +7,7 @@ uniform vec4 uGather;      // xyz, amount
 uniform vec4 uFocusBack;   // xyz of the plane the far layers fall back behind, amount (focus, or a bed's rest depth)
 uniform vec4 uFly[4];      // xyz, intensity
 uniform vec3 uFlyColor;
-uniform vec4 uLamp[3];     // flame xyz, strength (0: dark); 0 is the carried lantern, 1 and 2 standing ones (free roam)
+uniform vec4 uLamp[6];     // flame xyz, strength (0: dark); 0 is the carried lantern, 1 to 5 standing ones (free roam)
 uniform vec3 uLampColor;
 uniform float uFill;       // free roam: a little cool lift on the near ground and plants the lanterns do not reach (0 on the rail)
 uniform vec3 uMoonDir;     // the soft key on the faces (upper left front)
@@ -16,6 +16,7 @@ uniform vec3 uMoonBack;    // the real moon, low behind the garden: rim and glin
 uniform vec3 uRimColor;
 uniform vec3 uAmbient;
 uniform vec3 uShadowColor;
+uniform vec3 uEye;         // z: 0 on the rail, 1 under free roam (the roam air below)
 
 const float FLY_RADIUS = 0.9;
 // Place colours tint the sky; on paper, ground and haze they keep only a trace of their hue, so each plate keeps its
@@ -66,12 +67,14 @@ vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
 }
 
 // A lantern's throw: a soft core windowed to zero at its reach (about 3 m across the ground, shorter upward), with
-// the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc.
+// the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc. Standing
+// lanterns throw smaller pools, so several of them read as lamps along the beds, not one wash.
 const vec3 LAMP_REACH = vec3(3.0, 1.8, 3.0);
+const vec3 STAND_REACH = vec3(2.4, 1.6, 2.4);
 const float LAMP_CORE = 1.5;
 const float LAMP_POSTS = 0.22;
-float lampFall(vec3 d) {
-  vec3 e = d / LAMP_REACH;
+float lampFall(vec3 d, vec3 reach) {
+  vec3 e = d / reach;
   float q = dot(e, e);
   float posts = 1.0 - LAMP_POSTS * pow(abs(sin(2.0 * atan(d.z, d.x + 1e-4) + 0.4)), 6.0) * sat(q * 8.0);
   return sq(sat(1.0 - q)) / (1.0 + LAMP_CORE * q) * posts;
@@ -82,10 +85,13 @@ const vec2 LAMP_FOOT = vec2(0.3, 0.06);   // radius where the dot starts and ins
 const float LAMP_FOOT_DARK = 0.9;
 vec3 lampLights(vec3 p, vec3 n) {
   float c = 0.0;
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 6; i++) {
     if (uLamp[i].w <= 0.0) continue;
     vec3 dl = uLamp[i].xyz - p;
-    float l = uLamp[i].w * lampFall(dl) * wrapLight(dot(n, normalize(dl + vec3(0.0, 1e-3, 0.0))), 0.5);
+    vec3 reach = i == 0 ? LAMP_REACH : STAND_REACH;
+    vec3 e = dl / reach;
+    if (dot(e, e) >= 1.0) continue;   // outside the pool: lampFall is 0 there
+    float l = uLamp[i].w * lampFall(dl, reach) * wrapLight(dot(n, normalize(dl + vec3(0.0, 1e-3, 0.0))), 0.5);
     if (i == 0) l *= 1.0 - LAMP_FOOT_DARK * (1.0 - smoothstep(LAMP_FOOT.y, LAMP_FOOT.x, length(dl.xz))) * step(0.3, dl.y);
     c += l;
   }
@@ -98,18 +104,24 @@ float fillAt(float depth) { return uFill * (1.0 - smoothstep(FILL_DEPTH.x, FILL_
 
 // Air between the layers, banded by depth against the hand's plane (+ behind it, - in front): far layers sit lifted
 // and cooler in the dusk air, near layers darker and richer. `back` is the fall-off behind a focused flower (0..1).
+// Under free roam the hand's plane is the visitor, so the whole bed behind the figure counts as far: there the far band
+// starts later and mixes less air (uEye.z), so the beds behind the visitor keep their colour.
 const vec3 FAR_AIR = vec3(0.027, 0.030, 0.058);    // #2d3044, a cool slate, not violet
 const vec3 FAR_HUE = vec3(0.92, 0.99, 1.15);         // the cool lean of far paper at its own value
 const float FAR_AIR_MIX = 0.42;
+const float ROAM_FAR_AIR_MIX = 0.18;
+const vec2 FAR_BAND = vec2(0.5, 3.0);                // metres behind the hand's plane where the far air starts and is full
+const vec2 ROAM_FAR_BAND = vec2(3.0, 8.0);
 const float FAR_COOL = 0.45;
 const float NEAR_DARK = 0.6;
 const float NEAR_RICH = 0.15;
 const float FOCUS_DARK = 0.38;
 vec3 layerAir(vec3 c, float rel, float back) {
-  float far = smoothstep(0.5, 3.0, rel);
+  vec2 band = mix(FAR_BAND, ROAM_FAR_BAND, uEye.z);
+  float far = smoothstep(band.x, band.y, rel);
   float near = smoothstep(0.3, 1.5, -rel);
   c = mix(c, luma(c) * FAR_HUE, far * FAR_COOL);
-  c = mix(c, FAR_AIR, far * FAR_AIR_MIX);
+  c = mix(c, FAR_AIR, far * mix(FAR_AIR_MIX, ROAM_FAR_AIR_MIX, uEye.z));
   c *= mix(1.0, NEAR_DARK, near);
   c = max(mix(vec3(luma(c)), c, 1.0 + NEAR_RICH * near), 0.0);
   return c * (1.0 - FOCUS_DARK * back);

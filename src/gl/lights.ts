@@ -18,23 +18,27 @@ import { linearHex } from './colour.ts';
  *   1 under free roam (cook/ROAM_PLAN.md 3), so rail views never move.
  * - uVisitor: the roaming visitor's ground point (x, z); cards flagged `fade` turn to a trace while they cover it.
  * - uLamp: lanterns burning with their own amber pool (flame xyz, strength), free roam only: lamp 0 is the lantern the
- *   visitor carries (it takes over from the hand light: uHandOn 0), lamps 1 and 2 standing props in view.
+ *   visitor carries (it takes over from the hand light: uHandOn 0), lamps 1 to 5 the standing props nearest it in view.
  * - uFill: a near-foreground lift under free roam (0 on the rail).
  * - uDepthCut: cutout fragments under this alpha are discarded so their soft edges write no depth (free roam: the scene
  *   target has a depth buffer); 0 on the rail, where nothing is discarded.
  */
 export const FLY_LIGHTS = 4;
-/** Lanterns with their own amber light (a fixed count in the shader): the carried one and two standing props. */
-export const LAMP_LIGHTS = 3;
+/** Lanterns with their own amber light (a fixed count in the shader, world/lamps.ts LAMPS.count): the carried one and five standing props. */
+export const LAMP_LIGHTS = 6;
 
 /** Shadow decals fall toward (+0.34 x, +0.94 z), length per unit of height (Rosaleda 0.5), opacity 30 %. */
 const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.3 } as const;
 
-/** Depth haze toward the wall: the place shadow, thickening past 3 m from the lens. */
+/**
+ * Depth haze toward the wall: the place shadow, thickening past 3 m from the lens. Free roam sees the wall from 13 m, so
+ * its haze is a paler, thinner dusk air that starts later (HAZE_START in the shaders, by uEye.z): the wall keeps its stone.
+ */
 const HAZE = { colour: '#100f17', density: 0.06 } as const;
-function hazeOf(hex: string, density: number): Vector4 {
+const ROAM_HAZE = { colour: '#2a2940', density: 0.03 } as const;
+function hazeOf(hex: string, density: number, out = new Vector4()): Vector4 {
   const c = linearHex(hex, new Vector3());
-  return new Vector4(c.x, c.y, c.z, density);
+  return out.set(c.x, c.y, c.z, density);
 }
 
 export const sharedUniforms = {
@@ -93,10 +97,16 @@ export function setStandeeTurn(weight: number): void {
 const DEPTH_CUT = 0.02;
 /** The near-foreground lift under free roam (lights.glsl fillAt), so ground the lanterns miss is never crushed black. */
 const ROAM_FILL = 1;
+/** Free roam's dusk key and rim (cook/ROAM_LOOK.md B): the walker's wider view needs more moon on the beds than the rail. */
+const ROAM_MOON = { colour: '#b3aacb', strength: 1.35 } as const;
+const ROAM_RIM = { colour: '#c9c4d8', strength: 0.75 } as const;
 export function setRoamLight(): void {
   sharedUniforms.uDepthCut.value = DEPTH_CUT;
   sharedUniforms.uFill.value = ROAM_FILL;
   sharedUniforms.uHandOn.value = 0;
+  linearHex(ROAM_MOON.colour, sharedUniforms.uMoonColor.value, ROAM_MOON.strength);
+  linearHex(ROAM_RIM.colour, sharedUniforms.uRimColor.value, ROAM_RIM.strength);
+  hazeOf(ROAM_HAZE.colour, ROAM_HAZE.density, sharedUniforms.uHaze.value);
 }
 
 /** Copies the lamp list (LAMP_LIGHTS vec4s: flame xyz, strength) into uLamp. No allocation. */

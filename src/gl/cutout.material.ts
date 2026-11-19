@@ -10,7 +10,7 @@ import fragmentBody from './shaders/cutout.frag.glsl?raw';
 
 export { sharedUniforms } from './lights.ts';
 
-/** Drop shadow onto the paper behind (uv offset per unit lift, mip bias, strength) and the depth haze toward the wall. */
+/** Drop shadow onto the paper behind (uv offset per unit lift, mip bias, strength); the depth haze is the shared uHaze. */
 const SHADOW = { offset: 0.02, softness: 2.5, strength: 0.7 } as const;
 const VERTEX = common + vertexBody;
 const FRAGMENT = common + lights + fragmentBody;
@@ -23,7 +23,6 @@ const FRAGMENT = common + lights + fragmentBody;
  * the material also reads the rest of the shared light set (lights.ts) by reference.
  */
 export function createCutoutMaterial(color: Texture, normal: Texture): { material: RawShaderMaterial; uniforms: CutoutUniforms } {
-  const haze = sharedUniforms.uHaze.value;
   const uniforms: CutoutUniforms = {
     uViewProj: sharedUniforms.uViewProj,
     uTime: sharedUniforms.uTime,
@@ -39,7 +38,7 @@ export function createCutoutMaterial(color: Texture, normal: Texture): { materia
     uNormal: { value: normal },
     uReveal: { value: 1 },
     uShadow: { value: new Vector3(SHADOW.offset, SHADOW.softness, SHADOW.strength) },
-    uDepthFade: { value: new Vector4(haze.x, haze.y, haze.z, haze.w) },
+    uDepthFade: sharedUniforms.uHaze,
   };
   const material = new RawShaderMaterial({
     glslVersion: GLSL3,

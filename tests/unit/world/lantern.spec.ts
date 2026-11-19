@@ -2,8 +2,11 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../../content/beds/rosaleda.json' with { type: 'json' };
+import estanque from '../../../content/beds/estanque.json' with { type: 'json' };
+import semillero from '../../../content/beds/semillero.json' with { type: 'json' };
+import salida from '../../../content/beds/salida.json' with { type: 'json' };
 import type { BedScene3 } from '../../../src/world/layout.ts';
-import { findLamps, LAMPS, stepLamps } from '../../../src/world/lamps.ts';
+import { createLampPool, findLamps, LAMPS, lampBedsOf, stepLamps } from '../../../src/world/lamps.ts';
 import type { AtlasManifest, Clock, InstanceWriter, QuadParams, SpriteRect } from '../../../src/types.ts';
 import { SLOT, type FigureRects } from '../../../src/world/puppet.ts';
 import { CROOK_QUADS, createPendulum, createVisitorLantern, HELD, PENDULUM, stepPendulum, VISITOR_QUADS } from '../../../src/world/visitor.ts';
@@ -63,36 +66,67 @@ test('a large frame step does not blow the swing up', () => {
   expect(Math.abs(p.angle)).toBeLessThanOrEqual(PENDULUM.maxRad);
 });
 
-test('a bed gives at most two standing lamps, at their flames', () => {
-  const out = new Float32Array(LAMPS.standing * 4);
-  expect(findLamps(scene(puerta), out)).toBe(2);
-  expect(out[0]).toBeCloseTo(1, 5);
-  expect(out[1]).toBeGreaterThan(0.1);
-  expect(out[3]).toBe(0);
-  expect(findLamps(scene(rosaleda), out)).toBe(1);
-  expect(out[4]).toBe(0);
-  expect(findLamps(null, out)).toBe(0);
-  const many = { layers: [{ items: [0, 1, 2, 3].map((i) => ({ sprite: 'sh/lantern-tin', x: i, y: 0, z: 0, scale: 1, h: 0.4 })) }] };
-  expect(findLamps(scene(many), out)).toBe(LAMPS.standing);
+const ORDER = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'] as const;
+const LANTERNS = { puerta, rosaleda, estanque, semillero, salida } as const;
+const lit = (lamps: Float32Array): number[] => [1, 2, 3, 4, 5].map((j) => lamps[j * 4 + 3]!);
+
+test('every path bed burns lanterns under free roam, found with its neighbours, rail-only ones left out', () => {
+  const pool = createLampPool();
+  const lamps = new Float32Array(LAMPS.count * 4);
+  for (const [bed, s] of Object.entries(LANTERNS)) expect(findLamps([scene(s)], pool, lamps), bed).toBeGreaterThanOrEqual(1);
+  expect(findLamps([scene(puerta)], pool, lamps)).toBe(2);
+  expect(pool.at[0]).toBeCloseTo(1.6, 5);
+  expect(pool.at[1]).toBeGreaterThan(0.1);
+  expect(findLamps([], pool, lamps)).toBe(0);
+  const many = { layers: [{ items: Array.from({ length: 20 }, (_, i) => ({ sprite: 'sh/lantern-tin', x: i, y: 0, z: 0, scale: 1, h: 0.4 })) }] };
+  expect(findLamps([scene(many)], pool, lamps)).toBe(LAMPS.candidates);
+  expect(lampBedsOf(ORDER, 'puerta')).toEqual(['puerta', 'rosaleda']);
+  expect(lampBedsOf(ORDER, 'semillero')).toEqual(['estanque', 'semillero', 'salida']);
+  expect(lampBedsOf(ORDER, 'gruta')).toEqual(['gruta']);
 });
 
-test('the carried lantern is lamp 0 at full strength; standing lamps light only on screen', () => {
-  const standing = new Float32Array(LAMPS.standing * 4);
-  const n = findLamps(scene(puerta), standing);
+test('the carried lantern is lamp 0 at full strength; the standing lamps nearest the visitor on screen burn', () => {
+  const pool = createLampPool();
   const lamps = new Float32Array(LAMPS.count * 4);
-  const onlyFirst = (x: number): boolean => x < 1.3;
-  stepLamps(lamps, 5, 0.7, -1, standing, n, onlyFirst, DT, true);
-  expect([...lamps.subarray(0, 4)].map((v) => Math.round(v * 100) / 100)).toEqual([5, 0.7, -1, 1]);
+  const row = { layers: [{ items: [0, 2, 4, 6, 8, 10, 12].map((x) => ({ sprite: 'sh/lantern-cage', x, y: 0, z: -2, scale: 1, h: 0.45 })) }] };
+  expect(findLamps([scene(row)], pool, lamps)).toBe(7);
+  const all = (): boolean => true;
+  stepLamps(lamps, 5.5, 0.7, -1, pool, LAMPS.standing, all, DT, true);
+  expect([...lamps.subarray(0, 4)].map((v) => Math.round(v * 100) / 100)).toEqual([5.5, 0.7, -1, 1]);
+  expect(lit(lamps)).toEqual([1, 1, 1, 1, 1]);
+  const burning = [1, 2, 3, 4, 5].map((j) => lamps[j * 4]!).sort((a, b) => a - b);
+  expect(burning).toEqual([2, 4, 6, 8, 10]);
+  stepLamps(lamps, 5.5, 0.7, -1, pool, LAMPS.standingLow, all, DT, true);
+  expect(lit(lamps).filter((v) => v === 1)).toHaveLength(LAMPS.standingLow);
+  expect(lit(lamps).reduce((a, b) => a + b, 0)).toBe(LAMPS.standingLow);
+});
+
+test('a lamp leaving the pick dims before another takes its slot, so no pool pops', () => {
+  const pool = createLampPool();
+  const lamps = new Float32Array(LAMPS.count * 4);
+  const two = { layers: [{ items: [0, 20].map((x) => ({ sprite: 'sh/lantern-cage', x, y: 0, z: 0, scale: 1, h: 0.45 })) }] };
+  findLamps([scene(two)], pool, lamps);
+  stepLamps(lamps, 0, 0.7, 0, pool, 1, () => true, DT, true);
+  expect(lamps[4]).toBe(0);
   expect(lamps[7]).toBe(1);
-  expect(lamps[11]).toBe(0);
-  stepLamps(lamps, 5, 0.7, -1, standing, n, () => false, DT, false);
+  stepLamps(lamps, 20, 0.7, 0, pool, 1, () => true, DT, false);
+  expect(lamps[4]).toBe(0);
   expect(lamps[7]).toBeGreaterThan(0.9);
-  expect(lamps[7]).toBeLessThan(1);
-  for (let i = 0; i < 120; i++) stepLamps(lamps, 5, 0.7, -1, standing, n, () => false, DT, false);
-  expect(lamps[7]).toBeLessThan(0.01);
-  stepLamps(lamps, 5, 0.7, -1, standing, 0, () => true, DT, true);
+  for (let i = 0; i < 240; i++) stepLamps(lamps, 20, 0.7, 0, pool, 1, () => true, DT, false);
+  expect(lamps[4]).toBe(20);
+  expect(lamps[7]).toBeGreaterThan(0.99);
+  for (let i = 0; i < 240; i++) stepLamps(lamps, 20, 0.7, 0, pool, 1, () => false, DT, false);
   expect(lamps[7]).toBe(0);
-  expect(lamps[11]).toBe(0);
+});
+
+test('a bed change keeps a burning lantern in its slot at its strength', () => {
+  const pool = createLampPool();
+  const lamps = new Float32Array(LAMPS.count * 4);
+  findLamps([scene(rosaleda)], pool, lamps);
+  stepLamps(lamps, 11.6, 0.7, -0.3, pool, LAMPS.standing, () => true, DT, true);
+  const before = lit(lamps);
+  findLamps([scene(rosaleda), scene(estanque)], pool, lamps);
+  expect(lit(lamps)).toEqual(before);
 });
 
 // The figure's page (cook/FIGURE_BUILD.md 4): the visitor batch before and after it arrives.

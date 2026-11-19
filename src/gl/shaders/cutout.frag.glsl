@@ -28,6 +28,7 @@ out vec4 outColor;
 
 const vec3 PAPER_BACK = vec3(0.184, 0.133, 0.067);   // acg-paper006 at #7b6648, linear
 const float HAZE_START = 3.0;
+const float ROAM_HAZE_START = 7.0;                   // free roam sees the wall from 13 m: its haze starts later
 const float DECAL_SOFT_BIAS = 3.5;                    // alpha from about mip 3: 30 to 70 px soft
 const float DECAL_COVERAGE = 3.0;                     // sparse plants still cast a readable patch
 const float CONTACT = 0.55;                           // the darker line where the paper meets the ground
@@ -173,7 +174,7 @@ void main() {
   lit += towardLight * mix(PAPER_RIM * PAPER_RIM_STRENGTH * sat(reach * 2.0), COOL_RIM * 0.3, shaded);
   lit *= 1.0 - EDGE_DARK * awayLight;
 
-  float hazed = 1.0 - exp(-max(vDepth - HAZE_START, 0.0) * uDepthFade.w);
+  float hazed = 1.0 - exp(-max(vDepth - mix(HAZE_START, ROAM_HAZE_START, uEye.z), 0.0) * uDepthFade.w);
   lit = mix(lit, haze, hazed);
   lit = layerAir(lit, vDepth - vPlaneDepth, back);
 

@@ -18,10 +18,11 @@ import { WORK_EVENT } from '../ui/plan.ts';
 import { createWorkWalk } from '../ui/plan.walk.ts';
 import { createWelcome } from '../ui/welcome.ts';
 import { createMover } from '../ui/xform.ts';
-import type { BedId, ChannelName, Clock, CutoutBatch, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State } from '../types.ts';
+import type { BedId, ChannelName, Clock, CutoutBatch, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State, Tier } from '../types.ts';
 import { createRig } from '../world/camera.ts';
 import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
+import { LAMPS, lampBedsOf } from '../world/lamps.ts';
 import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode, worldModeOf } from '../world/mode.ts';
 import { createVisitorLantern, HELD, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
@@ -90,6 +91,7 @@ function bedPose(p: Pose, aspect: number): Pose {
 /** Mobile: the garden pauses while the panel is fully shown and the visitor still wants it. */
 const panelHoldsMobile = (s: State): boolean => s.mode === 'garden' && s.phase === 'inspect' && s.intent.k === 'project';
 const NO_SLOTS: readonly SlotView[] = [];
+const NO_LAMPS: readonly null[] = [];
 const SHOT_FOCUS: Readonly<Record<string, SlotId>> = { S08: 'rosaleda/rose-a' };
 /**
  * The figure is in from the first frame on its small low page; the full page replaces it on the visitor's first walk,
@@ -122,6 +124,9 @@ export function startGarden(host: GardenHost): GardenRuntime {
   if (lantern !== null) {
     setRoamLight();
     light.carryFlame(lantern.flame);
+    const budget = (tier: Tier): number => (tier === 'low' ? LAMPS.standingLow : LAMPS.standing);
+    light.setLampBudget(budget(quality.tier));
+    quality.onChange((qq) => light.setLampBudget(budget(qq.tier)));
   }
   if (roam !== null) carryVisitor(roam.pos);
   const film = createFilmDrive(machine, rig, content.garden, roam?.travel ?? null);
@@ -129,7 +134,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const labels = createLabelDrive(label, rig, roam?.pos ?? null);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
   prepareGl(gfx, world, SCENES, worldMode());
-  const placeLight = createPlaceLighting();
+  const placeLight = createPlaceLighting(worldMode());
   proxies.setSigns(signAnchorsOf(world, SCENES));
   if (roam !== null) proxies.setVisitor(roam.pos, content.garden.anchors, (slot, off) => roam.seek(slot, off));
 
@@ -165,7 +170,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     slots = bed === null ? NO_SLOTS : (garden.beds.get(bed)?.slots ?? NO_SLOTS);
     rig.setSlots(slots);
     light.setSlots(slots);
-    if (lantern !== null) light.setLamps(bed === null ? null : SCENES[bed]);
+    if (lantern !== null) light.setLamps(bed === null ? NO_LAMPS : lampBedsOf(world.order, bed).map((b) => SCENES[b]));
   };
   bindBed(machine.state.bed);
   placeLight.set(machine.state.bed);
