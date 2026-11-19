@@ -242,6 +242,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       const title = bedTitles.get(bed) ?? bed;
       slotsGroup.setAttribute('aria-label', title);
       slotsGroup.replaceChildren(...nodes);
+      signs.setSlots(slots);
       el.dataset.bed = bed;
       dirty = true;
       announce(title);
@@ -249,6 +250,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
 
     unmountSlots(): void {
       slotsGroup.replaceChildren();
+      signs.setSlots([]);
       slotsGroup.removeAttribute('aria-label');
       delete el.dataset.bed;
       nodes = [];

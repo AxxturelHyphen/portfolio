@@ -1,8 +1,11 @@
-import type { BedId, CameraRig, Machine, ScreenPt, State } from '../types.ts';
+import { APPROACH_FIT } from '../core/motion.ts';
+import type { BedId, CameraRig, Machine, ScreenPt, SlotView, State } from '../types.ts';
 import { uiText } from './copy.ts';
-import { clearOfVisitor, createStake, crossesVisitor, DOCK, dockAround, figureOf, SIGN_M, type DockBox, type FigureBox, type Stake } from './signs.stake.ts';
+import { covers } from './cover.ts';
+import { avoidOf, DOCK, dockAround, type DockRoom } from './signs.dock.ts';
+import { coveredBy, letter, makeSign, measureWhole, readTilt, tuck, type Sign } from './signs.label.ts';
+import { clearOfVisitor, createStake, crossesVisitor, figureOf, SIGN_M, type FigureBox, type Stake } from './signs.stake.ts';
 import './styles/signs.css';
-import { createMover, type Mover } from './xform.ts';
 
 /**
  * Signposts (cook/ART.md section 4): while a bed is the current place, one sign points back to the previous place
@@ -21,8 +24,11 @@ import { createMover, type Mover } from './xform.ts';
  * and a cane down to the ground point with a contact shadow (ui/signs.stake.ts), lifted clear of the visitor. While
  * the ground point is off screen the label docks at the screen edge with a short cane (data-off). On portrait screens a
  * label stays planted only while it stands wholly over the visitor's hat; otherwise both docked labels share one band
- * under the visitor's shoes (ui/signs.stake.ts dockAround), so no label, cane or tip ever crosses the figure, and a long
- * name breaks onto two lines at its middle space by rule.
+ * under the visitor's shoes (ui/signs.dock.ts dockAround), so no label, cane or tip ever crosses the figure, the focused
+ * flower or the nearest flower in front of the visitor, and a long name breaks onto two lines at its middle space by rule.
+ * While the plant sheet is up the band stays between the shoes and the sheet. A label that has no room there, or that
+ * the open plant tag or plan would cover (ui/cover.ts), is tucked whole (data-tucked: transparent, its cane hidden)
+ * and stays in the Tab order and the accessibility tree; keyboard focus shows it.
  */
 
 /** One canvas board: shown while `bed` is the current place; it points `dir` toward `to`. World point of the label. */
@@ -38,6 +44,8 @@ export interface Signposts {
   sync(rig: CameraRig, force: boolean): void;
   /** Free roam: plants the signs in the world and keeps them off the visitor standing at this [x, z]. */
   setVisitor(at: Float32Array): void;
+  /** The slots of the entered bed: docked labels keep off the focused flower and the nearest one in front. */
+  setSlots(slots: readonly SlotView[]): void;
 }
 
 const EDGE_PX = 16;
@@ -50,16 +58,6 @@ const STAKE_PX = 48;
 const DOCK_FOOT = 0.7;
 /** Half the height step between the way back (higher) and the way on (lower). */
 const STEP_PX = 40;
-const SVG = 'http://www.w3.org/2000/svg';
-/**
- * A printer's manicule pointing right in a 48x24 box, in engraved line: the ruffled cuff with its hatching, the back
- * of the hand, the index finger out with its nail, three curled fingers below and the thumb crease.
- */
-const HAND = 'M3 5h7v15H3zM4.8 7.5v10M6.6 7.5v10M8.4 7.5v10M10 6.5c4-1.5 9-1.8 13-.5h18.5c2 0 3.2 1 3.2 2.3s-1.2 2.3-3.2 2.3H27'
-  + 'c2 0 3.1 1 3.1 2.2s-1.1 2.2-3.1 2.2h-.8c2 0 3 1 3 2.1s-1 2.1-3 2.1h-.8c1.6 0 2.5.9 2.5 1.9s-.9 1.9-2.5 1.9H17'
-  + 'c-3 0-5-.8-7-1.4M14 9.2c3 0 6 .5 9 1.4M23 10.6c1.4.2 2.8.3 4 .3M13 12.6h3M13 15h3.6M13 17.4h3M39.6 6.6c1.3.3 2 .9 2.1 1.7';
-/** Twine lashing the label to the cane: two turns round the cane over the label's top edge, a knot and a tail. */
-const LASH = 'M3 10l18-5M3 16l18-5M21 5c3-.6 4 1.6 2.4 3.4M21 11c3 .4 3.4 4 1 7.5';
 const NARROW = '(max-width: 44.99rem)';
 /** Where the cane is lashed, in from the label's pointing-away end (the CSS --cane-at). */
 const CANE_AT_PX = 14;
@@ -70,80 +68,8 @@ const PORTRAIT = 0.8;
 const PORTRAIT_SIDE_PX = 20;
 /** How far the twine lashing reaches past the label's cane end (the CSS .px-sign-lash box). */
 const LASH_OUT_PX = 4;
-/** Names longer than this break onto two lines at the space nearest their middle (free roam). */
-const LONG_CHARS = 12;
-
-interface Sign {
-  el: HTMLButtonElement;
-  name: HTMLSpanElement;
-  mover: Mover;
-  dir: -1 | 1;
-  to: BedId | 'cv' | null;
-  /** Index into the anchors of the current bed, or -1 when docked. */
-  anchor: number;
-  w: number;
-  h: number;
-  /** Cosine and sine of the label's CSS tilt. */
-  cos: number;
-  sin: number;
-  /** Free roam: the planted cane and shadow; null on the rail. */
-  stake: Stake | null;
-  off: boolean;
-  /** Portrait free roam: the docked place, set by dockAround. */
-  dock: DockBox;
-}
-
 const pt: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
 const foot: ScreenPt = { x: 0, y: 0, scale: 1, visible: true };
-
-function drawing(cls: string, box: string, d: string): SVGSVGElement {
-  const svg = document.createElementNS(SVG, 'svg');
-  svg.setAttribute('class', cls);
-  svg.setAttribute('viewBox', box);
-  svg.setAttribute('aria-hidden', 'true');
-  const path = document.createElementNS(SVG, 'path');
-  path.setAttribute('d', d);
-  svg.append(path);
-  return svg;
-}
-
-/** `rotate` applies before `transform`, so the translate is turned by the tilt: keep its angle to undo that. */
-function readTilt(s: Sign): void {
-  const rad = (Number.parseFloat(getComputedStyle(s.el).rotate) || 0) * (Math.PI / 180);
-  s.cos = Math.cos(rad);
-  s.sin = Math.sin(rad);
-}
-
-function makeSign(dir: -1 | 1, m: Machine): Sign {
-  const el = document.createElement('button');
-  el.type = 'button';
-  el.className = 'px-bed px-sign';
-  el.dataset.dir = dir < 0 ? 'prev' : 'next';
-  const name = document.createElement('span');
-  name.className = 'px-sign-name';
-  const cane = document.createElement('span');
-  cane.className = 'px-sign-cane';
-  cane.setAttribute('aria-hidden', 'true');
-  el.append(cane, drawing('px-sign-lash', '0 0 26 26', LASH), name, drawing('px-sign-hand', '0 0 48 24', HAND));
-  const sign: Sign = { el, name, mover: createMover(el), dir, to: null, anchor: -1, w: 140, h: 44, cos: 1, sin: 0, stake: null, off: false, dock: { w: 0, h: 0, x: 0, y: 0, on: false } };
-  el.addEventListener('click', () => {
-    if (sign.to === 'cv') m.send({ type: 'SET_MODE', mode: 'herbario' });
-    else if (sign.to !== null) m.send({ type: 'GOTO', place: { k: 'bed', bed: sign.to } });
-  });
-  return sign;
-}
-
-/** The sign's name; under free roam a long name gets a line break at its middle space, which only portrait CSS shows. */
-function letter(s: Sign, title: string): void {
-  const mid = title.length / 2;
-  let at = -1;
-  for (let i = title.indexOf(' '); i >= 0; i = title.indexOf(' ', i + 1)) if (at < 0 || Math.abs(i - mid) < Math.abs(at - mid)) at = i;
-  if (s.stake === null || title.length <= LONG_CHARS || at < 0) {
-    s.name.textContent = title;
-    return;
-  }
-  s.name.replaceChildren(title.slice(0, at + 1), document.createElement('br'), title.slice(at + 1));
-}
 
 export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   const group = document.createElement('div');
@@ -166,8 +92,16 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   /** The screen's safe-area insets at the sides (px), read from the group's padding on resize. */
   let safeLeft = 0;
   let safeRight = 0;
-  /** The plant tag is a sheet over the bottom of a phone screen (a slot focused): docked labels hang high meanwhile. */
+  /** The plant tag is a sheet over the bottom of a phone screen (a slot focused): docked labels stand over it meanwhile. */
   let sheet = false;
+  let slots: readonly SlotView[] = [];
+  const avoid: FigureBox[] = [{ l: 0, r: 0, t: 0, b: 0 }, { l: 0, r: 0, t: 0, b: 0 }];
+  const room: DockRoom = { fig: figure, vw, vh, safeLeft: 0, safeRight: 0, floor: vh, avoid, avoidN: 0 };
+  /** covers.rev at the last placing: an opened, moved or closed tag or plan re-places the signs. */
+  let seenRev = -1;
+
+  /** The cache key of a label's whole box: language, destination (its tilt) and name. */
+  const wholeKey = (s: Sign): string => `${m.state.lang} ${s.to ?? ''} ${s.name.textContent ?? ''}`;
 
   function readSafe(): void {
     const css = getComputedStyle(group);
@@ -187,6 +121,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       if (box === undefined) continue;
       s.w = box.inlineSize;
       s.h = box.blockSize;
+      if (s.stake !== null && !s.el.hidden) measureWhole(s, wholeKey(s), true);
       resized = true;
     }
   });
@@ -200,6 +135,12 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       const next = i < 0 ? undefined : beds[i + s.dir];
       s.to = i < 0 ? null : next !== undefined ? next.id : s.dir > 0 && i === beds.length - 1 ? 'cv' : null;
       s.el.hidden = s.to === null;
+      if (s.stake !== null) {
+        s.off = true;
+        s.el.toggleAttribute('data-off', true);
+        s.stake.show(false);
+        tuck(s, false);
+      }
       if (s.to === null) continue;
       const title = s.to === 'cv' ? uiText(null, lang, 'sign.cv') : (next?.title ?? '');
       letter(s, title);
@@ -213,13 +154,9 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       s.anchor = anchors.findIndex((a) => a.bed === current && a.dir === s.dir);
       s.el.toggleAttribute('data-docked', s.anchor < 0);
       s.mover.reset();
-      if (s.stake !== null) {
-        s.off = true;
-        s.el.toggleAttribute('data-off', true);
-        s.stake.show(false);
-      }
       if (s.anchor < 0) s.el.style.removeProperty('transform');
       else readTilt(s);
+      if (s.stake !== null) measureWhole(s, wholeKey(s), false);
     }
   }
 
@@ -233,6 +170,11 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     const maxVx = vw - inset - s.w;
     vx = vx < inset ? inset : vx > maxVx ? maxVx : vx;
     s.mover.move(Math.round(vx * s.cos + vy * s.sin), Math.round(vy * s.cos - vx * s.sin), 1);
+    const lean = Math.abs(s.w * s.sin);
+    s.box.l = vx - LASH_OUT_PX;
+    s.box.r = vx + s.w + LASH_OUT_PX;
+    s.box.t = y - lean - LASH_OUT_PX;
+    s.box.b = y + s.h + lean;
     return vx;
   }
 
@@ -251,7 +193,6 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     if (off !== s.off) {
       s.off = off;
       s.el.toggleAttribute('data-off', off);
-      stake.show(!off);
     }
     s.dock.on = off && portrait;
     if (s.dock.on) return;
@@ -264,16 +205,32 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     stake.stand(left + caneAt, y, foot);
   }
 
-  /** Portrait free roam: both docked labels in their band beside the figure (left where they were when none fits). */
-  function dockPair(): void {
+  /** Portrait free roam: both docked labels in their band under the figure, or tucked when the band has no room. */
+  function dockPair(rig: CameraRig, at: Float32Array): void {
     const [prev, next] = signs;
     if (!prev.dock.on && !next.dock.on) return;
-    for (const s of signs) {
-      s.dock.w = s.w + LASH_OUT_PX + Math.ceil(s.h * Math.abs(s.sin));
-      s.dock.h = s.h + Math.ceil(s.w * Math.abs(s.sin));
+    for (let i = 0; i < signs.length; i++) {
+      const s = signs[i]!;
+      s.dock.w = s.whole.w;
+      s.dock.h = s.whole.h;
     }
-    if (!dockAround(figure, vw, vh, prev.dock, next.dock, sheet, safeLeft, safeRight)) return;
-    for (const s of signs) if (s.dock.on) standBox(s, s.dock.x + (s.dir > 0 ? LASH_OUT_PX : 0), s.dock.y);
+    room.vw = vw;
+    room.vh = vh;
+    room.safeLeft = safeLeft;
+    room.safeRight = safeRight;
+    room.floor = !sheet ? vh : covers.card.on ? covers.card.t : vh - APPROACH_FIT.phoneTagPx;
+    room.avoidN = avoidOf(slots, m.state.phase === 'focus' ? m.state.slot : null, rig, at, avoid);
+    const fits = dockAround(room, prev.dock, next.dock);
+    for (let i = 0; i < signs.length; i++) {
+      const s = signs[i]!;
+      if (!s.dock.on) continue;
+      standBox(s, s.dock.x + s.whole.l, s.dock.y + s.whole.t);
+      s.box.l = s.dock.x;
+      s.box.r = s.dock.x + s.dock.w;
+      s.box.t = s.dock.y;
+      s.box.b = s.dock.y + s.dock.h;
+      if (!fits) tuck(s, true);
+    }
   }
 
   /**
@@ -340,8 +297,10 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
       if (at !== null) retarget();
     },
     sync(rig, force) {
-      if (current === null || (narrow.matches && visitor === null) || (!rig.changed && !force && !resized)) return;
+      const moved = visitor !== null && covers.rev !== seenRev;
+      if (current === null || (narrow.matches && visitor === null) || (!rig.changed && !force && !resized && !moved)) return;
       resized = false;
+      seenRev = covers.rev;
       portrait = visitor !== null && vw / vh < PORTRAIT;
       if (portrait && visitor !== null) figureOf(rig, visitor, figure);
       for (let i = 0; i < signs.length; i++) {
@@ -350,7 +309,19 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
         s.dock.on = false;
         if (s.anchor >= 0 && !s.el.hidden) place(s, rig);
       }
-      if (portrait) dockPair();
+      if (visitor === null) return;
+      tuck(signs[0], false);
+      tuck(signs[1], false);
+      if (portrait) dockPair(rig, visitor);
+      for (let i = 0; i < signs.length; i++) {
+        const s = signs[i]!;
+        const placed = s.anchor >= 0 && !s.el.hidden;
+        if (placed && coveredBy(s)) tuck(s, true);
+        s.stake?.show(placed && !s.off && !s.tucked);
+      }
+    },
+    setSlots(next) {
+      slots = next;
     },
     setVisitor(at) {
       visitor = at;
