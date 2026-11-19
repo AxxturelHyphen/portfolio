@@ -206,6 +206,48 @@
           "foot": "none",
           "shadow": false,
           "react": false
+        },
+        {
+          "sprite": "sh/lantern-cage",
+          "x": 40.4,
+          "y": 0,
+          "z": -0.7,
+          "scale": 1,
+          "h": 0.45,
+          "hinge": 10,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "block": [
+            0.11,
+            0.11,
+            0.25
+          ],
+          "only": "roam"
+        },
+        {
+          "sprite": "sh/lantern-globe",
+          "x": 43.6,
+          "y": 0,
+          "z": -3.6,
+          "scale": 1,
+          "h": 0.4,
+          "hinge": -8,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "block": [
+            0.1,
+            0.09,
+            0.2
+          ],
+          "only": "roam"
         }
       ]
     },
@@ -279,6 +321,62 @@
           "foot": "none",
           "shadow": true,
           "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "w/buttercup",
+          "x": 38.6,
+          "y": 0,
+          "z": 1.8,
+          "scale": 1,
+          "h": 0.9,
+          "hinge": 8,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "sway": 0.02,
+          "fade": true,
+          "only": "roam"
+        },
+        {
+          "sprite": "w/poppy",
+          "x": 39.1,
+          "y": 0,
+          "z": 1.95,
+          "scale": 1,
+          "h": 1,
+          "hinge": -5,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "sway": 0.02,
+          "flip": true,
+          "fade": true,
+          "only": "roam"
+        },
+        {
+          "sprite": "w/gallica",
+          "x": 45.3,
+          "y": 0,
+          "z": 1.6,
+          "scale": 1,
+          "h": 1.1,
+          "hinge": -8,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "sway": 0.02,
+          "flip": true,
+          "fade": true,
           "only": "roam"
         }
       ]

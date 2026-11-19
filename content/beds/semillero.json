@@ -606,6 +606,27 @@
           "foot": "clump",
           "shadow": true,
           "react": false
+        },
+        {
+          "sprite": "sh/lantern-cage",
+          "x": 31.4,
+          "y": 0,
+          "z": -1.5,
+          "scale": 1,
+          "h": 0.45,
+          "hinge": -10,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "block": [
+            0.11,
+            0.11,
+            0.25
+          ],
+          "only": "roam"
         }
       ]
     },
@@ -631,6 +652,25 @@
           "react": false,
           "wing": true,
           "only": "rail"
+        },
+        {
+          "sprite": "se/physalis",
+          "x": 33.2,
+          "y": 0,
+          "z": 4.4,
+          "scale": 1,
+          "h": 1.1,
+          "hinge": -8,
+          "lean": 8,
+          "size": "medium",
+          "group": "L",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "sway": 0.02,
+          "flip": true,
+          "fade": true,
+          "only": "roam"
         }
       ]
     }
