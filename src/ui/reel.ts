@@ -43,6 +43,22 @@ const xOf = (i: number): string => `${(PEEK - CELL * i).toFixed(2)}%`;
 const at = (i: number): string => `translate3d(${xOf(i)}, 0, 0)`;
 const atWeave = (i: number, y: number): string => `translate3d(${xOf(i)}, ${y}px, 0)`;
 
+/** Hand-drawn marks for the tags, stroked in ink: a little uneven on purpose, like a pen on a luggage tag. */
+const MARK = {
+  prev: 'M15.5 4.5c-3 2.4-6.2 4.9-9.3 7.6 3.2 2.5 6.1 5 9.1 7.6M18.7 12.3c-3.7-.2-7.6-.1-11.6 0',
+  next: 'M8.6 4.6c3 2.3 6.3 5 9.2 7.4-3.1 2.6-6 5.1-9 7.7M5.4 12.1c3.8.2 7.6.1 11.5-.1',
+  stop: 'M9 5.2c.2 4.6 0 9.2.1 13.7M15.1 5c-.1 4.7.1 9.3 0 13.9',
+  run: 'M8.4 4.8c.3 4.8.1 9.6.2 14.4 3.6-2.3 7-4.7 10.4-7.2-3.5-2.4-7-4.9-10.6-7.2Z',
+} as const;
+
+function mark(d: string, cls = ''): string {
+  return `<svg class="rl-mark${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+}
+
+function tag(cls: string, label: string, marks: string): string {
+  return `<button type="button" class="rl-btn ${cls}"><span class="rl-sr">${esc(label)}</span>${marks}</button>`;
+}
+
 function blankFrame(caption: string): string {
   return `<div class="rl-blank" role="img" aria-label="${esc(caption)}"><span class="rl-light"></span><span class="rl-grain"></span><span class="rl-scratch rl-s1"></span><span class="rl-scratch rl-s2"></span><span class="rl-cap" aria-hidden="true">${esc(caption)}</span></div>`;
 }
@@ -81,13 +97,13 @@ export function createReel(o: ReelOptions): Reel {
   /** Without auto-advance the film starts stopped: the toggle then only plays or pauses a clip. */
   let stopped = !motion.auto;
   const toggle = motion.auto || hasClip
-    ? `<button type="button" class="rl-btn rl-stop${stopped ? ' is-stopped' : ''}"><span class="rl-sr">${esc(s(stopped ? 'film.run' : 'film.stop'))}</span></button>`
+    ? tag(`rl-stop${stopped ? ' is-stopped' : ''}`, s(stopped ? 'film.run' : 'film.stop'), mark(MARK.stop, ' rl-m-stop') + mark(MARK.run, ' rl-m-run'))
     : '';
   el.innerHTML = `<div class="rl-stage"><div class="rl-gate" role="group" tabindex="0" aria-label="${esc(s('film.gate'))}"><div class="rl-strip">${frames.map((f, i) => frameHtml(f, i, n, s)).join('')}</div></div>${flowerHtml(o.flower)}</div>
 <div class="rl-controls">
-<button type="button" class="rl-btn rl-prev"><span class="rl-sr">${esc(s('film.prev'))}</span></button>
+${tag('rl-prev', s('film.prev'), mark(MARK.prev))}
 ${toggle}
-<button type="button" class="rl-btn rl-next"><span class="rl-sr">${esc(s('film.next'))}</span></button>
+${tag('rl-next', s('film.next'), mark(MARK.next))}
 </div>
 <p class="rl-sr" role="status" aria-live="polite"></p>`;
 

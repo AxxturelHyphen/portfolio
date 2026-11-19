@@ -1,20 +1,21 @@
 /*
  * The project film in the notebook (src/ui/reel.ts). Its strip takes the garden's travel strip: a dark base
- * (#17120e), sprocket holes (#5a4a3a) along both edges and a warm hairline (#8b663a) round each picture. A frame is
- * 80 % of the gate, so the edges of its neighbours show at both sides and it reads as a strip, not one picture box.
- * A blank frame is unexposed amber stock on the projector's light: grain, two fine scratches and a slight exposure
- * flicker. The project's flower stands beside the strip, cut from paper with a pale cut edge; its hand tint warms and
- * cools slowly. The controls are small paper tags. Everything moving is transform or opacity; reduced motion and
- * stills ([data-still]) hold it all still.
+ * (#17120e) with worn, uneven sprocket holes (#5a4a3a) along both edges. Each frame is its own cell, 80 % of the
+ * gate, set off by a dark frame line, so the neighbours' edges show and it reads as a strip; both ends of the gate
+ * fade out like film running off. A blank frame is clear amber stock, unexposed: its own grain and scratches per
+ * cell, the caption inked dark on it. The project's flower stands against the strip's end, cut from paper with a warm
+ * lit edge; its hand tint warms and cools slowly. The controls are small paper tags with pen-drawn marks. Everything
+ * moving is transform or opacity; reduced motion and stills ([data-still]) hold it all still.
  */
 
 .rl {
   --rl-base: #17120e;
-  --rl-edge: rgb(139 102 58 / 0.6);
-  --rl-perf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='12'%3E%3Crect x='4' y='3' width='10' height='6' rx='1.6' fill='%235a4a3a'/%3E%3C/svg%3E");
-  --rl-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .96 0 0 0 0 .88 0 0 0 0 .72 0 0 0 .9 -.38'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --rl-stock: #c7ae82;
+  --rl-ink: #22170f;
+  --rl-perf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='12'%3E%3Crect x='3.2' y='3.1' width='9.4' height='5.8' rx='1.3' fill='%235a4a3a'/%3E%3Crect x='19.1' y='2.8' width='10.3' height='6.3' rx='2.1' fill='%23614f3f'/%3E%3Cpath d='M35.4 3.4h8.9l1.2 1.1v4.1l-1.6.9h-8.3l-.9-1.3V4.4z' fill='%23544538'/%3E%3Crect x='51.3' y='3' width='9.9' height='6.1' rx='1.6' fill='%235e4c3c'/%3E%3Cellipse cx='24' cy='9.6' rx='3' ry='.7' fill='%233a2e24'/%3E%3C/svg%3E");
+  --rl-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .13 0 0 0 0 .07 0 0 0 1.1 -.5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   display: grid;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .rl-sr {
@@ -26,30 +27,31 @@
   white-space: nowrap;
 }
 
-/* Strip and flower side by side; the strip never taller than about a third of a phone screen. */
+/* The strip, and the flower standing against its end. */
 .rl-stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(64px, 24%, 132px);
+  grid-template-columns: minmax(0, 1fr) clamp(60px, 22%, 120px);
   align-items: end;
-  gap: 0.75rem;
+  border-radius: 2px;
+}
+
+.rl-stage:has(.rl-gate:focus-visible) {
+  outline: 2px solid var(--note-rose);
+  outline-offset: 3px;
 }
 
 .rl-gate {
   position: relative;
   overflow: hidden;
-  border-radius: 2px;
   background:
-    var(--rl-perf) left top / 18px 12px repeat-x,
-    var(--rl-perf) left bottom / 18px 12px repeat-x,
+    var(--rl-perf) 0 0 / 64px 12px repeat-x,
+    var(--rl-perf) 22px 100% / 64px 12px repeat-x,
     var(--rl-base);
-  box-shadow: 0 2px 3px rgb(31 23 19 / 0.3), 0 10px 20px -12px rgb(31 23 19 / 0.6);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 90%, transparent);
   cursor: pointer;
+  outline: none;
   touch-action: pan-y;
-}
-
-.rl-gate:focus-visible {
-  outline: 2px solid var(--note-rose);
-  outline-offset: 3px;
 }
 
 .rl-strip {
@@ -59,27 +61,28 @@
 
 .rl-frame {
   flex: 0 0 80%;
-  padding: 12px 4px;
+  padding: 13px 5px;
 }
 
 .rl-frame > * {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: calc(30svh - 24px);
-  box-shadow: 0 0 0 1px var(--rl-edge);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55);
 }
 
 .rl-media {
   object-fit: cover;
-  background: #3a3027;
+  background: var(--rl-stock);
 }
 
-/* Unexposed stock on the projector's light. */
+/* Clear stock, unexposed: flat amber with its own grain and scratches, the edges a touch darker from the gate. */
 .rl-blank {
   position: relative;
   overflow: hidden;
-  background: #3b2f22;
+  background: var(--rl-stock);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55), inset 0 0 10px rgb(74 48 22 / 0.35);
 }
 
 .rl-blank > span {
@@ -87,53 +90,60 @@
   pointer-events: none;
 }
 
+/* The exposure flicker: a pale wash that comes and goes a little. */
 .rl-light {
   inset: 0;
-  background: linear-gradient(100deg, rgb(201 160 104 / 0.42), rgb(232 196 140 / 0.58) 46%, rgb(176 132 82 / 0.4));
-  opacity: 0.92;
+  background: #fff3d6;
+  opacity: 0;
 }
 
 .rl-grain {
   inset: -20px;
   background: var(--rl-grain) 0 0 / 160px 160px;
-  opacity: 0.55;
+  opacity: 0.5;
 }
+
+.rl-frame:nth-child(2) .rl-grain { background-position: 61px 37px; }
+.rl-frame:nth-child(3) .rl-grain { background-position: 113px 89px; }
+.rl-frame:nth-child(4) .rl-grain { background-position: 29px 131px; }
 
 .rl-scratch {
   top: 0;
   bottom: 0;
   width: 1px;
-  background: rgb(250 238 214 / 0.55);
+  background: rgb(52 34 18 / 0.5);
 }
 
-.rl-s1 {
-  left: 31%;
-  opacity: 0.7;
-}
-
-.rl-s2 {
-  left: 72%;
-  opacity: 0.35;
-}
+.rl-s1 { left: 27%; }
+.rl-s2 { left: 68%; opacity: 0.55; top: 18%; }
+.rl-frame:nth-child(2) .rl-s1 { left: 41%; bottom: 30%; }
+.rl-frame:nth-child(2) .rl-s2 { left: 83%; }
+.rl-frame:nth-child(3) .rl-s1 { left: 12%; top: 40%; }
+.rl-frame:nth-child(3) .rl-s2 { left: 57%; }
+.rl-frame:nth-child(4) .rl-s1 { left: 34%; }
+.rl-frame:nth-child(4) .rl-s2 { left: 76%; bottom: 45%; }
 
 .rl-cap {
   left: 0;
   right: 0;
-  bottom: 14%;
+  bottom: 12%;
   text-align: center;
   font-family: var(--font-display);
   font-synthesis: none;
   font-size: 1rem;
   letter-spacing: 0.02em;
-  color: #fbf1dc;
-  text-shadow: 0 1px 2px rgb(23 18 14 / 0.85);
+  color: var(--rl-ink);
 }
 
-/* The flower beside the strip: a paper cutout with a pale cut edge; the tint above it is the slow light change. */
+/*
+ * The flower against the strip's end: a paper cutout with a warm lit edge (the half-glow, visible in any still);
+ * the tint over it is the slow light change on the paper.
+ */
 .rl-flower {
   position: relative;
+  z-index: 1;
   aspect-ratio: 3 / 4;
-  transform-origin: 50% 90%;
+  margin: 0 0 -6px -14px;
 }
 
 .rl-flower > img {
@@ -146,30 +156,30 @@
 }
 
 .rl-bloom {
-  filter: drop-shadow(0 0 0.6px #fbf4e4) drop-shadow(0 0 0.6px #fbf4e4) drop-shadow(1px 2px 1.5px rgb(31 23 19 / 0.32));
+  filter: drop-shadow(0 0 0.7px #fff5df) drop-shadow(0 0 1.5px rgb(246 178 82)) drop-shadow(0 0 3px rgb(236 158 64 / 0.85)) drop-shadow(1px 2px 1.5px rgb(31 23 19 / 0.3));
 }
 
 .rl-tint {
-  filter: sepia(0.6) saturate(1.5) brightness(1.18);
+  filter: sepia(0.8) saturate(1.7) brightness(1.2);
   mix-blend-mode: multiply;
-  opacity: 0.3;
+  opacity: 0.34;
 }
 
 .rl-controls {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.125rem;
 }
 
-/* A small paper tag on a 44 px target: chamfered cut, punched hole, the glyph in ink. */
+/* A small paper tag on a 48 px target: chamfered cut, punched hole, the mark drawn in ink. */
 .rl-btn {
-  --cut: polygon(7px 0, 100% 1px, calc(100% - 1px) 100%, 7px calc(100% - 1px), 0 50%);
+  --cut: polygon(8px 0, 100% 1px, calc(100% - 1px) 100%, 8px calc(100% - 1px), 0 50%);
   position: relative;
   isolation: isolate;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 44px;
-  padding: 0 0 0 6px;
+  width: 52px;
+  height: 48px;
+  padding: 0 0 0 8px;
   border: 0;
   background: none;
   color: var(--note-ink);
@@ -179,13 +189,8 @@
   transition: rotate var(--dur-hover) var(--ease-out);
 }
 
-.rl-stop {
-  rotate: 1.5deg;
-}
-
-.rl-next {
-  rotate: -0.5deg;
-}
+.rl-stop { rotate: 1.5deg; }
+.rl-next { rotate: -0.5deg; }
 
 .rl-btn::before {
   content: "";
@@ -193,54 +198,49 @@
   z-index: -1;
   inset: 8px 2px;
   background:
-    radial-gradient(circle at 9px 50%, transparent 2.2px, rgb(120 92 58 / 0.6) 2.7px, transparent 3.6px),
-    linear-gradient(176deg, #ead9b5, #dcc596);
+    radial-gradient(circle at 10px 50%, transparent 2.4px, rgb(120 92 58 / 0.6) 2.9px, transparent 3.8px),
+    #e6d3ab;
   clip-path: var(--cut);
-  -webkit-mask-image: radial-gradient(circle at 9px 50%, transparent 2.3px, #000 2.8px);
-  mask-image: radial-gradient(circle at 9px 50%, transparent 2.3px, #000 2.8px);
+  -webkit-mask-image: radial-gradient(circle at 10px 50%, transparent 2.5px, #000 3px);
+  mask-image: radial-gradient(circle at 10px 50%, transparent 2.5px, #000 3px);
   filter: drop-shadow(1px 1.5px 1px rgb(31 23 19 / 0.3));
 }
 
-.rl-btn::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  background: currentcolor;
+.rl-mark {
+  grid-area: 1 / 1;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.rl-prev::after {
-  clip-path: polygon(80% 0, 80% 100%, 10% 50%);
+.rl-m-run,
+.rl-stop.is-stopped .rl-m-stop {
+  display: none;
 }
 
-.rl-next::after {
-  clip-path: polygon(20% 0, 90% 50%, 20% 100%);
+.rl-stop.is-stopped .rl-m-run {
+  display: block;
 }
 
-.rl-stop::after {
-  clip-path: polygon(14% 0, 40% 0, 40% 100%, 14% 100%, 14% 0, 60% 0, 86% 0, 86% 100%, 60% 100%, 60% 0);
-}
-
-.rl-stop.is-stopped::after {
-  clip-path: polygon(20% 0, 90% 50%, 20% 100%);
-}
-
-.rl-btn:hover {
-  rotate: 0deg;
-}
+.rl-btn:hover { rotate: 0deg; }
 
 .rl-btn:focus-visible {
   outline: 2px solid var(--note-rose);
-  outline-offset: -2px;
+  outline-offset: -3px;
 }
 
 @keyframes rl-flicker-light {
-  0% { opacity: 0.92; }
-  13% { opacity: 0.84; }
-  27% { opacity: 0.95; }
-  41% { opacity: 0.88; }
-  58% { opacity: 0.97; }
-  74% { opacity: 0.86; }
-  88% { opacity: 0.93; }
+  0% { opacity: 0; }
+  13% { opacity: 0.08; }
+  27% { opacity: 0.02; }
+  41% { opacity: 0.1; }
+  58% { opacity: 0; }
+  74% { opacity: 0.06; }
+  88% { opacity: 0.03; }
 }
 
 @keyframes rl-grain-shift {
@@ -257,8 +257,8 @@
 }
 
 @keyframes rl-tint {
-  from { opacity: 0.16; }
-  to { opacity: 0.42; }
+  from { opacity: 0.2; }
+  to { opacity: 0.5; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -271,9 +271,30 @@
 }
 
 /* Phones: the sheet with the film stays about as tall as it was without it, so the garden still shows above; its
- * record scrolls inside. */
+ * record scrolls inside. The film sits tighter there, so the next heading still shows. */
 @media (max-width: 44.99rem) {
   .pn-page:has(.rl) {
     max-height: 65dvh;
+  }
+
+  .rl {
+    gap: 0;
+    margin-block: -0.5rem -0.75rem;
+  }
+
+  .rl-frame {
+    padding: 11px 4px;
+  }
+
+  .rl-frame > * {
+    aspect-ratio: 11 / 5;
+  }
+
+  .rl-btn {
+    height: 44px;
+  }
+
+  .rl-btn::before {
+    inset: 7px 2px;
   }
 }
