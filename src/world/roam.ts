@@ -335,6 +335,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       if (assisting || dt <= 0) return;
       const n = Math.ceil(dt / ROAM.maxStepS);
       const h = dt / n;
+      const x0 = pos[0]!;
+      const z0 = pos[1]!;
       for (let i = 0; i < n; i++) {
         desire();
         accelerate(h);
@@ -342,7 +344,9 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
         pos[1] = pos[1]! + vel[1]! * h;
         collide();
       }
-      stalledS = hasTarget && Math.hypot(vel[0]!, vel[1]!) < STALL.mps ? stalledS + dt : 0;
+      // The ground actually covered, not the velocity: wedged between the pond and a box corner, each push-out removes
+      // only the speed into its own shape, so the body keeps a velocity while it stands still.
+      stalledS = hasTarget && Math.hypot(pos[0]! - x0, pos[1]! - z0) / dt < STALL.mps ? stalledS + dt : 0;
       if (stalledS > STALL.s) hasTarget = false;
     },
   };

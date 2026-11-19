@@ -155,6 +155,17 @@ test('a walk target behind a card the body cannot pass is given up once the walk
   expect(v.pos[0]).toBeCloseTo(11 - r, 3);
 });
 
+test('a walk target past the wedge between the pond and a box corner is given up, and the visitor comes to rest', () => {
+  // The Estanque's west lantern box and the pond: each push-out keeps the speed along its own shape, so the wedged body
+  // keeps a velocity while it stands still (the 5-minute soak hung on it).
+  const v = createVisitor({ ...area, blocks: new Float32Array([16.89, -0.525, 17.11, -0.275]) }, 17.5, -0.5);
+  v.walkTo(17.7, -1.3);
+  let t = 0;
+  for (; t < 5 && v.busy; t += 1 / 60) v.step(1 / 60);
+  expect(v.busy, 'given up and standing').toBe(false);
+  expect(t, 'within a couple of seconds').toBeLessThan(3);
+});
+
 test('a walk target inside the pond or outside the walls stops at the edge', () => {
   const v = createVisitor(area, 14, 1);
   v.walkTo(pond.x, pond.z);
