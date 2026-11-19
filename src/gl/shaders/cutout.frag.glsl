@@ -58,6 +58,14 @@ const float RIM_DARK_LUMA = 0.08;                     // forms darker than this 
 // Behind a focused flower (or a bed's flowers at rest) the far layers fall back: softer (mip bias) and darker.
 const vec2 FOCUS_BACK = vec2(0.35, 1.6);              // metres behind the flower where the fall-off starts and is full
 const float FOCUS_BLUR = 3.0;
+// Under free roam no paper goes black: away from every light the darkest plates (a cart's wheels, the hedge beyond the
+// wall, a dark poppy) settle on a dusk floor in their own hue, near-black plates in the dusk air's hue, so they keep
+// their tint and grain. Paper above the knee is untouched; the rail never takes it (uEye.z).
+const float ROAM_FLOOR = 0.014;                       // linear luma the blackest paper lifts to
+const float ROAM_FLOOR_KNEE = 0.035;
+const vec2 ROAM_FLOOR_HUE = vec2(0.002, 0.03);        // plate luma where its own hue starts to lead and leads fully
+const float ROAM_FLOOR_HUE_KEPT = 0.7;
+const vec2 ROAM_FLOOR_GRAIN = vec2(0.7, 1.5);         // the plate's fine detail against its coarse mip, kept in the floor
 
 vec3 paperShoulder(vec3 c) {
   float m = max(max(c.r, c.g), max(c.b, 1e-4));
@@ -153,7 +161,8 @@ void main() {
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n);
   // Leaf weight from a coarse mip of the plate, so block noise in a pale leaf never flips it on and off.
-  float leaf = leafWeight(texture(uColor, vUV, LEAF_MIP_BIAS).rgb);
+  vec3 coarse = texture(uColor, vUV, LEAF_MIP_BIAS).rgb;
+  float leaf = leafWeight(coarse);
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
   if (vHung > 0.5) {
     vec2 q = (vUV - vRect.xy) / max(vRect.zw - vRect.xy, vec2(1e-5));
@@ -182,6 +191,11 @@ void main() {
   float hazed = 1.0 - exp(-max(vDepth - mix(HAZE_START, ROAM_HAZE_START, uEye.z), 0.0) * uDepthFade.w);
   lit = mix(lit, haze, hazed);
   lit = layerAir(lit, vDepth - vPlaneDepth, back);
+  vec3 plate = coarse * max(vTint.rgb, vec3(ROAM_TINT_FLOOR));
+  float plateLuma = luma(plate);
+  vec3 floorHue = mix(hazeHue, plate / max(plateLuma, 1e-3), smoothstep(ROAM_FLOOR_HUE.x, ROAM_FLOOR_HUE.y, plateLuma) * ROAM_FLOOR_HUE_KEPT);
+  float grain = clamp(luma(tex.rgb) / max(luma(coarse), 1e-4), ROAM_FLOOR_GRAIN.x, ROAM_FLOOR_GRAIN.y);
+  lit += floorHue * ROAM_FLOOR * grain * uEye.z * (1.0 - smoothstep(0.0, ROAM_FLOOR_KNEE, luma(lit)));
 
   // Moon rim, after the air so the haze cannot eat it: inside the paper, where the soft alpha toward the moon runs out
   // (two taps make the gradient). Thin moon white at the very edge into cool shade, only on the moon side.

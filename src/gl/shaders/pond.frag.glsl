@@ -17,6 +17,10 @@ out vec4 outColor;
 const vec3 DEEP = vec3(0.0060, 0.0072, 0.0110);       // still water in shade: near black, a little blue-green
 const vec3 MOON_WATER = vec3(0.72, 0.66, 0.60);       // #ddd4cb on the water, held under the moon core
 const float SKY_MIRROR = 0.32;
+// Free roam sees the pond from 7 to 14 m at a low angle: more of the dusk sky on it and the dusk fill on the surface, so
+// it reads as dark water, not a black hole in the lawn (0 on the rail, uEye.z).
+const float ROAM_SKY_MIRROR = 0.5;
+const float ROAM_WATER_FILL = 0.25;
 const float BANK_SOFT = 0.1;                          // share of the radius the wet bank fades over
 const float BANK_WOBBLE = 0.08;
 const float STREAK_AZ = 0.045;                        // radians: the moon column's half width
@@ -77,7 +81,8 @@ void main() {
   vec3 refl = reflect(view, n);
 
   vec3 sky = mix(uSkyHorizon, uSkyTop, pow(sat(refl.y / 0.5), 0.55));
-  vec3 col = DEEP + neutralise(sky) * SKY_MIRROR * (0.4 + 0.6 * pow(1.0 - sat(-view.y), 3.0));
+  vec3 col = DEEP + neutralise(sky) * mix(SKY_MIRROR, ROAM_SKY_MIRROR, uEye.z) * (0.4 + 0.6 * pow(1.0 - sat(-view.y), 3.0))
+    + neutralise(uAmbient) * ROAM_WATER_FILL * uEye.z;
 
   // The moon: a long column at its azimuth, its elevation ignored, broken into dashes by the ripples.
   float dAz = atan(refl.x, -refl.z) - atan(uMoonBack.x, -uMoonBack.z);
