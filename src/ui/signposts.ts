@@ -172,12 +172,12 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     s.mover.move(x < OFF_EDGE_PX ? OFF_EDGE_PX : x > maxX ? maxX : x, y < OFF_EDGE_PX ? OFF_EDGE_PX : y > maxY ? maxY : y, 1);
   }
 
-  /** Free roam: a board button over its board while the board is on screen and not one of the current place's two. */
+  /** Free roam: a board button over its board while the board is on screen and not one of the current place's two, nor one pointing at the current place (that click would go nowhere). */
   function show(b: Sign, rig: CameraRig): void {
     const a = anchors[b.anchor];
     if (a === undefined) return;
     rig.project(a.at[0], a.at[1], a.at[2], pt);
-    const off = !pt.visible || a.bed === current;
+    const off = !pt.visible || a.bed === current || a.to === current;
     if (off !== b.off) {
       b.off = off;
       b.el.hidden = off;
