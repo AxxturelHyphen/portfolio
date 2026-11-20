@@ -1,6 +1,7 @@
 /**
- * The figure's pose tables (cook/FIGURE_BUILD.md 4): the walk cycles of the back and side views, the settling step
- * and the standing pose, stepped on twos of 12 fps by world/puppet.ts; and the parts with their measured pins.
+ * The figure's pose tables (cook/FIGURE_BUILD.md 4): the walk cycles of the back and side views, the crouch before the
+ * first stride, the settling step and the standing pose, stepped on the 12 fps tick by world/puppet.gait.ts; and the
+ * parts with their measured pins.
  */
 import type { SpriteRect } from '../types.ts';
 
@@ -61,16 +62,21 @@ export const BACK_POSES: readonly Pose[] = [
  * Side view: legs swing in the picture plane toward the heading; A is the far leg, B the near one. A short calm step
  * (the feet about a forearm apart on contact): the trailing knee folds, the passing leg folds under the body while
  * the planted knee gives a little, the body rides up over it, the free arm swings clear of the body both ways and
- * the torso stays nearly upright.
+ * the torso stays nearly upright. The head nods down onto the contact and lifts as the body rides up.
  */
 export const SIDE_POSES: readonly Pose[] = [
-  pose(-12, 13, 0, 0, 16, 0, -2, 0, 16, 1, 0, 0.024),
-  pose(5, -2, 0.07, 0, 40, 4, -1, 0, 0, 1, 1, -0.014),
-  pose(13, -12, 0, 0, 0, 16, -2, 0, -16, 1, 0, 0.024),
-  pose(-2, 5, 0, 0.07, 4, 40, -1, 0, 0, 1, 1, -0.014),
+  pose(-12, 13, 0, 0, 16, 0, -2, -2, 16, 1, 0, 0.028),
+  pose(5, -2, 0.07, 0, 40, 4, -1, 1.5, 0, 1, 1, -0.016),
+  pose(13, -12, 0, 0, 0, 16, -2, -2, -16, 1, 0, 0.028),
+  pose(-2, 5, 0, 0.07, 4, 40, -1, 1.5, 0, 1, 1, -0.016),
 ];
 /** Standing, in every view: feet a little apart, arms hanging. */
 export const IDLE = pose(-3, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+/**
+ * The crouch before the first stride, per view: both feet planted, the knees give, the body sinks and draws back from
+ * the heading a little, the free arm drawn back, so the walk reads as pushed off rather than slid into.
+ */
+export const ANTICIPATE = { back: pose(-3, 3, 0, 0, 6, 6, 0, 1, -6, 0.9, 0, 0.022), side: pose(-4, 5, 0, 0, 10, 6, 3, 1.5, -8, 1, 0, 0.024) } as const;
 /** The short last step before standing, per view: the trailing foot comes in low, the body settles a little. */
 export const SETTLE = { back: pose(-2, 2, 0.035, 0, 10, 0, 1, 0, -3, 0.92, 0, 0.012), side: pose(-6, 8, 0, 0, 6, 0, -2, 0, 4, 1, 0, 0.008) } as const;
 

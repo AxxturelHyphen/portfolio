@@ -54,7 +54,7 @@ export const HELD = { handleM: 0.03, scaleWide: 0.7, scaleTall: 0.52, velTauS: 0
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 
 /** The pendulum: length to the centre of mass (m), gravity, damping (1/s), how much of the walk's push it feels, clamp. */
-export const PENDULUM = { lengthM: 0.3, g: 9.81, damping: 2.4, gain: 0.12, maxRad: 0.35, velTauS: 0.05, maxStepS: 1 / 120 } as const;
+export const PENDULUM = { lengthM: 0.3, g: 9.81, damping: 2, gain: 0.15, maxRad: 0.35, velTauS: 0.05, maxStepS: 1 / 120 } as const;
 
 /** Swing state from the hand's x motion (screen and world x agree: the roam camera's yaw is fixed). */
 export interface Pendulum { angle: number; spin: number; hand: number; vel: number }

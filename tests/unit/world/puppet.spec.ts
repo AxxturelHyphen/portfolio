@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type { AtlasManifest, QuadParams } from '../../../src/types.ts';
 import { createGait, createPuppet, FIGURE, PINS, poseOf, SLOT, stepGait, type FigureRects, type Gait } from '../../../src/world/puppet.ts';
-import { BACK_POSES, IDLE, REST, SETTLE, SIDE_POSES, type Pose } from '../../../src/world/puppet.poses.ts';
+import { DIP, LIFE } from '../../../src/world/puppet.gait.ts';
+import { ANTICIPATE, BACK_POSES, IDLE, REST, SETTLE, SIDE_POSES, type Pose } from '../../../src/world/puppet.poses.ts';
 
 // The visitor's paper figure (cook/FIGURE_BUILD.md 4): pins, ground contact, the stepped gait and its views.
 
@@ -42,6 +43,7 @@ for (const view of ['back', 'side'] as const) {
   for (const dir of [1, -1]) {
     for (const turn of [0, 1, 2, 3]) STATES.push(gaitOf(view, 0, true, turn, dir));
     for (let p = 0; p < 4; p++) STATES.push(gaitOf(view, p, false, 0, dir));
+    STATES.push({ ...gaitOf(view, 0, false, 0, dir), cue: 1, lean: 6, bank: -4 });
   }
 }
 
@@ -306,6 +308,85 @@ test('reduced motion keeps one standing pose: no cycle, no turn, no shift', () =
   expect(frames.every((f) => f.key.endsWith(' 0 true 0 0'))).toBe(true);
   walk(g, 3, 12, 0, 0, { reduced: true });
   expect([g.idle, g.turn, g.shift, g.pose]).toEqual([true, 0, 0, 0]);
+  expect([g.cue, g.dip, g.lean, g.bank, g.breath, g.look, g.lift]).toEqual([0, 0, 0, 0, 0, 0, 0]);
+});
+
+test('setting off: one tick of crouch before the first stride, then the walk leans into the push and eases to the speed lean', () => {
+  const g = createGait();
+  const seen: string[] = [];
+  const leans: number[] = [];
+  for (let t = 0; t < 2; t += DT) {
+    stepGait(g, t, DT, 2.4, 0, false, false);
+    const p = poseOf(g);
+    const k = p === ANTICIPATE.back || p === ANTICIPATE.side ? 'cue' : p === IDLE ? 'idle' : 'walk';
+    if (seen[seen.length - 1] !== k) seen.push(k);
+    leans.push(g.lean);
+  }
+  expect(seen).toEqual(['cue', 'walk']);
+  const steady = leans[leans.length - 1]!;
+  expect(Math.max(...leans)).toBeGreaterThan(steady + 2);
+  expect(steady).toBeGreaterThan(1);
+  expect(steady).toBeLessThan(3);
+});
+
+test('stopping: the body carries on past the stop, then the landing dip sinks and comes up before the idle', () => {
+  const g = createGait();
+  walk(g, 0, 1, 0, -2.4);
+  const drops: number[] = [];
+  let leanAtSettle = 0;
+  for (let t = 1; t < 2; t += DT) {
+    stepGait(g, t, DT, 0, 0, false, false);
+    if (g.settle > 0) leanAtSettle = Math.max(leanAtSettle, g.lean);
+    if (g.idle && drops[drops.length - 1] !== DIP[g.dip]) drops.push(DIP[g.dip]!);
+  }
+  expect(leanAtSettle).toBeGreaterThan(1);
+  expect(drops).toEqual([DIP[3], DIP[2], DIP[1], DIP[0]]);
+});
+
+test('seen from behind the walk banks toward the side it swings to', () => {
+  const g = createGait();
+  walk(g, 0, 1, 0, -2.4);
+  walk(g, 1, 0.3, 1.2, -2);
+  expect(g.view).toBe('back');
+  expect(g.bank).toBeGreaterThan(1);
+  const puppet = createPuppet(rects);
+  for (const mirror of [1, -1]) {
+    puppet.place(g, 0, 0, 1, mirror);
+    const torso = puppet.quads[10]!;
+    /** The smock's top leans toward world +x whichever hand carries the lantern. */
+    expect(at(torso, [0.5, 1])[0] - at(torso, [0.5, 0])[0]).toBeGreaterThan(0.01);
+  }
+});
+
+test('standing still breathes, glances about and, after six seconds, lifts the lantern with the head turned to it', () => {
+  const g = createGait();
+  const puppet = createPuppet(rects);
+  walk(g, 0, 1, 0, -1.5);
+  let breathMin = 0;
+  let breathMax = 0;
+  let lookFree = 0;
+  let firstLift = NaN;
+  let gripRise = 0;
+  puppet.place(gaitOf('back', 0, true), 0, 0, 1, 1);
+  const restGrip = puppet.grip[1]!;
+  for (let t = 1; t < 16; t += DT) {
+    stepGait(g, t, DT, 0, 0, false, false);
+    breathMin = Math.min(breathMin, g.breath);
+    breathMax = Math.max(breathMax, g.breath);
+    lookFree = Math.min(lookFree, g.look);
+    if (g.lift > 0 && Number.isNaN(firstLift)) firstLift = g.idleS;
+    if (g.lift === 1) {
+      expect(g.look).toBeCloseTo(LIFE.liftLook, 6);
+      puppet.place(g, 0, 0, 1, 1);
+      gripRise = Math.max(gripRise, puppet.grip[1]! - restGrip);
+    }
+  }
+  expect(breathMax - breathMin).toBeGreaterThan(1.9);
+  expect(lookFree).toBeLessThan(-0.99);
+  expect(firstLift).toBeGreaterThan(5.9);
+  expect(firstLift).toBeLessThan(6.2);
+  expect(gripRise).toBeGreaterThan(0.08);
+  expect(g.lift).toBe(0);
 });
 
 test('frozen time gives the pose for heading and speed at once, the same on every run', () => {

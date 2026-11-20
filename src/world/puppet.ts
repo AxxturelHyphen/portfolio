@@ -1,28 +1,25 @@
 /**
  * The visitor's figure (cook/FIGURE_BUILD.md 4): a paper-cut puppet from the roam atlas, pinned part to part like a toy
- * theatre figure, who carries the lantern by its handle. The gait advances on twos of 12 fps by distance walked (one
- * pose per stride share, at most one per tick), so the feet change only on steps. Two views: back (walking away,
- * standing) and side (walking east or west, mirrored for west); walking south toward the lens keeps the side of the
- * last sideways movement, a figure carried downstage in profile. A view change is a turn over three ticks (a quarter
- * second): the old view narrows, the new one shows edge-on, then opens out, like a cutout being turned by hand. The
- * hierarchy is solved on the CPU into preallocated quads, re-grounded so the lowest sole always stands on the ground
+ * theatre figure, who carries the lantern by its handle. The gait (world/puppet.gait.ts) advances on the 12 fps tick by
+ * distance walked (one pose per stride share, at most one per tick), so the feet change only on steps. Two views: back
+ * (walking away, standing) and side (walking east or west, mirrored for west); walking south toward the lens keeps the
+ * side of the last sideways movement, a figure carried downstage in profile. A view change is a turn over three ticks
+ * (a quarter second): the old view narrows, the new one shows edge-on, then opens out, like a cutout being turned by
+ * hand. Over the pose lie the gait's weight and life: the torso leans and breathes, the head glances, the carrying arm
+ * lifts the lantern. The hierarchy is solved on the CPU into preallocated quads, re-grounded so the lowest sole always stands on the ground
  * plane. Nothing is allocated per frame.
  */
 import type { InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
-import { BACK_POSES, IDLE, PINS, PIVOTS, REST, SETTLE, SIDE_POSES, type FigureRects, type Pose } from './puppet.poses.ts';
+import { DIP, GAIT, LIFE, poseOf, TURN, type Gait } from './puppet.gait.ts';
+import { PINS, PIVOTS, REST, type FigureRects } from './puppet.poses.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export const FIGURE = {
-  /** Head top above the ground point (m) at scale 1, drawn at portraitK on portrait screens; stepped at fps. */
-  topM: 1.3, portraitK: 1.2 / 1.3, fps: 12,
-  /** Walked distance per pose (m): two poses a calm step of 0.42 m. */
-  strideM: 0.21,
-  /** Under walkFrom (m/s) for idleAfterS the figure stands; hips sway over the planted foot; shins stretch by `stretch`. */
-  walkFrom: 0.3, idleAfterS: 0.25, hipSwayM: 0.014, stretch: 0.15,
-  /** Heading counts above viewFrom (m/s): profile past sideOnDeg from north, back under backOnDeg. */
-  viewFrom: 0.25, sideOnDeg: 62.5, backOnDeg: 47.5,
-  /** The slow idle shift: every shiftMinS plus up to shiftSpanS seconds, torso turn and root sway. */
-  shiftMinS: 4.5, shiftSpanS: 2, shiftDeg: 1.5, shiftM: 0.008,
+  ...GAIT,
+  /** Head top above the ground point (m) at scale 1, drawn at portraitK on portrait screens. */
+  topM: 1.3, portraitK: 1.2 / 1.3,
+  /** Standing: hips sway over the planted foot; shins stretch by `stretch`. */
+  hipSwayM: 0.014, stretch: 0.15,
   /**
    * Width share of the side torso; back view: each sleeve hangs armOut of its width out from its shoulder pin, beside
    * the smock and under its edge, armSlim wide (slim sleeves, not puffed panels), armDropM (m) under the smock's sloped
@@ -44,6 +41,7 @@ export const FIGURE = {
 } as const;
 
 export { FIGURE_SPRITES, PINS, PIVOTS, type FigureRects } from './puppet.poses.ts';
+export { createGait, poseOf, stepGait, type Gait, type View } from './puppet.gait.ts';
 
 const DEG = Math.PI / 180;
 /**
@@ -54,125 +52,6 @@ const DEG = Math.PI / 180;
 const TONES = [[0.8, 0.79, 0.78], [0.776, 0.766, 0.757]] as const;
 /** The smock and sleeves in work blue: under the amber lantern they go slate, never the tan of bare skin (luma ~0.73). */
 const CLOTH = [[0.62, 0.74, 1], [0.6, 0.72, 0.97]] as const;
-/** Ticks of the short settling step between the last stride and standing (then the turn). */
-const SETTLE_TICKS = 2;
-/**
- * The turn between views, by ticks left (index 0: no turn): torso and arm width shares. On the first tick the old view
- * narrows; the view swaps on the second, drawn edge-on, and opens out on the third.
- */
-const TURN = { ticks: 3, swapAt: 2, torso: [1, 0.8, 0.45, 0.62], arm: [1, 0.85, 0.6, 0.75] } as const;
-
-export type View = 'back' | 'side';
-
-/** Gait state: what is drawn (view, side, pose, idle, ticks left of a turn, idle shift) and the inputs that move it. */
-export interface Gait {
-  view: View; dir: number; pose: number; idle: boolean; turn: number; settle: number; shift: number;
-  wantView: View; wantDir: number; tick: number; travelled: number; slowS: number; idleS: number; shifts: number; shiftAt: number;
-}
-
-export function createGait(): Gait {
-  return { view: 'back', dir: 1, pose: 0, idle: true, turn: 0, settle: 0, shift: 0, wantView: 'back', wantDir: 1, tick: NaN, travelled: 0,
-    slowS: 0, idleS: 0, shifts: 0, shiftAt: shiftInterval(0) };
-}
-
-/** Seconds to the next idle shift: a fixed hash of the shift count, never Math.random, so stills repeat. */
-function shiftInterval(n: number): number {
-  const h = Math.sin(n * 12.9898 + 4.1414) * 43758.5453;
-  return FIGURE.shiftMinS + FIGURE.shiftSpanS * (h - Math.floor(h));
-}
-
-/**
- * The wanted view from a heading phi (radians, 0 walking away from the lens): back, with 15 degrees of hysteresis, or
- * profile. The profile faces the sign of vx while the walk is sideways (under 180 - backOnDeg from north); walking
- * south toward the lens keeps the side of the last sideways movement, so the figure never walks backward.
- */
-function desire(g: Gait, phi: number, vx: number): void {
-  const a = Math.abs(phi) / DEG;
-  const back = g.wantView === 'back' ? a <= FIGURE.sideOnDeg : a < FIGURE.backOnDeg;
-  g.wantView = back ? 'back' : 'side';
-  if (!back && a < 180 - FIGURE.backOnDeg) g.wantDir = Math.sign(vx) || g.wantDir;
-}
-
-/**
- * One frame of the gait from the ground velocity (m/s). Poses, views and the idle shift change only when the 12 fps
- * tick floor(t * 12) moves. Frozen time gives the pose for the heading and speed at once (idle or the first pose of the
- * view); reduced motion keeps one standing pose with no cycle, no turn and no shift.
- */
-export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number, frozen: boolean, reduced: boolean): void {
-  const speed = Math.hypot(vx, vz);
-  if (speed > FIGURE.viewFrom) desire(g, Math.atan2(vx, -vz), vx);
-  g.slowS = speed < FIGURE.walkFrom ? g.slowS + dt : 0;
-  const standing = frozen ? speed < FIGURE.walkFrom : g.slowS >= FIGURE.idleAfterS;
-  g.idleS = standing ? g.idleS + dt : 0;
-  if (standing && g.wantView === 'side') g.wantView = 'back';
-  if (frozen) {
-    g.view = g.wantView;
-    g.dir = g.wantDir;
-    g.idle = standing || reduced;
-    g.pose = 0;
-    g.turn = 0;
-    g.shift = 0;
-    return;
-  }
-  if (!standing) g.travelled += speed * dt;
-  const tick = Math.floor(t * FIGURE.fps);
-  if (tick === g.tick) return;
-  g.tick = tick;
-  /** Coming to a stop: the settling step first, the view held; the turn and the standing pose follow. */
-  if (!standing || reduced || g.idle) g.settle = 0;
-  else {
-    if (g.settle === 0) g.settle = SETTLE_TICKS + 1;
-    g.settle--;
-    if (g.settle > 0) return;
-  }
-  turnStep(g, reduced);
-  if (reduced) {
-    g.idle = true;
-    g.pose = 0;
-    g.shift = 0;
-    return;
-  }
-  if (standing) {
-    if (!g.idle) {
-      g.idle = true;
-      g.shifts = 0;
-      g.shiftAt = shiftInterval(0);
-    } else if (g.idleS >= g.shiftAt) {
-      g.shifts++;
-      g.shift = g.shifts % 2 === 1 ? 1 : -1;
-      g.shiftAt = g.idleS + shiftInterval(g.shifts);
-    }
-    return;
-  }
-  if (g.idle) {
-    g.idle = false;
-    g.pose = 0;
-    g.travelled = 0;
-    g.shift = 0;
-  } else if (g.travelled >= FIGURE.strideM) {
-    g.pose = (g.pose + 1) % BACK_POSES.length;
-    g.travelled = Math.min(g.travelled - FIGURE.strideM, FIGURE.strideM);
-  }
-}
-
-/** A tick of the turn: starts one when the wanted view or side differs, swaps the view halfway; reduced swaps at once. */
-function turnStep(g: Gait, reduced: boolean): void {
-  const differs = g.view !== g.wantView || (g.wantView === 'side' && g.dir !== g.wantDir);
-  if (g.turn > 0) g.turn--;
-  if (g.turn === 0 && differs && !reduced) g.turn = TURN.ticks;
-  if (differs && g.turn <= TURN.swapAt) {
-    g.view = g.wantView;
-    g.dir = g.wantDir;
-  }
-}
-
-/** The pose the gait shows. */
-export function poseOf(g: Gait): Pose {
-  if (g.idle) return IDLE;
-  if (g.settle > 0) return SETTLE[g.view];
-  return (g.view === 'side' ? SIDE_POSES : BACK_POSES)[g.pose]!;
-}
-
 /** The sole's height in a shin sprite: its padding as a share of the sprite's height. */
 const padOf = (r: SpriteRect): number => r.pad / ((r.uv[3] - r.uv[1]) * FIGURE.pagePx);
 
@@ -298,31 +177,40 @@ export function createPuppet(rects: FigureRects): Puppet {
     const side = g.view === 'side';
     const torsoW = TURN.torso[g.turn]! * (side ? FIGURE.sideTorso : 1) * FIGURE.torsoW;
     const armW = TURN.arm[g.turn]! * FIGURE.armSlim;
-    const drop = FIGURE.armDropM * k;
+    const armDrop = FIGURE.armDropM * k;
+    const lift = g.lift * LIFE.liftDeg;
     const torso = parts[S.Torso]!;
-    /** Back: hips over the planted foot. */
+    /** Back: hips over the planted foot. Leaning toward the heading in profile; from behind, banked toward world +x. */
     const sway = side ? 0 : Math.sign(p.footA - p.footB) * FIGURE.hipSwayM;
-    set(torso, (g.shift * FIGURE.shiftM + sway) * k, restL * k - p.drop * k, p.torso + g.shift * FIGURE.shiftDeg, torsoW, 1, false);
+    const lean = side ? -g.lean : -g.bank * mirror;
+    const drop = (p.drop + DIP[g.dip]!) * k;
+    set(torso, (g.shift * FIGURE.shiftM + sway) * k, restL * k - drop, p.torso + g.shift * FIGURE.shiftDeg + lean, torsoW,
+      1 + g.breath * LIFE.breathK, false);
     pinOf(torso, PINS.neck);
     const fwd = side ? 1 : 0;
-    /** The neckerchief on the smock's collar, the bare head above it on its neck, from behind and in profile. */
+    /**
+     * The neckerchief on the smock's collar, the bare head above it on its neck, from behind and in profile; the head
+     * takes half the lean and, glancing, turns on its pin toward the look.
+     */
+    const look = side ? 0 : g.look;
     set(parts[S.Scarf]!, pin[0]!, pin[1]!, torso.a / DEG, torsoW, 1, false);
-    set(parts[S.Head]!, pin[0]! + fwd * FIGURE.headFwdM * k, pin[1]! + FIGURE.headLiftM * k, p.torso + p.head, 1, 1, false);
+    set(parts[S.Head]!, pin[0]! + (fwd * FIGURE.headFwdM + look * LIFE.lookM) * k, pin[1]! + FIGURE.headLiftM * k,
+      p.torso + p.head + lean * 0.5 - look * LIFE.lookDeg, 1 - Math.abs(look) * LIFE.lookNarrow, 1, false);
     const freeArm = parts[S.FreeArm]!;
     const carryArm = parts[S.CarryArm]!;
     if (side) {
       pinOf(torso, PINS.sideShoulder);
       const sx = pin[0]!;
       const sy = pin[1]!;
-      set(freeArm, sx, sy - drop, REST.sideFree + p.free, armW, p.freeH, false);
-      set(carryArm, sx, sy - drop, REST.sideCarry + p.carry + mirror * carryDeg, armW, FIGURE.carryH, false);
+      set(freeArm, sx, sy - armDrop, REST.sideFree + p.free, armW, p.freeH, false);
+      set(carryArm, sx, sy - armDrop, REST.sideCarry + p.carry + lift + mirror * carryDeg, armW, FIGURE.carryH, false);
     } else {
       const outL = FIGURE.armOut * freeArm.sprite.rect.size[0] * k * armW;
       const outR = FIGURE.armOut * carryArm.sprite.rect.size[0] * k * armW;
       pinOf(torso, PINS.shoulderL);
-      set(freeArm, pin[0]! - outL, pin[1]! - drop, REST.freeArm - p.free, armW, p.freeH, true);
+      set(freeArm, pin[0]! - outL, pin[1]! - armDrop, REST.freeArm - p.free, armW, p.freeH, true);
       pinOf(torso, PINS.shoulderR);
-      set(carryArm, pin[0]! + outR, pin[1]! - drop, REST.carryArm + p.carry + mirror * carryDeg, armW, FIGURE.carryH, false);
+      set(carryArm, pin[0]! + outR, pin[1]! - armDrop, REST.carryArm + p.carry + lift + mirror * carryDeg, armW, FIGURE.carryH, false);
     }
     hand(freeArm, parts[S.FreeHand]!, PINS.cuff);
     hand(carryArm, parts[S.CarryHand]!, PINS.cuffBent);
