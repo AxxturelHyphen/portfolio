@@ -172,6 +172,13 @@ machine.subscribe((s, prev) => {
 /** A sheet's title link opens the panel through the machine, so the history entry carries where to go back to. */
 herbario?.addEventListener('click', (e) => {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  if (e.target instanceof Element && e.target.closest('.h-nav-garden') !== null) {
+    e.preventDefault();
+    const exit = document.querySelector<HTMLElement>('#toggles .tg-exit[data-mode="garden"]');
+    if (exit?.getAttribute('aria-disabled') === 'true') exit.focus();
+    else exit?.click();
+    return;
+  }
   const id = e.target instanceof Element ? e.target.closest<HTMLElement>('.h-sheet')?.dataset.flower : undefined;
   if (id === undefined || (e.target instanceof Element && e.target.closest('details, a:not(.h-open)') !== null)) return;
   e.preventDefault();

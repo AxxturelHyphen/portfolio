@@ -9,6 +9,7 @@
  */
 
 @import './album.css';
+@import './album.ui.css';
 
 #herbario {
   --tip: #fbf6ec;

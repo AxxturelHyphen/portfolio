@@ -75,7 +75,16 @@ ${projects.map((p) => renderSheet(p, l, s, thumbs, order)).join('\n')}
 }
 
 function fact(cls: string, heading: string, body: string): string {
-  return `<section class="h-fact ${cls}"><h2 class="h-fact-title">${esc(heading)}</h2>${body}</section>`;
+  return `<section class="h-fact ${cls}" aria-labelledby="${cls}-t"><h2 class="h-fact-title" id="${cls}-t" tabindex="-1">${esc(heading)}</h2>${body}</section>`;
+}
+
+/**
+ * The page's short nav: the projects, the contact facts and the way back to the garden. Without JS the garden link
+ * is hidden (album.css); with JS boot.ts hands it to the controls' own garden button, so it follows the same rules.
+ */
+function nav(s: Lookup): string {
+  const item = (href: string, label: string, cls = ''): string => `<li><a class="h-nav-link${cls}" href="${href}">${esc(label)}</a></li>`;
+  return `<nav class="h-nav" aria-label="${esc(s('nav.label'))}"><ul class="h-nav-list">${item('#projects', s('section.projects'))}${item('#h-contact-t', s('section.contact'))}${item('?mode=garden', s('mode.gardenShort'), ' h-nav-garden')}</ul></nav>`;
 }
 
 export function renderHerbario(c: HerbarioContent, l: Lang): string {
@@ -93,7 +102,7 @@ export function renderHerbario(c: HerbarioContent, l: Lang): string {
 
   return `<a class="h-skip" href="#projects">${esc(s('nav.skip'))}</a>
 <header class="h-header">
-<p class="h-site">${esc(s('site.title'))}</p>
+<div class="h-top"><p class="h-site">${esc(s('site.title'))}</p>${nav(s)}</div>
 <div class="h-hero">
 <div class="h-id">
 <h1 class="h-name">${esc(pr.name)}</h1>

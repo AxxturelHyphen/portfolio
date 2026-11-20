@@ -62,9 +62,15 @@
     grid-row: 1 / span 2;
     align-self: start;
     justify-self: end;
-    width: min(100%, 28rem);
+    width: min(100%, 22rem);
     margin: 0;
     transform: rotate(0.6deg);
+  }
+
+  /* The plate sits in a fixed 4:5 box, whatever its own shape, so a tall specimen never stretches the title page. */
+  #herbario .h-frontis-img {
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
   }
 
   /* Labels and facts are text set on the page: no slips, keylines or shadows. */
@@ -89,9 +95,12 @@
     margin-top: 1.5rem;
   }
 
+  /* The facts as one ruled strip under the title page, four columns on a wide screen. */
   .h-facts {
     row-gap: 2.5rem;
-    padding-top: clamp(3rem, 2rem + 2.5vw, 4.5rem);
+    margin-top: clamp(2.5rem, 1.5rem + 2.5vw, 4rem);
+    padding-top: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+    background: var(--ruled) top left / 100% 4px no-repeat;
   }
 
   .h-facts > .h-fact {
@@ -104,12 +113,12 @@
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
     column-gap: var(--col-gap);
-    margin-top: clamp(4rem, 2.5rem + 4vw, 7rem);
+    margin-top: clamp(3.5rem, 2rem + 3.5vw, 6rem);
   }
 
   .h-section-title {
     grid-row: 1;
-    grid-column: 1 / span 3;
+    grid-column: 1 / -1;
     margin-bottom: 2rem;
   }
 
@@ -179,7 +188,7 @@
   /* Every mount, empty or full, holds the same box, so a row of them shares its top, its rule and its titles. */
   #herbario .h-mount {
     min-height: 0;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 5;
     transform: rotate(var(--tilt));
   }
 
@@ -215,20 +224,16 @@
     background-repeat: no-repeat;
   }
 
-  #herbario .h-mount-full::after {
-    content: none;
-  }
-
   #herbario .h-specimen-img,
   #herbario .h-frontis-img {
     mix-blend-mode: multiply;
   }
 
-  /* The collection label: the plate on a hand-ruled line at the foot of the mount. Every label holds four
+  /* The collection label: the plate on a hand-ruled line at the foot of the mount. Every label holds three
      lines and sets from the top, so the first lines and the rules share one baseline across the row. */
   #herbario .h-specimen-cap {
     align-content: start;
-    min-height: 5.75rem;
+    min-height: 3.75rem;
     max-width: none;
     margin: 0;
     padding: 0.5rem 0 0.375rem;
@@ -296,7 +301,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-auto-columns: auto;
       row-gap: 3.5rem;
-      margin-top: 7rem;
+      margin-top: 4.5rem;
     }
 
     .h-section-title {
@@ -347,20 +352,17 @@
 
     .h-facts {
       row-gap: 2rem;
-      padding-top: 3.25rem;
+      padding-top: 2rem;
     }
 
     .h-projects {
       grid-template-columns: minmax(0, 1fr);
-      margin-top: 4rem;
+      row-gap: 2.75rem;
+      margin-top: 3.5rem;
     }
 
     .h-sheets {
-      row-gap: 3.5rem;
-    }
-
-    #herbario .h-mount {
-      aspect-ratio: 4 / 5;
+      row-gap: 2rem;
     }
 
     #herbario .h-contact-list > li + li {

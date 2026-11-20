@@ -1,7 +1,8 @@
 /*
  * One Herbario sheet: the herbarium paper with its specimen taped down (or the honest empty mount with photo
  * corners until the plate thumbnail exists), and the label tipped in over the mount's lower corner, the way a
- * herbarium sheet carries its label. The whole sheet opens the project panel; hover lifts it 2 px.
+ * herbarium sheet carries its label. The whole sheet opens the project panel; on screen, hover and keyboard focus
+ * lift its mount (album.css).
  */
 
 .h-sheet {
@@ -11,15 +12,10 @@
   padding: 1rem 1rem 1.25rem;
   background: var(--sheet);
   box-shadow: var(--shadow-sheet);
-  transition: transform var(--dur-hover) var(--ease-out);
 }
 
 [data-mode] .h-sheet {
   cursor: pointer;
-}
-
-[data-mode] .h-sheet:hover {
-  transform: translate3d(0, -2px, 0);
 }
 
 .h-sheet:has(.h-open:focus-visible) {
@@ -232,16 +228,6 @@
   .h-label {
     width: 92%;
     margin-top: -3rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .h-sheet {
-    transition: none;
-  }
-
-  [data-mode] .h-sheet:hover {
-    transform: none;
   }
 }
 

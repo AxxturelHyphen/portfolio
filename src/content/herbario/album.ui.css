@@ -1,0 +1,161 @@
+/*
+ * The album's interface on screen: the top line with the site name and its short nav, the lift a mounted specimen
+ * takes under the pointer or keyboard focus, and the compact sheet on a phone. Motion is transform and opacity
+ * only, and none of it plays under prefers-reduced-motion. Imported by herbario.css after album.css; screen only,
+ * so the printed CV never inherits it. Nothing here runs on a scroll timeline: such an animation never finishes,
+ * and the e2e specs wait for every animation to settle.
+ */
+
+@media screen {
+  .h-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: clamp(1.5rem, 0.75rem + 2.5vw, 3.5rem);
+  }
+
+  .h-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 1.5rem;
+  }
+
+  .h-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: var(--text-md);
+    color: var(--ink-2);
+    text-decoration: none;
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+
+  /* The underline draws in from the left: a hairline scaled, never a width or position change. */
+  .h-nav-link::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0.625rem;
+    left: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+
+  .h-nav-link:hover,
+  .h-nav-link:focus-visible {
+    color: var(--ink);
+  }
+
+  .h-nav-link:hover::after,
+  .h-nav-link:focus-visible::after {
+    transform: none;
+  }
+
+  .h-nav-link:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* Without a script there is no garden to go back to. */
+  :root:not([data-mode]) .h-nav-garden {
+    display: none;
+  }
+
+  /* Headings the nav lands on keep clear of the controls' paper strip. */
+  #herbario :is(.h-section-title, .h-fact-title) {
+    scroll-margin-top: 5.5rem;
+  }
+
+  #herbario .h-fact-title:focus {
+    outline: none;
+  }
+
+  /* The mount lifts and straightens under the pointer or keyboard focus; its shadow fades in beneath it. */
+  #herbario .h-mount {
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+
+  #herbario .h-mount::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    background: none;
+    box-shadow: 0 1.25rem 2rem -1.25rem rgb(29 27 24 / 0.45), 0 0.125rem 0.375rem -0.125rem rgb(29 27 24 / 0.14);
+    opacity: 0;
+    transform: none;
+    pointer-events: none;
+    transition: opacity var(--dur-hover) var(--ease-out);
+  }
+
+  #herbario .h-sheet:has(.h-open:focus-visible) .h-mount {
+    transform: translate3d(0, -0.375rem, 0);
+  }
+
+  #herbario .h-sheet:has(.h-open:focus-visible) .h-mount::after {
+    opacity: 1;
+  }
+
+  #herbario .h-open {
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    [data-mode] #herbario .h-sheet:hover .h-mount {
+      transform: translate3d(0, -0.375rem, 0);
+    }
+
+    [data-mode] #herbario .h-sheet:hover .h-mount::after {
+      opacity: 1;
+    }
+
+    [data-mode] #herbario .h-sheet:hover .h-open {
+      color: var(--rose-ink);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #herbario :is(.h-mount, .h-mount::after, .h-open, .h-nav-link, .h-nav-link::after) {
+      transition: none;
+    }
+
+    #herbario .h-sheet:has(.h-open:focus-visible) .h-mount,
+    [data-mode] #herbario .h-sheet:hover .h-mount {
+      transform: rotate(var(--tilt));
+    }
+  }
+
+  /* A phone: the nav takes the site name's place, and each sheet is a landscape mount over its label. */
+  @media (max-width: 44.99rem) {
+    .h-header {
+      padding-top: 0.5rem;
+    }
+
+    #herbario .h-sheet {
+      --corner: 1.25rem;
+    }
+
+    #herbario .h-mount {
+      aspect-ratio: 4 / 3;
+      padding: 0.875rem 0.875rem 0.5rem;
+    }
+
+    #herbario .h-specimen-cap {
+      min-height: 2.5rem;
+      padding: 0.375rem 0 0.25rem;
+    }
+
+    #herbario .h-mount-note {
+      margin-bottom: 1.25rem;
+    }
+
+    #herbario .h-label {
+      margin-top: 1rem;
+    }
+  }
+}
