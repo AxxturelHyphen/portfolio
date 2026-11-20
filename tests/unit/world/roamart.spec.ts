@@ -32,7 +32,7 @@ function built(scene: BedScene3, mode: WorldMode): QuadParams[] {
   const written: QuadParams[] = [];
   const bed = { manifest: { id: scene.id, hash: '', pages: [], sprites: {}, blooms: {} } as AtlasManifest, tex: { color: [], normal: [], gpuBytes: 0 } };
   buildBed({
-    scene, tier: 'high', maxLayers: 12, mode, wallZ: garden.ground.wall.z, bed, shared: { manifest: shared, tex: bed.tex }, slots: [],
+    scene, tier: 'high', maxLayers: 12, mode, bed, shared: { manifest: shared, tex: bed.tex }, slots: [],
     visited: () => false, reduced: { state: { reduced: false } }, createBatch: batchOf(written),
   });
   return written;
@@ -115,7 +115,7 @@ test('the roam dressing has no silhouette and no night tint; the rail dressing i
   const tints: number[][] = [];
   let flagged = 0;
   const written: QuadParams[] = [];
-  writeDressing(buildGround(garden.ground, scenes, 'high', 'roam'), garden.ground.wall.z, shared, (page, capacity) => batchOf(written)('shared', page, capacity));
+  writeDressing(buildGround(garden.ground, scenes, 'high', 'roam'), shared, (page, capacity) => batchOf(written)('shared', page, capacity));
   for (const q of written) {
     if ((Math.floor(q.phase / 8) & QUAD_FLAG.silhouette) !== 0) flagged++;
     tints.push(Array.from(q.tint).slice(0, 3));

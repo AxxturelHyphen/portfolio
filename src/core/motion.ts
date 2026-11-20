@@ -84,10 +84,6 @@ export const STEP_HOLD_S = 1 / STEP_FPS;
 
 export const UI = {
   hoverS: 0.2,
-  pressS: 0.1,
-  pressScale: 0.98,
-  chipS: 0.2,
-  chipStaggerS: 0.04,
   chipsMax: 3,
   labelInS: 0.32,
   labelDelayS: 0.12,
@@ -95,7 +91,6 @@ export const UI = {
   labelRisePx: 8,
   panelOpenS: 0.42,
   panelCloseS: 0.3,
-  panelSectionStaggerS: 0.03,
   flowerTurnS: 0.28,
 } as const;
 
@@ -103,13 +98,10 @@ export const UI = {
 
 export const CAMERA = {
   focusNudgeS: 0.6,
-  viewEaseInS: 0.9,
   dollyS: 1.0,
   travelS: 1.6,
   travelPerBedS: 0.1,
   travelMaxS: 1.6,
-  leanS: 0.25,
-  leanBedFraction: 0.02,
   flingS: omegaToDuration(4.7),
   rubberBandFraction: 0.04,
   rubberBandS: omegaToDuration(11),
@@ -285,7 +277,7 @@ export interface NearFraming extends FollowFraming { readonly at: number }
  * The nearest framings the approach may use (world/fit.ts picks how far toward them to go): closer and lower than the
  * walking one, the visitor's light in the lower middle, the back wall and a band of sky with the moon above it.
  * Landscape and portrait (below PORTRAIT_ASPECT, follow.ts). Portrait barely comes nearer: the walking framing is
- * already close, the visitor keeps its height on screen so the tag sheet and the cane labels keep the room below, and
+ * already close, the visitor keeps its height on screen so the tag sheet and the plan corner keep the room below, and
  * the camera goes lower only as far as a shallower pitch keeps the moon whole over the wall.
  */
 export const NEAR_FRAMINGS = {
@@ -305,9 +297,10 @@ export const APPROACH = { fastMps: 1.5, fastS: 0.3, leaveM: 1, inS: 1.2, outS: 0
  * How far the approach goes (world/fit.ts): the focused subject's outline and the visitor's ground point must sit in a
  * safe area of the frame with `margin` (share of the width and height) inside it. The safe area starts below the top
  * band of fixed controls (topPx, ui/label.ts TOP_PX) and ends above a bottom band (bottomShare of the height, where
- * the cane labels stand); beside the subject stands the plant tag (ui/label.ts: width clamp(300 px, 19 vw, 368 px),
- * about tagAspect as tall as wide, gapPx past the subject's hit reach, on the side with more room). Below narrowPx
- * of width the tag is a strip of about phoneTagPx above the bottom edge (measured 177 to 190 px plus its 10 px margin).
+ * the folded plan corner sits, ui/styles/plan.css); beside the subject stands the plant tag (ui/label.ts: width
+ * clamp(300 px, 19 vw, 368 px), about tagAspect as tall as wide, gapPx past the subject's hit reach, on the side with
+ * more room). Below narrowPx of width the tag is a strip of about phoneTagPx above the bottom edge (measured 177 to
+ * 190 px plus its 10 px margin).
  * The subject grows to at most cap of the frame height; less than minGain times its walking size is no gain. The
  * search takes `steps` steps toward the near framing and may slide the camera up to maxShiftM toward the subject.
  * nudge and nudgeY mirror the rig's focus nudge toward the slot (world/camera.ts FRAME), which the fit measures too.
@@ -351,13 +344,10 @@ export const FIREFLY = { inS: 0.4, outS: 1.1 } as const;
 
 export const INTRO = {
   totalS: 2.0,
-  fadeUp: [0, 0.25],
   turn: [0, 1.4],
   irisOut: [1.4, 1.8],
   moth: [1.6, 2.0],
   beatS: 0.5,
-  turnDegPerStep: 2.5,
-  hubOrbit: 0.01,
   skipS: 0.3,
 } as const;
 
@@ -387,11 +377,9 @@ export const REDUCED = { travelFadeS: 0.3, bloomFadeS: 0.2 } as const;
 // Channel drivers (cook/ARCH.md 2.1): spring durations, or the tween length for intro and mode
 
 export const CHANNEL_S = {
-  intro: INTRO.totalS,
   dolly: CAMERA.dollyS,
   leg: CAMERA.travelS,
   focus: LIGHT.gatherInS,
   openClose: IRIS.closeS,
-  openReveal: IRIS.openS,
   mode: MODE.totalS,
 } as const;

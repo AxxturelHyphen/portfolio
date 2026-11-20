@@ -4,7 +4,7 @@ import { clumpSprite } from './clumps.ts';
 import { COVER_PLANTS } from './cover.ts';
 import { DRESS_KIND, DRESS_STRIDE, EDGE_PLANTS, LAWN_PLANTS, type GroundBuild } from './ground.ts';
 import { RENDER_ORDER } from './order.ts';
-import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
+import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 /**
  * The near-ground dressing (cook/LOOK_NOTES.md 4): grass clumps, a low leafy plant, its leaves lying flat as litter
@@ -12,10 +12,10 @@ import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
  * to near, the material has no depth). Standing pieces cast their contact shadow; flat ones lie on the ground.
  * On the rail, nearer pieces are mixed toward the night shade so the foreground frames the picture instead of
  * competing with it. Under free roam (the lawn, ground.ts) nothing is a silhouette: every piece stays lit with a
- * slight green, straw or warm cast, standing pieces clear of the wall foot turn as standees, and the wild plants of the
- * second shared page draw in a second batch hung under the first (one more draw call, roam only). The lawn's ground cover
- * (cover.ts) draws in the same two batches. Under free roam off the low tier every standing plant takes a body (body.ts):
- * a grass piece folds its first card, a single-card plant folds or crosses by its species.
+ * slight green, straw or warm cast, and the wild plants of the second shared page draw in a second batch hung under
+ * the first (one more draw call, roam only). The lawn's ground cover (cover.ts) draws in the same two batches. Under
+ * free roam off the low tier every standing plant takes a body (body.ts): a grass piece folds its first card, a
+ * single-card plant folds or crosses by its species.
  */
 
 const CLUMP_CARDS = 2;
@@ -51,23 +51,23 @@ function spriteOf(m: AtlasManifest, kind: number, i: number): string | null {
   return 'sh/ivy';
 }
 
-export function writeDressing(g: GroundBuild, wallZ: number, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
+export function writeDressing(g: GroundBuild, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
   const probe = m.sprites['sh/ivy'];
   if (g.dressCount === 0 || probe === undefined) return null;
   const bodied = takesBody(g.mode, g.tier);
   const batch = createBatch(probe.page, g.dressCount * (bodied ? CLUMP_CARDS + 1 : CLUMP_CARDS));
-  fill(g, wallZ, m, probe.page, batch);
+  fill(g, m, probe.page, batch);
   const wild = m.sprites[WILD_PROBE];
   if (g.mode === 'roam' && wild !== undefined && wild.page !== probe.page) {
     const plants = createBatch(wild.page, g.dressCount * (bodied ? 2 : 1));
-    fill(g, wallZ, m, wild.page, plants);
+    fill(g, m, wild.page, plants);
     plants.mesh.renderOrder = RENDER_ORDER.near;
     batch.mesh.add(plants.mesh);
   }
   return batch;
 }
 
-function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, batch: CutoutBatch): void {
+function fill(g: GroundBuild, m: AtlasManifest, page: number, batch: CutoutBatch): void {
   const tint: [number, number, number, number] = [1, 1, 1, 1];
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: [0, 0, 0, 0], sway: 0, phase: 0, lift: 0, facing: 0, tint };
   const roam = g.mode === 'roam';
@@ -89,8 +89,7 @@ function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, bat
     const h = g.dress[o + 4] ?? 0.3;
     const side = i % 2 === 0 ? 1 : -1;
     /** The nearest pieces are true dark framing: their night tint is applied uncapped. */
-    const flags = (flat ? QUAD_FLAG.flat | QUAD_FLAG.noShadow : 0) | (!roam && shade < NEAR_SHADE ? QUAD_FLAG.silhouette : 0)
-      | turnFlag(g.dress[o + 1] ?? 0, wallZ, !flat);
+    const flags = (flat ? QUAD_FLAG.flat | QUAD_FLAG.noShadow : 0) | (!roam && shade < NEAR_SHADE ? QUAD_FLAG.silhouette : 0);
     for (let k = 0; k < cards; k++) {
       q.x = (g.dress[o] ?? 0) + k * 0.05 * side;
       q.y = 0;

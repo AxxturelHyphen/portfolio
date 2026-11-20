@@ -30,7 +30,7 @@ const batchOf = (out: QuadParams[]) => (_from: unknown, _page: number, capacity:
 
 const flagsOf = (q: QuadParams): number => Math.floor(q.phase / 8);
 const plate = (): QuadParams => ({
-  x: 2, y: 0, z: 3, rot: 0.1, w: 0.6, h: 0.5, px: 0.3, py: 0, uv: [0.1, 0.2, 0.5, 0.6], sway: 0.03, phase: QUAD_FLAG.turn * 8 + 1, lift: 0,
+  x: 2, y: 0, z: 3, rot: 0.1, w: 0.6, h: 0.5, px: 0.3, py: 0, uv: [0.1, 0.2, 0.5, 0.6], sway: 0.03, phase: QUAD_FLAG.fade * 8 + 1, lift: 0,
   facing: 0.2, tint: [1, 1, 1, 1],
 });
 
@@ -55,7 +55,7 @@ test('a fold writes two halves hinged on the plate midline, opening toward the l
     const [x, z] = footOf(half, at);
     expect(x).toBeCloseTo(crease[0]);
     expect(z).toBeCloseTo(crease[1]);
-    expect(flagsOf(half) & QUAD_FLAG.turn, 'the crease never turns apart').toBe(0);
+    expect(flagsOf(half), 'both halves keep the plate flags').toBe(QUAD_FLAG.fade);
   }
   const turn = a.facing - q.facing;
   expect(turn).toBeGreaterThanOrEqual(BODY.fold[0]);
@@ -107,7 +107,7 @@ function bedWritten(scene: BedScene3, tier: Tier): Written {
   const out: QuadParams[] = [];
   const bed = { manifest: json(`public/atlas/${scene.id}.json`) as AtlasManifest, tex: { color: [], normal: [], gpuBytes: 0 } };
   const built = buildBed({
-    scene, tier, maxLayers: 12, mode: 'roam', wallZ: garden.ground.wall.z, bed, shared: { manifest: shared, tex: bed.tex }, slots: [],
+    scene, tier, maxLayers: 12, mode: 'roam', bed, shared: { manifest: shared, tex: bed.tex }, slots: [],
     visited: () => false, reduced: { state: { reduced: false } }, createBatch: batchOf(out),
   });
   expect(built.batches.reduce((n, b) => n + b.writer.count, 0)).toBe(out.length);
@@ -117,8 +117,8 @@ function bedWritten(scene: BedScene3, tier: Tier): Written {
 function groundWritten(mode: WorldMode, tier: Tier): Written {
   const out: QuadParams[] = [];
   const g = buildGround(garden.ground, scenes, tier, mode);
-  writeClumps(g, garden.ground.wall.z, shared, (page, capacity) => batchOf(out)('shared', page, capacity));
-  writeDressing(g, garden.ground.wall.z, shared, (page, capacity) => batchOf(out)('shared', page, capacity));
+  writeClumps(g, shared, (page, capacity) => batchOf(out)('shared', page, capacity));
+  writeDressing(g, shared, (page, capacity) => batchOf(out)('shared', page, capacity));
   return partsOf(out, [shared]);
 }
 

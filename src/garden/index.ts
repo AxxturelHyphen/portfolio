@@ -9,7 +9,7 @@ import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/
 import { arrived, installTestApi } from '../core/testapi.ts';
 import { createCutoutBatch, setPaperEdge, sharedUniforms } from '../gl/cutout.material.ts';
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
-import { carryVisitor, setRoamLight, setStandeeTurn, writeInvites, writeLamps } from '../gl/lights.ts';
+import { carryVisitor, setRoamLight, setRoamWeight, writeInvites, writeLamps } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
 import { raiseTerrain } from '../gl/ground.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
@@ -130,7 +130,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
-  if (roam !== null) setStandeeTurn(1);
+  if (roam !== null) setRoamWeight(1);
   setPaperEdge(quality.tier !== 'low');
   quality.onChange((qq) => setPaperEdge(qq.tier !== 'low'));
   const lantern = roam === null ? null : createVisitorLantern(roam.pos, world.ground.pond);

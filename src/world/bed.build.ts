@@ -3,7 +3,7 @@ import { bodyOf, bodyQuads, bodySeed, takesBody, writeBody, type Body } from './
 import { createFlower, type GardenFlower } from './flower.ts';
 import { gateLeafOf, isGateLeaf, type GateLeaf } from './gates.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
-import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
+import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { builtIn, type WorldMode } from './mode.ts';
 import type { PetRef } from './pet.ts';
 import { keptLayers } from './scene.ts';
@@ -12,7 +12,7 @@ import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
 /**
  * Turns a bed's 3D placements into instanced cutout batches: one batch per atlas page used (bed pages and the shared
  * pages), quads sorted far to near inside a batch and batches ordered by depth, since paint order is depth order while
- * the renderer has no depth buffer. Hinge is the yaw; lean, ground-lying, decal and standee flags ride in the phase
+ * the renderer has no depth buffer. Hinge is the yaw; lean, ground-lying, decal and fade flags ride in the phase
  * (quadflags.ts). Under free roam off the low tier the bed's upright plants take a body (body.ts); project flowers,
  * signs, pets, gate leaves, near masks and fading frames stay single cards.
  * Value groups D and M are mixed toward the place shadow colour by tint (cook/ART.md laws); under free roam far less,
@@ -26,8 +26,6 @@ export interface BuildInput {
   maxLayers: number;
   /** The camera the bed is built for: items marked `only` for the other one are left out. */
   mode: WorldMode;
-  /** The back wall's z: cutouts on its band never turn as standees. */
-  wallZ: number;
   bed: BuildAtlas;
   shared: BuildAtlas | null;
   slots: readonly SlotView[];
@@ -75,20 +73,17 @@ export function hexRgb(hex: string, out: Float32Array): Float32Array {
   return out;
 }
 
-/** Flags of a placement; `turn` is QUAD_FLAG.turn or 0 (turnFlag). */
-function flagsOf(it: Placement3, turn: number): number {
+/** Flags of a placement. */
+function flagsOf(it: Placement3): number {
   return (it.flat === true ? QUAD_FLAG.flat : 0) | (it.lean === 0 ? QUAD_FLAG.noLean : 0)
-    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0) | (it.fade === true ? QUAD_FLAG.fade : 0) | turn;
+    | (!it.shadow || it.wing === true ? QUAD_FLAG.noShadow : 0) | (it.wing === true ? QUAD_FLAG.silhouette : 0) | (it.fade === true ? QUAD_FLAG.fade : 0);
 }
 
-/** The standee rule for a bed placement: upright, leaning and not a near mask. */
-const turnOf = (it: Placement3, wallZ: number): number => turnFlag(it.z, wallZ, it.flat !== true && it.lean !== 0 && it.wing !== true);
-
-function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade: Float32Array, mix: Record<ValueGroup, number>, turn: number,
+function quadOf(it: Placement3, rect: SpriteRect, size: [number, number], shade: Float32Array, mix: Record<ValueGroup, number>,
   x = it.x, y = it.y, z = it.z, k = 1): QuadParams {
   const m = mix[it.group];
   const t = it.tint ?? [1, 1, 1];
-  const flags = flagsOf(it, turn);
+  const flags = flagsOf(it);
   return {
     x, y, z,
     rot: (it.rot ?? 0) * DEG,
@@ -157,8 +152,7 @@ export function buildBed(i: BuildInput): BuildOutput {
       const r = resolveSprite(it.sprite, bed.manifest, shared?.manifest ?? null);
       if (r === null) { skipped++; continue; }
       placedSize(r.rect, it.h, it.w, it.scale, size);
-      const turn = turnOf(it, i.wallZ);
-      const q = quadOf(it, r.rect, size, shade, mix, turn);
+      const q = quadOf(it, r.rect, size, shade, mix);
       const pet = pets.get(it.sprite);
       const body = bodied && pet === undefined && !isGateLeaf(it.sprite) ? bodyOfItem(it) : null;
       const seed = bodySeed(it.x, it.z);
@@ -177,7 +171,7 @@ export function buildBed(i: BuildInput): BuildOutput {
         if (foot === null) continue;
         placedSize(foot.rect, undefined, undefined, 1, size);
         const dx = (f - 2) * FOOT_SPREAD * size[1];
-        add(foot.from, foot.rect.page, { z: it.z + 0.01 * f, write: once(quadOf(it, foot.rect, size, shade, mix, turn, it.x + dx, 0, it.z + 0.01 * f, 1)) }, 1);
+        add(foot.from, foot.rect.page, { z: it.z + 0.01 * f, write: once(quadOf(it, foot.rect, size, shade, mix, it.x + dx, 0, it.z + 0.01 * f, 1)) }, 1);
       }
     }
   }
@@ -189,8 +183,7 @@ export function buildBed(i: BuildInput): BuildOutput {
     const frame0 = bloom?.frames?.[0] ?? bloom?.petals?.[0]?.sprite;
     const rect = frame0 === undefined ? undefined : bed.manifest.sprites[frame0];
     if (bloom === undefined || rect === undefined) { skipped++; continue; }
-    const turn = turnFlag(view.world[2], i.wallZ, true);
-    const flower = createFlower({ slot: view, bloom, sprites: bed.manifest.sprites, scale: slot.scale, env: i.reduced, hinge: slot.hinge * DEG, turn, visitor: i.visitor ?? null });
+    const flower = createFlower({ slot: view, bloom, sprites: bed.manifest.sprites, scale: slot.scale, env: i.reduced, hinge: slot.hinge * DEG, visitor: i.visitor ?? null });
     flower.setVisited(view.project !== undefined && i.visited(view.project.id));
     add('bed', rect.page, { z: view.world[2], write: (b, at) => flower.write(b.writer, at), flower }, flower.quads);
   }

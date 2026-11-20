@@ -5,8 +5,7 @@ import { PHASE_SPAN, QUAD_FLAG } from './quadflags.ts';
 /**
  * Plants with body (cook/PLAN_3D.md F2): under the orbiting camera a single card shows its edge, so a filler plant
  * stands as more than one. Small plants fold along the plate's vertical midline into a shallow V that opens toward the
- * lens: both halves hang on the crease, sway together and never overlap on screen within the orbit, and neither turns
- * as a standee, so the crease holds. Tall flowers and
+ * lens: both halves hang on the crease, sway together and never overlap on screen within the orbit. Tall flowers and
  * shrubs take a mirrored copy of the card crossed behind the first, turned toward the plate's rest yaw so its printed
  * face, never its blank back, shows from anywhere in the ±35° orbit (55° + 35° stays within the face's 90°). The copy
  * casts no second ground decal. Everything is decided per piece from its position, so a rebuild lays the same garden.
@@ -63,10 +62,10 @@ export function writeBody(w: InstanceWriter, at: number, q: QuadParams, body: Bo
   return 1;
 }
 
-/** `phase` with `add` flags set and `clear` flags cleared. */
-function reflag(phase: number, add: number, clear: number): number {
+/** `phase` with the `add` flags set. */
+function withFlags(phase: number, add: number): number {
   const flags = Math.floor(phase / PHASE_SPAN);
-  return phase + (((flags | add) & ~clear) - flags) * PHASE_SPAN;
+  return phase + ((flags | add) - flags) * PHASE_SPAN;
 }
 
 /** The crossed copy first, so the plate itself is painted over it at rest. */
@@ -76,7 +75,7 @@ function cross(w: InstanceWriter, at: number, q: QuadParams, seed: number): numb
   const side = facing > FACING_LENS ? -1 : facing < -FACING_LENS ? 1 : seed < 0.5 ? -1 : 1;
   q.facing = facing + side * lerp(BODY.cross, seed);
   q.w = -width;
-  q.phase = reflag(phase, QUAD_FLAG.noShadow, 0);
+  q.phase = withFlags(phase, QUAD_FLAG.noShadow);
   w.set(at, q);
   q.facing = facing;
   q.w = width;
@@ -91,7 +90,7 @@ function cross(w: InstanceWriter, at: number, q: QuadParams, seed: number): numb
  * turns its edge forward.
  */
 function fold(w: InstanceWriter, at: number, q: QuadParams, seed: number): number {
-  const { x, y, z, facing, px, rot, uv, phase } = q;
+  const { x, y, z, facing, px, rot, uv } = q;
   const width = q.w;
   const u0 = uv[0] ?? 0;
   const u1 = uv[2] ?? 1;
@@ -102,7 +101,6 @@ function fold(w: InstanceWriter, at: number, q: QuadParams, seed: number): numbe
   q.y = y + crease * Math.sin(rot);
   q.z = z - along * Math.sin(facing);
   q.w = width / 2;
-  q.phase = reflag(phase, 0, QUAD_FLAG.turn);
   q.uv = half;
   half[1] = uv[1] ?? 0;
   half[3] = uv[3] ?? 1;
@@ -118,7 +116,6 @@ function fold(w: InstanceWriter, at: number, q: QuadParams, seed: number): numbe
   q.w = width;
   q.px = px;
   q.uv = uv;
-  q.phase = phase;
   q.facing = facing;
   return 2;
 }

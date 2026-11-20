@@ -129,7 +129,6 @@ export function createToggles(el: HTMLElement, m: Pick<Machine, 'send' | 'state'
       paintLang(el, strings, l);
       paintMode(el, mode, isPending(m.state), strings, l);
     },
-    setAudio: paintSound,
   };
 
   m.subscribe((s, prev) => {

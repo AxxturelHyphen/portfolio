@@ -114,7 +114,7 @@ export interface FilmUniformValues {
 export type FilmUniforms = Uniforms<FilmUniformValues>;
 export interface FilmPass { readonly uniforms: FilmUniforms; resize(w: number, h: number, pixelCap: number): void; render(scene: WebGLRenderTarget): void; readonly targetBytes: number }
 export interface Gfx {
-  readonly renderer: WebGLRenderer; readonly scene: Scene; readonly film: FilmPass; render(c: Clock): void; info(out: InfoSnapshot): InfoSnapshot; onContextLost(fn: () => void): void;
+  readonly renderer: WebGLRenderer; readonly scene: Scene; readonly film: FilmPass; render(c: Clock): void; info(out: InfoSnapshot): InfoSnapshot;
   warm(): Promise<void>;
 }
 export interface QuadParams { x: number; y: number; z: number; rot: number; w: number; h: number; px: number; py: number; uv: ArrayLike<number>; sway: number; phase: number; lift: number; facing: number; tint: ArrayLike<number> }
@@ -172,7 +172,7 @@ export interface ProxyLayer {
   mountBeds(beds: readonly { id: BedId; title: string }[]): void; mountSlots(bed: BedId, slots: readonly SlotView[]): void; unmountSlots(): void;
   sync(rig: CameraRig): void; focus(id: string): void;
 }
-export interface Toggles { setMode(m: Mode, pending: boolean): void; setLang(l: Lang): void; setAudio(on: boolean): void }
+export interface Toggles { setMode(m: Mode, pending: boolean): void; setLang(l: Lang): void }
 export interface ModeLayers { setProgress(p: number): void; settle(m: Mode): void }
 
 // 2.11 Debug params, test API (the sound contract lives in src/audio/)

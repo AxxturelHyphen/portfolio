@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { Matrix4, PerspectiveCamera, Vector3 } from 'three';
-import { QUAD_FLAG, TURN_WALL_GAP, packPhase, turnFlag } from '../../../src/world/quadflags.ts';
+import { QUAD_FLAG, packPhase } from '../../../src/world/quadflags.ts';
 
 // Standees under an orbiting camera (cook/PLAN_3D.md F1, F2): every cutout keeps its hinge, so the paper's cut edge
 // shows from the side. The vertex stage finds the eye from uViewProj alone (eyeOf); this mirrors that solve on the CPU.
@@ -50,21 +50,12 @@ test('paper thickness is free roam only, off with uThick, and the quad grows by 
   expect(slope).toBe(pad);
 });
 
-test('the rule: upright cutouts are standees unless they stand on the wall band', () => {
-  const wallZ = -6;
-  expect(turnFlag(-2, wallZ, true)).toBe(QUAD_FLAG.turn);
-  expect(turnFlag(-2, wallZ, false)).toBe(0);
-  expect(turnFlag(wallZ + TURN_WALL_GAP, wallZ, true)).toBe(0);
-  expect(turnFlag(-5.4, wallZ, true)).toBe(0);
-  expect(turnFlag(-8.4, wallZ, true)).toBe(0);
-});
-
-test('the fade flag decodes beside the standee flag and fades to about a third, only under free roam', () => {
+test('the fade flag decodes beside the stone flag and fades to about a third, only under free roam', () => {
   expect(QUAD_FLAG.fade).toBe(64);
   expect(vert).toContain('bit(flags, 64.0) * uEye.z');
   const fadeTo = /const float FADE_TO = ([0-9.]+);/.exec(vert)?.[1];
   expect(Number(fadeTo)).toBeCloseTo(0.35, 2);
-  const phase = packPhase(1.3, QUAD_FLAG.turn | QUAD_FLAG.fade);
+  const phase = packPhase(1.3, QUAD_FLAG.stone | QUAD_FLAG.fade);
   expect(Math.floor(Math.floor(phase / 8) / 64) % 2).toBe(1);
-  expect(Math.floor(Math.floor(phase / 8) / 32) % 2).toBe(1);
+  expect(Math.floor(Math.floor(phase / 8) / 256) % 2).toBe(1);
 });

@@ -15,8 +15,8 @@ import { linearHex } from './colour.ts';
  * - uFocusBack: the plane the far layers fall back behind (softer, darker), with its amount: the focused flower, or a
  *   bed's flowers at a lower rest amount, so a bed shot keeps its wall behind the hero without a focus.
  * - uHandThrow: how much of the hand light reaches the ground (0..1): a bed's composed rest light, or a real pointer.
- * - uEye: the camera on the ground plane (x, z, written with uViewProj) and the standee turn weight: 0 on the rail,
- *   1 under free roam (cook/ROAM_PLAN.md 3), so rail views never move.
+ * - uEye: z is the free-roam weight every roam-only look reads: 0 on the rail, 1 under free roam (cook/ROAM_PLAN.md 3),
+ *   so rail views never change; x and y are unused.
  * - uVisitor: the roaming visitor's ground point (x, z); cards flagged `fade` turn to a trace while they cover it.
  * - uPart: the grotto's ivy curtain (centre x, z, half width, metres apart): its cards part as the visitor nears it.
  * - uLamp: lanterns burning with their own amber pool (flame xyz, strength), free roam only: lamp 0 is the lantern the
@@ -104,8 +104,8 @@ export function setMoon(azimuthDeg: number, elevationDeg: number): void {
   sharedUniforms.uMoonBack.value.set(Math.cos(el) * Math.sin(az), Math.sin(el), -Math.cos(el) * Math.cos(az));
 }
 
-/** Turns the standees toward the eye (1, free roam) or keeps every cutout on its hinge (0, the rail). */
-export function setStandeeTurn(weight: number): void {
+/** Sets the free-roam weight (uEye.z): 1 under free roam, 0 on the rail. */
+export function setRoamWeight(weight: number): void {
   sharedUniforms.uEye.value.z = weight;
 }
 

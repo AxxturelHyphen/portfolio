@@ -1,14 +1,13 @@
 import type { AtlasManifest, CutoutBatch, QuadParams } from '../types.ts';
 import { bodySeed, takesBody, writeBody } from './body.ts';
 import { CLUMP_STRIDE, type GroundBuild } from './ground.ts';
-import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
+import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 /**
  * Grass clumps (cook/ART.md section 1): each is three parallel blade cards 4 cm apart, leaning 6, 12 and 18 degrees,
  * never crossed quads; under the orbiting camera the middle card folds along its stem into a shallow V (body.ts), so a
  * clump keeps its body from the side. One instanced batch from the shared atlas. A clump sprite missing from the shared manifest draws
- * nothing. Species, height and tint vary per clump so no two neighbours repeat (cook/R02_FINDINGS.md 2). Clumps clear
- * of the wall foot turn as standees under free roam.
+ * nothing. Species, height and tint vary per clump so no two neighbours repeat (cook/R02_FINDINGS.md 2).
  */
 
 const CARDS = 3;
@@ -27,7 +26,7 @@ export function clumpSprite(m: AtlasManifest, variant: number): string | null {
   return m.sprites[id] === undefined ? null : id;
 }
 
-export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
+export function writeClumps(g: GroundBuild, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
   const first = clumpSprite(m, 0);
   if (g.clumpCount === 0 || first === null) return null;
   const page = m.sprites[first]?.page ?? 0;
@@ -45,7 +44,6 @@ export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, cre
     const h = g.clumps[o + 4] ?? 0.3;
     const side = (i * 7) % 3 === 0 ? -1 : 1;
     const tint = tints[(i * 5 + variant * 3) % tints.length] ?? tints[0];
-    const flags = QUAD_FLAG.noShadow | turnFlag(g.clumps[o + 1] ?? 0, wallZ, true);
     for (let c = 0; c < 3; c++) (q.tint as number[])[c] = tint?.[c] ?? 1;
     for (let k = 0; k < CARDS; k++) {
       q.x = (g.clumps[o] ?? 0) + (k - 1) * 0.03;
@@ -57,7 +55,7 @@ export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, cre
       q.px = rect.pivot[0];
       q.py = rect.pivot[1];
       q.uv = rect.uv;
-      q.phase = packPhase((i * 0.618034 + k * 0.3) * Math.PI * 2, flags);
+      q.phase = packPhase((i * 0.618034 + k * 0.3) * Math.PI * 2, QUAD_FLAG.noShadow);
       at += writeBody(batch.writer, at, q, bodied && k === FOLDED ? 'fold' : null, bodySeed(q.x, q.z));
     }
   }

@@ -17,7 +17,6 @@ import { CLASS_PX, readRecipes, type Box4, type Job, type PlateOpts, type Recipe
 import { cropPart, fitLong, lowestPoint, transform } from './shape.ts';
 import { applyInk, applyMask, applyPaperRim, applyRemovals, applyTint, keepLargest, keepWhole } from './treat.ts';
 import { alphaBounds } from './sprite.ts';
-import { drawPaperCar } from './papercar.ts';
 import { applyEngrave } from './engrave.ts';
 import { drawPin } from './pin.ts';
 import { applyCropMl, applyGuidedMatte, applyLumaKey, applyPolygon, defringe } from './jobmatte.ts';
@@ -32,7 +31,7 @@ export interface Edit { stage: string; tool: string; note: string }
 export interface RealCatalog extends Catalog { methods: Record<string, { method: string; tool: string; reason: string }>; tiles: SpriteId[] }
 
 const CUT_CODE = ['scripts/stages/cutout.ts', ...['color', 'image', 'matte', 'ml', 'morph', 'paper', 'quality'].map((f) => `scripts/stages/lib/${f}.ts`)];
-const JOB_CODE = ['scripts/stages/sprites.ts', 'scripts/stages/treat.ts', 'scripts/stages/shape.ts', 'scripts/stages/bloom.ts', 'scripts/stages/normal.ts', 'scripts/stages/tiles.ts', 'scripts/stages/recipe.ts', 'scripts/stages/jobmatte.ts', 'scripts/stages/papercar.ts', 'scripts/stages/engrave.ts', 'scripts/stages/pin.ts'];
+const JOB_CODE = ['scripts/stages/sprites.ts', 'scripts/stages/treat.ts', 'scripts/stages/shape.ts', 'scripts/stages/bloom.ts', 'scripts/stages/normal.ts', 'scripts/stages/tiles.ts', 'scripts/stages/recipe.ts', 'scripts/stages/jobmatte.ts', 'scripts/stages/engrave.ts', 'scripts/stages/pin.ts'];
 const FEATHER_SHARE = 1 / 400;
 export const SPRITE_PAD = 4;
 
@@ -232,8 +231,7 @@ export function runSprites(cache: Cache, sources: readonly (SourceRec & { catego
 
   function runJob(r: Recipe, j: Job): void {
     const plate = r.plates[j.source] ?? {};
-    const cut: CutOut = j.drawn === 'paper-car' ? { image: drawPaperCar(sourceFile(j.source)), method: 'drawn', tool: 'code-drawn paper cut on the card stock (ImageMagick)', reason: '' }
-      : j.drawn === 'pin' ? { image: drawPin(), method: 'drawn', tool: 'code-drawn pin head (ImageMagick)', reason: '' } : plateCut(cache, j.source, plate, mem);
+    const cut: CutOut = j.drawn === 'pin' ? { image: drawPin(), method: 'drawn', tool: 'code-drawn pin head (ImageMagick)', reason: '' } : plateCut(cache, j.source, plate, mem);
     const hash = hashInputs([], [code, JSON.stringify(j), JSON.stringify(plate.plateH ?? null), cache.get(`cut:${j.source}`) ?? '']);
     let meta: SpriteMeta | null = null;
     keep(j.id, `job:${j.id}`, hash, { size: [0, 0], pivot: [0, 0], sources: [j.source] }, () => {

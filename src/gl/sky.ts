@@ -1,5 +1,4 @@
-import { BufferAttribute, BufferGeometry, DataTexture, GLSL3, Matrix4, Mesh, RawShaderMaterial, Sphere, Vector3 } from 'three';
-import type { Texture } from 'three';
+import { BufferAttribute, BufferGeometry, GLSL3, Matrix4, Mesh, RawShaderMaterial, Sphere, Vector3 } from 'three';
 import { linearHex } from './colour.ts';
 import { sharedUniforms } from './lights.ts';
 import common from './shaders/common.glsl?raw';
@@ -18,14 +17,10 @@ export type SkyUniforms = {
   uCamPos: typeof sharedUniforms.uCamPos;
   uInvViewProj: { value: Matrix4 };
   uMoonBody: { value: Vector3 };
-  uMoonMap: { value: Texture };
-  uMoonMapOn: { value: number };
 };
 export interface Sky {
   readonly mesh: Mesh;
   readonly uniforms: SkyUniforms;
-  /** An engraved moon plate (square, the disc filling it); null returns to the code-drawn face. */
-  setMoonMap(t: Texture | null): void;
   dispose(): void;
 }
 
@@ -36,8 +31,6 @@ export function createSky(): Sky {
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new BufferAttribute(new Float32Array([-1, -1, 3, -1, -1, 3]), 2));
   geometry.boundingSphere = new Sphere(new Vector3(), Number.MAX_VALUE);
-  const blank = new DataTexture(new Uint8Array([200, 200, 200, 255]), 1, 1);
-  blank.needsUpdate = true;
   const uniforms: SkyUniforms = {
     uSkyTop: sharedUniforms.uSkyTop,
     uSkyHorizon: sharedUniforms.uSkyHorizon,
@@ -45,8 +38,6 @@ export function createSky(): Sky {
     uCamPos: sharedUniforms.uCamPos,
     uInvViewProj: { value: new Matrix4() },
     uMoonBody: { value: linearHex('#ddd4cb', new Vector3(), MOON_BODY_GAIN) },
-    uMoonMap: { value: blank },
-    uMoonMapOn: { value: 0 },
   };
   const material = new RawShaderMaterial({
     glslVersion: GLSL3,
@@ -63,15 +54,10 @@ export function createSky(): Sky {
   return {
     mesh,
     uniforms,
-    setMoonMap(t: Texture | null): void {
-      uniforms.uMoonMap.value = t ?? blank;
-      uniforms.uMoonMapOn.value = t === null ? 0 : 1;
-    },
     dispose(): void {
       mesh.removeFromParent();
       geometry.dispose();
       material.dispose();
-      blank.dispose();
     },
   };
 }

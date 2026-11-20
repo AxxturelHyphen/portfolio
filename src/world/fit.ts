@@ -1,7 +1,7 @@
 /**
  * How far the approach eases in (APPROACH_FIT in core/motion.ts): the camera goes from the walking framing toward the
  * near one only as far as the focused subject's whole outline and the visitor's figure stay inside a safe area
- * of the frame, clear of the top band of controls, the bottom band of cane labels and the plant tag beside the
+ * of the frame, clear of the top band of controls, the bottom band of the plan corner and the plant tag beside the
  * subject, with a margin; the subject grows to at most `cap` of the frame height. Less than `minGain` times its
  * walking size is no gain: the camera stays on the walking framing. Tall or wide subjects, and phones where the tag
  * strip leaves no room, fall out of the same rule. Runs when the focus or the viewport changes, not every frame; no

@@ -4,8 +4,6 @@ uniform vec3 uSkyTop;
 uniform vec3 uSkyHorizon;
 uniform vec3 uMoonBack;
 uniform vec3 uMoonBody;
-uniform sampler2D uMoonMap;
-uniform float uMoonMapOn;
 
 in vec3 vRay;
 out vec4 outColor;
@@ -36,7 +34,6 @@ float moonFace(vec2 q, float px) {
     float d = length(q - c) / r;
     tone += 0.09 * smoothstep(0.18, 0.0, abs(d - 1.0)) - 0.05 * smoothstep(1.0, 0.6, d);
   }
-  if (uMoonMapOn > 0.5) tone = mix(tone, luma(texture(uMoonMap, q * 0.5 + 0.5).rgb) * 1.15, 0.85);
   float pitch = 0.05;
   float line = abs(fract((q.y + 0.18 * q.x * q.x) / pitch) - 0.5) * 2.0;
   float width = sat(1.0 - tone) * 1.4;

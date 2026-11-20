@@ -38,8 +38,6 @@ export interface FlowerOptions {
   env: { readonly state: { readonly reduced: boolean } };
   /** Slot yaw in radians, plus turns the right edge toward the camera; focus turns it to face the camera. */
   hinge: number;
-  /** QUAD_FLAG.turn when the flower stands as a standee (quadflags.ts turnFlag), else 0 or left out. */
-  turn?: number;
   /** Free roam: the visitor's [x, z], read every frame (left out or null: no visitor). */
   visitor?: ArrayLike<number> | null;
 }
@@ -87,7 +85,7 @@ export function createFlower(o: FlowerOptions): GardenFlower {
   const frames = bloom.frames ?? [];
   const quads = bloom.mode === 'petals' ? petals.length : 1;
   const swayPhase = (slot.world[0] * 1.37) % (2 * Math.PI);
-  const phase = o.turn === undefined || o.turn === 0 ? swayPhase : packPhase(swayPhase, o.turn);
+  const phase = packPhase(swayPhase, 0);
   let focused = false;
   let visited = false;
   let pose = rest;

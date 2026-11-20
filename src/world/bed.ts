@@ -54,8 +54,6 @@ export interface StreamBedCtx extends BedCtx {
 export interface BedEnv {
   gfx: Gfx; machine: Machine; rig: GardenRig; light: LightRig; quality: Quality; content: Content; kit: StreamKit;
   shared(): BuildAtlas | null; memory: GardenMemory;
-  /** The back wall's z (garden.json ground.wall.z). */
-  wallZ: number;
   /** Free roam: the visitor's [x, z] (pets and project flowers notice it), else null. */
   visitor: Float32Array | null;
 }
@@ -220,7 +218,7 @@ export class StreamBed implements Bed {
     };
     const boss = this.bosses?.bossOf(this.id);
     const out = buildBed({
-      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, mode: worldMode(), wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
+      scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, mode: worldMode(), bed: { manifest: m, tex }, shared,
       slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine, visitor: env.visitor, createBatch,
       owned: boss === undefined ? [] : this.bosses?.MOTIONS[boss.motion]?.owns ?? [],
     });

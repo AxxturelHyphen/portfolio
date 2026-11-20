@@ -72,7 +72,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
   const layout = content.garden as WorldLayout;
   const memory = createMemory();
   let shared: BuildAtlas | null = null;
-  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit, shared: () => shared, memory, wallZ: layout.ground.wall.z, visitor: roam?.pos ?? null };
+  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit, shared: () => shared, memory, visitor: roam?.pos ?? null };
   const ground = buildGround(layout.ground, layout.order.map((b) => SCENES[b]), d.quality.tier);
   const beds = new Map<BedId, StreamBed>();
   const list: StreamBed[] = [];
@@ -198,12 +198,12 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     };
     if (worldMode() === 'roam') addClosed(manifest, batchOn);
     else addBatch(writeWall(ground, layout.ground.wall.z, manifest, batchOn), RENDER_ORDER.overview - 1);
-    const clumps = writeClumps(ground, layout.ground.wall.z, manifest, batchOn);
+    const clumps = writeClumps(ground, manifest, batchOn);
     if (clumps !== null) {
       clumps.mesh.renderOrder = RENDER_ORDER.bed - 1;
       gfx.scene.add(clumps.mesh);
     }
-    const dressing = writeDressing(ground, layout.ground.wall.z, manifest, batchOn);
+    const dressing = writeDressing(ground, manifest, batchOn);
     if (dressing !== null) {
       dressing.mesh.renderOrder = RENDER_ORDER.near;
       gfx.scene.add(dressing.mesh);

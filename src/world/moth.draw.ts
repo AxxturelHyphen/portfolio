@@ -29,7 +29,7 @@ export function createMothDraw(): MothDraw {
   const tint = new Float32Array([MOTH_LOOK.tint[0], MOTH_LOOK.tint[1], MOTH_LOOK.tint[2], 1]);
   const leftUV = new Float32Array(4);
   const rightUV = new Float32Array(4);
-  const phase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow | QUAD_FLAG.turn | QUAD_FLAG.fullRate);
+  const phase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow | QUAD_FLAG.fullRate);
   const left: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 1, py: 0.5, uv: leftUV, sway: 0, phase, lift: 0, facing: 0, tint };
   const right: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0.5, uv: rightUV, sway: 0, phase, lift: 0, facing: 0, tint };
   let writer: InstanceWriter | null = null;
