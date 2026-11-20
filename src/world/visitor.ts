@@ -4,12 +4,12 @@
  * Once it is in, on a step, the paper figure of world/puppet.ts takes its place and carries the lantern by a short
  * handle in its fist. Either way the lantern swings like a pendulum, bobs on twos while walking and casts a soft shadow
  * straight below; its flame is lamp 0 (world/lamps.ts). One actor batch drawn after every cutout with a depth test,
- * so the visitor passes behind what stands nearer the lens. The crook and handle are a solid patch tinted near black:
- * no new program. Nothing is allocated per frame.
+ * so the visitor passes behind what stands nearer the lens, laid on a card facing the camera as it orbits. The crook
+ * and handle are a solid patch tinted near black: no new program. Nothing is allocated per frame.
  */
 import type { Clock, InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
 import { ROAM, follow } from '../core/motion.ts';
-import { createGait, createPuppet, FIGURE, SLOT, stepGait, type FigureRects, type Puppet } from './puppet.ts';
+import { createGait, createPuppet, FIGURE, mirrorOf, SLOT, stepGait, type FigureRects, type Puppet } from './puppet.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export const LANTERN = {
@@ -56,7 +56,7 @@ const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 /** The pendulum: length to the centre of mass (m), gravity, damping (1/s), how much of the walk's push it feels, clamp. */
 export const PENDULUM = { lengthM: 0.3, g: 9.81, damping: 2, gain: 0.15, maxRad: 0.35, velTauS: 0.05, maxStepS: 1 / 120 } as const;
 
-/** Swing state from the hand's x motion (screen and world x agree: the roam camera's yaw is fixed). */
+/** Swing state from the hand's x motion on the card facing the camera (screen x, whatever the camera's yaw). */
 export interface Pendulum { angle: number; spin: number; hand: number; vel: number }
 
 export function createPendulum(): Pendulum {
@@ -114,8 +114,8 @@ export interface VisitorLantern {
   attachFigure(rects: FigureRects, lantern: SpriteRect, handle: SpriteRect, show: () => void): void;
   /** The viewport (CSS px): portrait screens get the smaller lantern and figure. */
   resize(w: number, h: number): void;
-  /** Stage 'camera', before the light: follows the visitor at `pos` [x, z]. */
-  frame(c: Clock, reduced: boolean): void;
+  /** Stage 'camera', before the light: follows the visitor at `pos` [x, z], seen from a camera at `yaw` (radians). */
+  frame(c: Clock, reduced: boolean, yaw?: number): void;
 }
 
 /** Instances in the actor batch with the figure (shadow, body, handle, lantern), and before it: shaft, hook, lantern. */
@@ -130,12 +130,12 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   const crookTint = new Float32Array([CROOK.tint[0], CROOK.tint[1], CROOK.tint[2], 1]);
   const patch = new Float32Array(4);
   const lamp: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: [0, 0, 1, 1], sway: 0, lift: 0, facing: 0, tint: lanternTint,
-    phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.turn | QUAD_FLAG.hung) };
+    phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.hung) };
   const stick: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: patch, sway: 0, lift: 0, facing: 0, tint: crookTint, phase: 0 };
   const shaftPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette);
   const hookPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
   /** In the hand the lantern casts no patch of its own: the one shadow on the ground is the figure's, under the soles. */
-  const heldPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.turn | QUAD_FLAG.hung | QUAD_FLAG.noShadow);
+  const heldPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.hung | QUAD_FLAG.noShadow);
   const gait = createGait();
   const flameEase = new Float32Array(3);
   let writer: InstanceWriter | null = null;
@@ -157,6 +157,21 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   let side = 1;
   let figureSide = 1;
   let armSway = 0;
+  /** The card facing the camera: the ground point it turns about, the camera's yaw, and the flame's x on it. */
+  let groundX = 0;
+  let groundZ = 0;
+  let yaw = 0;
+  let cosY = 1;
+  let sinY = 0;
+  let flameCardX = 0;
+
+  /** Lays a quad written on the card (its x as world x under an unturned camera, at the ground z) toward the camera. */
+  function lay(q: QuadParams): void {
+    const u = q.x - groundX;
+    q.x = groundX + cosY * u;
+    q.z = groundZ + sinY * u;
+    q.facing = -yaw;
+  }
 
   /** Writes one crook segment from world (ax, ay) to (bx, by) in the plane z. */
   function piece(i: number, ax: number, ay: number, bx: number, by: number, width: number, z: number, phase: number): void {
@@ -167,6 +182,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     stick.h = Math.hypot(bx - ax, by - ay) + width * 0.5;
     stick.rot = Math.atan2(-(bx - ax), by - ay);
     stick.phase = phase;
+    lay(stick);
     writer!.set(i, stick);
   }
 
@@ -183,9 +199,10 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     const s = Math.sin(pendulum.angle);
     const co = Math.cos(pendulum.angle);
     const below = 1 - LANTERN.flameOfHeight;
-    flame[0] = hx + s * height * below;
+    flameCardX = hx + s * height * below;
+    flame[0] = groundX + cosY * (flameCardX - groundX);
     flame[1] = hy - co * height * below;
-    flame[2] = z;
+    flame[2] = z + sinY * (flameCardX - groundX);
     if (writer === null) return;
     lamp.w = plateW * scale;
     lamp.h = height;
@@ -193,6 +210,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     lamp.y = hy - co * height;
     lamp.z = z;
     lamp.rot = pendulum.angle;
+    lay(lamp);
     writer.set(i, lamp);
   }
 
@@ -231,15 +249,14 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   /** The figure carrying the lantern by a short handle from its fist: the handle and lantern swing about the hand. */
   function figureFrame(c: Clock, reduced: boolean, still: boolean, x: number, z: number, tick: number): void {
     const p = puppet!;
-    stepGait(gait, c.t, c.dt, groundVx, gaitVz, c.frozen, reduced);
+    stepGait(gait, c.t, c.dt, groundVx, gaitVz, c.frozen, reduced, yaw);
     if (still || tick !== lastTick) {
       figureSide = carrySide(x, z);
       const turn = (HELD.armFollow * pendulum.angle) / DEG;
       armSway = still ? 0 : Math.max(-HELD.armMaxDeg, Math.min(HELD.armMaxDeg, turn));
     }
-    const mirror = gait.view === 'side' ? gait.dir : figureSide;
     const k = wide ? 1 : FIGURE.portraitK;
-    p.place(gait, x, z, k, mirror, armSway);
+    p.place(gait, x, z, k, mirrorOf(gait, figureSide), armSway, yaw);
     const gx = p.grip[0]!;
     const gy = p.grip[1]!;
     stepPendulum(pendulum, gx, c.dt, still);
@@ -249,7 +266,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     const w = writer!;
     piece(SLOT.handle, gx, gy, hx, hy, CROOK.hookW * (scale / LANTERN.scaleWide), z, hookPhase);
     hang(SLOT.lantern, hx, hy, z);
-    p.halo(flame[0]!, flame[1]!);
+    p.halo(flameCardX, flame[1]!);
     p.write(w);
     for (let i = 0; i < 3; i++) {
       flameEase[i] = still ? 0 : follow(flameEase[i]!, 0, HELD.flameTauS, c.dt);
@@ -312,9 +329,16 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
       const held = shown ? HELD : LANTERN;
       scale = wide ? held.scaleWide : held.scaleTall;
     },
-    frame(c, reduced) {
+    frame(c, reduced, cameraYaw = 0) {
       const x = pos[0]!;
       const z = pos[1]!;
+      groundX = x;
+      groundZ = z;
+      if (cameraYaw !== yaw) {
+        yaw = cameraYaw;
+        cosY = Math.cos(yaw);
+        sinY = Math.sin(yaw);
+      }
       const still = reduced || c.frozen;
       const tick = Math.floor(c.t * FIGURE.fps);
       const fresh = Number.isNaN(lastX) || c.dt <= 0;

@@ -248,7 +248,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     roam?.follow(c);
     rig.update(c, s, machine.ch);
     gfx.setPose(rig.pose);
-    lantern?.frame(c, s.reduced);
+    lantern?.frame(c, s.reduced, rig.pose.yaw);
     mothDrive?.frame(c, s.reduced);
     light.update(c, s, machine.ch, rig);
     moth.update(c, s, machine.ch, light, slots);

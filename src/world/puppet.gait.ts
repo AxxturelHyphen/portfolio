@@ -1,5 +1,6 @@
 /**
- * The figure's gait (cook/FIGURE_BUILD.md 4), stepped on the 12 fps tick: the views and their turns, the walk cycle
+ * The figure's gait (cook/FIGURE_BUILD.md 4), stepped on the 12 fps tick: the eight directions and the turns between
+ * them, the walk cycle
  * advanced by distance walked, the crouch before the first stride, the settling step and the landing dip after the
  * last, the weight of the body (a lean into speed and its changes, a bank into turns seen from behind) and the life of
  * a figure standing still: a breath, a glance either way and, after six seconds, the lantern lifted to look about.
@@ -13,8 +14,11 @@ export const GAIT = {
   fps: 12, strideM: 0.21,
   /** Under walkFrom (m/s) for idleAfterS the figure stands. */
   walkFrom: 0.3, idleAfterS: 0.25,
-  /** Heading counts above viewFrom (m/s): profile past sideOnDeg from north, back under backOnDeg. */
-  viewFrom: 0.25, sideOnDeg: 62.5, backOnDeg: 47.5,
+  /**
+   * Heading counts above viewFrom (m/s). The direction drawn is one of eight 45-degree sectors of the heading against
+   * the camera's yaw; the sector changes only past its edge by hysteresisDeg, so it never flickers at a boundary.
+   */
+  viewFrom: 0.25, hysteresisDeg: 10,
   /** The slow idle shift: every shiftMinS plus up to shiftSpanS seconds, torso turn and root sway. */
   shiftMinS: 4.5, shiftSpanS: 2, shiftDeg: 1.5, shiftM: 0.008,
 } as const;
@@ -44,33 +48,56 @@ export const DIP = [0, -0.003, 0.008, 0.016] as const;
 /** Ticks of the crouch before the first stride, and of the settling step between the last stride and standing. */
 const CUE_TICKS = 1;
 const SETTLE_TICKS = 2;
-/**
- * The turn between views, by ticks left (index 0: no turn): torso and arm width shares. On the first tick the old view
- * narrows; the view swaps on the second, drawn edge-on, and opens out on the third.
- */
-export const TURN = { ticks: 3, swapAt: 2, torso: [1, 0.8, 0.45, 0.62], arm: [1, 0.85, 0.6, 0.75] } as const;
 const DEG = Math.PI / 180;
+const SECTOR = Math.PI / 4;
 
 export type View = 'back' | 'side';
+/**
+ * The eight directions, by the heading against the camera's yaw, clockwise from walking away from the lens: back,
+ * back right, right, front right, front, front left, left, back left. Each is drawn from the art of a view (the front
+ * and the back diagonals from the back view, the front diagonals from the profile) turned toward `dir` on screen.
+ */
+export const OCTANTS: readonly { readonly view: View; readonly dir: number }[] = [
+  { view: 'back', dir: 1 }, { view: 'back', dir: 1 }, { view: 'side', dir: 1 }, { view: 'side', dir: 1 },
+  { view: 'back', dir: -1 }, { view: 'side', dir: -1 }, { view: 'side', dir: -1 }, { view: 'back', dir: -1 },
+];
 
 /**
- * Gait state. Drawn: view, side, pose, idle, ticks left of a turn, of the settling step, of the crouch and of the
- * landing dip, the idle shift, lean and bank (degrees), breath (-1..1), look (-1 free side..1 carrying side) and lift
- * (0..1). Inputs: the wanted view and side, the last tick, distance since the last pose, seconds slow and standing,
+ * Gait state. Drawn: the direction (octant) with its view and screen side, pose, idle, ticks left of the settling
+ * step, of the crouch and of the landing dip, the idle shift, lean and bank (degrees), breath (-1..1), look (-1 free
+ * side..1 carrying side) and lift (0..1). Inputs: the heading (radians, 0 walking north, positive toward +x), the
+ * wanted octant and the way to turn to it, the last tick, distance since the last pose, seconds slow and standing,
  * the idle shifts, and the last speed, sideways speed and their smoothed changes. Out: steps, the footfalls so far
  * (a contact pose, the settling step, or in reduced motion every two stride shares), read by the footstep sound.
  */
 export interface Gait {
-  view: View; dir: number; pose: number; idle: boolean; turn: number; settle: number; cue: number; dip: number; shift: number;
+  oct: number; view: View; dir: number; pose: number; idle: boolean; settle: number; cue: number; dip: number; shift: number;
   lean: number; bank: number; breath: number; look: number; lift: number;
-  wantView: View; wantDir: number; tick: number; travelled: number; slowS: number; idleS: number; shifts: number; shiftAt: number;
+  heading: number; wantOct: number; spin: number; tick: number; travelled: number; slowS: number; idleS: number; shifts: number; shiftAt: number;
   speed: number; vx: number; accel: number; accelX: number; steps: number;
 }
 
 export function createGait(): Gait {
-  return { view: 'back', dir: 1, pose: 0, idle: true, turn: 0, settle: 0, cue: 0, dip: 0, shift: 0, lean: 0, bank: 0, breath: 0, look: 0,
-    lift: 0, wantView: 'back', wantDir: 1, tick: NaN, travelled: 0, slowS: GAIT.idleAfterS, idleS: 0, shifts: 0, shiftAt: shiftInterval(0), speed: 0, vx: 0,
-    accel: 0, accelX: 0, steps: 0 };
+  return { oct: 0, view: 'back', dir: 1, pose: 0, idle: true, settle: 0, cue: 0, dip: 0, shift: 0, lean: 0, bank: 0, breath: 0, look: 0,
+    lift: 0, heading: 0, wantOct: 0, spin: 1, tick: NaN, travelled: 0, slowS: GAIT.idleAfterS, idleS: 0, shifts: 0, shiftAt: shiftInterval(0),
+    speed: 0, vx: 0, accel: 0, accelX: 0, steps: 0 };
+}
+
+/** Shows octant `oct` (0..7): its view and screen side. */
+export function face(g: Gait, oct: number): void {
+  g.oct = oct;
+  g.view = OCTANTS[oct]!.view;
+  g.dir = OCTANTS[oct]!.dir;
+}
+
+/**
+ * The puppet's mirroring for the octant drawn, given the carrying hand's screen side seen from behind (`hand`): the
+ * back views keep it, the front is the back art turned round (the carrying hand on the other side) and the profiles
+ * face their way.
+ */
+export function mirrorOf(g: Gait, hand: number): number {
+  if (g.view === 'side') return g.dir;
+  return g.oct === 4 ? -hand : hand;
 }
 
 /** Seconds to the next idle shift: a fixed hash of the shift count, never Math.random, so stills repeat. */
@@ -79,16 +106,19 @@ function shiftInterval(n: number): number {
   return GAIT.shiftMinS + GAIT.shiftSpanS * (h - Math.floor(h));
 }
 
+/** `a` wrapped into (-half, half]. */
+const wrap = (a: number, half: number): number => a - 2 * half * Math.ceil((a - half) / (2 * half));
+
 /**
- * The wanted view from a heading phi (radians, 0 walking away from the lens): back, with 15 degrees of hysteresis, or
- * profile. The profile faces the sign of vx while the walk is sideways (under 180 - backOnDeg from north); walking
- * south toward the lens keeps the side of the last sideways movement, so the figure never walks backward.
+ * The wanted octant for the heading seen from a camera at `yaw` (radians, positive toward +x): the nearest sector, kept
+ * until the angle leaves the wanted one by its half width plus GAIT.hysteresisDeg. `spin` is the way round to it.
  */
-function desire(g: Gait, phi: number, vx: number): void {
-  const a = Math.abs(phi) / DEG;
-  const back = g.wantView === 'back' ? a <= GAIT.sideOnDeg : a < GAIT.backOnDeg;
-  g.wantView = back ? 'back' : 'side';
-  if (!back && a < 180 - GAIT.backOnDeg) g.wantDir = Math.sign(vx) || g.wantDir;
+function desire(g: Gait, yaw: number): void {
+  const a = wrap(g.heading - yaw, Math.PI) / SECTOR;
+  const off = wrap(a - g.wantOct, 4);
+  if (Math.abs(off) > 0.5 + (GAIT.hysteresisDeg * DEG) / SECTOR) g.wantOct = (Math.round(a) + 8) % 8;
+  const toShown = wrap(a - g.oct, 4);
+  if (toShown !== 0) g.spin = Math.sign(toShown);
 }
 
 const clamp = (v: number, m: number): number => (v > m ? m : v < -m ? -m : v);
@@ -133,20 +163,20 @@ function rest(g: Gait): void {
  * 12 fps tick floor(t * 12) moves. Frozen time gives the pose for the heading and speed at once (idle or the first
  * pose of the view, leaning with the speed); reduced motion keeps one standing pose with no cycle, turn or life.
  */
-export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number, frozen: boolean, reduced: boolean): void {
+export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number, frozen: boolean, reduced: boolean, yaw = 0): void {
   const speed = Math.hypot(vx, vz);
-  if (speed > GAIT.viewFrom) desire(g, Math.atan2(vx, -vz), vx);
+  if (speed > GAIT.viewFrom) g.heading = Math.atan2(vx, -vz);
   feel(g, dt, vx, speed);
   g.slowS = speed < GAIT.walkFrom ? g.slowS + dt : 0;
   const standing = frozen ? speed < GAIT.walkFrom : g.slowS >= GAIT.idleAfterS;
   g.idleS = standing ? g.idleS + dt : 0;
-  if (standing && g.wantView === 'side') g.wantView = 'back';
+  /** Standing, the figure faces the garden, away from the lens's rest bearing. */
+  if (standing) g.heading = 0;
+  desire(g, yaw);
   if (frozen) {
-    g.view = g.wantView;
-    g.dir = g.wantDir;
+    face(g, g.wantOct);
     g.idle = standing || reduced;
     g.pose = 0;
-    g.turn = 0;
     rest(g);
     if (!g.idle) g.lean = (LEAN.speedDeg * Math.min(speed, ROAM.speed)) / ROAM.speed;
     return;
@@ -160,7 +190,7 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
       g.steps++;
       g.travelled = Math.min(g.travelled - 2 * GAIT.strideM, GAIT.strideM);
     }
-    turnStep(g, true);
+    face(g, g.wantOct);
     g.idle = true;
     g.pose = 0;
     g.settle = 0;
@@ -179,7 +209,7 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
     g.cue = 0;
     if (g.settle > 0) return;
   }
-  turnStep(g, false);
+  turnStep(g);
   if (standing) stand(g);
   else stride(g);
 }
@@ -223,15 +253,16 @@ function stride(g: Gait): void {
   }
 }
 
-/** A tick of the turn: starts one when the wanted view or side differs, swaps the view halfway; reduced swaps at once. */
-function turnStep(g: Gait, reduced: boolean): void {
-  const differs = g.view !== g.wantView || (g.wantView === 'side' && g.dir !== g.wantDir);
-  if (g.turn > 0) g.turn--;
-  if (g.turn === 0 && differs && !reduced) g.turn = TURN.ticks;
-  if (differs && g.turn <= TURN.swapAt) {
-    g.view = g.wantView;
-    g.dir = g.wantDir;
-  }
+/**
+ * A tick of the turn: one octant toward the wanted one the short way round (`spin` when it lies opposite), so a turn
+ * shows the directions between as stepped poses; a half turn takes its first two octants at once, so a turn never
+ * holds more than two poses between.
+ */
+function turnStep(g: Gait): void {
+  const ahead = (g.wantOct - g.oct + 8) % 8;
+  if (ahead === 0) return;
+  const way = ahead === 4 ? g.spin : ahead < 4 ? 1 : -1;
+  face(g, (g.oct + way * (ahead === 4 ? 2 : 1) + 8) % 8);
 }
 
 /** The pose the gait shows. */

@@ -1,16 +1,16 @@
 /**
  * The visitor's figure (cook/FIGURE_BUILD.md 4): a paper-cut puppet from the roam atlas, pinned part to part like a toy
  * theatre figure, who carries the lantern by its handle. The gait (world/puppet.gait.ts) advances on the 12 fps tick by
- * distance walked (one pose per stride share, at most one per tick), so the feet change only on steps. Two views: back
- * (walking away, standing) and side (walking east or west, mirrored for west); walking south toward the lens keeps the
- * side of the last sideways movement, a figure carried downstage in profile. A view change is a turn over three ticks
- * (a quarter second): the old view narrows, the new one shows edge-on, then opens out, like a cutout being turned by
+ * distance walked (one pose per stride share, at most one per tick), so the feet change only on steps. Eight
+ * directions against the camera's yaw, from two views of art: the back (walking away and standing; turned round, the
+ * front) and the profile (mirrored for the other side); the diagonals are those views squashed and turned toward the
+ * heading. A change of direction steps through the directions between on the ticks, like a cutout being turned by
  * hand. Over the pose lie the gait's weight and life: the torso leans and breathes, the head glances, the carrying arm
- * lifts the lantern. The hierarchy is solved on the CPU into preallocated quads, re-grounded so the lowest sole always stands on the ground
- * plane. Nothing is allocated per frame.
+ * lifts the lantern. The hierarchy is solved on the CPU into preallocated quads, re-grounded so the lowest sole always
+ * stands on the ground plane, and laid on a card facing the camera. Nothing is allocated per frame.
  */
 import type { InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
-import { DIP, GAIT, LIFE, poseOf, TURN, type Gait } from './puppet.gait.ts';
+import { DIP, GAIT, LIFE, poseOf, type Gait } from './puppet.gait.ts';
 import { PINS, PIVOTS, REST, type FigureRects } from './puppet.poses.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
@@ -40,8 +40,17 @@ export const FIGURE = {
   pagePx: 512,
 } as const;
 
+/**
+ * The diagonals, drawn from the nearest view's art. Back diagonal: the back view narrowed to backTorso, the sleeve on
+ * the far side to farArm, the body shifted shiftM (m) toward the heading, the head headM (m) toward it, narrowed to
+ * headK and tipped turnDeg. Front diagonal: the profile widened to frontTorso, its swings foreshortened to swing, the
+ * hips hipK times further apart and the head forward by headFwd of the profile's.
+ */
+export const DIAG = { backTorso: 0.86, farArm: 0.8, shiftM: 0.008, headM: 0.016, headK: 0.9, turnDeg: 2, frontTorso: 1.16, swing: 0.7,
+  hipK: 2.2, headFwd: 0.5 } as const;
+
 export { FIGURE_SPRITES, PINS, PIVOTS, type FigureRects } from './puppet.poses.ts';
-export { createGait, poseOf, stepGait, type Gait, type View } from './puppet.gait.ts';
+export { createGait, mirrorOf, poseOf, stepGait, type Gait, type View } from './puppet.gait.ts';
 
 const DEG = Math.PI / 180;
 /**
@@ -73,17 +82,17 @@ const SIDE_ORDER = [S.FreeHand, S.FreeArm, S.ShinA, S.ThighA, S.ShinB, S.ThighB,
 export const SLOT = { shadow: 0, handle: 12, lantern: 13, count: 14 } as const;
 
 export interface Puppet {
-  /** The carrying hand's grip in world x, y (m), after place(). */
+  /** The carrying hand's grip on the card (x as world x under an unturned camera, y), after place(). */
   readonly grip: Float32Array;
   /** The written quads by slot (tests read them back). */
   readonly quads: readonly QuadParams[];
   /**
    * Solves the figure for the gait at ground point (x, z), scale k, mirrored when `mirror` is -1; `carryDeg` turns the
-   * carrying arm with the lantern's swing (world degrees, counter-clockwise).
+   * carrying arm with the lantern's swing (degrees, counter-clockwise). The card faces a camera at `yaw` (radians).
    */
-  place(g: Gait, x: number, z: number, k: number, mirror: number, carryDeg?: number): void;
+  place(g: Gait, x: number, z: number, k: number, mirror: number, carryDeg?: number, yaw?: number): void;
   /**
-   * Centres the halo on the flame at world (x, y), after place(): the carrier's quad keeps its foot at the ground point,
+   * Centres the halo on the flame at card (x, y), after place(): the carrier's quad keeps its foot at the ground point,
    * so its shadow stays under the soles, and its paper is shifted by the pivot.
    */
   halo(x: number, y: number): void;
@@ -112,6 +121,11 @@ export function createPuppet(rects: FigureRects): Puppet {
   const pin = new Float32Array(2);
   const corner = [0, 0];
   let k = 1;
+  let cosY = 1;
+  let sinY = 0;
+  let facing = 0;
+  /** The shadow's x on the card, before it is laid toward the camera. */
+  let shadowCardX = 0;
 
   /** World point (canonical) of a sprite fraction (fx, fy) on a placed part, into `pin`. */
   function pinOf(p: Part, f: readonly number[]): Float32Array {
@@ -171,12 +185,19 @@ export function createPuppet(rects: FigureRects): Puppet {
     set(h, pin[0]!, pin[1]!, arm.a / DEG, 1, 1, arm.flip);
     h.far = true;
   }
-  function place(g: Gait, x: number, z: number, scale: number, mirror: number, carryDeg = 0): void {
+  function place(g: Gait, x: number, z: number, scale: number, mirror: number, carryDeg = 0, yaw = 0): void {
     k = scale;
+    cosY = Math.cos(yaw);
+    sinY = Math.sin(yaw);
+    facing = -yaw;
     const p = poseOf(g);
     const side = g.view === 'side';
-    const torsoW = TURN.torso[g.turn]! * (side ? FIGURE.sideTorso : 1) * FIGURE.torsoW;
-    const armW = TURN.arm[g.turn]! * FIGURE.armSlim;
+    const diag = g.oct % 2 === 1;
+    /** The diagonal's turn on the card: toward the heading's screen side, in the puppet's unmirrored frame. */
+    const toward = diag && !side ? g.dir * mirror : 0;
+    const swing = diag && side ? DIAG.swing : 1;
+    const torsoW = (side ? FIGURE.sideTorso * (diag ? DIAG.frontTorso : 1) : diag ? DIAG.backTorso : 1) * FIGURE.torsoW;
+    const armW = FIGURE.armSlim;
     const armDrop = FIGURE.armDropM * k;
     const lift = g.lift * LIFE.liftDeg;
     const torso = parts[S.Torso]!;
@@ -184,33 +205,37 @@ export function createPuppet(rects: FigureRects): Puppet {
     const sway = side ? 0 : Math.sign(p.footA - p.footB) * FIGURE.hipSwayM;
     const lean = side ? -g.lean : -g.bank * mirror;
     const drop = (p.drop + DIP[g.dip]!) * k;
-    set(torso, (g.shift * FIGURE.shiftM + sway) * k, restL * k - drop, p.torso + g.shift * FIGURE.shiftDeg + lean, torsoW,
-      1 + g.breath * LIFE.breathK, false);
+    set(torso, (g.shift * FIGURE.shiftM + sway + toward * DIAG.shiftM) * k, restL * k - drop, p.torso + g.shift * FIGURE.shiftDeg + lean,
+      torsoW, 1 + g.breath * LIFE.breathK, false);
     pinOf(torso, PINS.neck);
-    const fwd = side ? 1 : 0;
+    const fwd = side ? (diag ? DIAG.headFwd : 1) : 0;
     /**
      * The neckerchief on the smock's collar, the bare head above it on its neck, from behind and in profile; the head
      * takes half the lean and, glancing, turns on its pin toward the look.
      */
     const look = side ? 0 : g.look;
     set(parts[S.Scarf]!, pin[0]!, pin[1]!, torso.a / DEG, torsoW, 1, false);
-    set(parts[S.Head]!, pin[0]! + (fwd * FIGURE.headFwdM + look * LIFE.lookM) * k, pin[1]! + FIGURE.headLiftM * k,
-      p.torso + p.head + lean * 0.5 - look * LIFE.lookDeg, 1 - Math.abs(look) * LIFE.lookNarrow, 1, false);
+    set(parts[S.Head]!, pin[0]! + (fwd * FIGURE.headFwdM + toward * DIAG.headM + look * LIFE.lookM) * k, pin[1]! + FIGURE.headLiftM * k,
+      p.torso + p.head + lean * 0.5 - look * LIFE.lookDeg - toward * DIAG.turnDeg, (1 - Math.abs(look) * LIFE.lookNarrow) * (toward === 0 ? 1 : DIAG.headK),
+      1, false);
     const freeArm = parts[S.FreeArm]!;
     const carryArm = parts[S.CarryArm]!;
     if (side) {
       pinOf(torso, PINS.sideShoulder);
       const sx = pin[0]!;
       const sy = pin[1]!;
-      set(freeArm, sx, sy - armDrop, REST.sideFree + p.free, armW, p.freeH, false);
+      set(freeArm, sx, sy - armDrop, REST.sideFree + p.free * swing, armW, p.freeH, false);
       set(carryArm, sx, sy - armDrop, REST.sideCarry + p.carry + lift + mirror * carryDeg, armW, FIGURE.carryH, false);
     } else {
-      const outL = FIGURE.armOut * freeArm.sprite.rect.size[0] * k * armW;
-      const outR = FIGURE.armOut * carryArm.sprite.rect.size[0] * k * armW;
+      /** On a back diagonal the sleeve on the side turned away narrows. */
+      const freeW = armW * (toward < 0 ? DIAG.farArm : 1);
+      const carryW = armW * (toward > 0 ? DIAG.farArm : 1);
+      const outL = FIGURE.armOut * freeArm.sprite.rect.size[0] * k * freeW;
+      const outR = FIGURE.armOut * carryArm.sprite.rect.size[0] * k * carryW;
       pinOf(torso, PINS.shoulderL);
-      set(freeArm, pin[0]! - outL, pin[1]! - armDrop, REST.freeArm - p.free, armW, p.freeH, true);
+      set(freeArm, pin[0]! - outL, pin[1]! - armDrop, REST.freeArm - p.free, freeW, p.freeH, true);
       pinOf(torso, PINS.shoulderR);
-      set(carryArm, pin[0]! + outR, pin[1]! - armDrop, REST.carryArm + p.carry + lift + mirror * carryDeg, armW, FIGURE.carryH, false);
+      set(carryArm, pin[0]! + outR, pin[1]! - armDrop, REST.carryArm + p.carry + lift + mirror * carryDeg, carryW, FIGURE.carryH, false);
     }
     hand(freeArm, parts[S.FreeHand]!, PINS.cuff);
     hand(carryArm, parts[S.CarryHand]!, PINS.cuffBent);
@@ -225,8 +250,9 @@ export function createPuppet(rects: FigureRects): Puppet {
       thighA.sprite = sprites.thighR;
       shinA.sprite = sprites.shinR;
       const hy = torso.y;
-      leg(thighA, shinA, PINS.kneeR, torso.x - FIGURE.hipM * k, hy, p.hipA, -p.kneeA, p.footA * k, rightBase);
-      leg(thighB, shinB, PINS.kneeR, torso.x + FIGURE.hipM * k, hy, p.hipB, -p.kneeB, p.footB * k, rightBase);
+      const hip = FIGURE.hipM * k * (diag ? DIAG.hipK : 1);
+      leg(thighA, shinA, PINS.kneeR, torso.x - hip, hy, p.hipA * swing, -p.kneeA * swing, p.footA * k, rightBase);
+      leg(thighB, shinB, PINS.kneeR, torso.x + hip, hy, p.hipB * swing, -p.kneeB * swing, p.footB * k, rightBase);
       thighA.far = true;
       shinA.far = true;
     } else {
@@ -244,9 +270,12 @@ export function createPuppet(rects: FigureRects): Puppet {
     grip[0] = x + mirror * grip[0]!;
     const order = side ? SIDE_ORDER : BACK_ORDER;
     for (let i = 0; i < order.length; i++) quadOf(parts[order[i]!]!, quads[1 + i]!, x, z, mirror);
-    shadow.x = x + mirror * torso.x;
+    const u = mirror * torso.x;
+    shadowCardX = x + u;
+    shadow.x = x + cosY * u;
     shadow.y = 0;
-    shadow.z = z;
+    shadow.z = z + sinY * u;
+    shadow.facing = facing;
     shadow.w = FIGURE.shadowW * k;
     shadow.h = shadow.w;
   }
@@ -254,9 +283,10 @@ export function createPuppet(rects: FigureRects): Puppet {
   function quadOf(p: Part, q: QuadParams, x: number, z: number, mirror: number): void {
     const { rect: r, px, py, size } = p.sprite;
     const flip = p.flip !== mirror < 0;
-    q.x = x + mirror * p.x;
+    q.x = x + cosY * mirror * p.x;
     q.y = p.y;
-    q.z = z;
+    q.z = z + sinY * mirror * p.x;
+    q.facing = facing;
     q.rot = mirror * p.a;
     q.w = r.size[0] * k * size * p.sx;
     q.h = r.size[1] * k * size * p.sy;
@@ -275,7 +305,7 @@ export function createPuppet(rects: FigureRects): Puppet {
     quads,
     place,
     halo(fx, fy) {
-      shadow.px = 0.5 - (fx - shadow.x) / shadow.w;
+      shadow.px = 0.5 - (fx - shadowCardX) / shadow.w;
       shadow.y = fy - shadow.h * 0.5;
     },
     write(w) {
