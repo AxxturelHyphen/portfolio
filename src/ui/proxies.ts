@@ -1,4 +1,5 @@
 import { GESTURE } from '../core/input.ts';
+import { coarsePointer } from '../core/quality.ts';
 import type { BedId, CameraRig, Machine, ProxyLayer, ScreenPt, SlotId, SlotView } from '../types.ts';
 import { LABEL_ID } from './label.ts';
 import { createPlan } from './plan.ts';
@@ -11,7 +12,7 @@ import { createMover, type Mover } from './xform.ts';
  * one <a> per link (only slots that lead somewhere are bound, world/scene.ts bindSlots), in the bed's slot order, then the two signposts of the current bed, then the garden plan
  * (ui/signposts.ts, ui/plan.ts). Tab order is DOM order. #proxies[data-phase] mirrors the phase for the CSS.
  * Each slot proxy is an ellipse sized to its hit area in world units at mount; sync() moves it by transform from the
- * rig's projection in stage 'dom', only when the rig or a slot's world point moved. Mouse hover and keyboard focus send FOCUS, leaving sends
+ * rig's projection in stage 'dom', only when the rig or a slot's world point moved, never under TOUCH_MIN_PX on a touch screen. Mouse hover and keyboard focus send FOCUS, leaving sends
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
  * Props and pets have no route: activating one dispatches `jardin:activate` (detail: the slot id); a prop travels to its
  * bed, a pet wakes and purrs. Neither opens the panel.
@@ -22,6 +23,8 @@ import { createMover, type Mover } from './xform.ts';
 
 /** Proxy boxes are laid out at this many CSS px per world unit; the transform scales them to the projection. */
 const PX_PER_UNIT = 100;
+/** On a touch screen no slot proxy shrinks under this many CSS px across (its narrower side), however far its flower. */
+const TOUCH_MIN_PX = 44;
 const ANNOUNCE_DELAY_MS = 100;
 
 export const ACTIVATE_EVENT = 'jardin:activate';
@@ -65,6 +68,8 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   let views: readonly SlotView[] = [];
   /** The world points the proxies were last placed at; a slot whose point moved (a pet walking) is placed again. */
   let world = new Float64Array(0);
+  /** Per slot, the smallest scale its proxy takes (touch screens only, else 0). */
+  let minScale = new Float64Array(0);
   let off: boolean[] = [];
   let dirty = false;
   let signsDirty = true;
@@ -243,6 +248,8 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       views = slots;
       world = new Float64Array(slots.length * 3);
       slots.forEach((v, i) => world.set(v.world, i * 3));
+      const touch = coarsePointer();
+      minScale = Float64Array.from(slots, (v) => (touch ? TOUCH_MIN_PX / (Math.min(v.hit[0], v.hit[1]) * PX_PER_UNIT) : 0));
       const title = bedTitles.get(bed) ?? bed;
       slotsGroup.setAttribute('aria-label', title);
       slotsGroup.replaceChildren(...nodes);
@@ -260,6 +267,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       off = [];
       views = [];
       world = new Float64Array(0);
+      minScale = new Float64Array(0);
     },
 
     sync(rig: CameraRig): void {
@@ -289,7 +297,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
             n.tabIndex = hidden && !roaming ? -1 : 0;
           }
         }
-        if (!hidden) movers[i]?.move(pt.x, pt.y, pt.scale / PX_PER_UNIT);
+        if (!hidden) movers[i]?.move(pt.x, pt.y, Math.max(pt.scale / PX_PER_UNIT, minScale[i] ?? 0));
       }
     },
 
