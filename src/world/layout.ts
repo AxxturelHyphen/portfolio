@@ -100,6 +100,9 @@ export interface Placement3 extends Placement {
   reflect?: { w: number; colour: [number, number, number] };
 }
 
+/** The most common item values: the build drops them from the bundled beds (scripts/beds.slim.ts), garden.ts fills them. */
+export const ITEM_DEFAULTS = { scale: 1, y: 0, hinge: 0, lean: 8, group: 'M', foot: 'none', shadow: true } as const satisfies Partial<Placement3>;
+
 export interface Layer3 extends Layer { items: Placement3[] }
 
 /** Slots carry a hinge too (the flower turns from it toward the camera on focus). */

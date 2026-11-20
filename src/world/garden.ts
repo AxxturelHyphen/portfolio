@@ -17,7 +17,7 @@ import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { writeWall } from './wall.ts';
 import { enclosureRuns, writeEnclosure } from './enclosure.ts';
 import { writeCrowns, writeHedge } from './crowns.ts';
-import type { BedScene3, WorldLayout } from './layout.ts';
+import { ITEM_DEFAULTS, type BedScene3, type WorldLayout } from './layout.ts';
 import { createMemory, type GardenMemory } from './memory.ts';
 
 /**
@@ -26,8 +26,16 @@ import { createMemory, type GardenMemory } from './memory.ts';
  * textures stream. The bed under the camera is entered once it is ready; its slots go to the proxy layer.
  */
 
+/** A bundled scene with the item values the build dropped (scripts/beds.slim.ts) filled back. */
+const filled = (s: unknown): BedScene3 => {
+  const scene = s as BedScene3;
+  return { ...scene, layers: scene.layers.map((l) => ({ ...l, items: l.items.map((it) => ({ ...ITEM_DEFAULTS, ...it })) })) };
+};
+
 /** Every scene file, keyed by bed. Adding a project is JSON only: projects bind to the slots of their bed. */
-export const SCENES: Readonly<Record<BedId, BedScene3>> = { puerta, rosaleda, estanque, semillero, gruta, salida } as unknown as Record<BedId, BedScene3>;
+export const SCENES: Readonly<Record<BedId, BedScene3>> = {
+  puerta: filled(puerta), rosaleda: filled(rosaleda), estanque: filled(estanque), semillero: filled(semillero), gruta: filled(gruta), salida: filled(salida),
+};
 
 /** Depth of the overview stand-in cards: the beds' middle band. */
 const OVERVIEW_Z = -2;

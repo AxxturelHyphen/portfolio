@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { bedsSlim } from './scripts/beds.slim.ts';
 import { creditsSlim } from './scripts/credits.slim.ts';
 import { glslMinify } from './scripts/glsl.ts';
 import { prerender } from './scripts/prerender.ts';
@@ -7,13 +8,14 @@ import { prerender } from './scripts/prerender.ts';
  * Relative base so the build runs from any path. three gets its own chunk (excluded from the app JS budget).
  * public/ is copied verbatim: atlases (.ktx2), the vendored Basis transcoder (public/basis/*.js, *.wasm), fonts, audio.
  * They are fetched at runtime by URL, never imported, so Vite neither hashes nor inlines them. Shaders ship minified
- * and packed (scripts/glsl.ts); the credits ship only the fields their view prints (scripts/credits.slim.ts). No
+ * and packed (scripts/glsl.ts); the credits ship only the fields their view prints (scripts/credits.slim.ts), the beds' items
+ * without unread fields and default values (scripts/beds.slim.ts). No
  * modulepreload polyfill: browsers without <link rel=modulepreload> still load every chunk, only without the preload.
  */
 export default defineConfig({
   base: './',
   publicDir: 'public',
-  plugins: [prerender(), glslMinify(), creditsSlim()],
+  plugins: [prerender(), glslMinify(), creditsSlim(), bedsSlim()],
   build: {
     target: 'es2022',
     assetsInlineLimit: 0,
