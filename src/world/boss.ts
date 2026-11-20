@@ -8,6 +8,7 @@
  * (world/boss.camera.ts), then rests in its idle loop. Reduced motion and frozen time land the end pose with no camera
  * moment; the low tier shows the end pose, still. A boss whose sprites the atlas lacks is quietly left out.
  */
+import { LessEqualDepth, type Material } from 'three';
 import type { BedId, Clock, CutoutBatch, InstanceWriter, Machine, QuadParams, SpriteId, SpriteRect } from '../types.ts';
 import { channelsSettled } from '../core/loop.ts';
 import { STEP_FPS } from '../core/motion.ts';
@@ -148,7 +149,10 @@ export function createChain(def: BossDef, sprites: Readonly<Record<SpriteId, Spr
   const angle = new Float64Array(n);
   const sx = new Float64Array(n);
   const sy = new Float64Array(n);
-  const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: rootRect.uv, sway: 0, phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow), lift: 0, facing: 0, tint: BOSS.tint };
+  /** Only the root, standing on the ground, lays a ground shadow; every part casts the lantern's. */
+  const ground = packPhase(0, QUAD_FLAG.noLean);
+  const hung = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow);
+  const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: rootRect.uv, sway: 0, phase: hung, lift: 0, facing: 0, tint: BOSS.tint };
 
   function solve(pose: BossPose): void {
     for (const i of order) {
@@ -193,6 +197,7 @@ export function createChain(def: BossDef, sprites: Readonly<Record<SpriteId, Spr
         q.px = p.pivot[0];
         q.py = 1 - p.pivot[1];
         q.uv = r.uv;
+        q.phase = i === root && pose.dy === 0 ? ground : hung;
         out.set(k, q);
       }
       out.count = n;
@@ -208,6 +213,8 @@ export interface BossKit {
   def: BossDef;
   sprites: Readonly<Record<SpriteId, SpriteRect>>;
   machine: Machine;
+  /** The visitor's [x, z] under free roam: the boss waits until it stands still. */
+  visitor: Float32Array | null;
   low: boolean;
   /** A cutout batch on an atlas page of the bed: the bed shows, reveals and frees it with its own. */
   batch(page: number, capacity: number): CutoutBatch;
@@ -222,10 +229,14 @@ export function createBoss(k: BossKit): Boss | null {
   if (motion === undefined) return null;
   const chain = motion.roles.length > 0 ? createChain(k.def, k.sprites) : null;
   if (motion.roles.length > 0 && chain === null) return null;
-  const writer = chain === null ? null : k.batch(chain.page, chain.count).writer;
+  const batch = chain === null ? null : k.batch(chain.page, chain.count);
+  // Drawn after the bed's own paper: the depth it wrote keeps what stands in front of the boss in front.
+  if (batch !== null) (batch.mesh.material as Material).depthFunc = LessEqualDepth;
+  const writer = batch?.writer ?? null;
   const run = createBossRun({ id: k.def.id, motion, fixed: k.low });
   let written = -1;
   let camera = false;
+  const seen = new Float32Array(2);
   let listen: AbortController | null = null;
 
   function hear(on: boolean): void {
@@ -249,8 +260,12 @@ export function createBoss(k: BossKit): Boss | null {
     get busy() { return run.busy; },
     update(c) {
       const s = k.machine.state;
-      const here = s.mode === 'garden' && s.bed === k.def.bed && (s.phase === 'bed' || s.phase === 'focus') && channelsSettled(k.machine);
+      const v = k.visitor;
+      const standing = v === null || (v[0] === seen[0] && v[1] === seen[1]);
+      if (v !== null) seen.set(v);
+      const here = s.mode === 'garden' && s.bed === k.def.bed && (s.phase === 'bed' || s.phase === 'focus') && channelsSettled(k.machine) && standing;
       run.step(c, here, c.frozen || s.reduced);
+      if (s.bed === k.def.bed) bossCamera.phase = run.phase;
       hear(run.phase === 'play');
       if (run.moment > 0 || camera) {
         bossCamera.amount = run.moment;

@@ -36,6 +36,8 @@ export interface TestApiDeps {
   strip(): number;
   /** How far the entered project's flower has unfurled in its bed, 0..1. */
   unfurl(): number;
+  /** The phase of the archive boss of the bed the visitor was last in ('wait', 'play', 'idle'), '' before any. */
+  boss(): string;
 }
 
 /** The visitor's position and test-only steering (the same calls a click on the ground and held keys make). */
@@ -132,6 +134,7 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
     figure: () => d.figure(),
     strip: () => d.strip(),
     unfurl: () => d.unfurl(),
+    boss: () => d.boss(),
     walkTo(x, z) {
       d.roam?.walkTo(x, z);
       loop.wake();

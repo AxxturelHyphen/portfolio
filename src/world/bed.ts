@@ -224,7 +224,7 @@ export class StreamBed implements Bed {
     });
     this.owned = out.owned;
     if (boss !== undefined && this.bosses !== null) {
-      this.boss = this.bosses.createBoss({ def: boss, sprites: m.sprites, machine: env.machine, low: env.quality.tier === 'low',
+      this.boss = this.bosses.createBoss({ def: boss, sprites: m.sprites, machine: env.machine, visitor: env.visitor, low: env.quality.tier === 'low',
         batch: (page, capacity) => createBatch('bed', page, capacity, false), own: (hidden) => this.own(hidden) });
     }
     this.flowers = out.flowers;

@@ -11,6 +11,8 @@ export const BOSS_CAMERA = { backM: 2.2, upM: 1.1, pitchRad: 0.07 } as const;
 export const bossCamera = {
   /** 0 at rest, 1 fully framed. */
   amount: 0,
+  /** The phase of the boss of the bed the visitor was last in, '' before any (the test API reads it). */
+  phase: '',
   shape(pose: RigPose): void {
     const k = this.amount;
     if (k === 0) return;

@@ -22,6 +22,7 @@ import { createWorkWalk } from '../ui/plan.walk.ts';
 import { createWelcome } from '../ui/welcome.ts';
 import { createMover } from '../ui/xform.ts';
 import type { BedId, ChannelName, Clock, CutoutBatch, Content, DebugParams, GardenLayout, Machine, Mode, Pose, ProjectId, SlotId, SlotView, State, Tier } from '../types.ts';
+import { bossCamera } from '../world/boss.camera.ts';
 import { createRig } from '../world/camera.ts';
 import { createGarden, SCENES } from '../world/garden.ts';
 import { createLight } from '../world/light.ts';
@@ -380,7 +381,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   if (testApiEnabled(q)) {
     installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam, figure: () => lantern?.figure === true,
       strip: () => gfx.film.uniforms.uStrip.value.w,
-      unfurl: () => (machine.state.bed === null ? 0 : garden.beds.get(machine.state.bed)?.unfurl() ?? 0) });
+      unfurl: () => (machine.state.bed === null ? 0 : garden.beds.get(machine.state.bed)?.unfurl() ?? 0), boss: () => bossCamera.phase });
   }
   return { quality, ready };
 }

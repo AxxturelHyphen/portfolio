@@ -2,7 +2,7 @@
   "id": "peacock",
   "bed": "estanque",
   "at": [20, 0, -5.3],
-  "scale": 5,
+  "scale": 3.2,
   "parts": [],
   "motion": "peacock"
 }

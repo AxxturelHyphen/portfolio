@@ -79,7 +79,7 @@ test('a missing sprite or a split page leaves the boss out, quietly', () => {
   expect(createChain(FIXTURE, { ...SPRITES, 'fx/leaf': rect(0.4, 0.2, 1) })).toBeNull();
   const machine = { state: {}, ch: {} } as unknown as Machine;
   let batches = 0;
-  const kit = { def: FIXTURE, sprites: noLeaf, machine, low: false, own: () => undefined, batch: () => { batches++; return {} as CutoutBatch; } };
+  const kit = { def: FIXTURE, sprites: noLeaf, machine, visitor: null, low: false, own: () => undefined, batch: () => { batches++; return {} as CutoutBatch; } };
   expect(createBoss(kit)).toBeNull();
   expect(batches).toBe(0);
 });
