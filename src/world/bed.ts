@@ -143,7 +143,7 @@ export class StreamBed implements Bed {
       if (!res.ok) throw new Error(`atlas ${this.id}: ${file} HTTP ${res.status}`);
       pageBytes.set(file, await res.arrayBuffer());
     }));
-    if (worldMode() === 'roam' && bossBeds.includes(this.id)) this.bosses = await import('./boss.load.ts');
+    if (worldMode() === 'roam' && bossBeds.includes(this.id)) await (this.bosses = await import('./boss.load.ts')).fetchBoss(this.id, signal);
     if (this.scene.behaviour !== undefined) {
       const load = behaviours[`./behaviours/${this.scene.behaviour}.ts`];
       if (load === undefined) throw new Error(`bed ${this.id}: no behaviour module "${this.scene.behaviour}"`);
