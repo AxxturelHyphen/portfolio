@@ -266,34 +266,14 @@
   background: var(--pencil);
 }
 
-/*
- * Phones: a short sheet across the bottom over the corner, the diorama over the work, its beds side by side; a status
- * shows its mark only, its word kept for screen readers.
- */
-@media (max-width: 44.99rem) {
+/* Phones, upright or on their side: the corner at its phone size, the line under the name on one line, the work by bed
+   in two balanced columns, a status showing its mark only (its word kept for screen readers). */
+@media (max-width: 44.99rem), (orientation: landscape) and (max-height: 30rem) {
   .pl-tag {
     width: 128px;
     height: 90px;
     padding: 0 0 10px 13px;
     font-size: 1.125rem;
-  }
-
-  .pl-sheet {
-    --bw: min(340px, calc(100vw - 48px));
-    left: 8px;
-    bottom: 66px;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    grid-template-areas: "head" "map" "title" "work";
-    width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-    padding: 12px 12px 14px;
-    transform-origin: 56px calc(100% + 40px);
-  }
-
-  .pl-map {
-    justify-self: center;
-    width: var(--bw);
-    height: calc(var(--bh) * 0.62 + 36px);
   }
 
   .pl-head {
@@ -309,8 +289,14 @@
   }
 
   .pl-work {
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    display: block;
+    column-count: 2;
     column-gap: 8px;
+  }
+
+  .pl-group {
+    padding-bottom: 4px;
+    break-inside: avoid;
   }
 
   .pl-group button {
@@ -326,29 +312,74 @@
   }
 }
 
-/* Phones on their side: the corner at its phone size and the card in its two columns, low enough to clear the tag band. */
-@media (orientation: landscape) and (max-height: 30rem) {
-  .pl-tag {
-    width: 128px;
-    height: 90px;
-    padding: 0 0 10px 13px;
-    font-size: 1.125rem;
-  }
-
+/* Upright phones: a short sheet across the bottom, just above the corner so the dog-ear covers none of it, the diorama over the work. */
+@media (max-width: 44.99rem) {
   .pl-sheet {
-    --bw: min(300px, calc(46vw - 40px));
-    bottom: 52px;
-    padding: 10px 12px 12px;
-    transform-origin: 56px calc(100% + 40px);
-  }
-
-  .pl-head {
-    margin-bottom: 4px;
-    padding-bottom: 4px;
+    --bw: min(280px, calc(100vw - 48px));
+    left: 8px;
+    bottom: 86px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "head" "map" "title" "work";
+    width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding: 10px 12px;
+    transform-origin: 56px calc(100% + 60px);
   }
 
   .pl-map {
+    justify-self: center;
+    width: var(--bw);
+    height: calc(var(--bh) * 0.62 + 32px);
+  }
+}
+
+/* Phones on their side: too short for the card above the corner, it opens beside it, clear of the tag band. Its box
+   still spans the corner so the plan's cover holds; the paper starts right of the dog-ear, the bare part lets taps through. */
+@media (orientation: landscape) and (max-height: 30rem) {
+  .pl-sheet {
+    --bw: clamp(220px, calc(100vw - 540px), 300px);
+    left: 0;
+    bottom: 8px;
+    grid-template-columns: var(--bw) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "head head" "map title" "map work";
+    column-gap: 12px;
+    width: calc(100vw - 8px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding: 10px 8px 10px 146px;
+    transform-origin: 136px 100%;
+  }
+
+  .pl-sheet::before {
+    left: 136px;
+  }
+
+  .pl[data-open] .pl-sheet {
+    pointer-events: none;
+  }
+
+  .pl-sheet::before,
+  .pl[data-open] .pl-sheet > * {
+    pointer-events: auto;
+  }
+
+  .pl-map {
+    justify-self: start;
+    align-self: end;
+    width: var(--bw);
     height: calc(var(--bh) * 0.62 + 44px);
+  }
+
+  .pl-work {
+    column-gap: 4px;
+  }
+
+  .pl-group button {
+    padding: 2px 22px 2px 12px;
+    font-size: 0.9375rem;
+  }
+
+  .pl-status {
+    right: 6px;
   }
 }
 
