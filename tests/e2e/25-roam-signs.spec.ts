@@ -3,7 +3,7 @@ import { enterRoam, roamAt, untilStill } from '../helpers/roam.ts';
 
 // Free roam's signboards (ui/signposts.ts): every plank on screen takes a click or a tap, not only the current place's
 // two, with the pointer cursor; the Tab order keeps only the current place's two signs. The press sends the sign's
-// GOTO (the same handler as the current signs, 20-roam-assist.spec.ts walks one).
+// GOTO (the same handler as the current signs, 20-roam-assist.spec.ts walks one). A plank pointing at the current place leads to the place it stands in.
 
 /** The Estanque stand point (x, m). */
 const ESTANQUE_X = 20;
@@ -23,8 +23,8 @@ test('roam signs: a plank of another place on screen takes the click or tap; Tab
     .map((n) => (n as HTMLElement).dataset['dir'] ?? 'board'));
   expect(tabbable.sort(), 'only the current place\'s two signs are in the Tab order').toEqual(['next', 'prev']);
 
-  const board = page.locator('#proxies .px-sign[data-board][data-bed="estanque"]:not([hidden])').first();
-  await expect(board, 'the Rosaleda plank pointing to the Estanque is on screen').toBeVisible();
+  const board = page.locator('#proxies .px-sign[data-board][data-bed="rosaleda"]:not([hidden])').first();
+  await expect(board, 'the Rosaleda plank pointing back here is on screen and leads to the Rosaleda').toBeVisible();
   const hit = await board.evaluate((n) => {
     const r = n.getBoundingClientRect();
     const x = r.x + r.width / 2;

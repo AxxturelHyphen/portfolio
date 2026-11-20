@@ -125,7 +125,11 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   function retarget(): void {
     const i = beds.findIndex((b) => b.id === current);
     const go = uiText(null, m.state.lang, 'sign.go');
-    for (const b of boards) letter(b, title(b.to), go);
+    for (const b of boards) {
+      const a = anchors[b.anchor];
+      if (a !== undefined) b.to = a.to === current ? a.bed : a.to;
+      letter(b, title(b.to), go);
+    }
     for (const s of signs) {
       const next = i < 0 ? undefined : beds[i + s.dir];
       s.to = i < 0 ? null : next !== undefined ? next.id : s.dir > 0 && i === beds.length - 1 ? 'cv' : null;
@@ -172,12 +176,12 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     s.mover.move(x < OFF_EDGE_PX ? OFF_EDGE_PX : x > maxX ? maxX : x, y < OFF_EDGE_PX ? OFF_EDGE_PX : y > maxY ? maxY : y, 1);
   }
 
-  /** Free roam: a board button over its board while the board is on screen and not one of the current place's two, nor one pointing at the current place (that click would go nowhere). */
+  /** Free roam: a board button over its board while the board is on screen and not one of the current place's two. A plank pointing at the current place leads to the place it stands in instead. */
   function show(b: Sign, rig: CameraRig): void {
     const a = anchors[b.anchor];
     if (a === undefined) return;
     rig.project(a.at[0], a.at[1], a.at[2], pt);
-    const off = !pt.visible || a.bed === current || a.to === current;
+    const off = !pt.visible || a.bed === current;
     if (off !== b.off) {
       b.off = off;
       b.el.hidden = off;
