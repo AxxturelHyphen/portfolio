@@ -11,6 +11,7 @@ import { createCutoutBatch, setPaperEdge, sharedUniforms } from '../gl/cutout.ma
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
 import { carryVisitor, setRoamLight, setStandeeTurn, writeInvites, writeLamps } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
+import { raiseTerrain } from '../gl/ground.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { uiText } from '../ui/copy.ts';
 import { createLabel } from '../ui/label.ts';
@@ -33,7 +34,7 @@ import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createMothDrive } from './moth.ts';
 import { createLabelDrive } from './label.ts';
-import { createPlaceLighting, prepareGl, signAnchorsOf, signPostsOf } from './place.ts';
+import { closedGroundLayoutOf, createPlaceLighting, prepareGl, signAnchorsOf, signPostsOf } from './place.ts';
 import { createSignDrive } from './signs.drive.ts';
 import { createFigureLoader } from './figure.ts';
 import { createRoamDrive } from './roam.drive.ts';
@@ -125,6 +126,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const spawn = q.shot === undefined ? undefined : shots[q.shot]?.visitor;
   const arrival = createArrival(roaming && q.shot === undefined && q.t === undefined && (location.hash === '' || location.hash === '#/') && !machine.state.reduced);
   const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), arrival, orbit: orbitModeOf(new URLSearchParams(location.search).get('orbit'), q.shot !== undefined), ...(spawn === undefined ? {} : { spawn }) }) : null;
+  if (roaming) raiseTerrain(closedGroundLayoutOf(world), world.ground.pond);
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });

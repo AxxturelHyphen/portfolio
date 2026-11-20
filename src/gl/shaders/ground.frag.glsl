@@ -1,9 +1,6 @@
 // Ground (common.glsl and lights.glsl prepended): earth with a value ramp toward the wall, moss at the wall foot and in
 // the joints, a flagstone path from the baked distance field, puddles that mirror the sky, the moon glint and the hand
 // light with a ripple under the cursor, and an engraver's line screen so the photo stone reads as print. Linear output.
-uniform vec4 uBounds;          // x0, z0, x1, z1
-uniform sampler2D uPath;       // distance to the path centre, 0..1 = 0..uPathRange metres
-uniform float uPathRange;
 uniform sampler2D uStone;      // photo stone (plate pass reads its luminance)
 uniform sampler2D uStoneN;     // its normal map
 uniform float uStoneOn;
@@ -61,6 +58,13 @@ const vec3 MOSS_MID = vec3(0.044, 0.118, 0.073);     // #3b614c
 const vec3 GRASS = vec3(0.010, 0.026, 0.014);
 const float HALF_WIDTH = 0.55;                        // a 1.1 m path
 const float CELL = 0.42;                              // flagstone size
+const float STONE_REACH = HALF_WIDTH + CELL * 0.6;    // the farthest a stone reaches from the path centre
+const float SLAB_GAP = 0.008;                         // half the dark gap between slabs (m)
+const float SLAB_BEVEL = 0.022;                       // their soft rounded rim (m)
+const int RELIEF_STEPS = 6;                           // parallax march through the slabs and the edging
+const float RELIEF_REACH = 0.5;                       // how far past the edging the march still runs (m)
+const float CUT_SHADE = 0.6;                          // a slab's or tile's cut face against its top
+const vec3 TILE = vec3(0.075, 0.034, 0.020);          // #4e3427 the edging's fired clay, in the pots' family
 const float PITCH = 0.012;                            // line screen on the ground: 12 mm
 const float LINE_CONTRAST = 0.22;
 const float GLINT_AZ = 0.1047;                        // 6 degrees
@@ -92,9 +96,28 @@ vec4 voronoi(vec2 p) {
   return vec4(sqrt(d1), sqrt(d2) - sqrt(d1), id);
 }
 
-float pathDist(vec2 p) {
-  vec2 uv = (p - uBounds.xy) / (uBounds.zw - uBounds.xy);
-  return texture(uPath, uv).r * uPathRange;
+vec4 flagstone(vec2 p) {
+  vec2 warp = 0.22 * (vec2(valueNoise(p * 3.1), valueNoise(p * 3.1 + 17.0)) - 0.5);
+  return voronoi(p / CELL + warp);
+}
+
+// A stone exists where its centre lies on the path, so the path edge is the stones' own edge.
+float onPathOf(vec4 v, vec2 p) {
+  return step(pathDist((v.zw + 0.5) * CELL), HALF_WIDTH) * step(pathDist(p), STONE_REACH);
+}
+
+// Hard detail's absolute height (-1 where there is none): slabs with a bevelled rim and a gap between them, the edging
+// in front of the bank.
+float detailAt(vec2 q) {
+  float pd = pathDist(q);
+  float back = uEdging.x + uEdging.y;
+  float edging = smoothstep(uEdging.x, uEdging.x + 0.01, pd) * (1.0 - smoothstep(back - 0.01, back, pd)) * bankKeep(q) * (uBank.z + uEdging.z);
+  float d = edging;
+  if (pd < STONE_REACH) {
+    vec4 v = flagstone(q);
+    d = max(d, onPathOf(v, q) * uEdging.w * smoothstep(SLAB_GAP, SLAB_GAP + SLAB_BEVEL, v.y * CELL));
+  }
+  return d > 0.002 ? d : -1.0;
 }
 
 vec3 skyColour(float el) { return mix(uSkyHorizon, uSkyTop, pow(sat(el / 0.5), 0.55)); }
@@ -118,6 +141,28 @@ float lineScreen(vec2 p, float tone) {
 
 void main() {
   vec2 p = vWorld.xz;
+  vec3 view = normalize(vWorld - uCamPos);
+  // Free roam: march the view ray down through the hard detail; p becomes the point it meets, cut 1 on a side face.
+  float cut = 0.0;
+  float hitY = vWorld.y;
+  float tile = 0.0;
+  if (uRelief > 0.0 && pathDist(p) < uEdging.x + uEdging.y + RELIEF_REACH) {
+    float top = uBank.z + uEdging.z + 0.005 - vWorld.y;
+    vec2 run = view.xz / min(view.y, -0.05);
+    float stepH = top / float(RELIEF_STEPS);
+    for (int i = 0; i <= RELIEF_STEPS; i++) {
+      float s = top - stepH * float(i);
+      vec2 q = p + run * s;
+      float f = detailAt(q) - vWorld.y;
+      if (f >= s) {
+        cut = step(stepH, f - s);
+        hitY = vWorld.y + (cut > 0.0 ? s : f);
+        p = cut > 0.0 ? q : p + run * f;
+        break;
+      }
+    }
+    tile = step(STONE_REACH, pathDist(p)) * step(0.004, hitY - vWorld.y);
+  }
   float z = p.y;
   float grain = fbm3(p * 1.7);
   float patchN = fbm3(p * PATCH_SCALE + 3.0);
@@ -139,16 +184,23 @@ void main() {
   vec2 wallGap = min(p - uEnclose.xy, uEnclose.zw - p);
   base *= 1.0 - WALL_AO.x * step(uEnclose.x, uEnclose.z) * (1.0 - smoothstep(0.0, WALL_AO.y, min(wallGap.x, wallGap.y)));
   vec3 n = vec3(0.0, 1.0, 0.0);
+  if (uRelief > 0.0) {
+    vec2 e = vec2(0.06, 0.0);
+    float h0 = baseHeight(p, pathDist(p));
+    n = normalize(vec3(h0 - baseHeight(p + e, pathDist(p + e)), e.x, h0 - baseHeight(p + e.yx, pathDist(p + e.yx))));
+    // The soil at the edging's foot sits in its shade.
+    float pd = pathDist(p);
+    base *= 1.0 - 0.45 * bankKeep(p) * smoothstep(uEdging.x - 0.16, uEdging.x, pd) * step(pd, uEdging.x) * (1.0 - tile);
+  }
 
   // Moss at the wall foot.
   float moss = smoothstep(-4.6, -5.8, z) * smoothstep(0.45, 0.62, fbm3(p * 2.3 + 5.0));
   base = mix(base, mix(MOSS_SHADE, MOSS_MID, grain), moss * 0.85);
 
-  // Flagstones: a stone exists where its centre lies on the path, so the path edge is the stones' own edge.
-  vec2 warp = 0.22 * (vec2(valueNoise(p * 3.1), valueNoise(p * 3.1 + 17.0)) - 0.5);
-  vec4 v = voronoi(p / CELL + warp);
+  // Flagstones.
+  vec4 v = flagstone(p);
   vec2 centre = (v.zw + 0.5) * CELL;
-  float onPath = step(pathDist(centre), HALF_WIDTH) * step(pathDist(p), HALF_WIDTH + CELL * 0.6);
+  float onPath = onPathOf(v, p);
   float border = v.y * CELL;
   float stoneMask = onPath * smoothstep(0.005, 0.014, border);
   if (onPath > 0.0) {
@@ -163,9 +215,20 @@ void main() {
     vec3 nm = uStoneOn > 0.5 ? texture(uStoneN, sp).xyz * 2.0 - 1.0 : vec3(0.0, 0.0, 1.0);
     vec3 sn = normalize(vec3(nm.x * 0.6 + bevel.x, 1.0, nm.y * 0.6 + bevel.y));
     float joint = 1.0 - stoneMask;
-    vec3 jointCol = mix(base * 0.45, GRASS * 0.5, smoothstep(0.45, 0.75, grain));
+    vec3 jointCol = mix(base * mix(0.45, 0.25, uRelief), GRASS * 0.5, smoothstep(0.45, 0.75, grain));
     base = mix(base, mix(stone, jointCol, joint), onPath);
     n = normalize(mix(n, sn, stoneMask));
+  }
+
+  // The edging: small fired tiles set on end, laid out on the face by height when the ray meets their side.
+  if (tile > 0.0) {
+    vec4 b = voronoi(cut > 0.0 ? vec2((p.x - p.y) * 9.0, hitY * 22.0) : p * 9.0 + 4.0);
+    vec3 clay = TILE * (0.7 + 0.6 * hash12(b.zw)) * (0.8 + 0.4 * fbm3(p * 14.0));
+    base = mix(base * 0.35, clay, smoothstep(0.03, 0.09, b.y));
+  }
+  if (cut > 0.0) {
+    base *= CUT_SHADE;
+    n = normalize(vec3(-view.x, 0.2, -view.z));
   }
 
   // Puddles: dark wet ground that mirrors the sky; the hand rings the water under the cursor.
@@ -211,7 +274,6 @@ void main() {
     float rr = length(toC);
     float ring = cos(rr * 26.0 - uTime * 4.0) * exp(-rr * 3.0) * smoothstep(1.0, 0.15, rr);
     vec3 wn = normalize(vec3(normalize(toC + 1e-4) * ring * 0.05 + (vec2(valueNoise(p * 9.0 + uTime * 0.3), valueNoise(p * 9.0 - uTime * 0.3)) - 0.5) * 0.04, 1.0).xzy);
-    vec3 view = normalize(vWorld - uCamPos);
     vec3 refl = reflect(view, wn);
     vec3 mirror = col * 0.55 + skyColour(refl.y) * 0.1;
     // The moon streak: a moon-wide band at the moon's azimuth, broken by the ripples (elevation ignored on purpose).

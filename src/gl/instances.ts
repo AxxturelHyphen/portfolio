@@ -9,6 +9,7 @@ import {
   Vector3,
 } from 'three';
 import type { InstanceWriter, QuadParams } from '../types.ts';
+import { terrainY } from '../core/terrain.ts';
 
 /** Floats per instance in the interleaved buffer: aPos, aSize, aUV, aAnim (4 x vec4). The u8 tint lives in its own buffer. */
 export const FLOATS_PER_QUAD = 16;
@@ -104,7 +105,7 @@ export function createCutoutGeometry(capacity: number): CutoutGeometry {
     },
     set(i: number, p: QuadParams): void {
       const o = i * FLOATS_PER_QUAD;
-      floats[o] = p.x; floats[o + 1] = p.y; floats[o + 2] = p.z; floats[o + 3] = p.rot;
+      floats[o] = p.x; floats[o + 1] = p.y + terrainY(p.x, p.z); floats[o + 2] = p.z; floats[o + 3] = p.rot;
       floats[o + 4] = p.w; floats[o + 5] = p.h; floats[o + 6] = p.px; floats[o + 7] = p.py;
       floats[o + 8] = p.uv[0] ?? 0; floats[o + 9] = p.uv[1] ?? 0; floats[o + 10] = p.uv[2] ?? 1; floats[o + 11] = p.uv[3] ?? 1;
       floats[o + 12] = p.sway; floats[o + 13] = p.phase; floats[o + 14] = p.lift; floats[o + 15] = p.facing;

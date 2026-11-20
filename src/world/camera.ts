@@ -9,6 +9,7 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 import type { BedId, CameraRig, Clock, GardenLayout, Machine, Pose, ScreenPt, ShotId, SlotId, SlotView, State } from '../types.ts';
 import { hopsFrom } from '../core/hops.ts';
+import { terrainY } from '../core/terrain.ts';
 import { CAMERA, WALK, follow, omegaFor, pushOf, springStep, walkCarry, walkElapsedS, walkOf, type SpringState } from '../core/motion.ts';
 import { DEG, type WorldLayout } from './layout.ts';
 import { createRail, filmPose, type RigPose } from './rail.ts';
@@ -347,10 +348,10 @@ export function createRig(layout: GardenLayout): GardenRig {
       o3.copy(camera.position);
       v3.sub(o3);
       if (v3.y >= 0) return false;
-      const k = -o3.y / v3.y;
-      out[0] = o3.x + v3.x * k;
-      out[1] = 0;
-      out[2] = o3.z + v3.z * k;
+      for (let i = 0, y = 0; i < 3; i++, y = terrainY(out[0] ?? 0, out[2] ?? 0)) {
+        const k = (y - o3.y) / v3.y; // y = 0, then the terrain under the last hit: taps land on the bank and slabs
+        out[0] = o3.x + v3.x * k; out[1] = y; out[2] = o3.z + v3.z * k;
+      }
       return true;
     },
     setFollow(p) {
