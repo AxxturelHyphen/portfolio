@@ -1,6 +1,6 @@
 import type { BedId, CameraRig, Machine, ScreenPt, State } from '../types.ts';
 import { uiText } from './copy.ts';
-import { makeSign, readTilt, type Sign } from './signs.label.ts';
+import { letter, makeBoard, makeSign, readTilt, type Sign } from './signs.label.ts';
 import './styles/signs.css';
 
 /**
@@ -20,7 +20,10 @@ import './styles/signs.css';
  * projected, scaled to the board's size, never under a 44 px tap target), and it moves only with the camera. Its ring
  * shows on keyboard focus only. While the board is off screen the button lets the pointer through (data-off) but
  * stays in the Tab order, held inside the screen edge so its focus ring shows where focus is. data-anchor names the
- * sign it covers, for the world's hover and focus.
+ * sign it covers, for the world's hover and focus. Every other place's plank has a board button too (makeBoard), so
+ * any plank on screen takes a click or a tap: laid over the board alone (no tap-target floor, so a far plank never
+ * shadows the ground or a flower around it), hidden while its board is off screen, and out of the Tab order, which
+ * keeps only the current place's two signs.
  */
 
 /** One canvas board: shown while `bed` is the current place; it points `dir` toward `to`. World point of the label,
@@ -73,6 +76,8 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   /** A new viewport or sign size re-places the signs on the next frame even when the rig stands still. */
   let resized = false;
   let roam = false;
+  /** Free roam: one button per board, shown while its board is on screen and stands at another place. */
+  let boards: Sign[] = [];
 
   addEventListener('resize', () => {
     vw = innerWidth;
@@ -92,8 +97,8 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
   sizes.observe(signs[0].el);
   sizes.observe(signs[1].el);
 
-  /** Free roam: the button sized to the board it covers, centred on its place. */
-  function fit(s: Sign, a: SignAnchor | undefined): void {
+  /** Free roam: the button sized to the board it covers, centred on its place; `least` floors it at a tap target. */
+  function fit(s: Sign, a: SignAnchor | undefined, least: boolean): void {
     s.el.dataset['anchor'] = String(s.anchor);
     const w = (a?.board?.[0] ?? 0) * BOARD_PX_M;
     const h = (a?.board?.[1] ?? 0) * BOARD_PX_M;
@@ -101,30 +106,36 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     s.el.style.height = `${h}px`;
     s.el.style.marginLeft = `${-w / 2}px`;
     s.el.style.marginTop = `${-h / 2}px`;
-    s.least = h > 0 ? TARGET_PX / h : 1;
+    s.least = !least ? 0 : h > 0 ? TARGET_PX / h : 1;
+  }
+
+  function title(to: BedId | 'cv' | null): string {
+    return to === 'cv' ? uiText(null, m.state.lang, 'sign.cv') : (beds.find((b) => b.id === to)?.title ?? '');
+  }
+
+  function mountBoards(): void {
+    for (const b of boards) b.el.remove();
+    boards = roam ? anchors.map((a, i) => makeBoard(i, a.to, m)) : [];
+    for (const b of boards) {
+      fit(b, anchors[b.anchor], false);
+      group.append(b.el);
+    }
   }
 
   function retarget(): void {
     const i = beds.findIndex((b) => b.id === current);
-    const lang = m.state.lang;
+    const go = uiText(null, m.state.lang, 'sign.go');
+    for (const b of boards) letter(b, title(b.to), go);
     for (const s of signs) {
       const next = i < 0 ? undefined : beds[i + s.dir];
       s.to = i < 0 ? null : next !== undefined ? next.id : s.dir > 0 && i === beds.length - 1 ? 'cv' : null;
       s.el.hidden = s.to === null;
       if (s.to === null) continue;
-      const title = s.to === 'cv' ? uiText(null, lang, 'sign.cv') : (next?.title ?? '');
-      s.name.textContent = title;
-      if (s.to === 'cv') {
-        delete s.el.dataset.bed;
-        s.el.removeAttribute('aria-label');
-      } else {
-        s.el.dataset.bed = s.to;
-        s.el.setAttribute('aria-label', `${uiText(null, lang, 'sign.go')} ${title}`);
-      }
+      letter(s, title(s.to), go);
       s.anchor = anchors.findIndex((a) => a.bed === current && a.dir === s.dir);
       s.el.toggleAttribute('data-docked', s.anchor < 0);
       s.mover.reset();
-      if (roam) fit(s, anchors[s.anchor]);
+      if (roam) fit(s, anchors[s.anchor], true);
       else if (s.anchor < 0) s.el.style.removeProperty('transform');
       else readTilt(s);
     }
@@ -161,6 +172,19 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     s.mover.move(x < OFF_EDGE_PX ? OFF_EDGE_PX : x > maxX ? maxX : x, y < OFF_EDGE_PX ? OFF_EDGE_PX : y > maxY ? maxY : y, 1);
   }
 
+  /** Free roam: a board button over its board while the board is on screen and not one of the current place's two. */
+  function show(b: Sign, rig: CameraRig): void {
+    const a = anchors[b.anchor];
+    if (a === undefined) return;
+    rig.project(a.at[0], a.at[1], a.at[2], pt);
+    const off = !pt.visible || a.bed === current;
+    if (off !== b.off) {
+      b.off = off;
+      b.el.hidden = off;
+    }
+    if (!off) b.mover.move(pt.x, pt.y, pt.scale / BOARD_PX_M);
+  }
+
   function place(s: Sign, rig: CameraRig): void {
     const a = anchors[s.anchor];
     if (a === undefined) return;
@@ -190,6 +214,7 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
     },
     setAnchors(next) {
       anchors = next;
+      mountBoards();
       retarget();
     },
     onState(s) {
@@ -206,10 +231,12 @@ export function createSignposts(parent: HTMLElement, m: Machine): Signposts {
         const s = signs[i]!;
         if (s.anchor >= 0 && !s.el.hidden) place(s, rig);
       }
+      for (let i = 0; i < boards.length; i++) show(boards[i]!, rig);
     },
     setRoam() {
       roam = true;
       group.toggleAttribute('data-roam', true);
+      mountBoards();
       retarget();
     },
   };

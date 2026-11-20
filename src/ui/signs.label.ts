@@ -5,7 +5,8 @@ import { createMover, type Mover } from './xform.ts';
 /**
  * One signpost button (ui/signposts.ts): on the rail the painted label with its cane, twine lashing, lettered name and
  * manicule; under free roam the transparent target over a plank in the world. Plus the per-sign state the placing
- * reads and writes.
+ * reads and writes. A board button (makeBoard) covers a plank of another place under free roam: pointer and touch
+ * only, out of the Tab order, and a press on it leaves the focus where it was.
  */
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -47,6 +48,32 @@ export function readTilt(s: Sign): void {
   const rad = (Number.parseFloat(getComputedStyle(s.el).rotate) || 0) * (Math.PI / 180);
   s.cos = Math.cos(rad);
   s.sin = Math.sin(rad);
+}
+
+/** Letters the button for where it leads: the name, and the bed and spoken name of a bed (the CV button says its name). */
+export function letter(s: Sign, title: string, go: string): void {
+  s.name.textContent = title;
+  if (s.to === 'cv' || s.to === null) {
+    delete s.el.dataset.bed;
+    s.el.removeAttribute('aria-label');
+  } else {
+    s.el.dataset.bed = s.to;
+    s.el.setAttribute('aria-label', `${go} ${title}`);
+  }
+}
+
+/** Free roam: the button over board `anchor` of another place, leading `to`. */
+export function makeBoard(anchor: number, to: BedId | 'cv', m: Machine): Sign {
+  const s = makeSign(1, m);
+  delete s.el.dataset.dir;
+  s.el.dataset.board = '';
+  s.el.tabIndex = -1;
+  s.el.hidden = true;
+  s.el.addEventListener('mousedown', (e) => e.preventDefault());
+  s.anchor = anchor;
+  s.to = to;
+  s.off = true;
+  return s;
 }
 
 export function makeSign(dir: -1 | 1, m: Machine): Sign {

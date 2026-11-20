@@ -8,8 +8,10 @@ import type { SignPost } from './place.ts';
 /**
  * Free roam's signposts in the world (world/signboard.ts, gl/signboards.ts): built once at load, lettered once the
  * display face is in and again on a language change. A sign wakes when the visitor comes within NEAR_M of its post,
- * or the pointer or keyboard focus is on its button (ui/signposts.ts, data-anchor = the sign's index): its plank
- * brightens a little and, unless motion is reduced, sways once on its hook. Otherwise it stands still apart from the
+ * or the pointer or keyboard focus is on a button over it (ui/signposts.ts, data-anchor = the sign's index; every plank
+ * on screen has one): its plank brightens a little and, unless motion is reduced, sways once on its hook. The sign
+ * under the pointer and the focused one are kept by index when they come, so a button retargeted under the pointer
+ * never leaves a plank awake. Otherwise it stands still apart from the
  * lantern's slow flicker. The quads are written only while a sign changes; nothing is allocated per frame.
  */
 
@@ -40,7 +42,7 @@ export interface SignDrive {
   readonly ready: Promise<void>;
 }
 
-interface Sign { quads: SignQuads; glow: QuadParams; level: number; swayT: number; awake: boolean; hover: boolean }
+interface Sign { quads: SignQuads; glow: QuadParams; level: number; swayT: number; awake: boolean }
 
 export function createSignDrive(d: SignDriveDeps): SignDrive {
   const { machine, visitor } = d;
@@ -54,7 +56,7 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
     const glow: QuadParams = {
       ...quads.plank, sway: flame[0]!, lift: flame[1]!, phase: i * FLICKER_STEP, tint: new Float32Array([1, 1, 1, REST.glow]),
     };
-    return { quads, glow, level: 0, swayT: -1, awake: false, hover: false };
+    return { quads, glow, level: 0, swayT: -1, awake: false };
   });
   const batch = meshes.batch.writer;
   signs.forEach((s, i) => {
@@ -85,23 +87,37 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
     void ready.then(paint);
   });
 
-  const hoverOf = (e: Event, on: boolean): void => {
+  /** The sign under the pointer and the one whose button has the focus, or -1. */
+  let pointed = -1;
+  let focused = -1;
+  const signOf = (e: Event): number => {
     const el = e.target instanceof Element ? e.target.closest<HTMLElement>('.px-sign') : null;
-    const s = signs[Number(el?.dataset['anchor'] ?? -1)];
-    if (s === undefined) return;
-    s.hover = on;
-    d.loop.wake();
+    const i = Number(el?.dataset['anchor'] ?? -1);
+    return i >= 0 && i < signs.length ? i : -1;
   };
-  d.proxies.addEventListener('pointerover', (e) => hoverOf(e, true));
-  d.proxies.addEventListener('pointerout', (e) => hoverOf(e, false));
-  d.proxies.addEventListener('focusin', (e) => hoverOf(e, true));
-  d.proxies.addEventListener('focusout', (e) => hoverOf(e, false));
+  const wake = (): void => d.loop.wake();
+  d.proxies.addEventListener('pointerover', (e) => {
+    pointed = signOf(e);
+    wake();
+  });
+  d.proxies.addEventListener('pointerout', () => {
+    pointed = -1;
+    wake();
+  });
+  d.proxies.addEventListener('focusin', (e) => {
+    focused = signOf(e);
+    wake();
+  });
+  d.proxies.addEventListener('focusout', () => {
+    focused = -1;
+    wake();
+  });
 
-  /** One sign's frame: wake on the visitor or the pointer, ease the light, run the sway; whether its quads changed. */
-  function step(s: Sign, p: SignPost, c: Clock): boolean {
+  /** One sign's frame: wake on the visitor, the pointer or the focus, ease the light, run the sway; whether its quads changed. */
+  function step(s: Sign, i: number, p: SignPost, c: Clock): boolean {
     const dx = visitor[0]! - p.x;
     const dz = visitor[1]! - p.z;
-    const awake = s.hover || dx * dx + dz * dz < NEAR_M * NEAR_M;
+    const awake = i === pointed || i === focused || dx * dx + dz * dz < NEAR_M * NEAR_M;
     if (awake && !s.awake && !machine.state.reduced) s.swayT = 0;
     s.awake = awake;
     const goal = awake ? 1 : 0;
@@ -127,7 +143,7 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
   d.loop.on('world', (c) => {
     for (let i = 0; i < signs.length; i++) {
       const s = signs[i]!;
-      if (!step(s, posts[i]!, c)) continue;
+      if (!step(s, i, posts[i]!, c)) continue;
       const at = i * PARTS + PLANK_PART;
       batch.set(at, s.quads.plank);
       batch.commit(at, at + 1);
