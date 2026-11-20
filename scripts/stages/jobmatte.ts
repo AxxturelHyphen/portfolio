@@ -75,3 +75,40 @@ export function defringe(r: Raster, solid = 230, passes = 4): void {
     r.data.set([core.data[c]!, core.data[c + 1]!, core.data[c + 2]!], c);
   }
 }
+
+const fnoise = (x: number, y: number, seed: number): number => {
+  let h = (x * 374761393 + y * 668265263 + seed * 144665) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+};
+
+/** A dark animal on a green painted ground: the polygon only guides. Alpha follows how little green the pixel carries, with the threshold roughened by a little noise so
+ * the rim reads as hand-cut fur, then the alpha is softened by a pixel. */
+export function applyGuidedMatte(r: Raster, poly: Polygon, toLocal: (fx: number, fy: number) => [number, number], band: number): void {
+  const cx = poly.reduce((m, p) => m + p[0], 0) / poly.length;
+  const cy = poly.reduce((m, p) => m + p[1], 0) / poly.length;
+  const mask = (k: number, blur: number): Float32Array => {
+    const g = raster(r.w, r.h);
+    for (let i = 3; i < g.data.length; i += 4) g.data[i] = 255;
+    applyPolygon(g, poly.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k] as [number, number]), toLocal, 0);
+    const m = new Float32Array(r.w * r.h);
+    for (let i = 0; i < m.length; i++) m[i] = g.data[i * 4 + 3]! / 255;
+    return boxBlur(m, r.w, r.h, blur);
+  };
+  const wide = mask(1.16, band);
+  const core = mask(0.62, band);
+  const a = new Float32Array(r.w * r.h);
+  for (let y = 0; y < r.h; y++) {
+    for (let x = 0; x < r.w; x++) {
+      const i = y * r.w + x;
+      const c = i * 4;
+      const [R, G, B] = [r.data[c]! / 255, r.data[c + 1]! / 255, r.data[c + 2]! / 255];
+      const n = (fnoise(x >> 1, y >> 1, 5) - 0.5) * 0.035 + (fnoise(x >> 3, y >> 3, 9) - 0.5) * 0.03;
+      const green = smooth(0.075 + n, 0.025 + n, G - Math.max(R, B));
+      a[i] = Math.max(core[i]! > 0.97 ? 1 : 0, green) * smooth(0.08, 0.4, wide[i]!);
+    }
+  }
+  const closed = boxBlur(a, r.w, r.h, 2);
+  for (let i = 0; i < a.length; i++) a[i] = smooth(0.35, 0.7, closed[i]!);
+  scaleAlpha(r, boxBlur(a, r.w, r.h, 1));
+}

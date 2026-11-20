@@ -20,6 +20,8 @@ export interface Engrave {
   grain?: number;
   /** Tone curve exponent; below 1 lifts the shading toward paper (default 1). */
   gamma?: number;
+  /** Pastel stroke grain: share of the tone, noise stretched along a diagonal like a dragged crayon, 0..1 (default 0). */
+  streak?: number;
 }
 
 /** Deterministic value noise in -1..1 on a cell grid. */
@@ -59,6 +61,7 @@ export function applyEngrave(r: Raster, o: Engrave): void {
   };
   const line = o.line ?? 0.2;
   const grain = o.grain ?? 0.05;
+  const streak = o.streak ?? 0;
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i = y * w + x;
@@ -71,9 +74,12 @@ export function applyEngrave(r: Raster, o: Engrave): void {
       }
       // Fibre and tooth: a coarse and a fine cell, strongest in the mid tones where pastel sits on the grain.
       const g = (hash(x >> 2, y >> 2, 1) * 0.6 + hash(x, y, 2) * 0.4) * grain * (0.4 + 1.2 * t * (1 - t) * 2);
-      const v = Math.min(1, Math.max(0, t * (1 - line * ink) + g));
+      const sx = Math.round(x * 0.8 + y * 0.6);
+      const sy = Math.round(y * 0.8 - x * 0.6);
+      const drag = streak > 0 ? (hash(sx >> 4, sy >> 1, 3) * 0.6 + hash(sx >> 2, sy, 4) * 0.4) * streak * (0.5 + 1.5 * t * (1 - t) * 2) : 0;
+      const v = Math.min(1, Math.max(0, t * (1 - line * ink) + g + drag));
       const base = gradient(stops, v);
-      const slip = gradient(stops, Math.min(1, Math.max(0, at(x + 2, y + 1) * (1 - line * ink) + g)));
+      const slip = gradient(stops, Math.min(1, Math.max(0, at(x + 2, y + 1) * (1 - line * ink) + g + drag)));
       const lb = 0.2126 * base[0] + 0.7152 * base[1] + 0.0722 * base[2];
       const ls = 0.2126 * slip[0] + 0.7152 * slip[1] + 0.0722 * slip[2];
       const k = ls > 1 ? lb / ls : 1;

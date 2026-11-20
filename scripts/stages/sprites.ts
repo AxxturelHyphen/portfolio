@@ -20,7 +20,7 @@ import { alphaBounds } from './sprite.ts';
 import { drawPaperCar } from './papercar.ts';
 import { applyEngrave } from './engrave.ts';
 import { drawPin } from './pin.ts';
-import { applyCropMl, applyLumaKey, applyPolygon, defringe } from './jobmatte.ts';
+import { applyCropMl, applyGuidedMatte, applyLumaKey, applyPolygon, defringe } from './jobmatte.ts';
 import { buildFlags, buildTile } from './tiles.ts';
 
 export const REAL = `${WORK}/real`;
@@ -102,8 +102,9 @@ export function jobRaster(j: Job, cut: Raster, plate: PlateOpts): { color: Raste
   const toLocal = (fx: number, fy: number): [number, number] => [fx * cut.w - Math.round(j.crop[0] * cut.w), fy * cut.h - Math.round(j.crop[1] * cut.h)];
   if (j.ml === true) applyCropMl(part);
   if (j.matte !== undefined) applyPolygon(part, j.matte, toLocal, Math.max(1, Math.round(Math.max(part.w, part.h) * FEATHER_SHARE)));
+  if (j.guide !== undefined) applyGuidedMatte(part, j.guide.poly, toLocal, j.guide.band);
   if (j.lumaKey !== undefined) applyLumaKey(part, j.lumaKey);
-  if (j.ml === true || j.matte !== undefined || j.lumaKey !== undefined) defringe(part);
+  if (j.ml === true || j.matte !== undefined || j.guide !== undefined || j.lumaKey !== undefined) defringe(part);
   applyRemovals(part, j.remove ?? [], toLocal);
   if (j.whole !== undefined) keepWhole(part, j.whole);
   if (j.largest === true) keepLargest(part, 0.5);
@@ -247,6 +248,7 @@ export function runSprites(cache: Cache, sources: readonly (SourceRec & { catego
     for (const t of j.tint ?? []) log(j.source, { stage: 'tint', tool: 'OKLab hue-selected re-tint', note: `${j.id}: ${t.hue ?? 'all'} ${t.gm ? `GM ${t.gm.join('/')}` : ''}${t.toward ? `toward ${t.toward}` : ''}${t.sat !== undefined ? ` S under ${t.sat}` : ''}, amount ${t.amount ?? 0.6}` });
     if (j.engrave !== undefined) log(j.source, { stage: 'sprite', tool: 'hand-tinted print pass: tone steps, line screen, gradient map, chalk grain', note: `${j.id}: GM ${j.engrave.gm.join('/')}, pitch ${j.engrave.pitch} px` });
     if (j.ml === true) log(j.source, { stage: 'cutout', tool: 'local ML matte on the crop (rembg birefnet-general), edge defringed', note: `${j.id}: painted ground, paper key cannot separate it` });
+    if (j.guide !== undefined) log(j.source, { stage: 'cutout', tool: 'guide polygon and colour key on the fur edge', note: `${j.id}: polygon of ${j.guide.poly.length} points, band ${j.guide.band} px` });
     if (j.matte !== undefined) log(j.source, { stage: 'cutout', tool: 'hand garbage matte', note: `${j.id}: polygon of ${j.matte.length} points` });
     if (j.lumaKey !== undefined) log(j.source, { stage: 'cutout', tool: 'luminance key (LK)', note: `${j.id}: ${j.lumaKey.join(' to ')}` });
     if (j.treat === 'INK' || j.treat === 'MASK') log(j.source, { stage: 'sprite', tool: j.treat, note: `${j.id}: ${JSON.stringify(j.ink ?? j.mask ?? {})}` });

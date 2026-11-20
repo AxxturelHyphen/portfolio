@@ -77,6 +77,8 @@ export interface Job {
   ml?: boolean;
   /** Hand garbage matte: keep only what lies inside this polygon of plate fractions (feathered). */
   matte?: Polygon;
+  /** Guide polygon for a dark animal on a green ground: the edge is keyed by colour inside a band of `band` px. */
+  guide?: { poly: Polygon; band: number };
   /** LK: light figure on a dark ground, alpha from luminance lo (gone) to hi (opaque). */
   lumaKey?: [number, number];
   /** Code-drawn instead of cut: the source only supplies the stock texture (the [FILL] paper-cut Coupé). */

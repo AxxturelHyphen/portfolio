@@ -5817,7 +5817,7 @@
     {
      "stage": "tint",
      "tool": "OKLab hue-selected re-tint",
-     "note": "es/cat-black: green toward #3b3a4a, amount 0.9"
+     "note": "es/cat-black: green toward #34343f, amount 0.8"
     },
     {
      "stage": "tint",
@@ -5826,8 +5826,8 @@
     },
     {
      "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "es/cat-black: polygon of 20 points"
+     "tool": "guide polygon and colour key on the fur edge",
+     "note": "es/cat-black: polygon of 20 points, band 5 px"
     }
    ]
   },
@@ -5893,14 +5893,13 @@
    "sha256": "4d3b5a46317fbf50311619f5ef218d36f5bb0e6646b0fa1b262b1d47a5b7f27c",
    "usedIn": [
     "rosaleda",
-    "v/cat-kit-green",
     "v/cat-kit-grey"
    ],
    "edits": [
     {
      "stage": "cutout",
      "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "v/cat-kit-grey: raw (forced: pastel on pale paper: hand matte and local ML on the crop), crop 0,0.52,1,1"
+     "note": "v/cat-kit-grey: raw (forced: pastel on pale paper: hand matte and local ML on the crop), crop 0,0.37,1,0.88"
     },
     {
      "stage": "tint",
@@ -5915,32 +5914,7 @@
     {
      "stage": "cutout",
      "tool": "hand garbage matte",
-     "note": "v/cat-kit-grey: polygon of 17 points"
-    },
-    {
-     "stage": "cutout",
-     "tool": "no key; alpha from luminance in the MASK treatment",
-     "note": "v/cat-kit-green: raw (forced: pastel on pale paper: hand matte and local ML on the crop), crop 0,0,0.85,0.56"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "v/cat-kit-green: pale toward #e4d9c4, amount 0.5"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "v/cat-kit-green: all  S under 0.5, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "local ML matte on the crop (rembg birefnet-general), edge defringed",
-     "note": "v/cat-kit-green: painted ground, paper key cannot separate it"
-    },
-    {
-     "stage": "cutout",
-     "tool": "hand garbage matte",
-     "note": "v/cat-kit-green: polygon of 16 points"
+     "note": "v/cat-kit-grey: polygon of 18 points"
     }
    ]
   },
