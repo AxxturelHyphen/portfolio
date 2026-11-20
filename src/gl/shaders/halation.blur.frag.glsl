@@ -1,5 +1,6 @@
 // One axis of the halation blur at quarter resolution: the sum of a tight and a wide gaussian (cook/SHOTS.md B:
 // sigma 3 px plus sigma 11 px at quarter resolution). 25 taps, 2 texels apart, clamped to the used uScale fraction.
+// The alpha (the source's coolness) is blurred with it.
 precision highp float;
 
 uniform sampler2D uSrc;
@@ -25,9 +26,9 @@ void main() {
   vec2 uv = vUv * uScale;
   vec2 stride = uDir * texel * STEP;
   vec2 hi = uScale - half_;
-  vec3 sum = vec3(0.0);
+  vec4 sum = vec4(0.0);
   for (int i = -RADIUS; i <= RADIUS; i++) {
-    sum += texture(uSrc, clamp(uv + stride * float(i), half_, hi)).rgb * WEIGHT[abs(i)];
+    sum += texture(uSrc, clamp(uv + stride * float(i), half_, hi)) * WEIGHT[abs(i)];
   }
-  fragColor = vec4(sum, 1.0);
+  fragColor = sum;
 }
