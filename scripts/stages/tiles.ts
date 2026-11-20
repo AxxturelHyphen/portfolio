@@ -10,12 +10,12 @@ import { raster, type Raster } from './raster.ts';
 import { hexRgb, type FlagJob, type TileJob } from './recipe.ts';
 import { boxBlur } from './treat.ts';
 
-const LINE_CONTRAST = 0.22;
+export const LINE_CONTRAST = 0.22;
 /** Engraver's angles in degrees: a cross-hatch pair and a third for the darkest tone. */
-const ANGLES = [22, 112, 67];
-const SLIP = 2;
+export const ANGLES = [22, 112, 67];
+export const SLIP = 2;
 
-const smooth = (e0: number, e1: number, x: number): number => {
+export const smooth = (e0: number, e1: number, x: number): number => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
   return t * t * (3 - 2 * t);
 };
@@ -33,21 +33,21 @@ function lumaOf(r: Raster): Float32Array {
 }
 
 /** Five soft tone steps: flat plateaus joined by short ramps, the aquatint's bitten tones. */
-const toneStep = (x: number): number => {
+export const toneStep = (x: number): number => {
   const v = x * 4;
   const i = Math.min(3, Math.floor(v));
   return (i + smooth(0.3, 0.7, v - i)) / 4;
 };
 
 /** 1 bit line of one screen at (x, y): integer frequencies (kx, ky) across a w x h tile, duty 0.42, 0.6 px AA. */
-function lineAt(x: number, y: number, w: number, h: number, kx: number, ky: number, pitch: number): number {
+export function lineAt(x: number, y: number, w: number, h: number, kx: number, ky: number, pitch: number): number {
   const ph = (x * kx) / w + (y * ky) / h;
   const f = ph - Math.floor(ph);
   const d = Math.abs(f - 0.21) * pitch;
   return smooth(0.21 * pitch + 0.6, 0.21 * pitch - 0.6, d);
 }
 
-function gradient(stops: readonly (readonly [number, number, number])[], t: number): [number, number, number] {
+export function gradient(stops: readonly (readonly [number, number, number])[], t: number): [number, number, number] {
   const [a, b, k] = t < 0.5 ? [stops[0]!, stops[1]!, t * 2] : [stops[1]!, stops[2]!, (t - 0.5) * 2];
   return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 }

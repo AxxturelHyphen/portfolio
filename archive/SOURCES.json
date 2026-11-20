@@ -9156,17 +9156,8 @@
    "need": "paper-cardboard",
    "category": "textures",
    "sha256": "b4a1a66a8d5104f26198f9ddc0a6227c4a29c9b327ccfdb9e96d1a670dbd3eb3",
-   "usedIn": [
-    "gr/car",
-    "gruta"
-   ],
-   "edits": [
-    {
-     "stage": "cutout",
-     "tool": "code-drawn paper cut on the card stock (ImageMagick)",
-     "note": "gr/car: drawn, crop 0,0,1,1"
-    }
-   ]
+   "usedIn": [],
+   "edits": []
   },
   {
    "id": "acg-metal048c",
@@ -11162,5 +11153,11 @@
    "edits": []
   }
  ],
- "own": []
+ "own": [
+  {
+   "file": "archive/raw/own/hyundai-coupe.jpg",
+   "note": "The Coupé in the grotto: the owner's own photograph, cut out and hand-tinted",
+   "id": "own-hyundai-coupe"
+  }
+ ]
 }

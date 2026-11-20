@@ -8,7 +8,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { SpriteId } from '../../src/types.ts';
 import { buildBloom } from './bloom.ts';
-import { WORK, hashInputs, readJson, safeName, writeFile, writeJson, type Cache, type Catalog, type SpriteMeta } from './common.ts';
+import { WORK, hashInputs, readJson, readOwn, safeName, writeFile, writeJson, type Cache, type Catalog, type SpriteMeta } from './common.ts';
 import { CUT_MAX_SIDE, cutout, type CutHints } from './cutout.ts';
 import { crop, readImage } from './lib/image.ts';
 import { normalMap } from './normal.ts';
@@ -18,6 +18,7 @@ import { cropPart, fitLong, lowestPoint, transform } from './shape.ts';
 import { applyInk, applyMask, applyPaperRim, applyRemovals, applyTint, keepLargest, keepWhole } from './treat.ts';
 import { alphaBounds } from './sprite.ts';
 import { drawPaperCar } from './papercar.ts';
+import { applyEngrave } from './engrave.ts';
 import { applyCropMl, applyLumaKey, applyPolygon, defringe } from './jobmatte.ts';
 import { buildFlags, buildTile } from './tiles.ts';
 
@@ -30,7 +31,7 @@ export interface Edit { stage: string; tool: string; note: string }
 export interface RealCatalog extends Catalog { methods: Record<string, { method: string; tool: string; reason: string }>; tiles: SpriteId[] }
 
 const CUT_CODE = ['scripts/stages/cutout.ts', ...['color', 'image', 'matte', 'ml', 'morph', 'paper', 'quality'].map((f) => `scripts/stages/lib/${f}.ts`)];
-const JOB_CODE = ['scripts/stages/sprites.ts', 'scripts/stages/treat.ts', 'scripts/stages/shape.ts', 'scripts/stages/bloom.ts', 'scripts/stages/normal.ts', 'scripts/stages/tiles.ts', 'scripts/stages/recipe.ts', 'scripts/stages/jobmatte.ts', 'scripts/stages/papercar.ts'];
+const JOB_CODE = ['scripts/stages/sprites.ts', 'scripts/stages/treat.ts', 'scripts/stages/shape.ts', 'scripts/stages/bloom.ts', 'scripts/stages/normal.ts', 'scripts/stages/tiles.ts', 'scripts/stages/recipe.ts', 'scripts/stages/jobmatte.ts', 'scripts/stages/papercar.ts', 'scripts/stages/engrave.ts'];
 const FEATHER_SHARE = 1 / 400;
 export const SPRITE_PAD = 4;
 
@@ -50,6 +51,8 @@ export function indexSources(entries: readonly (SourceRec & { category: string }
     const inCat = join('archive/raw', e.category, e.file);
     sourceIndex.set(e.id, e.file.startsWith('archive/') ? e.file : existsSync(inCat) ? inCat : join('archive/raw', e.file));
   }
+  // The owner's own photographs (archive/OWN.json entries with an id) are plates too: no licence entry, declared instead.
+  for (const o of readOwn()) if (o.id !== undefined) sourceIndex.set(o.id, o.file);
 }
 
 const toBox = (b: Box4): [number, number, number, number] => [b[0], b[1], b[2] - b[0], b[3] - b[1]];
@@ -105,6 +108,7 @@ export function jobRaster(j: Job, cut: Raster, plate: PlateOpts): { color: Raste
   if (j.largest === true) keepLargest(part, 0.5);
   if (j.rotate !== undefined || j.warp !== undefined || j.flip === true) part = transform(part, j.rotate ?? 0, j.warp ?? [0, 0], j.flip === true);
   for (const t of j.tint ?? []) applyTint(part, t);
+  if (j.engrave !== undefined) applyEngrave(part, j.engrave);
   if (j.treat === 'INK') part = applyInk(part, j.ink ?? { line: '#1b1a3a', wash: '#7b6648', washAlpha: 0.35 }, j.minExtent ?? 0);
   if (j.treat === 'MASK') {
     part = applyMask(part, j.mask ?? { color: '#1b1a3a', blur: 3 });
@@ -239,6 +243,7 @@ export function runSprites(cache: Cache, sources: readonly (SourceRec & { catego
     log(j.source, { stage: 'cutout', tool: cut.tool, note: `${j.id}: ${cut.method}${cut.reason ? ` (${cut.reason})` : ''}, crop ${j.crop.join(',')}` });
     if ((j.remove ?? []).length > 0) log(j.source, { stage: 'sprite', tool: 'painted out', note: `${j.id}: ${(j.remove ?? []).map((m) => `${m.box.join(',')}${m.keep ? ` keeping ${m.keep}` : ''}`).join('; ')}` });
     for (const t of j.tint ?? []) log(j.source, { stage: 'tint', tool: 'OKLab hue-selected re-tint', note: `${j.id}: ${t.hue ?? 'all'} ${t.gm ? `GM ${t.gm.join('/')}` : ''}${t.toward ? `toward ${t.toward}` : ''}${t.sat !== undefined ? ` S under ${t.sat}` : ''}, amount ${t.amount ?? 0.6}` });
+    if (j.engrave !== undefined) log(j.source, { stage: 'sprite', tool: 'hand-tinted print pass: tone steps, line screen, gradient map, chalk grain', note: `${j.id}: GM ${j.engrave.gm.join('/')}, pitch ${j.engrave.pitch} px` });
     if (j.ml === true) log(j.source, { stage: 'cutout', tool: 'local ML matte on the crop (rembg birefnet-general), edge defringed', note: `${j.id}: painted ground, paper key cannot separate it` });
     if (j.matte !== undefined) log(j.source, { stage: 'cutout', tool: 'hand garbage matte', note: `${j.id}: polygon of ${j.matte.length} points` });
     if (j.lumaKey !== undefined) log(j.source, { stage: 'cutout', tool: 'luminance key (LK)', note: `${j.id}: ${j.lumaKey.join(' to ')}` });

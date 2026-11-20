@@ -89,6 +89,9 @@ same files in the case.
   `alt` that is a gap is read as the project's title.
 - Your own screenshots and recordings must be declared in `archive/OWN.json` (for example `["public/shots/*"]`), or
   `npm run licence` fails on them.
+- Your own photograph as a garden cutout: keep the file in `archive/raw/own/` and declare it in `archive/OWN.json` as
+  `{ "id", "file", "note" }`; the note is its line in the credits data. Name the `id` as a recipe job's `source`
+  (`archive/recipes/*.json`, plate method `raw`, then `matte`, `tint` and `engrave`, as `gr/car` does).
 
 ### The garden
 

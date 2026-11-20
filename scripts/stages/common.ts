@@ -21,6 +21,21 @@ export const SHARED_SPRITES: readonly SpriteId[] = ['moth'];
 export interface SpriteMeta { size: [number, number]; pivot: [number, number]; sources: string[] }
 export interface Catalog { sprites: Record<SpriteId, SpriteMeta>; blooms: Record<string, BloomDef> }
 
+/** An owner's own file or plate from archive/OWN.json. `id`, when given, names a plate the recipes may cut from. */
+export interface OwnEntry { file: string; note: string; id?: string }
+
+/** archive/OWN.json in any of its accepted shapes: ["path"], [{file, note, id?}], {own: [...]} or {files: [...]}. */
+export function readOwn(): OwnEntry[] {
+  if (!existsSync('archive/OWN.json')) return [];
+  const v = readJson<unknown>('archive/OWN.json');
+  const list = Array.isArray(v) ? v : ((v as { own?: unknown[]; files?: unknown[] }).own ?? (v as { files?: unknown[] }).files ?? []);
+  return list.map((e) => {
+    if (typeof e === 'string') return { file: e, note: '' };
+    const o = e as { file?: unknown; note?: unknown; id?: unknown };
+    return { file: String(o.file), note: String(o.note ?? ''), ...(typeof o.id === 'string' ? { id: o.id } : {}) };
+  });
+}
+
 export const safeName = (id: string): string => id.replace(/[^A-Za-z0-9._-]/g, '_');
 export const spritePng = (id: SpriteId, kind: 'sprite' | 'normal'): string => `${WORK}/${kind}/${safeName(id)}.png`;
 

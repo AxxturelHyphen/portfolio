@@ -6,6 +6,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AtlasManifest, BloomDef, SpriteId } from '../../src/types.ts';
 import { readJson } from './common.ts';
+import type { Engrave } from './engrave.ts';
 import type { Polygon } from './jobmatte.ts';
 
 /** x0, y0, x1, y1 as fractions of the plate (ART crop convention). */
@@ -60,6 +61,8 @@ export interface Job {
   /** INK: drop components whose box is shorter than this share of the crop (lettering between the rings). */
   minExtent?: number;
   tint?: Tint[];
+  /** Hand-tinted print pass for a photograph: soft tone steps, line screen, warm gradient map, chalk grain. */
+  engrave?: Engrave;
   /** INK: line colour, wash colour and wash opacity. MASK: flat colour and baked blur in px. */
   ink?: { line: string; wash: string; washAlpha: number };
   mask?: { color: string; blur: number; luma?: [number, number]; close?: number };

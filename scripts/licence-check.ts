@@ -53,7 +53,7 @@ else fail('archive/SOURCES.json', 'missing: run npm run assets');
 const CODE_MADE = /^code:[a-z0-9-]+$/;
 
 function licenceProblem(id: string): string | null {
-  if (CODE_MADE.test(id)) return null;
+  if (CODE_MADE.test(id) || ownIds.has(id)) return null;
   const e = entries.get(id);
   if (e === undefined) return `source "${id}" has no entry in archive/SOURCES.json`;
   const lic = e['license'] ?? e['licence'];
@@ -64,12 +64,16 @@ function licenceProblem(id: string): string | null {
 
 // Owner's own files.
 const own: string[] = [];
+/** Ids of the owner's own plates (OWN.json entries with an id): an atlas sprite may list one as its source. */
+const ownIds = new Set<string>();
 if (existsSync('archive/OWN.json')) {
   const v = readJson('archive/OWN.json') as unknown;
   const list = Array.isArray(v) ? v : ((v as Json)['own'] ?? (v as Json)['files'] ?? []);
   for (const e of list as unknown[]) {
     const f = typeof e === 'string' ? e : (e as Json | null)?.['file'];
     if (typeof f === 'string') own.push(norm(f));
+    const id = (e as Json | null)?.['id'];
+    if (typeof id === 'string' && typeof f === 'string' && existsSync(f)) ownIds.add(id);
   }
 }
 const isOwn = (p: string): boolean => own.some((o) => (o.endsWith('*') ? p.startsWith(o.slice(0, -1)) : o === p));

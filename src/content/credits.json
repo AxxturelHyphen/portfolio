@@ -5,23 +5,6 @@
    "institution": "ambientCG",
    "items": [
     {
-     "id": "acg-cardboard002",
-     "title": "Cardboard 002",
-     "creator": "Lennart Demes (ambientCG)",
-     "license": "CC0-1.0",
-     "licenseUrl": "https://docs.ambientcg.com/license/",
-     "attribution": "Cardboard 002, ambientCG.com, CC0",
-     "sourceUrl": "https://ambientcg.com/view?id=Cardboard002",
-     "changes": [
-      "cropped",
-      "cutout"
-     ],
-     "usedIn": [
-      "gr/car",
-      "gruta"
-     ]
-    },
-    {
      "id": "acg-paper006",
      "title": "Paper 006",
      "creator": "Lennart Demes (ambientCG)",
@@ -2465,5 +2448,7 @@
    "file": "fonts/LICENSES/SchibstedGrotesk-OFL.txt"
   }
  ],
- "own": []
+ "own": [
+  "The Coupé in the grotto: the owner's own photograph, cut out and hand-tinted"
+ ]
 }

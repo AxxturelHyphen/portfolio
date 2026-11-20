@@ -8,14 +8,14 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { SOUNDS, fileOf, type SoundId } from '../../src/audio/sounds.ts';
 import type { AtlasManifest } from '../../src/types.ts';
-import { ATLAS_OUT, rawPath, readJson, sha256, writeJson, type Cache } from './common.ts';
+import { ATLAS_OUT, rawPath, readJson, readOwn, sha256, writeJson, type Cache } from './common.ts';
 import { EDITS, type Edit } from './sprites.ts';
 import { FRAME_MANIFEST, FRAME_OUT, type FrameEntry } from './frames.ts';
 import { THUMB_OUT, type ThumbEntry } from './thumbs.ts';
 
 export interface SourceEntry { id: string; title: string; creator: string; date: string; institution: string; sourceUrl: string; license: string; licenseUrl: string; attribution: string; file: string; need: string }
 export interface MergedSource extends SourceEntry { category: string; sha256: string; usedIn: string[]; shipped?: string[]; edits: { stage: string; tool: string; note: string }[] }
-export interface SourcesFile { generated: string; sources: MergedSource[]; own: { file: string; note: string }[] }
+export interface SourcesFile { generated: string; sources: MergedSource[]; own: { file: string; note: string; id?: string }[] }
 
 export const SOURCES_DIR = 'archive/sources';
 export const SOURCES_OUT = 'archive/SOURCES.json';
@@ -62,13 +62,6 @@ function fileUse(): Map<string, string[]> {
   if (existsSync(thumbs)) for (const t of readJson<{ thumbs: ThumbEntry[] }>(thumbs).thumbs) add(t.source, join(THUMB_OUT, t.file));
   if (existsSync(FRAME_MANIFEST)) for (const f of readJson<{ frames: FrameEntry[] }>(FRAME_MANIFEST).frames) add(f.source, join(FRAME_OUT, f.file));
   return use;
-}
-
-function readOwn(): { file: string; note: string }[] {
-  if (!existsSync('archive/OWN.json')) return [];
-  const v = readJson<unknown>('archive/OWN.json');
-  const list = Array.isArray(v) ? v : ((v as { own?: unknown[]; files?: unknown[] }).own ?? (v as { files?: unknown[] }).files ?? []);
-  return list.map((e) => (typeof e === 'string' ? { file: e, note: '' } : { file: String((e as { file?: unknown }).file), note: String((e as { note?: unknown }).note ?? '') }));
 }
 
 /** Throws with every problem at once; returns the summary line. */
