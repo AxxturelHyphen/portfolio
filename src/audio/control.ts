@@ -40,6 +40,8 @@ export interface SoundControl {
   hear(x: number, z: number): void;
   /** The cat was activated. */
   purr(): void;
+  /** The visitor set footstep n down, on stone or on soil; dropped until the engine is in and sound is wanted. */
+  step(stone: boolean, n: number): void;
 }
 
 const GESTURES = ['pointerup', 'keydown'] as const;
@@ -131,6 +133,9 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
       if (!wanted()) return;
       if (engine !== null) engine.purr();
       else purrWanted = true;
+    },
+    step(stone, n) {
+      if (engine !== null && wanted()) engine.step(stone, n);
     },
   };
 }

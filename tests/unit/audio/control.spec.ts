@@ -37,11 +37,13 @@ function rig(on = true) {
   const fades: Array<[number, number]> = [];
   const heard: Array<[number, number]> = [];
   let purrs = 0;
+  const steps: Array<[boolean, number]> = [];
   let onTag = false;
   const engine: SoundEngine = {
     fade: (to, s) => void fades.push([to, s]),
     hear: (x, z) => void heard.push([x, z]),
     purr: () => void purrs++,
+    step: (stone, n) => void steps.push([stone, n]),
   };
   const control = createSoundControl<FakeContext>({
     target,
@@ -59,7 +61,7 @@ function rig(on = true) {
     onTag = tag;
     target.dispatchEvent(new Event(type));
   };
-  return { control, doc, made, fades, heard, gesture, purrs: () => purrs };
+  return { control, doc, made, fades, heard, steps, gesture, purrs: () => purrs };
 }
 
 const settle = (ms = 0): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -160,4 +162,16 @@ test('duck: an open project brings the mix down, closing brings it back', async 
   expect(r.fades.at(-1)?.[0]).toBe(0.5);
   r.control.setDuck(false);
   expect(r.fades.at(-1)?.[0]).toBe(1);
+});
+
+test('footsteps: none before the engine is in or while muted, never queued; each one passes its ground and number', async () => {
+  const r = rig();
+  r.control.setGarden(true);
+  r.control.step(true, 1);
+  r.gesture();
+  await settle();
+  r.control.step(false, 2);
+  r.control.setOn(false);
+  r.control.step(true, 3);
+  expect(r.steps).toEqual([[false, 2]]);
 });

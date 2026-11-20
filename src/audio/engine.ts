@@ -1,4 +1,5 @@
 import { purr } from './purr.ts';
+import { footstep } from './steps.ts';
 import { SOUNDS, clipsOf, fileOf, loopLength, type SoundId } from './sounds.ts';
 import { dist, levelAt, panAt, perchFor, type SoundMap } from './space.ts';
 
@@ -18,6 +19,8 @@ export interface SoundEngine {
   hear(x: number, z: number): void;
   /** The cat purrs once (audio/purr.ts). */
   purr(): void;
+  /** Footstep number n, on the stone path or on soil and grass (audio/steps.ts). */
+  step(stone: boolean, n: number): void;
 }
 
 export interface EngineOptions { map: SoundMap; full: boolean }
@@ -209,6 +212,9 @@ export function createEngine(ctx: AudioContext, o: EngineOptions): SoundEngine {
     },
     purr() {
       purr(ctx, master);
+    },
+    step(stone, n) {
+      if (ctx.state === 'running') footstep(ctx, master, stone, n);
     },
   };
 }

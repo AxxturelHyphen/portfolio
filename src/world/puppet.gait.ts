@@ -57,19 +57,20 @@ export type View = 'back' | 'side';
  * Gait state. Drawn: view, side, pose, idle, ticks left of a turn, of the settling step, of the crouch and of the
  * landing dip, the idle shift, lean and bank (degrees), breath (-1..1), look (-1 free side..1 carrying side) and lift
  * (0..1). Inputs: the wanted view and side, the last tick, distance since the last pose, seconds slow and standing,
- * the idle shifts, and the last speed, sideways speed and their smoothed changes.
+ * the idle shifts, and the last speed, sideways speed and their smoothed changes. Out: steps, the footfalls so far
+ * (a contact pose, the settling step, or in reduced motion every two stride shares), read by the footstep sound.
  */
 export interface Gait {
   view: View; dir: number; pose: number; idle: boolean; turn: number; settle: number; cue: number; dip: number; shift: number;
   lean: number; bank: number; breath: number; look: number; lift: number;
   wantView: View; wantDir: number; tick: number; travelled: number; slowS: number; idleS: number; shifts: number; shiftAt: number;
-  speed: number; vx: number; accel: number; accelX: number;
+  speed: number; vx: number; accel: number; accelX: number; steps: number;
 }
 
 export function createGait(): Gait {
   return { view: 'back', dir: 1, pose: 0, idle: true, turn: 0, settle: 0, cue: 0, dip: 0, shift: 0, lean: 0, bank: 0, breath: 0, look: 0,
-    lift: 0, wantView: 'back', wantDir: 1, tick: NaN, travelled: 0, slowS: 0, idleS: 0, shifts: 0, shiftAt: shiftInterval(0), speed: 0, vx: 0,
-    accel: 0, accelX: 0 };
+    lift: 0, wantView: 'back', wantDir: 1, tick: NaN, travelled: 0, slowS: GAIT.idleAfterS, idleS: 0, shifts: 0, shiftAt: shiftInterval(0), speed: 0, vx: 0,
+    accel: 0, accelX: 0, steps: 0 };
 }
 
 /** Seconds to the next idle shift: a fixed hash of the shift count, never Math.random, so stills repeat. */
@@ -155,6 +156,10 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
   if (tick === g.tick) return;
   g.tick = tick;
   if (reduced) {
+    if (g.travelled >= 2 * GAIT.strideM) {
+      g.steps++;
+      g.travelled = Math.min(g.travelled - 2 * GAIT.strideM, GAIT.strideM);
+    }
     turnStep(g, true);
     g.idle = true;
     g.pose = 0;
@@ -166,7 +171,10 @@ export function stepGait(g: Gait, t: number, dt: number, vx: number, vz: number,
   /** Coming to a stop: the settling step first, the view held; the turn and the standing pose follow. */
   if (!standing || g.idle) g.settle = 0;
   else {
-    if (g.settle === 0) g.settle = SETTLE_TICKS + 1;
+    if (g.settle === 0) {
+      g.settle = SETTLE_TICKS + 1;
+      g.steps++;
+    }
     g.settle--;
     g.cue = 0;
     if (g.settle > 0) return;
@@ -192,7 +200,7 @@ function stand(g: Gait): void {
   live(g);
 }
 
-/** A walking tick: the crouch on setting off, then one pose per stride share. */
+/** A walking tick: the crouch on setting off, then one pose per stride share; the even poses put a foot down. */
 function stride(g: Gait): void {
   g.dip = 0;
   g.breath = 0;
@@ -207,9 +215,11 @@ function stride(g: Gait): void {
   } else if (g.cue > 0) {
     g.cue--;
     g.travelled = 0;
+    if (g.cue === 0) g.steps++;
   } else if (g.travelled >= GAIT.strideM) {
     g.pose = (g.pose + 1) % BACK_POSES.length;
     g.travelled = Math.min(g.travelled - GAIT.strideM, GAIT.strideM);
+    if (g.pose % 2 === 0) g.steps++;
   }
 }
 

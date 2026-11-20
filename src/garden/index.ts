@@ -363,7 +363,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     pace.ready();
-    startSound({ machine, loop, q, tier: quality.tier, map: soundMapOf(world, SCENES), pets: petSlotsOf(SCENES), visitor: roam?.pos ?? null, cameraX: () => rig.pose.x, proxies: host.proxies });
+    startSound({ machine, loop, q, tier: quality.tier, map: soundMapOf(world, SCENES), pets: petSlotsOf(SCENES), visitor: roam?.pos ?? null,
+      steps: () => lantern?.steps ?? 0, path: world.ground.path, cameraX: () => rig.pose.x, proxies: host.proxies });
     void quality.probe().then((tier) => {
       if (tier === 'fail') host.fail();
     });

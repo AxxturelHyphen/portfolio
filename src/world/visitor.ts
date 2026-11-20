@@ -103,6 +103,8 @@ export interface VisitorLantern {
   readonly pendulum: Pendulum;
   /** True once the figure is drawn (it appears on the first step after attachFigure). */
   readonly figure: boolean;
+  /** The figure's footfalls so far (Gait.steps): a change is a foot set down. */
+  readonly steps: number;
   /** The batch and lantern sprite to draw into, once the shared atlas is in (until then only the flame moves). */
   attach(writer: InstanceWriter, rect: SpriteRect): void;
   /**
@@ -274,6 +276,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     flame,
     pendulum,
     get figure() { return shown; },
+    get steps() { return gait.steps; },
     attach(w, rect) {
       writer = w;
       plateW = rect.size[0];

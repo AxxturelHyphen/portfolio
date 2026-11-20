@@ -4,13 +4,15 @@ import type { SoundMap, Spot } from '../audio/space.ts';
 import type { RuntimeLoop } from '../core/loop.ts';
 import type { BedId, DebugParams, Machine, Tier } from '../types.ts';
 import { ACTIVATE_EVENT } from '../ui/proxies.ts';
-import type { BedScene3, WorldLayout } from '../world/layout.ts';
+import { pathDistance } from '../world/groundplan.ts';
+import type { BedScene3, GroundData, WorldLayout } from '../world/layout.ts';
 
 /**
  * The garden's sound, wired to the world (audio/control.ts decides when, audio/engine.ts plays). Started once the
  * garden is interactive; never in a still (?shot, ?t) or a test run (?bench=1), so those stay silent and repeatable.
  * The music box is the Estanque's sundial (its clockwork armillary): walking up to it plays it. A pet (the Rosaleda
- * cat) purrs when activated.
+ * cat) purrs when activated. The visitor's footsteps sound on each foot set down: stone within the path's width
+ * (garden.json ground.path), soil and grass off it.
  */
 
 const BOX_BED: BedId = 'estanque';
@@ -46,6 +48,10 @@ export interface SoundHost {
   pets: ReadonlySet<string>;
   /** Free roam: the visitor's [x, z], where the garden is heard from. */
   visitor: Float32Array | null;
+  /** Free roam: the figure's footfalls so far (VisitorLantern.steps). */
+  steps(): number;
+  /** The stone path the footsteps tap on. */
+  path: GroundData['path'];
   /** The rail: the camera's x; it is heard from the path there. */
   cameraX(): number;
   proxies: HTMLElement;
@@ -85,8 +91,19 @@ export function startSound(h: SoundHost): void {
     if (h.pets.has((e as CustomEvent<string>).detail)) control.purr();
   });
   const v = h.visitor;
+  const kerb = h.path.width / 2;
+  let stepped = h.steps();
   h.loop.on('dom', () => {
-    if (v === null) control.hear(h.cameraX(), RAIL_EAR_Z);
-    else control.hear(v[0] ?? 0, v[1] ?? 0);
+    if (v === null) {
+      control.hear(h.cameraX(), RAIL_EAR_Z);
+      return;
+    }
+    const x = v[0] ?? 0;
+    const z = v[1] ?? 0;
+    control.hear(x, z);
+    const n = h.steps();
+    if (n === stepped) return;
+    stepped = n;
+    control.step(pathDistance(h.path.points, x, z) <= kerb, n);
   });
 }
