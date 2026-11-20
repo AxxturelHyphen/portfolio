@@ -261,76 +261,59 @@
 }
 
 /*
- * Free roam: every sign is placed by transform from the top left, phones too. A planted label stands on its own cane
- * (.px-sign-pole, stretched by transform from the lashing to the ground) over a small contact shadow; a docked label
- * (data-off) has no cane drawn, so no stub ever peeks out over, under or behind its plate. The signs come and go
- * whole, with no fade, so an assisted walk never shows a ghost of them. A tucked label (data-tucked: no room, or under the open plant tag or
- * plan) is transparent and lets clicks through, but keeps its Tab stop and shows while it has keyboard focus.
+ * Free roam: the signs are planks standing in the world (garden/signs.drive.ts); each button is their transparent
+ * target, laid over its plank's board by transform from the top left (ui/signposts.ts), phones too. Nothing of the
+ * label is drawn: no paint, cane, lashing, hand or lettering (the name stays for screen readers). The ring shows on
+ * keyboard focus only. A button whose board is off screen (data-off) lets the pointer through; under keyboard focus
+ * it shows its name on the painted green, so focus is never lost off screen. The signs come and go whole, with no fade.
  */
 .px-signs[data-roam],
 .px-signs[data-roam][data-shown] {
   transition: none;
 }
 
-.px-signs[data-roam] .px-sign[data-tucked]:not(:focus-visible) {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.px-signs[data-roam] .px-sign:not([data-docked]) {
+.px-signs[data-roam] .px-sign,
+.px-signs[data-roam] .px-sign[data-dir] {
   top: 0;
   right: auto;
   bottom: auto;
   left: 0;
+  justify-content: center;
+  box-sizing: border-box;
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  color: transparent;
+  font-size: 1.25rem;
+  white-space: normal;
+  text-align: center;
+  filter: none;
+  rotate: none;
+  translate: none;
+  scale: none;
+  transform-origin: 50% 50%;
+  transition: none;
 }
 
-.px-signs[data-roam] .px-sign-cane {
+.px-signs[data-roam] .px-sign::before {
+  content: none;
+}
+
+.px-signs[data-roam] :is(.px-sign-cane, .px-sign-lash, .px-sign-hand) {
   display: none;
 }
 
-/*
- * Free roam reads the safe-area insets from this padding (ui/signposts.ts); the labels are placed from the top left by
- * transform, so the padding moves nothing.
- */
-.px-signs[data-roam] {
-  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+.px-signs[data-roam] .px-sign-name {
+  text-shadow: none;
 }
 
-/*
- * Portrait free roam: the docked labels stand in a band under the visitor (ui/signs.dock.ts dockAround). A name always
- * runs on one line, so a label stays one plate high and keeps off the flowers at the visitor's feet; with a little less
- * room at the ends.
- */
-@media (max-aspect-ratio: 4/5) {
-  .px-signs[data-roam] .px-sign {
-    max-width: none;
-    white-space: nowrap;
-    padding-inline: 1.5rem 0.5rem;
-  }
-
-  .px-signs[data-roam] .px-sign[data-dir="prev"] {
-    padding-inline: 0.5rem 1.5rem;
-  }
+.px-signs[data-roam] .px-sign[data-off] {
+  pointer-events: none;
 }
 
-/*
- * Portrait phones: the lettering scales with the width, 13 px at 360 and 14 at 390, never under 13, so the longest pair
- * (La Puerta and Estanque de la Luna) shares one row; the manicule shrinks with it.
- */
-@media (max-aspect-ratio: 4/5) and (max-width: 44.99rem) {
-  .px-signs[data-roam] .px-sign {
-    font-size: clamp(0.8125rem, 3.6vw, 1.0625rem);
-  }
-
-  .px-signs[data-roam] .px-sign-hand {
-    width: 1.25rem;
-    height: 0.625rem;
-    margin-inline-start: 0.25rem;
-  }
-
-  .px-signs[data-roam] .px-sign[data-dir="prev"] .px-sign-hand {
-    margin-inline: 0 0.25rem;
-  }
+.px-signs[data-roam] .px-sign[data-off]:focus-visible {
+  color: var(--sign-ink);
+  background: var(--paint);
 }
 
 /* Short screens wider than a phone (a tablet or phone on its side): the label set nearer a phone's size, on one line. */
@@ -357,32 +340,6 @@
   }
 }
 
-.px-sign-pole,
-.px-sign-foot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.px-sign-pole {
-  width: 8px;
-  height: 100px;
-  background:
-    repeating-linear-gradient(180deg, transparent 0 30px, rgb(40 32 14 / 0.6) 30px 32px, rgb(214 196 140 / 0.35) 32px 33px, transparent 33px 40px),
-    linear-gradient(90deg, #3b341f, #8f8152 32%, #6f6340 62%, #2f2a19);
-  clip-path: polygon(0 4px, 100% 0, 100% 100%, 0 100%);
-  transform-origin: 4px 0;
-  translate: -4px 0;
-}
-
-.px-sign-foot {
-  width: 40px;
-  height: 12px;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(6 5 10 / 0.6), rgb(6 5 10 / 0.25) 60%, transparent);
-}
 
 @media (prefers-reduced-motion: reduce) {
   .px-sign,

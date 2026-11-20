@@ -7,11 +7,12 @@ import { INTRO, OPEN_HALF } from '../core/motion.ts';
 import type { GardenGeo } from '../core/machine.ts';
 import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/quality.ts';
 import { arrived, installTestApi } from '../core/testapi.ts';
-import { createActorBatch, createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
+import { createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
 import { carryVisitor, setRoamLight, setStandeeTurn, writeInvites, writeLamps } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
+import { uiText } from '../ui/copy.ts';
 import { createLabel } from '../ui/label.ts';
 import { createModeLayers } from '../ui/mode.ts';
 import { WORK_EVENT } from '../ui/plan.ts';
@@ -25,13 +26,13 @@ import { createLight } from '../world/light.ts';
 import { LAMPS, lampBedsOf } from '../world/lamps.ts';
 import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode, worldModeOf } from '../world/mode.ts';
-import { createVisitorLantern, HELD, LANTERN, VISITOR_QUADS } from '../world/visitor.ts';
-import { fetchManifest } from '../world/bed.ts';
-import { FIGURE_SPRITES, type FigureRects } from '../world/puppet.ts';
+import { createVisitorLantern } from '../world/visitor.ts';
 import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
-import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
+import { createPlaceLighting, prepareGl, signAnchorsOf, signPostsOf } from './place.ts';
+import { createSignDrive } from './signs.drive.ts';
+import { createFigureLoader } from './figure.ts';
 import { createRoamDrive } from './roam.drive.ts';
 import { petSlotsOf, soundMapOf, startSound } from './sound.ts';
 import { paceStreaming } from './pace.ts';
@@ -138,8 +139,13 @@ export function startGarden(host: GardenHost): GardenRuntime {
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
   prepareGl(gfx, world, SCENES, worldMode());
   const placeLight = createPlaceLighting(worldMode());
-  proxies.setSigns(signAnchorsOf(world, SCENES));
+  const posts = signPostsOf(world, SCENES, worldMode());
+  proxies.setSigns(signAnchorsOf(posts, worldMode()));
   if (roam !== null) proxies.setVisitor(roam.pos, content.garden.anchors, (slot, off) => roam.seek(slot, off));
+  const signs = roam === null ? null : createSignDrive({
+    gfx, machine, loop, posts, visitor: roam.pos, proxies: host.proxies,
+    nameOf: (to, lang) => (to === 'cv' ? uiText(null, lang, 'sign.cv') : SCENES[to].title[lang]),
+  });
 
   const slotOwner = new Map<ProjectId, SlotId>();
   for (const bed of garden.beds.values()) for (const v of bed.slots) if (v.project !== undefined) slotOwner.set(v.project.id, v.id);
@@ -327,46 +333,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
 
   loop.setCallsProbe(() => gfx.renderer.info.render.calls);
-  /** The carried lantern draws from the shared atlas: its actor batch comes once that is in (free roam). */
-  const attachLantern = (): CutoutBatch | null => {
-    const atlas = garden.sharedAtlas();
-    const rect = atlas?.manifest.sprites[LANTERN.sprite];
-    if (lantern === null || atlas === null || rect === undefined) return null;
-    const color = atlas.tex.color[rect.page];
-    const normal = atlas.tex.normal[rect.page];
-    if (color === undefined || normal === undefined) return null;
-    const batch = createActorBatch(gfx, color, normal, VISITOR_QUADS, HELD);
-    gfx.scene.add(batch.mesh);
-    lantern.attach(batch.writer, rect);
-    return batch;
-  };
-  /**
-   * The figure's page (free roam) in `variant`: decoded off the main thread, uploaded one texture a frame. The first
-   * load brings the figure in; a later one swaps the page under it and frees the one it replaces.
-   */
-  const loadFigure = async (batch: CutoutBatch, variant: 'hi' | 'lo'): Promise<void> => {
-    const signal = new AbortController().signal;
-    const m = await fetchManifest('roam', signal);
-    const held = m.sprites['fg/lantern'];
-    const crook = m.sprites['fg/crook'];
-    if (lantern === null || held === undefined || crook === undefined || FIGURE_SPRITES.some((id) => m.sprites[id]?.page !== held.page)) return;
-    const tex = await loadAtlas(gfx, m, variant, signal);
-    const color = tex.color[held.page];
-    const normal = tex.normal[held.page];
-    if (color === undefined || normal === undefined) return;
-    for (const t of [color, normal]) {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      uploadTexture(gfx, t);
-    }
-    const show = (): void => {
-      const before = [batch.uniforms.uColor.value, batch.uniforms.uNormal.value];
-      batch.uniforms.uColor.value = color;
-      batch.uniforms.uNormal.value = normal;
-      if (lantern.figure) for (const t of before) t.dispose();
-    };
-    if (lantern.figure) show();
-    else lantern.attachFigure(m.sprites as FigureRects, held, crook, show);
-  };
+  const { attachLantern, loadFigure } = createFigureLoader(gfx, garden, lantern);
   /** The batch waiting for the figure's full page (when the first one was the low page), else null. */
   let figureBatch: CutoutBatch | null = null;
   let figureTimer = 0;
@@ -376,7 +343,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     figureBatch = null;
     return batch === null ? Promise.resolve() : loadFigure(batch, 'hi').catch(() => undefined);
   };
-  const ready = Promise.all([gfx.warm(), garden.ready]).then(async () => {
+  const ready = Promise.all([signs === null ? gfx.warm() : signs.ready.then(() => gfx.warm()), garden.ready]).then(async () => {
     const batch = attachLantern();
     /** The figure is drawn from the first frame: a roam shot (a still) and the low tier load their page at once. */
     const first = spawn !== undefined ? quality.cfg.atlas : 'lo';

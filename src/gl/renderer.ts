@@ -176,13 +176,16 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     if (dirty) applySize();
     const probe = createCutoutBatch(gfx, pixel, pixel, 1);
     const warmScene = new Scene();
-    warmScene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh, probe.mesh);
+    /** Meshes the garden added before warm (free roam's signposts) are compiled and their textures uploaded too. */
+    const added = scene.children.filter((o) => o !== sky.mesh && o !== ground.mesh && o !== pond.mesh && o !== fireflies.mesh);
+    warmScene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh, probe.mesh, ...added);
     for (const t of ground.textures) renderer.initTexture(t);
     renderer.setRenderTarget(target.target);
     await renderer.compileAsync(warmScene, camera);
     renderer.render(warmScene, camera);
     await film.warm(target.target);
     scene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh);
+    for (const o of added) if (o.parent === warmScene) scene.add(o);
   }
 
   const gfx: GlGfx = {

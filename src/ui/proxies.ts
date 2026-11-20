@@ -31,8 +31,8 @@ export interface GardenProxies extends ProxyLayer {
   mountBeds(beds: readonly BedSign[]): void;
   setSigns(anchors: readonly SignAnchor[]): void;
   /**
-   * Free roam: the signs stand planted in the world, clear of the visitor at this [x, z], and the plan's moth follows it
-   * (places at their anchors). Slots off screen stay in the Tab order, so a keyboard or screen-reader visitor never has
+   * Free roam: the sign buttons lie over the planks standing in the world, and the plan's moth follows the visitor at
+   * this [x, z] (places at their anchors). Slots off screen stay in the Tab order, so a keyboard or screen-reader visitor never has
    * to walk to reach a flower: `seek` walks the visitor to a Tab-reached flower and says whether it did.
    */
   setVisitor(at: Float32Array, anchors: Readonly<Record<BedId, number>>, seek: (slot: SlotId, offScreen: boolean) => boolean): void;
@@ -217,7 +217,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     setVisitor(at, anchors, walkTo): void {
       roaming = true;
       seek = walkTo;
-      signs.setVisitor(at);
+      signs.setRoam();
       plan.follow(at, anchors);
       signsDirty = true;
     },
@@ -243,7 +243,6 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       const title = bedTitles.get(bed) ?? bed;
       slotsGroup.setAttribute('aria-label', title);
       slotsGroup.replaceChildren(...nodes);
-      signs.setSlots(slots);
       el.dataset.bed = bed;
       dirty = true;
       announce(title);
@@ -251,7 +250,6 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
 
     unmountSlots(): void {
       slotsGroup.replaceChildren();
-      signs.setSlots([]);
       slotsGroup.removeAttribute('aria-label');
       delete el.dataset.bed;
       nodes = [];

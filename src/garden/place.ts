@@ -8,6 +8,7 @@ import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
 import { builtIn, type WorldMode } from '../world/mode.ts';
+import { BOARD as SIGN_BOARD, plankCentre, type SignSpot } from '../world/signboard.ts';
 
 /**
  * What the world data hands to gl and ui at load: the ground layout from garden.json (path, puddles), the light of each
@@ -124,13 +125,17 @@ export function createPlaceLighting(mode: WorldMode): PlaceLighting {
   };
 }
 
+/** A sign of the path: the bed it stands in, where it leads, its board's foot and the height of its rail label. */
+export interface SignPost extends SignSpot { bed: BedId; to: BedId | 'cv'; labelY: number }
+
 /**
  * One sign per board: a board left of its bed's rail stop points back to the previous place on the path, one right of
- * it points on (past the last place, to the CV). The grotto is off the path and has no signs.
+ * it points on (past the last place, to the CV). The grotto is off the path and has no signs. Free roam also stands the
+ * way to the CV, which has no board, at the last place: across its stop from the way back.
  */
-export function signAnchorsOf(g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>): SignAnchor[] {
+export function signPostsOf(g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode): SignPost[] {
   const path = g.order.filter((b) => b !== 'gruta');
-  const out: SignAnchor[] = [];
+  const out: SignPost[] = [];
   path.forEach((bed, i) => {
     const stop = g.rail.keys.find((k) => k.bed === bed)?.x ?? g.anchors[bed];
     for (const l of scenes[bed].layers) {
@@ -139,11 +144,23 @@ export function signAnchorsOf(g: WorldLayout, scenes: Readonly<Record<BedId, Bed
         const dir = it.x < stop ? -1 : 1;
         const to = dir < 0 ? path[i - 1] : (path[i + 1] ?? 'cv');
         if (to === undefined) continue;
-        out.push({ bed, to, dir, at: [it.x, it.y + (it.h ?? 1) * it.scale * BOARD.labelAt, it.z] });
+        out.push({ bed, to, dir, x: it.x, z: it.z, labelY: it.y + (it.h ?? 1) * it.scale * BOARD.labelAt });
       }
+    }
+    const back = out.find((p) => p.bed === bed && p.dir < 0);
+    if (mode === 'roam' && i === path.length - 1 && back !== undefined && !out.some((p) => p.bed === bed && p.dir > 0)) {
+      out.push({ ...back, to: 'cv', dir: 1, x: 2 * stop - back.x });
     }
   });
   return out;
+}
+
+/** The DOM signs' anchors: the rail label's point, or under free roam the centre and size of the sign's board. */
+export function signAnchorsOf(posts: readonly SignPost[], mode: WorldMode): SignAnchor[] {
+  const board = [SIGN_BOARD.plank.w, SIGN_BOARD.plank.h] as const;
+  return posts.map((p) => (mode === 'roam'
+    ? { bed: p.bed, to: p.to, dir: p.dir, at: plankCentre(p, [0, 0, 0]), board }
+    : { bed: p.bed, to: p.to, dir: p.dir, at: [p.x, p.labelY, p.z] }));
 }
 
 /** The Estanque water from its bed file: the pond procedural's rectangle and the items marked to reflect (gl/pond.ts). */

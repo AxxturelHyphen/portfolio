@@ -44,8 +44,8 @@ const GROUP_MIX: Record<WorldMode, Record<ValueGroup, number>> = { rail: { L: 0,
 /** Wings are near masks (ART.md 2.2): a dark cool silhouette, uncapped (QUAD_FLAG.silhouette), never a lit plate. */
 const WING_TINT: readonly number[] = [0.13, 0.11, 0.2, 1];
 /**
- * The sign board only anchors its DOM sign (garden/place.ts signAnchorsOf); it is not drawn, since its plate is a frame
- * with an empty black centre that read as a hole in the garden.
+ * The sign board only places the signs (garden/place.ts signPostsOf: the rail's DOM label, free roam's painted
+ * signpost); it is not drawn, since its plate is a frame with an empty black centre that read as a hole in the garden.
  */
 const SIGN_BOARD: SpriteId = 'sh/board';
 /**
