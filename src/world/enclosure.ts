@@ -7,9 +7,10 @@ import { BORDER, COPING, PIER_PROUD, SHADE_JITTER, TILE_ORIGIN_X, WALL_TILE, cut
  * The closed garden of free roam (cook/ROAM_ART.md section 3, task 5): the back wall cut at its low stretches and at the
  * Salida door (a doorway under a stone lintel, so no sky opens over it), piers, two end walls facing inward and a low
  * coped kerb along the front. Every run gets a stone base
- * course (tile/wall-base) and a coping (tile/coping) over the wall stone, so the wall has a foot and a top edge. Three
- * batches, one per tile page, painted base, then wall stone, then coping. Built at load, only under free roam: the
- * rail keeps its own wall (wall.ts).
+ * course (tile/wall-base) and a coping (tile/coping) over the wall stone, so the wall has a foot and a top edge. Each run
+ * is masonry THICK deep behind its face: stone end faces, and a coping that overhangs on top, so the orbiting eye sees a
+ * solid wall. Three batches, one per tile page, painted base, then wall stone, then coping. Built at load, only under
+ * free roam: the rail keeps its own wall (wall.ts).
  */
 
 /**
@@ -23,6 +24,17 @@ const COPING_TILE = 'tile/coping';
 /** Flats overlap at their joins so the small yaw never opens a seam onto the sky. */
 const OVERLAP = 0.4;
 const PIER_W = 0.5;
+/** Piers stand a little above the wall, so their coping never lies in the plane of the wall's. */
+const PIER_RISE = 0.1;
+/** The masonry's depth behind every face (m). */
+export const THICK = 0.45;
+/** End faces start this far behind the face, so one between two yawed flats never pokes out of them. */
+const END_INSET = 0.012;
+/**
+ * Coping tops that overlap never lie in one plane: neighbouring flats alternate by this much, and the end walls and the
+ * lintel stand two steps up, clear of the flats they meet.
+ */
+const TOP_STEP = 0.006;
 /** Height of the Salida doorway under its lintel; the hedge behind it (enclosure.hedge.top) stands at least this high. */
 export const DOOR_TOP = 2.3;
 /** The base course stands a little proud of the face (a foot), the mossy stone darker than the wall. */
@@ -67,15 +79,37 @@ export function enclosureRuns(e: EnclosureData, wallZ: number, wallH: number, fl
   }
   for (const px of e.piers) {
     const h = Math.max(backHeightAt(e, wallH, px - PIER_W), backHeightAt(e, wallH, px + PIER_W));
-    runs.push({ x: px - PIER_W / 2, z: wallZ + PIER_PROUD, yaw: 0, len: PIER_W, h, from: 0, pier: true });
+    runs.push({ x: px - PIER_W / 2, z: wallZ + PIER_PROUD, yaw: 0, len: PIER_W, h: h + PIER_RISE, from: 0, pier: true });
   }
   const [d0, d1] = e.door;
   runs.push({ x: d0 - OVERLAP / 2, z: wallZ, yaw: 0, len: d1 - d0 + OVERLAP, h: wallH, from: DOOR_TOP, pier: false });
   runs.push({ x: x0, z: e.front, yaw: 90 * DEG, len: e.front - wallZ, h: e.endH, from: 0, pier: false });
   runs.push({ x: x1, z: wallZ, yaw: -90 * DEG, len: e.front - wallZ, h: e.endH, from: 0, pier: false });
   runs.push({ x: x0, z: e.front, yaw: 0, len: x1 - x0, h: e.kerbH, from: 0, pier: false });
-  for (const px of e.x) runs.push({ x: px - PIER_W / 2, z: e.front + PIER_PROUD, yaw: 0, len: PIER_W, h: e.endH, from: 0, pier: true });
+  for (const px of e.x) runs.push({ x: px - PIER_W / 2, z: e.front + PIER_PROUD, yaw: 0, len: PIER_W, h: e.endH + PIER_RISE, from: 0, pier: true });
   return runs;
+}
+
+/** An end wall reaches back past the back wall's face by THICK, so the corner between them closes. */
+function joined(r: Run): Run {
+  const sin = Math.sin(r.yaw);
+  if (r.pier || Math.abs(sin) < 0.5) return r;
+  return sin > 0 ? { ...r, len: r.len + THICK } : { ...r, x: r.x - Math.cos(r.yaw) * THICK, z: r.z + sin * THICK, len: r.len + THICK };
+}
+
+/**
+ * The two end faces of a block: from THICK behind the run's face to `ahead` in front of it, `over` past each end, each
+ * a run of its own turned a quarter outward.
+ */
+function endsOf(r: Run, ahead: number, over: number): [Run, Run] {
+  const cos = Math.cos(r.yaw);
+  const sin = Math.sin(r.yaw);
+  const far = r.len + over;
+  const len = THICK + ahead;
+  return [
+    { ...r, x: r.x - cos * over - sin * THICK, z: r.z + sin * over - cos * THICK, yaw: r.yaw - Math.PI / 2, len },
+    { ...r, x: r.x + cos * far + sin * ahead, z: r.z - sin * far + cos * ahead, yaw: r.yaw + Math.PI / 2, len },
+  ];
 }
 
 /** Lays one tile over bands of runs at its real scale; with no batch it only counts the quads (n). */
@@ -89,7 +123,7 @@ class RunTiler {
 
   constructor() {
     this.tint[3] = 1;
-    this.q = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: this.uv, sway: 0, phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow | QUAD_FLAG.stone), lift: 0, facing: 0, tint: this.tint };
+    this.q = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0, py: 0, uv: this.uv, sway: 0, phase: 0, lift: 0, facing: 0, tint: this.tint };
   }
 
   begin(rect: SpriteRect, batch: CutoutBatch | null): void {
@@ -98,7 +132,11 @@ class RunTiler {
     this.n = 0;
   }
 
-  tile(r: Run, y0: number, y1: number, overhang: number, proud: number, tint: readonly number[], shade: number): void {
+  /**
+   * Upright, the band runs from y0 to y1 on the face; laid flat at height `top`, it runs from y0 to y1 metres back from
+   * the face.
+   */
+  tile(r: Run, y0: number, y1: number, overhang: number, proud: number, tint: readonly number[], shade: number, top: number | null = null): void {
     const rect = this.rect;
     if (rect === null || y1 - y0 < 1e-3) return;
     const [tw, th] = rect.size;
@@ -114,13 +152,15 @@ class RunTiler {
     const ou = (Math.abs(sin) > 0.5 ? r.z : r.x) - overhang - TILE_ORIGIN_X;
     for (let c = 0; c < 3; c++) this.tint[c] = Math.min(1, (tint[c] ?? 1) * shade);
     this.q.facing = r.yaw;
+    this.q.phase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow | QUAD_FLAG.stone | (top === null ? 0 : QUAD_FLAG.flat));
     // Two whole periods keep a band that starts under the ground on positive tile offsets, rows mirrored as before.
     cuts(y1 - y0, y0 + 2 * th, th, (ra, rb, rt, odd) => {
       cuts(r.len + 2 * overhang, ou, tw, (a, b, t0) => {
         if (this.batch !== null) {
-          this.q.x = bx + a * cos;
-          this.q.z = bz - a * sin;
-          this.q.y = y0 + ra;
+          const back = top === null ? 0 : y0 + ra;
+          this.q.x = bx + a * cos - sin * back;
+          this.q.z = bz - a * sin - cos * back;
+          this.q.y = top ?? y0 + ra;
           this.q.w = b - a;
           this.q.h = rb - ra;
           this.uv[0] = u0 + t0 * du;
@@ -144,23 +184,33 @@ export function writeEnclosure(runs: readonly Run[], baseH: number, m: AtlasMani
   const copingRect = m.sprites[COPING_TILE];
   if (wallRect === undefined || baseRect === undefined || copingRect === undefined) return null;
   const t = new RunTiler();
-  const pass = (rect: SpriteRect, batch: CutoutBatch | null, each: (r: Run, shade: number) => void): number => {
+  const blocks = runs.map(joined);
+  const pass = (rect: SpriteRect, batch: CutoutBatch | null, each: (r: Run, shade: number, i: number) => void): number => {
     t.begin(rect, batch);
-    runs.forEach((r, i) => each(r, 1 + SHADE_JITTER * (2 * hash01(i, 0x71) - 1)));
+    blocks.forEach((r, i) => each(r, 1 + SHADE_JITTER * (2 * hash01(i, 0x71) - 1), i));
     if (batch !== null) {
       batch.writer.count = t.n;
       batch.writer.commit(0, t.n);
     }
     return t.n;
   };
-  const stone = (r: Run, shade: number): void => t.tile(r, Math.max(r.from, Math.min(baseH - BASE.under, r.h)), r.h, 0, 0, STONE_TINT, shade);
+  const stone = (r: Run, shade: number): void => {
+    t.tile(r, Math.max(r.from, Math.min(baseH - BASE.under, r.h)), r.h, 0, 0, STONE_TINT, shade);
+    for (const end of endsOf(r, -END_INSET, 0)) t.tile(end, r.from, r.h, 0, 0, STONE_TINT, shade);
+  };
   const foot = (r: Run, shade: number): void => {
     if (r.from === 0) t.tile(r, -BASE.sink, Math.min(baseH, r.h), 0, r.pier ? 0 : BASE.proud, BASE.tint, shade);
   };
-  const band = (r: Run, y: number, shade: number): void => t.tile(r, y - COPING.h * 0.5, y + COPING.h * 0.5, COPING.overhang, COPING.proud, COPING.tint, shade);
-  const cap = (r: Run, shade: number): void => {
+  const band = (r: Run, y: number, shade: number): void => {
+    t.tile(r, y - COPING.h * 0.5, y + COPING.h * 0.5, COPING.overhang, COPING.proud, COPING.tint, shade);
+    for (const end of endsOf(r, COPING.proud - END_INSET, COPING.overhang)) t.tile(end, y - COPING.h * 0.5, y + COPING.h * 0.5, 0, 0, COPING.tint, shade);
+  };
+  const cap = (r: Run, shade: number, i: number): void => {
     band(r, r.h, shade);
     if (r.from > 0) band(r, r.from, shade);
+    const step = r.from > 0 || Math.abs(Math.sin(r.yaw)) > 0.5 ? 2 : i % 2;
+    const top = r.h + COPING.h * 0.5 + step * TOP_STEP;
+    t.tile(r, 0, COPING.proud + THICK + COPING.overhang, COPING.overhang, COPING.proud, COPING.tint, shade, top);
   };
   const wall = createBatch(wallRect.page, pass(wallRect, null, stone));
   const base = createBatch(baseRect.page, pass(baseRect, null, foot));

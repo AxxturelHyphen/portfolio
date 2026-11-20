@@ -145,6 +145,15 @@ const float EDGE_LAMP = 0.6;                          // the lanterns graze the 
 const vec2 EDGE_FIBRE = vec2(0.82, 0.6);              // the fibre grain: darkest share, texels per grain
 const vec2 FOOT_SHADE = vec2(0.1, 0.4);               // contact shade on the paper near the ground: height (m), depth
 
+// Stone relief under free roam (not on the low tier): the courses stand out of their mortar. A texel's height is its
+// luma against the tile's local mean (joints dark, faces pale); stepping along the eye's ray into the wall finds the
+// face it meets first, so at the orbit's angles the joints sink behind the stones' edges.
+const float RELIEF = 0.04;                            // metres from a stone's face down to the mortar
+const float RELIEF_TAPS = 8.0;
+const vec2 RELIEF_LUMA = vec2(0.45, 1.2);             // luma over the local mean of the deepest joint and of a face
+const float RELIEF_SHADE = 0.55;                      // the light the deepest joint keeps
+float stoneHeight(vec2 uv, float mean) { return smoothstep(RELIEF_LUMA.x, RELIEF_LUMA.y, luma(texture(uColor, uv, 1.0).rgb) / mean); }
+
 float inRect(vec2 uv) {
   vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
   return inside.x * inside.y;
@@ -194,8 +203,20 @@ void main() {
   // A quad grown for the paper edge shows its face and its drop shadow only inside the sprite's rect.
   float rect = vSide.w > 0.0 ? inRect(vUV) : 1.0;
   float rawA = texture(uColor, vUV).a * rect;
-  vec4 tex = vec4(texture(uColor, vUV, blur).rgb * fringeTone(rawA), crispAlpha(rawA));
-  vec2 nxy = texture(uNormal, vUV, blur).xy * 2.0 - 1.0;
+  vec2 uv = vUV;
+  float relief = 1.0;
+  if (vStone * vSide.w > 0.0) {
+    float mean = max(luma(texture(uColor, vUV, 6.0).rgb), 1e-3);
+    vec2 stride = -vSide.xy / max(vSide.z, 0.1) * RELIEF / RELIEF_TAPS;
+    for (float i = 0.0; i < RELIEF_TAPS; i++) {
+      relief = stoneHeight(uv, mean);
+      if (i / RELIEF_TAPS >= 1.0 - relief) break;
+      uv += stride;
+    }
+    relief = mix(RELIEF_SHADE, 1.0, relief);
+  }
+  vec4 tex = vec4(texture(uColor, uv, blur).rgb * relief * fringeTone(rawA), crispAlpha(rawA));
+  vec2 nxy = texture(uNormal, uv, blur).xy * 2.0 - 1.0;
   nxy.x *= vFrame.z * (vMirror > 0.5 ? -1.0 : 1.0);
   nxy = vec2(vFrame.x * nxy.x - vFrame.y * nxy.y, vFrame.y * nxy.x + vFrame.x * nxy.y);
   vec3 n = vec3(nxy, sqrt(max(1.0 - dot(nxy, nxy), 0.05)));
