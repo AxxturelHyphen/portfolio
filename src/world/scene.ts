@@ -105,9 +105,9 @@ export function relabel(views: readonly SlotView[], scene: BedScene, profile: Pr
 
 // Build-time validation
 
-type Raw = Record<string, unknown>;
+export type Raw = Record<string, unknown>;
 
-class Errors {
+export class Errors {
   readonly list: string[] = [];
   fail(path: string, msg: string): void { this.list.push(`${path}: ${msg}`); }
   obj(v: unknown, path: string): Raw {

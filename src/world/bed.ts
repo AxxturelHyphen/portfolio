@@ -7,6 +7,7 @@ import type { Texture } from 'three';
 import { spring } from '../core/spring.ts';
 import { OPEN_HALF, STREAM, wingOpacityOf } from '../core/motion.ts';
 import { buildBed, type BuildAtlas, type FlowerRef, type WingRef } from './bed.build.ts';
+import type { Boss, BossHandle } from './boss.ts';
 import { UNFURL } from './flower.ts';
 import { swingGates, type GateLeaf } from './gates.ts';
 import type { GardenRig } from './camera.ts';
@@ -45,6 +46,8 @@ export interface StreamBedCtx extends BedCtx {
   sprites: Readonly<Record<SpriteId, SpriteRect>>;
   /** The camera the bed was built for: a behaviour reads its items' placement for this mode. */
   mode: WorldMode;
+  /** The bed's archive boss when it has no parts of its own and the behaviour plays it (the peacock), else null. */
+  boss: BossHandle | null;
 }
 
 /** Shared world context of every bed: the always-resident shared atlas (null until loaded) and the garden memory. */
@@ -66,6 +69,8 @@ const ACTOR_CAPACITY = 64;
 const ENTERING: readonly Phase[] = ['opening', 'inspect', 'closing'];
 
 const behaviours = import.meta.glob<BedModule>('./behaviours/*.ts');
+/** The beds that have an archive boss: only their bytes bring the boss chunk. */
+const bossBeds: readonly string[] = Object.values(import.meta.glob<string>('../../content/bosses/*.json', { eager: true, import: 'bed' }));
 
 export const atlasUrl = (file: string): string => new URL(`atlas/${file}`, document.baseURI).href;
 
@@ -111,6 +116,10 @@ export class StreamBed implements Bed {
   missing = 0;
   private actors: CutoutBatch | null = null;
   private behaviour: BedBehaviour | null = null;
+  /** Free roam: the boss chunk (world/boss.load.ts), the bed's boss and the bed items it redraws itself. */
+  private bosses: typeof import('./boss.load.ts') | null = null;
+  private boss: Boss | null = null;
+  private owned: WingRef[] = [];
 
   constructor(readonly id: BedId, readonly scene: BedScene3, readonly anchorX: number, private readonly env: BedEnv, private readonly slicer: Slicer) {
     const projects = id === 'rosaleda' || id === 'estanque' || id === 'semillero' ? env.kit.projectsOf(id) : [];
@@ -136,6 +145,7 @@ export class StreamBed implements Bed {
       if (!res.ok) throw new Error(`atlas ${this.id}: ${file} HTTP ${res.status}`);
       pageBytes.set(file, await res.arrayBuffer());
     }));
+    if (worldMode() === 'roam' && bossBeds.includes(this.id)) this.bosses = await import('./boss.load.ts');
     if (this.scene.behaviour !== undefined) {
       const load = behaviours[`./behaviours/${this.scene.behaviour}.ts`];
       if (load === undefined) throw new Error(`bed ${this.id}: no behaviour module "${this.scene.behaviour}"`);
@@ -197,21 +207,28 @@ export class StreamBed implements Bed {
     }
     const shared = env.shared();
     const order = this.id === 'gruta' ? RENDER_ORDER.hidden : RENDER_ORDER.bed;
+    const createBatch = (from: 'bed' | 'shared', page: number, capacity: number, front: boolean): CutoutBatch => {
+      const t = from === 'shared' && shared !== null ? shared.tex : tex;
+      const color = t.color[page];
+      const normal = t.normal[page];
+      if (color === undefined || normal === undefined) throw new Error(`bed ${this.id}: ${from} atlas has no page ${page}`);
+      const batch = env.kit.createCutoutBatch(env.gfx, color, normal, capacity);
+      batch.mesh.renderOrder = front ? RENDER_ORDER.front : order + this.batches.length;
+      batch.mesh.frustumCulled = false;
+      this.batches.push(batch);
+      return batch;
+    };
+    const boss = this.bosses?.bossOf(this.id);
     const out = buildBed({
       scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, mode: worldMode(), wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
-      slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine, visitor: env.visitor,
-      createBatch: (from, page, capacity, front) => {
-        const t = from === 'shared' && shared !== null ? shared.tex : tex;
-        const color = t.color[page];
-        const normal = t.normal[page];
-        if (color === undefined || normal === undefined) throw new Error(`bed ${this.id}: ${from} atlas has no page ${page}`);
-        const batch = env.kit.createCutoutBatch(env.gfx, color, normal, capacity);
-        batch.mesh.renderOrder = front ? RENDER_ORDER.front : order + this.batches.length;
-        batch.mesh.frustumCulled = false;
-        this.batches.push(batch);
-        return batch;
-      },
+      slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine, visitor: env.visitor, createBatch,
+      owned: boss === undefined ? [] : this.bosses?.MOTIONS[boss.motion]?.owns ?? [],
     });
+    this.owned = out.owned;
+    if (boss !== undefined && this.bosses !== null) {
+      this.boss = this.bosses.createBoss({ def: boss, sprites: m.sprites, machine: env.machine, low: env.quality.tier === 'low',
+        batch: (page, capacity) => createBatch('bed', page, capacity, false), own: (hidden) => this.own(hidden) });
+    }
     this.flowers = out.flowers;
     this.wings = out.wings;
     this.pets = out.pets.map((p) => createPet(p, { edge: this.scene.bounds, anchor: this.slots.find((v) => v.id === p.slot)?.world ?? null }));
@@ -230,7 +247,7 @@ export class StreamBed implements Bed {
     if (this.module !== null && this.actors !== null) {
       const ctx: StreamBedCtx = { scene: this.scene, actors: this.actors.writer, machine: env.machine, light: env.light,
         rig: env.rig, quality: env.quality, content: env.content, moth: env.kit.moth(), onDom: env.kit.onDom, createMover: env.kit.createMover,
-        sprites: m.sprites, mode: worldMode() };
+        sprites: m.sprites, mode: worldMode(), boss: this.boss?.def.parts.length === 0 ? this.boss : null };
       this.behaviour = this.module.default(ctx);
     }
     return true;
@@ -262,8 +279,9 @@ export class StreamBed implements Bed {
     for (let i = 0; i < this.pets.length; i++) if (this.pets[i]?.slot === slot) this.pets[i]?.wake();
   }
 
-  /** True while a pet is awake (it moves on the frame clock, so the loop must not idle). */
+  /** True while a pet is awake or the boss plays (they move on the frame clock, so the loop must not idle). */
   get petBusy(): boolean {
+    if (this.boss?.busy === true) return true;
     for (let i = 0; i < this.pets.length; i++) if (this.pets[i]?.busy === true) return true;
     return false;
   }
@@ -287,7 +305,18 @@ export class StreamBed implements Bed {
       f.flower.update(c);
       if (f.flower.dirty) f.batch.writer.commit(f.at, f.at + f.flower.write(f.batch.writer, f.at));
     }
+    this.boss?.update(c);
     this.behaviour?.update?.(c);
+  }
+
+  /** Hides or shows the bed's own copies of what its boss redraws. */
+  private own(hidden: boolean): void {
+    for (const r of this.owned) {
+      r.alpha = hidden ? 0 : 1;
+      (r.quad.tint as number[])[3] = r.alpha;
+      r.batch.writer.set(r.at, r.quad);
+      r.batch.writer.commit(r.at, r.at + 1);
+    }
   }
 
   /** No flower stays entered once the bed is left or freed. */
@@ -341,6 +370,9 @@ export class StreamBed implements Bed {
     this.abort = null;
     this.behaviour?.dispose?.();
     this.behaviour = null;
+    this.boss?.dispose();
+    this.boss = null;
+    this.owned = [];
     for (const b of this.batches) {
       this.env.gfx.scene.remove(b.mesh);
       b.dispose();

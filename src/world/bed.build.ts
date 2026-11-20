@@ -36,13 +36,15 @@ export interface BuildInput {
   reduced: { readonly state: { readonly reduced: boolean } };
   /** Free roam: the visitor's [x, z] that project flowers open toward, else null. */
   visitor?: Float32Array | null;
+  /** Sprites a boss redraws itself (world/boss.motions.ts owns): their items come back as `owned` so the bed can hide them. */
+  owned?: readonly SpriteId[];
   /** `front`: a batch of free roam's foreground frames, painted over the ground dressing (RENDER_ORDER.front). */
   createBatch(from: AtlasKey, page: number, capacity: number, front: boolean): CutoutBatch;
 }
 
 export interface FlowerRef { flower: GardenFlower; batch: CutoutBatch; at: number }
 export interface WingRef { batch: CutoutBatch; at: number; quad: QuadParams; alpha: number }
-export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; pets: PetRef[]; gates: GateLeaf[]; skipped: number }
+export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; pets: PetRef[]; gates: GateLeaf[]; owned: WingRef[]; skipped: number }
 
 /** Share of the place shadow colour mixed into each value group, per camera. */
 const GROUP_MIX: Record<WorldMode, Record<ValueGroup, number>> = { rail: { L: 0, M: 0.45, D: 0.7 }, roam: { L: 0, M: 0.2, D: 0.3 } };
@@ -62,7 +64,7 @@ const FRONT_Z = 2;
 const FOOT_SPRAYS = 3;
 const FOOT_SPREAD = 0.18;
 
-type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; flower?: GardenFlower; pet?: { slot: string; quad: QuadParams }; gate?: { sprite: SpriteId; quad: QuadParams } };
+type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; owned?: QuadParams; flower?: GardenFlower; pet?: { slot: string; quad: QuadParams }; gate?: { sprite: SpriteId; quad: QuadParams } };
 interface Group { from: AtlasKey; page: number; front: boolean; entries: Entry[]; quads: number; zSum: number }
 
 export function hexRgb(hex: string, out: Float32Array): Float32Array {
@@ -162,6 +164,7 @@ export function buildBed(i: BuildInput): BuildOutput {
       const seed = bodySeed(it.x, it.z);
       const entry: Entry = { z: it.z, write: (b, at) => writeBody(b.writer, at, q, body, seed) };
       if (it.wing === true) entry.wing = q;
+      if (i.owned?.includes(it.sprite) === true) entry.owned = q;
       if (isGateLeaf(it.sprite)) entry.gate = { sprite: it.sprite, quad: q };
       if (pet !== undefined) {
         entry.pet = { slot: pet, quad: q };
@@ -193,7 +196,7 @@ export function buildBed(i: BuildInput): BuildOutput {
   }
 
   const ordered = [...groups.values()].sort((a, b) => a.zSum / a.entries.length - b.zSum / b.entries.length);
-  const out: BuildOutput = { batches: [], flowers: [], wings: [], pets: [], gates: [], skipped };
+  const out: BuildOutput = { batches: [], flowers: [], wings: [], pets: [], gates: [], owned: [], skipped };
   for (const g of ordered) {
     const batch = i.createBatch(g.from, g.page, Math.max(1, g.quads), g.front);
     g.entries.sort((a, b) => a.z - b.z);
@@ -201,6 +204,7 @@ export function buildBed(i: BuildInput): BuildOutput {
     for (const e of g.entries) {
       if (e.flower !== undefined) out.flowers.push({ flower: e.flower, batch, at });
       if (e.wing !== undefined) out.wings.push({ batch, at, quad: e.wing, alpha: 1 });
+      if (e.owned !== undefined) out.owned.push({ batch, at, quad: e.owned, alpha: 1 });
       if (e.pet !== undefined) out.pets.push({ slot: e.pet.slot, batch, at, quad: e.pet.quad });
       const gate = e.gate === undefined ? null : gateLeafOf(e.gate.sprite, e.gate.quad, batch, at);
       if (gate !== null) out.gates.push(gate);

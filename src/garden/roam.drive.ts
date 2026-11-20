@@ -15,6 +15,7 @@ import type { BedScene3, WorldLayout } from '../world/layout.ts';
 import type { GardenLight } from '../world/light.ts';
 import { builtIn } from '../world/mode.ts';
 import { createOrbit, type OrbitMode } from '../world/orbit.ts';
+import { bossCamera } from '../world/boss.camera.ts';
 import { createProximity, PROXIMITY, reachDist } from '../world/proximity.ts';
 import { bedAhead, createVisitor, HEADING, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
 import type { Arrival } from './arrival.ts';
@@ -384,6 +385,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       framed.yaw = p.yaw;
       framed.fov = p.fov;
       d.arrival?.shape(framed);
+      bossCamera.shape(framed);
     },
     resize(w, h) {
       follower.resize(w, h);
