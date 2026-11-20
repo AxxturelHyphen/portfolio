@@ -7,9 +7,10 @@ uniform vec2 uWind;        // x: steady lean in radians, y: gust gain 0..1
 uniform vec4 uCursor;
 uniform vec4 uFocusBack;   // the plane the far layers fall back behind, amount
 uniform vec4 uShadowDir;   // decal direction x, z on the ground; length per unit of height; opacity
-uniform vec3 uEye;         // camera x, z on the ground; standee turn weight (0 on the rail, 1 under free roam)
+uniform vec3 uEye;         // z: 0 on the rail, 1 under free roam
 uniform vec2 uVisitor;     // the roaming visitor's ground point x, z
 uniform vec4 uPart;        // the grotto's ivy curtain: centre x, z, half width, how far it parts (metres)
+uniform float uThick;      // paper edge gain: 1, or 0 on the low tier and for the actors (cutout.material.ts)
 
 in vec3 position;   // corner x, y; kind
 in vec4 aPos;       // x, y, z, rotation (radians)
@@ -34,20 +35,35 @@ out float vFocusDepth; // view depth of the fall-back plane (the focused flower 
 out float vFade;       // paper opacity factor: under 1 while a fading card covers the visitor
 out float vHung;       // 1: a hung cutout's paper (the carried lantern), lit from its own flame
 out float vStone;      // 1: wall and coping stone, never weighed as a leaf
+out vec4 vSide;        // the eye seen from the paper: xy in the sprite's uv frame, z along the face normal; w thickness (m)
+out vec3 vSideN;       // the part of the way to the eye that lies in the face (world): the lit side of the cut edge
 
 const float LEAN = 0.13963;          // 8 degrees back (cook/ART.md: half the camera pitch)
 const float PUSH_RADIUS = 0.6;       // the cursor's ground point bends leaves within this distance
 const float PUSH_MAX = 0.2443;       // 14 degrees
 const float ROAM_PUSH_RADIUS = 1.2;  // under free roam leaves bend round the visitor's ground point within this distance
 const float DECAL_LIFT = 0.004;      // decals sit just above the ground they fall on
-const float TURN_MAX = 0.61087;      // a standee follows the eye's bearing up to 35 degrees either side
-const float TURN_K = 0.7;            // and turns this share of it, so the hinge variety stays
+// Paper thickness under free roam: a share of the card's height, between a floor and a ceiling (metres). The quad grows
+// by THICK_PAD thicknesses each side so the cut edge seen past its outline has room (the fragment stage clips there).
+const vec3 THICK = vec3(0.012, 0.002, 0.025);
+const float THICK_PAD = 1.2;
 const float FADE_TO = 0.35;          // a fading card's opacity while it covers the visitor
 const float FADE_EDGE = 0.3;         // metres either side of its outline over which it fades: about 0.2 s of walking
 const vec2 HUNG_SHADOW = vec2(1.5, 0.9); // a hanging cutout's shadow below it: width and depth as shares of its width
 const float PART_DEPTH = 0.3;        // cards within this depth of the curtain's plane belong to it
 
 float bit(float flags, float b) { return mod(floor(flags / b), 2.0); }
+
+// The eye from the view-projection: the one point whose clip x, y and w are all zero.
+vec3 eyeOf(mat4 m) {
+  vec4 r0 = vec4(m[0][0], m[1][0], m[2][0], m[3][0]);
+  vec4 r1 = vec4(m[0][1], m[1][1], m[2][1], m[3][1]);
+  vec4 r3 = vec4(m[0][3], m[1][3], m[2][3], m[3][3]);
+  vec3 c01 = cross(r0.xyz, r1.xyz);
+  vec3 c13 = cross(r1.xyz, r3.xyz);
+  vec3 c30 = cross(r3.xyz, r0.xyz);
+  return -(r0.w * c13 + r1.w * c30 + r3.w * c01) / dot(r0.xyz, c13);
+}
 
 // How far the visitor's ground point lies inside the card's outline on screen: 0 outside, 1 well inside.
 float coverOf(vec3 right, vec3 front, float lean) {
@@ -75,15 +91,16 @@ void main() {
   float kind = position.z;
   vec2 corner = position.xy;
 
-  // Standees (flag 32) turn from their hinge toward the eye; weight 0 leaves the hinge exactly as it was.
-  float bearing = clamp(atan(uEye.x - aPos.x, uEye.y - aPos.z), -TURN_MAX, TURN_MAX);
-  float yaw = aAnim.w + bit(flags, 32.0) * uEye.z * TURN_K * bearing;
+  // Every cutout keeps its hinge: an orbiting eye sees the paper turn, its cut edge and the crossed cards.
+  float yaw = aAnim.w;
   float cy = cos(yaw);
   float sy = sin(yaw);
   vec3 right = vec3(cy, 0.0, -sy);
   vec3 front = vec3(sy, 0.0, cy);
   vec3 world;
   vFade = 1.0;
+  vSide = vec4(0.0);
+  vSideN = vec3(0.0);
 
   if (kind < 0.5) {
     // Ground decal: only for standing cutouts with the pivot at the foot.
@@ -100,6 +117,8 @@ void main() {
     vec4 clip = uViewProj * vec4(world, 1.0);
     gl_Position = casts > 0.5 ? clip : vec4(2.0, 2.0, 2.0, 1.0);
   } else {
+    float thick = uThick * uEye.z * (1.0 - flat_) * clamp(abs(aSize.y) * THICK.x, THICK.y, THICK.z);
+    corner += sign(corner - 0.5) * THICK_PAD * thick / max(abs(aSize.xy), vec2(1e-3));
     vec2 local = (corner - aSize.zw) * aSize.xy;
     // Sway on twos unless flagged (spec section 2), growing with height above the pivot.
     float t = fullRate > 0.5 ? uTime : floor(uTime * 12.0) / 12.0;
@@ -125,6 +144,16 @@ void main() {
       world = aPos.xyz + right * local.x + vec3(0.0, local.y * cos(lean), 0.0) - front * (local.y * sin(lean));
     }
     gl_Position = uViewProj * vec4(world, 1.0);
+    if (thick > 0.0) {
+      // The way to the eye in the face's frame: undo the lean, then the in-plane rotation, then metres to uv.
+      vec3 toEye = eyeOf(uViewProj) - world;
+      vec3 normal = front * cos(lean) + vec3(0.0, sin(lean), 0.0);
+      vec2 e = vec2(dot(toEye, right), dot(toEye, vec3(0.0, cos(lean), 0.0) - front * sin(lean)));
+      e = vec2(c * e.x + s * e.y, s * -e.x + c * e.y) / aSize.xy * (aUV.zw - aUV.xy);
+      float along = dot(toEye, normal);
+      vSide = vec4(e, along, thick);
+      vSideN = toEye - normal * along;
+    }
     if (bit(flags, 64.0) * uEye.z > 0.5) vFade = 1.0 - (1.0 - FADE_TO) * coverOf(right, front, lean);
     // A fading card keeps no depth: the figure drawn after the cutouts shows through its trace, never cut away by it.
     if (vFade < 1.0) gl_Position.z = gl_Position.w;

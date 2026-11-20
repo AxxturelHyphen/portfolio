@@ -13,6 +13,13 @@ export { sharedUniforms } from './lights.ts';
 /** Drop shadow onto the paper behind (uv offset per unit lift, mip bias, strength); the depth haze is the shared uHaze. */
 const SHADOW = { offset: 0.02, softness: 2.5, strength: 0.7 } as const;
 const VERTEX = common + vertexBody;
+/** The paper edge gain every cutout reads (uThick): 1 shows the card's cut edge under free roam, 0 turns it off. */
+const paperEdge = { value: 1 };
+
+/** Paper thickness on or off for every cutout (off on the low tier). The actors never show it. */
+export function setPaperEdge(on: boolean): void {
+  paperEdge.value = on ? 1 : 0;
+}
 const FRAGMENT = common + lights + fragmentBody;
 
 /**
@@ -44,7 +51,7 @@ export function createCutoutMaterial(color: Texture, normal: Texture): { materia
     glslVersion: GLSL3,
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
-    uniforms: { ...sharedUniforms, ...uniforms },
+    uniforms: { ...sharedUniforms, ...uniforms, uThick: paperEdge },
     transparent: true,
     premultipliedAlpha: true,
     blending: NormalBlending,
@@ -99,6 +106,7 @@ export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capa
   const material = batch.mesh.material as RawShaderMaterial;
   material.depthFunc = LessEqualDepth;
   material.depthWrite = false;
+  material.uniforms['uThick'] = { value: 0 };
   batch.mesh.renderOrder = ACTOR_ORDER;
   if (light !== undefined) {
     const lamps = sharedUniforms.uLamp.value;

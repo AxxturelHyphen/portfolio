@@ -25,6 +25,8 @@ in float vPlaneDepth;
 in float vFocusDepth;
 in float vHung;
 in float vStone;
+in vec4 vSide;
+in vec3 vSideN;
 
 out vec4 outColor;
 
@@ -130,6 +132,40 @@ const float HUNG_OPACITY = 0.95;                       // the soft shadow straig
 const vec3 FLAME_CORE = vec3(1.0, 0.8, 0.52);
 const vec2 FLAME_CORE_FROM = vec2(0.5, 0.92);         // share of the core glow where the white starts and is full
 
+// Paper thickness (free roam, not on the low tier): through a pixel the face leaves open, the eye's ray goes on behind
+// the face across the card's thickness (vSide.w); the first of SIDE_TAPS taps inside the silhouette is the cut edge,
+// warm off-white, darker toward the back. Taps past the sprite's rect see no paper; a pixel past the rect beside a tile
+// that runs to its rect (wall, coping) takes no edge, so tiled flats never show one at their seams.
+const float SIDE_TAPS = 4.0;
+const float SIDE_SLOPE = 1.2;                         // THICK_PAD of the vertex stage: the room the grown quad leaves
+const vec3 PAPER_EDGE = vec3(0.55, 0.47, 0.35);       // #c4b6a0 warm off-white card core, linear
+const float EDGE_BACK = 0.4;                          // the share of light the edge keeps at the back face
+const float EDGE_AMBIENT = 0.7;                       // the dusk fill on the edge: dimmer than on the face
+const float EDGE_LAMP = 0.6;                          // the lanterns graze the edge
+const vec2 EDGE_FIBRE = vec2(0.82, 0.6);              // the fibre grain: darkest share, texels per grain
+const vec2 FOOT_SHADE = vec2(0.1, 0.4);               // contact shade on the paper near the ground: height (m), depth
+
+float inRect(vec2 uv) {
+  vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
+  return inside.x * inside.y;
+}
+
+// x: how much of the cut edge this pixel sees, y: how deep the edge seen lies, 0 at the face and 1 at the back.
+vec2 paperSide() {
+  float reach = vSide.w * min(1.0 / max(abs(vSide.z), 1e-4), SIDE_SLOPE / max(length(vSideN), 1e-4));
+  vec2 stride = -vSide.xy * reach / SIDE_TAPS;
+  float hit = 0.0;
+  float depth = 0.0;
+  for (float i = 1.0; i <= SIDE_TAPS; i++) {
+    vec2 uv = vUV + stride * i;
+    float a = smoothstep(0.3, 0.7, texture(uColor, uv, 0.0).a) * inRect(uv) * (1.0 - hit);
+    depth += a * i / SIDE_TAPS;
+    hit += a;
+  }
+  float tile = (1.0 - inRect(vUV)) * texture(uColor, clamp(vUV, vRect.xy, vRect.zw), 0.0).a;
+  return vec2(hit * (1.0 - tile), depth / max(hit, 1e-4));
+}
+
 vec4 decal() {
   if (vFrame.w < -0.5) {
     vec2 e = (vUV - vRect.xy) / max(vRect.zw - vRect.xy, vec2(1e-5)) * 2.0 - 1.0;
@@ -155,7 +191,9 @@ void main() {
   float back = uFocusBack.w * smoothstep(FOCUS_BACK.x, FOCUS_BACK.y, vDepth - vFocusDepth);
   float blur = back * FOCUS_BLUR * (1.0 - uEye.z);
   // The colour softens behind the focus; the alpha stays sharp so tiled flats never open a seam.
-  float rawA = texture(uColor, vUV).a;
+  // A quad grown for the paper edge shows its face and its drop shadow only inside the sprite's rect.
+  float rect = vSide.w > 0.0 ? inRect(vUV) : 1.0;
+  float rawA = texture(uColor, vUV).a * rect;
   vec4 tex = vec4(texture(uColor, vUV, blur).rgb * fringeTone(rawA), crispAlpha(rawA));
   vec2 nxy = texture(uNormal, vUV, blur).xy * 2.0 - 1.0;
   nxy.x *= vFrame.z * (vMirror > 0.5 ? -1.0 : 1.0);
@@ -192,6 +230,17 @@ void main() {
   vec3 coarse = texture(uColor, vUV, LEAF_MIP_BIAS).rgb;
   float leaf = leafWeight(coarse) * (1.0 - vStone);
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
+  float foot = 1.0 - FOOT_SHADE.y * step(1e-5, vSide.w) * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
+  vec2 side = vSide.w > 0.0 && tex.a < 0.99 ? paperSide() : vec2(0.0);
+  vec3 sideLit = vec3(0.0);
+  if (side.x > 1e-3) {
+    vec3 sn = normalize(vSideN + vec3(0.0, 1e-4, 0.0));
+    vec3 sideLight = (neutralise(uAmbient) * EDGE_AMBIENT + neutralise(uMoonColor) * wrapLight(dot(sn, uMoonDir), 0.2)) * night
+      + (handLights(vWorld, sn) + lampLights(vWorld, sn)) * EDGE_LAMP;
+    float fibre = mix(EDGE_FIBRE.x, 1.0, valueNoise(vUV * vec2(textureSize(uColor, 0)) / EDGE_FIBRE.y));
+    sideLit = paperShoulder(PAPER_EDGE * mix(1.0, EDGE_BACK, side.y) * fibre * sideLight) * foot;
+  }
+  lit *= foot;
   if (vHung > 0.5) {
     vec2 q = (vUV - vRect.xy) / max(vRect.zw - vRect.xy, vec2(1e-5));
     float core = exp(-sq((q.y - GLOW_FLAME.x) / GLOW_FLAME.y) - sq((q.x - 0.5) / 0.4));
@@ -219,6 +268,7 @@ void main() {
   float hazed = 1.0 - exp(-max(vDepth - mix(HAZE_START, ROAM_HAZE_START, uEye.z), 0.0) * uDepthFade.w);
   lit = mix(lit, haze, hazed);
   lit = layerAir(lit, vDepth - vPlaneDepth, back);
+  sideLit = layerAir(mix(sideLit, haze, hazed), vDepth - vPlaneDepth, back);
   vec3 plate = coarse * max(vTint.rgb, vec3(ROAM_TINT_FLOOR));
   float plateLuma = luma(plate);
   vec3 floorHue = mix(hazeHue, plate / max(plateLuma, 1e-3), smoothstep(ROAM_FLOOR_HUE.x, ROAM_FLOOR_HUE.y, plateLuma) * ROAM_FLOOR_HUE_KEPT);
@@ -238,11 +288,12 @@ void main() {
   lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * (mix(RIM_STRENGTH, ROAM_RIM_STRENGTH, uEye.z) * (0.3 + 0.7 * dark) + uActorRim) * (1.0 - back) * (1.0 - 0.6 * hazed);
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
-  float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);
+  float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach) * rect;
 
   float opacity = vTint.a * uReveal * vFade;
   float a = tex.a * opacity;
-  float shadowA = shadow * opacity * (1.0 - a);
-  outColor = vec4(lit * a + neutralise(uShadowColor) * 0.4 * shadowA, a + shadowA);
+  float sideA = side.x * opacity * (1.0 - a);
+  float shadowA = shadow * opacity * (1.0 - a) * (1.0 - side.x);
+  outColor = vec4(lit * a + sideLit * sideA + neutralise(uShadowColor) * 0.4 * shadowA, a + sideA + shadowA);
   if (outColor.a < uDepthCut) discard;
 }

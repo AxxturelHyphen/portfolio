@@ -1,76 +1,56 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { Matrix4, PerspectiveCamera, Vector3 } from 'three';
 import { QUAD_FLAG, TURN_WALL_GAP, packPhase, turnFlag } from '../../../src/world/quadflags.ts';
 
-// Standees (cook/ROAM_PLAN.md 3, P2): the vertex shader turns flagged cutouts from their hinge toward the eye on the
-// ground plane. This mirrors that yaw on the CPU, with the constants read from the shader source so the two cannot drift.
+// Standees under an orbiting camera (cook/PLAN_3D.md F1, F2): every cutout keeps its hinge, so the paper's cut edge
+// shows from the side. The vertex stage finds the eye from uViewProj alone (eyeOf); this mirrors that solve on the CPU.
 
-const glsl = readFileSync(new URL('../../../src/gl/shaders/cutout.vert.glsl', import.meta.url), 'utf8');
-const constant = (name: string): number => {
-  const m = new RegExp(`const float ${name} = ([0-9.]+);`).exec(glsl);
-  if (m === null) throw new Error(`cutout.vert.glsl has no ${name}`);
-  return Number(m[1]);
-};
-const TURN_MAX = constant('TURN_MAX');
-const TURN_K = constant('TURN_K');
-const DEG = Math.PI / 180;
+const vert = readFileSync(new URL('../../../src/gl/shaders/cutout.vert.glsl', import.meta.url), 'utf8');
+const frag = readFileSync(new URL('../../../src/gl/shaders/cutout.frag.glsl', import.meta.url), 'utf8');
 
-interface Instance { x: number; z: number; facing: number; phase: number }
-interface Eye { x: number; z: number; weight: number }
-
-/** The shader's decode of the flags and its yaw, in the same order of operations. */
-function yawOf(i: Instance, eye: Eye): number {
-  const flags = Math.floor(i.phase / 8);
-  const turn = Math.floor(flags / 32) % 2;
-  const bearing = Math.min(TURN_MAX, Math.max(-TURN_MAX, Math.atan2(eye.x - i.x, eye.z - i.z)));
-  return i.facing + turn * eye.weight * TURN_K * bearing;
+/** eyeOf of cutout.vert.glsl: the point whose clip x, y and w are zero, from rows 0, 1 and 3 of the matrix. */
+function eyeOf(m: Matrix4): Vector3 {
+  const e = m.elements;
+  const row = (i: number): [Vector3, number] => [new Vector3(e[i], e[4 + i], e[8 + i]), e[12 + i]!];
+  const [a0, d0] = row(0);
+  const [a1, d1] = row(1);
+  const [a3, d3] = row(3);
+  const c01 = new Vector3().crossVectors(a0, a1);
+  const c13 = new Vector3().crossVectors(a1, a3);
+  const c30 = new Vector3().crossVectors(a3, a0);
+  const det = a0.dot(c13);
+  return c13.multiplyScalar(d0).add(c30.multiplyScalar(d1)).add(c01.multiplyScalar(d3)).multiplyScalar(-1 / det);
 }
 
-const standee = (x: number, z: number, hingeDeg: number, flags: number = QUAD_FLAG.turn): Instance =>
-  ({ x, z, facing: -hingeDeg * DEG, phase: packPhase(1.3, flags) });
-
-test('the shader turns 35 degrees at most and a factor of 0.7', () => {
-  expect(TURN_MAX).toBeCloseTo(35 * DEG, 4);
-  expect(TURN_K).toBe(0.7);
+test('the yaw is the hinge: no turn toward the eye is left in the shader', () => {
+  expect(vert).toContain('float yaw = aAnim.w;');
+  expect(vert).not.toMatch(/TURN_MAX|TURN_K|bearing/);
 });
 
-test('a standee straight in front of the eye keeps its hinge', () => {
-  const s = standee(10, -2, 7);
-  expect(yawOf(s, { x: 10, z: 8, weight: 1 })).toBeCloseTo(s.facing, 12);
-});
-
-test('the turn follows the bearing, scaled by the factor, inside the clamp', () => {
-  const s = standee(10, -2, 0);
-  const eye = { x: 13, z: 8, weight: 1 };
-  const bearing = Math.atan2(3, 10);
-  expect(bearing).toBeLessThan(TURN_MAX);
-  expect(yawOf(s, eye)).toBeCloseTo(TURN_K * bearing, 12);
-  expect(yawOf(s, { ...eye, x: 7 })).toBeCloseTo(-TURN_K * bearing, 12);
-});
-
-test('far to the side the turn stops at the clamp, both ways, on top of the hinge', () => {
-  const s = standee(10, -2, -12);
-  expect(yawOf(s, { x: 40, z: 0, weight: 1 })).toBeCloseTo(s.facing + TURN_K * TURN_MAX, 12);
-  expect(yawOf(s, { x: -20, z: 0, weight: 1 })).toBeCloseTo(s.facing - TURN_K * TURN_MAX, 12);
-});
-
-test('weight 0 (the rail) gives the hinge exactly, for every instance', () => {
-  for (const [x, z, hinge] of [[10, -2, 7], [5, 0.1, 12], [20, -3.4, -6], [42, 0.4, -12]] as const) {
-    const s = standee(x, z, hinge);
-    for (const ex of [-5, x, 50]) expect(yawOf(s, { x: ex, z: 6, weight: 0 })).toBe(s.facing);
+test('the eye comes back from the view-projection, orbited or not', () => {
+  for (const [x, y, z, yawDeg] of [[3, 4.6, 8, 0], [12, 2.1, 1.5, 25], [-1, 3.3, 4, -35]] as const) {
+    const camera = new PerspectiveCamera(40, 16 / 9, 0.05, 400);
+    camera.position.set(x, y, z);
+    camera.rotation.set(-0.5, (-yawDeg * Math.PI) / 180, 0, 'YXZ');
+    camera.updateMatrixWorld();
+    const vp = new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    const eye = eyeOf(vp);
+    expect(eye.x).toBeCloseTo(x, 3);
+    expect(eye.y).toBeCloseTo(y, 3);
+    expect(eye.z).toBeCloseTo(z, 3);
   }
 });
 
-test('an instance without the flag never turns, whatever the other flags', () => {
-  for (const flags of [0, QUAD_FLAG.noLean, QUAD_FLAG.flat | QUAD_FLAG.noShadow, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow]) {
-    const s = standee(10, -2, 5, flags);
-    expect(yawOf(s, { x: 30, z: 6, weight: 1 })).toBe(s.facing);
-  }
-  const both = standee(10, -2, 5, QUAD_FLAG.turn | QUAD_FLAG.noShadow | QUAD_FLAG.silhouette);
-  expect(yawOf(both, { x: 30, z: 6, weight: 1 })).not.toBe(both.facing);
+test('paper thickness is free roam only, off with uThick, and the quad grows by the slope the edge is cut at', () => {
+  expect(vert).toContain('uThick * uEye.z * (1.0 - flat_)');
+  const pad = /const float THICK_PAD = ([0-9.]+);/.exec(vert)?.[1];
+  const slope = /const float SIDE_SLOPE = ([0-9.]+);/.exec(frag)?.[1];
+  expect(pad).toBeDefined();
+  expect(slope).toBe(pad);
 });
 
-test('the rule: upright cutouts turn unless they stand on the wall band', () => {
+test('the rule: upright cutouts are standees unless they stand on the wall band', () => {
   const wallZ = -6;
   expect(turnFlag(-2, wallZ, true)).toBe(QUAD_FLAG.turn);
   expect(turnFlag(-2, wallZ, false)).toBe(0);
@@ -79,11 +59,12 @@ test('the rule: upright cutouts turn unless they stand on the wall band', () => 
   expect(turnFlag(-8.4, wallZ, true)).toBe(0);
 });
 
-test('the fade flag decodes beside the turn and fades to about a third, only under free roam', () => {
+test('the fade flag decodes beside the standee flag and fades to about a third, only under free roam', () => {
   expect(QUAD_FLAG.fade).toBe(64);
-  expect(glsl).toContain('bit(flags, 64.0) * uEye.z');
-  expect(constant('FADE_TO')).toBeCloseTo(0.35, 2);
-  const s = standee(10, -2, 5, QUAD_FLAG.turn | QUAD_FLAG.fade);
-  expect(Math.floor(Math.floor(s.phase / 8) / 64) % 2).toBe(1);
-  expect(yawOf(s, { x: 30, z: 6, weight: 1 })).toBe(yawOf(standee(10, -2, 5), { x: 30, z: 6, weight: 1 }));
+  expect(vert).toContain('bit(flags, 64.0) * uEye.z');
+  const fadeTo = /const float FADE_TO = ([0-9.]+);/.exec(vert)?.[1];
+  expect(Number(fadeTo)).toBeCloseTo(0.35, 2);
+  const phase = packPhase(1.3, QUAD_FLAG.turn | QUAD_FLAG.fade);
+  expect(Math.floor(Math.floor(phase / 8) / 64) % 2).toBe(1);
+  expect(Math.floor(Math.floor(phase / 8) / 32) % 2).toBe(1);
 });
