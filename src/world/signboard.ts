@@ -9,21 +9,22 @@ import type { QuadParams } from '../types.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 /** Atlas texels per metre of each part, and the atlas side (px). */
-export const ATLAS = { side: 1024, plankPxM: 240, woodPxM: 120, lanternPxM: 250 } as const;
+export const ATLAS = { side: 1024, plankPxM: 300, woodPxM: 200, lanternPxM: 333 } as const;
 
 /**
  * Metres, for a sign pointing +x from its post foot. Post: width and height. Arm sprite: its reach either side of the
  * post, the height of the beam's underside, the sprite's height (the brace hangs under the beam) and the beam's depth.
  * Plank sprite: board size, bridle height and the transparent margin round the cut edge; its hook sits on the arm at
  * `hookAt`. Lantern sprite size, its hook at `at` along the arm and the flame's share of its height. The plank and
- * lantern stand a little nearer the lens than the post (`front`).
+ * lantern stand a little nearer the lens than the post (`front`). The post stands tall enough that the board
+ * hangs over the visitor's head (1.4 m).
  */
 export const BOARD = {
-  post: { w: 0.2, h: 2.55 },
-  arm: { from: -0.06, to: 2.04, under: 2.275, h: 0.36, beam: 0.09 },
-  plank: { w: 1.6, h: 0.56, bridle: 0.22, margin: 0.02, hookAt: 0.98 },
-  lantern: { w: 0.24, h: 0.42, at: 1.9, flame: 0.45 },
-  front: { plank: 0.04, lantern: 0.06 },
+  post: { w: 0.15, h: 2.3 },
+  arm: { from: -0.045, to: 1.57, under: 2.04, h: 0.27, beam: 0.07 },
+  plank: { w: 1.26, h: 0.42, bridle: 0.15, margin: 0.03, hookAt: 0.76 },
+  lantern: { w: 0.18, h: 0.315, at: 1.47, flame: 0.45 },
+  front: { plank: 0.03, lantern: 0.045 },
 } as const;
 
 /** One sign standing at a spot: the post foot (x, z) and the way it points. */

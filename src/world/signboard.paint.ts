@@ -1,124 +1,91 @@
 /**
- * Paints free roam's signposts into one canvas atlas (layout in world/signboard.ts): the wooden post, the arm with its
- * brace and hooks, a small tin lantern, and one plank per sign. A plank is the garden label of the cane signs made
- * large: bottle green paint with a ruled cream border, worn back to wood at a corner or two, the place name lettered in
- * Kalnia cream on green with an engraved manicule pointing the way, cut out with a slightly uneven edge and a thin pale
- * paper rim like the archival cutouts. Run at load and on a language change, never per frame.
+ * Paints free roam's signposts into one canvas atlas (layout in world/signboard.ts) as hand-cut, engraved paper like
+ * the garden's archival cutouts: the wooden post with a knot or two, the arm with its brace and hooks, a small tin
+ * lantern, and one plank per sign. A plank is faded bottle green paint, dry-brushed and hatched, scissor-cut with a
+ * chipped corner worn back to wood and hung a degree or two off level, with a hand-ruled cream border, the place name
+ * lettered in Kalnia cream and an engraved manicule pointing the way. Every part has a thin dark ink edge and no
+ * sheen. Seeded, so a sign keeps its cut and wear; run at load and on a language change, never per frame.
  */
 import { MANICULE } from '../core/manicule.ts';
-import { ARM_RECT, ATLAS, BOARD, LANTERN_RECT, POST_RECT, plankRect, type AtlasRect } from './signboard.ts';
+import { cutOutline, dryBrush, hatch, knot, seeded, speckle, type Box, type Pt, type Rand } from './signboard.ink.ts';
+import { ARM_RECT, ATLAS, BOARD, LANTERN_RECT, POST_RECT, plankRect } from './signboard.ts';
 
-const INK = '#efe6cf';
-const PAINT = ['#334639', '#26372e', '#1e2c24'] as const;
-const PAPER_RIM = '#d9ccb0';
-const WOOD = ['#2f2416', '#6b5236', '#806442', '#4a3823'] as const;
+const EDGE = '#16110c';
+const LETTERING = '#e3d7b7';
+const PAINT = { base: '#36463b', chalk: '#8d9a86', shade: '#1b241e', fleck: '#d3d6c3' } as const;
+const WOOD = { base: '#5a4630', shade: '#241a11', light: '#8c7150', bare: '#7b6446' } as const;
 const IRON = '#1d1a17';
 export const FONT_FAMILY = 'Kalnia, Georgia, "Times New Roman", serif';
 /** Lettering size (m) for a one-line name, the least a name may shrink to, and the line step of a two-line name. */
-const LETTER = { oneLine: 0.25, twoLine: 0.19, least: 0.13, lineStep: 1.05 } as const;
-/** Inside the board: the border inset, the manicule's width and its gap to the name (m). */
-const INNER = { inset: 0.07, hand: 0.3, gap: 0.05 } as const;
+const LETTER = { oneLine: 0.21, twoLine: 0.15, least: 0.105, lineStep: 1.05 } as const;
+/** Inside the board: the border inset, the lettering's inset, the manicule's width and its gap to the name (m). */
+const INNER = { border: 0.035, inset: 0.05, hand: 0.22, gap: 0.035 } as const;
+/** How far off level a plank hangs (degrees, least and most), and the bite of its chipped corner (px). */
+const TILT = { least: 0.8, most: 2 } as const;
+const CHIP = { least: 18, most: 30 } as const;
+/** The brace's reach along the arm from the post (m). */
+const BRACE_REACH = 0.32;
 
-/** A small seeded random, so every plank keeps its own wear and edge from one paint to the next. */
-function seeded(seed: number): () => number {
-  let a = seed * 2654435761;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** An uneven cut outline round a box: each side in a few slightly wandering steps, the corners clipped. */
-function cutPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, clip: number, rand: () => number): void {
-  const j = (): number => (rand() - 0.5) * 2.2;
-  const steps = 6;
-  ctx.beginPath();
-  ctx.moveTo(x + clip, y + j());
-  for (let i = 1; i <= steps; i++) ctx.lineTo(x + clip + ((w - 2 * clip) * i) / steps, y + j());
-  ctx.lineTo(x + w + j(), y + clip);
-  for (let i = 1; i <= 2; i++) ctx.lineTo(x + w + j(), y + clip + ((h - 2 * clip) * i) / 2);
-  ctx.lineTo(x + w - clip, y + h + j());
-  for (let i = steps - 1; i >= 0; i--) ctx.lineTo(x + clip + ((w - 2 * clip) * i) / steps, y + h + j());
-  ctx.lineTo(x + j(), y + h - clip);
-  ctx.lineTo(x + j(), y + clip);
-  ctx.closePath();
-}
-
-/** Fine wood grain: thin darker strokes along the length of a box. */
-function grain(ctx: CanvasRenderingContext2D, r: Readonly<AtlasRect>, across: boolean, rand: () => number, alpha: number): void {
+/** Fills a cut outline with flat colour, lets `marks` texture it inside the cut, then inks its edge. */
+function cutPiece(ctx: CanvasRenderingContext2D, path: Path2D, fill: string, edge: number, marks: () => void): void {
+  ctx.fillStyle = fill;
+  ctx.fill(path);
   ctx.save();
-  ctx.strokeStyle = `rgb(20 14 8 / ${alpha})`;
-  ctx.lineWidth = 1;
-  const n = Math.round((across ? r.h : r.w) / 3);
-  for (let i = 0; i < n; i++) {
-    const at = (i + rand()) * 3;
-    ctx.beginPath();
-    if (across) {
-      ctx.moveTo(r.x, r.y + at);
-      ctx.bezierCurveTo(r.x + r.w * 0.3, r.y + at + rand() * 2 - 1, r.x + r.w * 0.7, r.y + at + rand() * 2 - 1, r.x + r.w, r.y + at);
-    } else {
-      ctx.moveTo(r.x + at, r.y);
-      ctx.lineTo(r.x + at + rand() * 2 - 1, r.y + r.h);
-    }
-    ctx.stroke();
-  }
+  ctx.clip(path);
+  marks();
   ctx.restore();
+  ctx.strokeStyle = EDGE;
+  ctx.lineWidth = edge;
+  ctx.lineJoin = 'round';
+  ctx.stroke(path);
 }
 
-function woodFill(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number): CanvasGradient {
-  const g = ctx.createLinearGradient(x0, y0, x1, y1);
-  g.addColorStop(0, WOOD[0]);
-  g.addColorStop(0.3, WOOD[2]);
-  g.addColorStop(0.65, WOOD[1]);
-  g.addColorStop(1, WOOD[3]);
-  return g;
+/** Engraved wood inside a box: dry-brushed light and dark along the grain, hatched darker on one side. */
+function woodMarks(ctx: CanvasRenderingContext2D, b: Readonly<Box>, upright: boolean, rand: Rand): void {
+  dryBrush(ctx, b, WOOD.light, 0.45, 36, upright, rand);
+  dryBrush(ctx, b, WOOD.shade, 0.5, 28, upright, rand);
+  const angle = upright ? Math.PI / 2 : 0;
+  hatch(ctx, b, angle, 5, WOOD.shade, 0.35, rand);
+  const shade = upright ? { ...b, w: b.w * 0.4 } : { ...b, y: b.y + b.h * 0.55, h: b.h * 0.45 };
+  hatch(ctx, shade, angle, 3, WOOD.shade, 0.6, rand);
 }
 
-function paintPost(ctx: CanvasRenderingContext2D, rand: () => number): void {
-  const r = POST_RECT;
-  const inset = 3;
-  const cap = 10;
-  ctx.fillStyle = woodFill(ctx, r.x + inset, 0, r.x + r.w - inset, 0);
-  ctx.beginPath();
-  ctx.moveTo(r.x + inset, r.y + r.h);
-  ctx.lineTo(r.x + inset, r.y + cap);
-  ctx.lineTo(r.x + r.w / 2, r.y + 1);
-  ctx.lineTo(r.x + r.w - inset, r.y + cap);
-  ctx.lineTo(r.x + r.w - inset, r.y + r.h);
-  ctx.closePath();
-  ctx.fill();
-  grain(ctx, { x: r.x + inset, y: r.y + cap, w: r.w - 2 * inset, h: r.h - cap }, false, rand, 0.35);
+function paintPost(ctx: CanvasRenderingContext2D, rand: Rand): void {
+  const { x, y, w, h } = POST_RECT;
+  const outline: Pt[] = [
+    [x + 3.5, y + h], [x + 2, y + h * 0.72], [x + 5, y + h * 0.5], [x + 3, y + h * 0.3], [x + 4, y + 16], [x + w * 0.4, y + 2], [x + w - 4, y + 11],
+    [x + w - 4, y + h * 0.29], [x + w - 0.5, y + h * 0.335], [x + w - 4, y + h * 0.38], [x + w - 6, y + h * 0.6], [x + w - 3, y + h * 0.8], [x + w - 3.5, y + h],
+  ];
+  cutPiece(ctx, cutOutline(outline, 18, 2, rand), WOOD.base, 2.6, () => {
+    woodMarks(ctx, { x, y, w, h }, true, rand);
+    knot(ctx, x + w - 8, y + h * 0.335, 3.4, 7, WOOD.shade, rand);
+    knot(ctx, x + 10, y + h * (0.58 + rand() * 0.2), 3, 6, WOOD.shade, rand);
+  });
 }
 
-function paintArm(ctx: CanvasRenderingContext2D, rand: () => number): void {
-  const r = ARM_RECT;
+function paintArm(ctx: CanvasRenderingContext2D, rand: Rand): void {
+  const { x, y, w, h } = ARM_RECT;
   const px = ATLAS.woodPxM;
   const beam = Math.round(BOARD.arm.beam * px);
-  const postX = r.x - BOARD.arm.from * px;
-  ctx.fillStyle = woodFill(ctx, 0, r.y + 1, 0, r.y + beam);
-  ctx.fillRect(r.x + 1, r.y + 1, r.w - 2, beam - 1);
-  grain(ctx, { x: r.x + 1, y: r.y + 1, w: r.w - 2, h: beam - 1 }, true, rand, 0.3);
-  // The brace from the post up under the beam.
-  ctx.strokeStyle = WOOD[1];
-  ctx.lineWidth = 5;
-  ctx.lineCap = 'butt';
-  ctx.beginPath();
-  ctx.moveTo(postX + 3, r.y + r.h - 2);
-  ctx.lineTo(postX + 0.42 * px, r.y + beam);
-  ctx.stroke();
+  const postX = x - BOARD.arm.from * px;
+  const reach = postX + BRACE_REACH * px;
+  const brace: Pt[] = [[postX + 1, y + h - 1], [postX + 7, y + h - 1], [reach + 4, y + beam - 1], [reach - 4, y + beam - 1]];
+  cutPiece(ctx, cutOutline(brace, 12, 1.6, rand), WOOD.base, 2, () => woodMarks(ctx, { x: postX, y: y + beam, w: reach - postX + 4, h: h - beam }, false, rand));
+  const beamOutline: Pt[] = [
+    [x + 2, y + 3.5], [x + w * 0.5, y + 3], [x + w - 4, y + 2.5], [x + w - 2, y + beam * 0.6], [x + w - 5, y + beam + 1], [x + w * 0.5, y + beam + 1.5], [x + 2, y + beam + 2],
+  ];
+  cutPiece(ctx, cutOutline(beamOutline, 20, 2, rand), WOOD.base, 2.2, () => woodMarks(ctx, { x, y, w, h: beam + 2 }, false, rand));
   // Iron rings under the beam where the plank's bridle and the lantern hang.
   ctx.strokeStyle = IRON;
   ctx.lineWidth = 1.6;
   for (const at of [BOARD.plank.hookAt, BOARD.lantern.at]) {
     ctx.beginPath();
-    ctx.arc(postX + at * px, r.y + beam + 2.5, 2.5, 0, Math.PI * 2);
+    ctx.arc(postX + at * px, y + beam + 4.5, 2.5, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
 
-/** A pierced tin lantern: hook ring, cap, four panes of warm glass between dark bars, a base. */
+/** A pierced tin lantern: hook ring, cap, four panes of warm glass between dark bars, a base, all inked round. */
 function paintLantern(ctx: CanvasRenderingContext2D): void {
   const r = LANTERN_RECT;
   const cx = r.x + r.w / 2;
@@ -130,27 +97,30 @@ function paintLantern(ctx: CanvasRenderingContext2D): void {
   ctx.beginPath();
   ctx.arc(cx, r.y + ring * 0.6, ring * 0.45, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.fillStyle = '#2a2520';
-  ctx.beginPath();
-  ctx.moveTo(cx - 4, r.y + ring);
-  ctx.lineTo(cx + 4, r.y + ring);
-  ctx.lineTo(r.x + r.w - 6, capB);
-  ctx.lineTo(r.x + 6, capB);
-  ctx.closePath();
-  ctx.fill();
   const glass = ctx.createRadialGradient(cx, r.y + r.h * 0.55, 2, cx, r.y + r.h * 0.55, r.w * 0.5);
-  glass.addColorStop(0, '#fff3c8');
-  glass.addColorStop(0.5, '#f2cf86');
-  glass.addColorStop(1, '#b98a46');
+  glass.addColorStop(0, '#fbeec4');
+  glass.addColorStop(0.5, '#eacb88');
+  glass.addColorStop(1, '#ad8549');
   ctx.fillStyle = glass;
   ctx.fillRect(r.x + 9, capB, r.w - 18, baseT - capB);
   ctx.fillStyle = '#2a2520';
   for (const x of [r.x + 7, cx - 1.5, r.x + r.w - 10]) ctx.fillRect(x, capB, 3, baseT - capB);
   ctx.fillRect(r.x + 5, baseT, r.w - 10, r.y + r.h - 2 - baseT);
+  ctx.beginPath();
+  ctx.moveTo(cx - 4, r.y + ring);
+  ctx.lineTo(cx + 4.5, r.y + ring + 0.5);
+  ctx.lineTo(r.x + r.w - 5.5, capB);
+  ctx.lineTo(r.x + 6, capB + 0.5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = EDGE;
+  ctx.lineWidth = 1.3;
+  ctx.stroke();
+  ctx.strokeRect(r.x + 7, capB, r.w - 14, r.y + r.h - 2 - capB);
 }
 
-/** The name in one line, or two split at the space nearest the middle, at the largest size that fits (px). */
-function letter(ctx: CanvasRenderingContext2D, name: string, cx: number, cy: number, w: number, h: number): void {
+/** The name in one line, or two split at the space nearest the middle, at the largest size that fits, hand painted. */
+function letter(ctx: CanvasRenderingContext2D, name: string, cx: number, cy: number, w: number, h: number, rand: Rand): void {
   const px = ATLAS.plankPxM;
   const fit = (size: number, lines: readonly string[]): number => {
     ctx.font = `400 ${size}px ${FONT_FAMILY}`;
@@ -172,24 +142,84 @@ function letter(ctx: CanvasRenderingContext2D, name: string, cx: number, cy: num
   ctx.font = `400 ${size}px ${FONT_FAMILY}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = INK;
-  ctx.shadowColor = 'rgb(0 0 0 / 0.55)';
-  ctx.shadowOffsetY = 1.5;
   const step = size * LETTER.lineStep;
-  lines.forEach((l, i) => ctx.fillText(l, cx, cy + (i - (lines.length - 1) / 2) * step + size * 0.04));
-  ctx.shadowColor = 'transparent';
+  const write = (dx: number, dy: number, style: string, alpha: number): void => {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = style;
+    lines.forEach((l, i) => ctx.fillText(l, cx + dx, cy + dy + (i - (lines.length - 1) / 2) * step + size * 0.04));
+  };
+  write(0, 1.2, EDGE, 0.45);
+  write(0, 0, LETTERING, 0.92);
+  write(0.7, -0.5, LETTERING, 0.3);
+  ctx.globalAlpha = 1;
+  // The brush runs dry here and there: thin streaks of the board's paint across the letters.
+  const box = { x: cx - w / 2, y: cy - (step * lines.length) / 2, w, h: step * lines.length };
+  dryBrush(ctx, box, PAINT.base, 0.55, 26, false, rand);
 }
 
 function paintHand(ctx: CanvasRenderingContext2D, x: number, cy: number, w: number, dir: -1 | 1): void {
   const k = w / 48;
+  const hand = new Path2D(MANICULE);
   ctx.save();
   ctx.translate(dir > 0 ? x : x + w, cy - 12 * k);
   ctx.scale(dir * k, k);
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = LETTERING;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.stroke(new Path2D(MANICULE));
+  ctx.lineWidth = 1.4;
+  ctx.globalAlpha = 0.9;
+  ctx.stroke(hand);
+  ctx.translate(0.3, -0.25);
+  ctx.globalAlpha = 0.3;
+  ctx.stroke(hand);
+  ctx.restore();
+}
+
+/** The board's outline about its centre: a box not quite square at its corners, three clipped and one chipped. */
+function boardOutline(hw: number, hh: number, rand: Rand): { outline: Pt[]; chipAt: Pt } {
+  const j = (): number => (rand() - 0.5) * 8;
+  const corners: Pt[] = [[-hw + j(), -hh + j()], [hw + j(), -hh + j()], [hw + j(), hh + j()], [-hw + j(), hh + j()]];
+  const chipped = Math.floor(rand() * 4);
+  const outline: Pt[] = [];
+  let chipAt: Pt = corners[chipped]!;
+  corners.forEach((c, i) => {
+    const prev = corners[(i + 3) % 4]!;
+    const next = corners[(i + 1) % 4]!;
+    const inLen = Math.hypot(c[0] - prev[0], c[1] - prev[1]);
+    const outLen = Math.hypot(next[0] - c[0], next[1] - c[1]);
+    const back = (d: number): [number, number] => [c[0] - ((c[0] - prev[0]) / inLen) * d, c[1] - ((c[1] - prev[1]) / inLen) * d];
+    const on = (d: number): [number, number] => [c[0] + ((next[0] - c[0]) / outLen) * d, c[1] + ((next[1] - c[1]) / outLen) * d];
+    if (i !== chipped) {
+      const k = 3 + rand() * 5;
+      outline.push(back(k), on(k));
+      return;
+    }
+    const a = CHIP.least + rand() * (CHIP.most - CHIP.least);
+    const b = CHIP.least + rand() * (CHIP.most - CHIP.least);
+    const deep = back(a * 0.55);
+    const along = on(b * 0.55);
+    outline.push(back(a), [deep[0] + along[0] - c[0], deep[1] + along[1] - c[1]], on(b));
+    chipAt = [(deep[0] + along[0]) / 2, (deep[1] + along[1]) / 2];
+  });
+  return { outline, chipAt };
+}
+
+/** Bare wood showing where the paint wore off round the chipped corner. */
+function wear(ctx: CanvasRenderingContext2D, at: Pt, rand: Rand): void {
+  const blob: Pt[] = [];
+  for (let k = 0; k < 7; k++) {
+    const a = (k / 7) * Math.PI * 2;
+    const r = 7 + rand() * 9;
+    blob.push([at[0] + Math.cos(a) * r * 1.4, at[1] + Math.sin(a) * r]);
+  }
+  const patch = cutOutline(blob, 5, 1.6, rand);
+  ctx.fillStyle = WOOD.bare;
+  ctx.globalAlpha = 0.85;
+  ctx.fill(patch);
+  ctx.globalAlpha = 1;
+  ctx.save();
+  ctx.clip(patch);
+  hatch(ctx, { x: at[0] - 24, y: at[1] - 18, w: 48, h: 36 }, 0, 2.2, WOOD.shade, 0.45, rand);
   ctx.restore();
 }
 
@@ -199,64 +229,74 @@ function paintPlank(ctx: CanvasRenderingContext2D, i: number, name: string, dir:
   const rand = seeded(i + 11);
   ctx.clearRect(r.x, r.y, r.w, r.h);
   const m = BOARD.plank.margin * px;
-  const bw = BOARD.plank.w * px;
-  const bh = BOARD.plank.h * px;
-  const bx = r.x + m;
-  const by = r.y + m + BOARD.plank.bridle * px;
-  const hookX = r.x + r.w / 2;
-  // The bridle: two cords from the board's top corners up to one ring on the arm's hook.
-  ctx.strokeStyle = '#3a3027';
-  ctx.lineWidth = 2.2;
+  const hw = (BOARD.plank.w * px) / 2;
+  const hh = (BOARD.plank.h * px) / 2;
+  const cx = r.x + r.w / 2;
+  const cy = r.y + m + BOARD.plank.bridle * px + hh;
+  const tilt = ((TILT.least + rand() * (TILT.most - TILT.least)) * Math.PI / 180) * (rand() < 0.5 ? -1 : 1);
+  const cos = Math.cos(tilt);
+  const sin = Math.sin(tilt);
+  // The bridle: two cords from the board's top, a little slack, up to one ring on the arm's hook.
+  const ringY = r.y + m + 3;
+  ctx.strokeStyle = '#2b231b';
+  ctx.lineWidth = 1.8;
   ctx.beginPath();
-  ctx.moveTo(bx + bw * 0.1, by + 3);
-  ctx.lineTo(hookX, r.y + m + 5);
-  ctx.lineTo(bx + bw * 0.9, by + 3);
+  for (const side of [-1, 1]) {
+    const lx = side * hw * 0.8;
+    const ly = -hh + 3;
+    const ex = cx + lx * cos - ly * sin;
+    const ey = cy + lx * sin + ly * cos;
+    ctx.moveTo(cx, ringY + 2);
+    ctx.quadraticCurveTo((cx + ex) / 2 + side * 2, (ringY + ey) / 2 + 2, ex, ey);
+  }
   ctx.stroke();
   ctx.strokeStyle = IRON;
   ctx.beginPath();
-  ctx.arc(hookX, r.y + m + 3, 3, 0, Math.PI * 2);
+  ctx.arc(cx, ringY, 3, 0, Math.PI * 2);
   ctx.stroke();
-  // Paper rim, then the painted board cut a little inside it.
-  ctx.fillStyle = PAPER_RIM;
-  cutPath(ctx, bx, by, bw, bh, 7, rand);
-  ctx.fill();
-  const paint = ctx.createLinearGradient(bx, by, bx + bw * 0.08, by + bh);
-  paint.addColorStop(0, PAINT[0]);
-  paint.addColorStop(0.55, PAINT[1]);
-  paint.addColorStop(1, PAINT[2]);
-  ctx.fillStyle = paint;
-  cutPath(ctx, bx + 2.5, by + 2.5, bw - 5, bh - 5, 6, rand);
-  ctx.fill();
+
   ctx.save();
-  ctx.clip();
-  grain(ctx, { x: bx, y: by, w: bw, h: bh }, true, rand, 0.22);
-  // Worn back to wood at a corner or two.
-  for (let k = 0; k < 2; k++) {
-    const wx = bx + (k === 0 ? 0.92 + rand() * 0.05 : 0.02 + rand() * 0.05) * bw;
-    const wy = by + (k === 0 ? 0.82 : 0.12) * bh;
-    const wear = ctx.createRadialGradient(wx, wy, 0, wx, wy, 9 + rand() * 6);
-    wear.addColorStop(0, 'rgb(128 100 66 / 0.85)');
-    wear.addColorStop(0.6, 'rgb(128 100 66 / 0.45)');
-    wear.addColorStop(1, 'rgb(128 100 66 / 0)');
-    ctx.fillStyle = wear;
-    ctx.fillRect(wx - 16, wy - 16, 32, 32);
-  }
+  ctx.translate(cx, cy);
+  ctx.rotate(tilt);
+  const board: Box = { x: -hw - 4, y: -hh - 4, w: 2 * hw + 8, h: 2 * hh + 8 };
+  const { outline, chipAt } = boardOutline(hw, hh, rand);
+  const cut = cutOutline(outline, 16, 4, rand);
+  ctx.fillStyle = PAINT.base;
+  ctx.fill(cut);
+  ctx.save();
+  ctx.clip(cut);
+  dryBrush(ctx, board, PAINT.chalk, 0.2, 70, false, rand);
+  dryBrush(ctx, board, PAINT.shade, 0.35, 45, false, rand);
+  hatch(ctx, board, -0.85, 5.5, PAINT.shade, 0.3, rand);
+  hatch(ctx, { ...board, y: hh * 0.2, h: hh }, -0.85, 3.6, PAINT.shade, 0.45, rand);
+  wear(ctx, chipAt, rand);
+  speckle(ctx, board, PAINT.fleck, 0.14, 220, rand);
   ctx.restore();
-  // The ruled cream border.
-  const inset = INNER.inset * px * 0.55;
-  ctx.strokeStyle = 'rgb(239 230 207 / 0.42)';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(bx + inset, by + inset, bw - 2 * inset, bh - 2 * inset);
+
+  // The hand-ruled border, broken where the brush lifted.
+  const bi = INNER.border * px;
+  const ruled = cutOutline([[-hw + bi, -hh + bi], [hw - bi, -hh + bi], [hw - bi, hh - bi], [-hw + bi, hh - bi]], 24, 2, rand);
+  ctx.setLineDash([40 + rand() * 60, 2 + rand() * 3, 70 + rand() * 80, 3 + rand() * 4]);
+  ctx.strokeStyle = 'rgb(227 215 183 / 0.42)';
+  ctx.lineWidth = 2.4;
+  ctx.stroke(ruled);
+  ctx.setLineDash([]);
+
   const handW = INNER.hand * px;
   const gap = INNER.gap * px;
-  const innerX = bx + INNER.inset * px;
-  const innerW = bw - 2 * INNER.inset * px;
+  const innerX = -hw + INNER.inset * px;
+  const innerW = 2 * hw - 2 * INNER.inset * px;
   const textW = innerW - handW - gap;
-  const cy = by + bh / 2;
   const handX = dir > 0 ? innerX + innerW - handW : innerX;
   const textX = dir > 0 ? innerX : innerX + handW + gap;
-  paintHand(ctx, handX, cy, handW, dir);
-  letter(ctx, name, textX + textW / 2, cy, textW, bh - 2 * INNER.inset * px);
+  paintHand(ctx, handX, 0, handW, dir);
+  letter(ctx, name, textX + textW / 2, 0, textW, 2 * hh - 2 * INNER.inset * px, rand);
+
+  ctx.strokeStyle = EDGE;
+  ctx.lineWidth = 3.2;
+  ctx.lineJoin = 'round';
+  ctx.stroke(cut);
+  ctx.restore();
 }
 
 /** The atlas canvas, square, cleared. */
