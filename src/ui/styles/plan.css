@@ -1,7 +1,8 @@
 /*
  * The garden plan (cook/ART.md section 4), bottom left: folded, the dog-eared corner of a paper map that reads
- * "Projects"; open, the same paper unfolds out of that corner: the owner's name and line, the list of the work, then a
- * strip plan in pencil line, its place and project names in the display serif. Opacity and transform only, scaled out from the dog-ear; folded, the sheet is inert and hidden.
+ * "Projects"; open, a compact card unfolds out of that corner: the owner's name and line with the credits, then the
+ * diorama of the garden (plan.map.css) beside the work by bed with its status, names in the display serif. Opacity and
+ * transform only, scaled and tipped out from the dog-ear; folded, the sheet is inert and hidden.
  * Shown in the overview and in beds; never during the intro or while the notebook is open.
  */
 
@@ -57,24 +58,32 @@
 }
 
 /*
- * Open, the map unfolds out of its own corner: the sheet grows up and right from the dog-ear, its bottom edge tucked
- * under the corner so corner and sheet read as one paper. Same stock as the corner, one fold across the drawing.
+ * Open, a compact card unfolds out of the corner: it scales up and right from the dog-ear while tipping forward out
+ * of the screen plane, its bottom edge tucked under the corner so corner and card read as one paper. Along the top
+ * who keeps the garden and the credits; below, the diorama on the left and the index of the work on the right.
  */
 .pl-sheet {
-  --plw: 440px;
+  --bw: 340px;
+  --tilt: 52deg;
   position: absolute;
   z-index: -1;
   left: 0;
   bottom: 92px;
-  width: calc(var(--plw) + 12px);
+  display: grid;
+  grid-template-columns: var(--bw) minmax(15rem, 1fr);
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas: "head head" "map title" "map work";
+  column-gap: 20px;
+  width: max-content;
+  max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px));
   isolation: isolate;
-  padding: 14px 6px 10px;
+  padding: 14px 16px 18px;
   color: var(--pencil);
   filter: var(--cast);
   opacity: 0;
   visibility: hidden;
-  transform-origin: 120px 100%;
-  transform: scale(0.3, 0.12);
+  transform-origin: 72px calc(100% + 48px);
+  transform: perspective(1400px) rotateX(-26deg) scale(0.34, 0.16);
   transition:
     opacity var(--dur-ui-exit) var(--ease-out),
     transform var(--dur-ui-exit) var(--ease-out),
@@ -86,10 +95,7 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background:
-    linear-gradient(180deg, transparent 43%, rgb(255 252 244 / 0.4) 43.4%, rgb(70 52 34 / 0.14) 44%, transparent 52%),
-    linear-gradient(180deg, rgb(70 52 34 / 0.07) 0 43.5%, transparent 43.5%),
-    linear-gradient(174deg, #ddd5c5 0%, #d2c9b7 60%, #c9bfac 100%);
+  background: linear-gradient(174deg, #ddd5c5 0%, #d2c9b7 60%, #c9bfac 100%);
   box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.2);
   clip-path: polygon(0 4px, 22% 0, 51% 3px, 83% 0, 100% 5px, calc(100% - 2px) 52%, 100% calc(100% - 14px), 46% 100%, 0 100%);
 }
@@ -101,142 +107,44 @@
   pointer-events: auto;
   transition:
     opacity var(--dur-ui) var(--ease-out),
-    transform var(--dur-ui) var(--ease-out),
+    transform 0.56s cubic-bezier(0.22, 1, 0.36, 1),
     visibility 0s;
 }
 
-.pl-title {
-  padding: 0 14px;
-  font-family: var(--font-display);
-  font-synthesis: none;
-  font-size: 1.0625rem;
-  line-height: 1.3;
-  color: var(--tag-ink);
+/* Who keeps the garden: the name in the display serif, place and line in the UI sans; the credits at the right end. */
+.pl-head {
+  grid-area: head;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgb(70 52 34 / 0.22);
 }
 
-/* Who keeps the garden: the name in the display serif, place and line in the UI sans, pencil on card. */
 .pl-name {
-  padding: 0 14px;
   font-family: var(--font-display);
   font-synthesis: none;
   font-size: 1.25rem;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--tag-ink);
 }
 
 .pl-about {
-  margin: 2px 0 10px;
-  padding: 0 14px;
+  grid-row: 2;
   font-size: var(--text-sm);
   line-height: 1.4;
   color: var(--tag-ink-2);
   text-wrap: pretty;
 }
 
-/* The work: one button per project, names only, wrapping in rows of thumb-sized targets. */
-.pl-work {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 0 8px;
-  padding: 0 4px;
-  list-style: none;
-}
-
-.pl-work button {
-  min-height: var(--target);
-  padding: 2px 10px;
-  border: 0;
-  background: none;
-  color: var(--tag-ink);
-  font-family: var(--font-display);
-  font-synthesis: none;
-  font-size: 1rem;
-  line-height: 1.15;
-  text-decoration: underline 1px rgb(27 26 25 / 0.35);
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
-
-.pl-work button:hover {
-  text-decoration-color: var(--enamel-rose);
-  text-decoration-thickness: 2px;
-}
-
-.pl-map {
-  position: relative;
-  width: var(--plw);
-  height: calc(var(--plw) * 0.289 + 52px);
-}
-
-.pl-drawing {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--plw);
-  height: calc(var(--plw) * 0.289);
-  fill: none;
-  stroke: var(--pencil);
-  stroke-width: 1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* One column per place (five), the moth over the middle of the current one. */
-.pl-moth {
-  position: absolute;
-  top: 2px;
-  left: 0;
-  width: 18px;
-  height: 13px;
-  fill: var(--enamel-rose);
-  transform: translate3d(calc(var(--col, 0) * var(--plw) / 5 + var(--plw) / 10 - 9px), 0, 0);
-  transition: transform var(--dur-ui) var(--ease-out), opacity var(--dur-ui) var(--ease-out);
-}
-
-.pl-moth[data-off] {
-  opacity: 0;
-}
-
-.pl-places {
-  position: absolute;
-  inset: auto 0 0;
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
-}
-
-.pl-places button {
-  width: 100%;
-  min-height: var(--target);
-  padding: 2px 1px;
-  border: 0;
-  background: none;
-  color: var(--tag-ink);
-  font-family: var(--font-display);
-  font-synthesis: none;
-  font-size: 0.875rem;
-  line-height: 1.15;
-  text-wrap: balance;
-  cursor: pointer;
-}
-
-.pl-places button:hover {
-  text-decoration: underline 1px;
-  text-underline-offset: 3px;
-}
-
-.pl-places button[aria-current="location"] {
-  text-decoration: underline 2px var(--enamel-rose);
-  text-underline-offset: 4px;
-}
-
-/* The colophon in the lower right corner, clear of the dog-ear that covers the sheet's lower left. */
 .pl-credits {
+  grid-column: 2;
+  grid-row: 1 / 3;
   display: flex;
   align-items: center;
-  width: fit-content;
   min-height: var(--target);
-  margin: 0 0 0 auto;
-  padding: 0 14px;
+  padding: 0 4px 0 14px;
   color: var(--tag-ink-2);
   font-size: var(--text-sm);
   text-decoration: underline 1px rgb(27 26 25 / 0.35);
@@ -248,6 +156,120 @@
   text-decoration-thickness: 2px;
 }
 
+.pl-title {
+  grid-area: title;
+  margin: 0 0 2px;
+  padding: 0 10px;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  color: var(--tag-ink);
+}
+
+/* The work by bed: the bed's name small over its projects; the visitor's bed carries a rose mark. */
+.pl-work {
+  grid-area: work;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-bed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 0;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  color: var(--tag-ink-2);
+}
+
+.pl-bed::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.45);
+}
+
+.pl-group[data-here] .pl-bed::before {
+  background: var(--enamel-rose);
+  box-shadow: none;
+}
+
+.pl-group li {
+  position: relative;
+  display: flex;
+}
+
+.pl-group button {
+  flex: 1;
+  min-height: var(--target);
+  padding: 2px 7.5rem 2px 22px;
+  border: 0;
+  background: none;
+  color: var(--tag-ink);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: 1.0625rem;
+  line-height: 1.15;
+  text-align: left;
+  text-decoration: underline 1px rgb(27 26 25 / 0.3);
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.pl-group button:hover {
+  text-decoration-color: var(--enamel-rose);
+  text-decoration-thickness: 2px;
+}
+
+/* The status at the row's end, clicks passing through to the project: ring idea, ring and dot in progress, filled shipped. */
+.pl-status {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  translate: 0 -50%;
+  font-size: 0.8125rem;
+  color: var(--tag-ink-2);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pl-status::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--pencil);
+}
+
+.pl-status[data-status="wip"]::before {
+  background: var(--pencil);
+  box-shadow: inset 0 0 0 1.5px var(--pencil), inset 0 0 0 3px #d6cdbb;
+}
+
+.pl-status[data-status="shipped"]::before {
+  background: var(--pencil);
+}
+
+/*
+ * Phones: a short sheet across the bottom over the corner, the diorama over the work, its beds side by side; a status
+ * shows its mark only, its word kept for screen readers.
+ */
 @media (max-width: 44.99rem) {
   .pl-tag {
     width: 128px;
@@ -257,17 +279,54 @@
   }
 
   .pl-sheet {
-    --plw: min(440px, calc(100vw - 32px));
+    --bw: min(340px, calc(100vw - 48px));
+    left: 8px;
     bottom: 66px;
-    transform-origin: 88px 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "head" "map" "title" "work";
+    width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding: 12px 12px 14px;
+    transform-origin: 56px calc(100% + 40px);
+  }
+
+  .pl-map {
+    justify-self: center;
+    width: var(--bw);
+    height: calc(var(--bh) * 0.62 + 36px);
+  }
+
+  .pl-head {
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+  }
+
+  .pl-about {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .pl-work {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    column-gap: 8px;
+  }
+
+  .pl-group button {
+    padding-right: 26px;
+    padding-left: 18px;
+    font-size: 1rem;
+  }
+
+  .pl-status {
+    right: 8px;
+    gap: 0;
+    font-size: 0;
   }
 }
 
-/*
- * Phones on their side: the screen is too short for the sheet in one column, which ran up under the tags and off the
- * top. The corner takes its phone size and the sheet opens wide in two columns, who and the work on the left, the plan
- * on the right, folded once down the middle, so it stays clear of the tag band.
- */
+/* Phones on their side: the corner at its phone size and the card in its two columns, low enough to clear the tag band. */
 @media (orientation: landscape) and (max-height: 30rem) {
   .pl-tag {
     width: 128px;
@@ -277,47 +336,19 @@
   }
 
   .pl-sheet {
-    --plw: min(380px, calc(50vw - 40px));
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--plw);
-    grid-template-rows: repeat(3, auto) 1fr;
-    column-gap: 8px;
+    --bw: min(300px, calc(46vw - 40px));
     bottom: 52px;
-    width: min(800px, calc(100vw - 16px - env(safe-area-inset-left, 0px)));
-    transform-origin: 88px 100%;
+    padding: 10px 12px 12px;
+    transform-origin: 56px calc(100% + 40px);
   }
 
-  .pl-sheet::before {
-    background:
-      linear-gradient(90deg, transparent 49%, rgb(255 252 244 / 0.4) 49.4%, rgb(70 52 34 / 0.14) 50%, transparent 56%),
-      linear-gradient(90deg, rgb(70 52 34 / 0.07) 0 49.5%, transparent 49.5%),
-      linear-gradient(174deg, #ddd5c5 0%, #d2c9b7 60%, #c9bfac 100%);
-  }
-
-  .pl-name,
-  .pl-about,
-  .pl-title,
-  .pl-work {
-    grid-column: 1;
-  }
-
-  .pl-about {
-    margin-bottom: 6px;
-  }
-
-  .pl-work {
-    margin-bottom: 0;
+  .pl-head {
+    margin-bottom: 4px;
+    padding-bottom: 4px;
   }
 
   .pl-map {
-    grid-column: 2;
-    grid-row: 2 / -1;
-    align-self: end;
-  }
-
-  .pl-work + .pl-title {
-    grid-column: 2;
-    grid-row: 1;
+    height: calc(var(--bh) * 0.62 + 44px);
   }
 }
 
@@ -330,8 +361,7 @@
   .pl,
   .pl-tag,
   .pl-sheet,
-  .pl[data-open] .pl-sheet,
-  .pl-moth {
+  .pl[data-open] .pl-sheet {
     transition: none;
   }
 }

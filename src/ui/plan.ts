@@ -1,22 +1,26 @@
-import { loadContent, projectsOf } from '../content/load.ts';
+import { loadContent } from '../content/load.ts';
 import { CREDITS_HASH } from '../core/router.ts';
-import type { BedId, Machine, ProjectBed, State } from '../types.ts';
+import type { BedId, Machine, State } from '../types.ts';
 import { uiText } from './copy.ts';
 import { clearCover, covers, setCover } from './cover.ts';
+import { createPlanIndex } from './plan.index.ts';
+import { createPlanMap } from './plan.map.ts';
 import './styles/plan.css';
 import type { BedSign } from './signposts.ts';
-import { gapFree, hasGap } from './welcome.rules.ts';
+import { gapFree } from './welcome.rules.ts';
 
 /**
  * The garden plan (cook/ART.md section 4), bottom left, also the index of the work. Folded: the dog-eared corner of a
- * paper map that reads "Projects". Open (click, or M): the owner's name, place and gap-free headline (the first-visit
- * plate folds into here), one button per project in bed order, then a strip plan drawn in pencil line on card
- * (hatched wall, winding path, pond, beds, tree) with one button per place, and a small moth in pale rose over the
- * place where the visitor is (in free roam it follows the visitor along the strip, between the places by their
- * anchors), and in the lower right corner the link to the credits (ui/credits.route.ts opens them). A place button
- * travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT (detail: the project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Esc folds the plan
- * first (the garden's own Esc then waits for the next press), and focus returns to the label. No visited marks and no
- * grotto. While open, the box the sheet and its corner take is written to ui/cover.ts for the cane labels.
+ * paper map that reads "Projects". Open (click, or M): a compact card unfolds out of that corner. Along its top the
+ * owner's name, place and gap-free headline, and the link to the credits (ui/credits.route.ts opens them); below, on
+ * the left, a paper diorama of the garden in CSS 3D (ui/plan.map.ts) with one standing card per place and a small moth
+ * in pale rose over the place where the visitor is (in free roam it follows the visitor along the path, between the
+ * places by their anchors); on the right the index of the work by bed, each project with its status
+ * (ui/plan.index.ts). A place card travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT
+ * (detail: the project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Arrow
+ * keys move along the places and through the projects, Home and End jump to the ends. Esc folds the plan first (the
+ * garden's own Esc then waits for the next press), and focus returns to the label. While open, the box the sheet and
+ * its corner take is written to ui/cover.ts for the cane labels.
  */
 
 export interface Plan {
@@ -34,40 +38,6 @@ export const WORK_EVENT = 'jardin:work';
 /** A following moth is moved again once the visitor has gone this share of a place. */
 const MOTH_STEP = 0.01;
 
-const SVG = 'http://www.w3.org/2000/svg';
-const W = 360;
-const H = 104;
-const MOTH = 'M7 3.6C5.6 1 2 0.6 1 2.2C0.2 3.8 2.4 5.6 5.6 5.4C3 6.2 2.2 8.4 3.6 9.2C5 9.8 6.4 7.8 7 5.8C7.6 7.8 9 9.8 10.4 9.2C11.8 8.4 11 6.2 8.4 5.4C11.6 5.6 13.8 3.8 13 2.2C12 0.6 8.4 1 7 3.6Z';
-
-/**
- * The engraved strip: the closed garden (hatched wall along the back, the two end walls, the low kerb along the front),
- * the winding path, then one small motif per place.
- */
-const WALL = `M4 10H${W - 4}M4 18H${W - 4}${Array.from({ length: 44 }, (_, i) => `M${8 + i * 8} 18L${14 + i * 8} 10`).join('')}`
-  + `M4 10V98M10 18V95M${W - 4} 10V98M${W - 10} 18V95M4 98H${W - 4}M10 95H${W - 10}`;
-const PATH = `M4 72C40 60 60 84 100 74S160 58 200 72S270 88 300 70S340 62 ${W - 4} 70`;
-const MOTIFS: Partial<Record<BedId, string>> = {
-  puerta: 'M26 28V56M46 28V56M23 28H29M43 28H49M29 40C32 34 40 34 43 40',
-  rosaleda: 'M88 32H128V54H88ZM98 43A3 3 0 1 0 98.1 43M108 43A3 3 0 1 0 108.1 43M118 43A3 3 0 1 0 118.1 43',
-  estanque: 'M160 44C160 36 200 36 200 44C200 52 160 52 160 44ZM170 44C176 42 184 42 190 44',
-  semillero: 'M232 34H250V54H232ZM254 34H272V54H254ZM241 40V48M263 40V48',
-  salida: 'M312 56V34C312 28 336 28 336 34V56M304 26C310 22 314 30 320 24M340 22V54M334 30H346',
-};
-const TREE = 'M144 31A7 7 0 1 1 144.1 31M144 38V54';
-
-function svg(cls: string, box: string, paths: readonly string[]): SVGSVGElement {
-  const s = document.createElementNS(SVG, 'svg');
-  s.setAttribute('class', cls);
-  s.setAttribute('viewBox', box);
-  s.setAttribute('aria-hidden', 'true');
-  for (const d of paths) {
-    const p = document.createElementNS(SVG, 'path');
-    p.setAttribute('d', d);
-    s.append(p);
-  }
-  return s;
-}
-
 function para(cls: string, id?: string): HTMLParagraphElement {
   const p = document.createElement('p');
   p.className = cls;
@@ -75,9 +45,17 @@ function para(cls: string, id?: string): HTMLParagraphElement {
   return p;
 }
 
+/** Arrow keys within a group of buttons: the previous or next one, or either end; null for any other key. */
+function stepTo(key: string, all: readonly HTMLButtonElement[], at: number, back: string, on: string): HTMLButtonElement | null {
+  if (key === 'Home') return all[0] ?? null;
+  if (key === 'End') return all[all.length - 1] ?? null;
+  if (key === back) return all[Math.max(0, at - 1)] ?? null;
+  if (key === on) return all[Math.min(all.length - 1, at + 1)] ?? null;
+  return null;
+}
+
 export function createPlan(parent: HTMLElement, m: Machine): Plan {
   const content = loadContent();
-  const isProjectBed = (b: BedId): b is ProjectBed => content.projects.some((p) => p.bed === b);
   const root = document.createElement('div');
   root.className = 'pl';
   const tag = document.createElement('button');
@@ -90,24 +68,21 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   sheet.className = 'pl-sheet';
   sheet.id = 'pl-sheet';
   sheet.inert = true;
+  const head = document.createElement('header');
+  head.className = 'pl-head';
   const name = para('pl-name');
   const about = para('pl-about');
+  const credits = document.createElement('a');
+  credits.className = 'pl-credits';
+  credits.href = CREDITS_HASH;
+  head.append(name, about, credits);
+  const map = createPlanMap();
   const workTitle = para('pl-title', 'pl-work-title');
   const work = document.createElement('ul');
   work.className = 'pl-work';
   work.setAttribute('aria-labelledby', 'pl-work-title');
-  const title = para('pl-title');
-  const map = document.createElement('div');
-  map.className = 'pl-map';
-  const drawing = svg('pl-drawing', `0 0 ${W} ${H}`, [WALL, PATH, TREE, ...Object.values(MOTIFS)]);
-  const moth = svg('pl-moth', '0 0 14 10', [MOTH]);
-  const places = document.createElement('ul');
-  places.className = 'pl-places';
-  map.append(drawing, moth, places);
-  const credits = document.createElement('a');
-  credits.className = 'pl-credits';
-  credits.href = CREDITS_HASH;
-  sheet.append(name, about, workTitle, work, title, map, credits);
+  const index = createPlanIndex(work);
+  sheet.append(head, map.el, workTitle, work);
   root.append(sheet, tag);
   parent.append(root);
 
@@ -116,8 +91,9 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   let visitor: Float32Array | null = null;
   let anchorOf: Readonly<Record<BedId, number>> | null = null;
   let shownCol = Number.NaN;
+  let box: DOMRect | null = null;
 
-  /** The visitor's place along the strip as a fractional column: linear between neighbouring places' anchors. */
+  /** The visitor's place along the path as a fractional column: linear between neighbouring places' anchors. */
   function colOf(x: number, anchors: Readonly<Record<BedId, number>>): number {
     let a = anchors[beds[0]!.id];
     if (x <= a) return 0;
@@ -136,10 +112,17 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       return;
     }
     const foot = root.getBoundingClientRect();
-    setCover(covers.plan, foot.left, foot.top + sheet.offsetTop, foot.left + Math.max(sheet.offsetWidth, tag.offsetWidth), foot.bottom);
+    const right = Math.max(sheet.offsetLeft + sheet.offsetWidth, tag.offsetWidth);
+    setCover(covers.plan, foot.left, foot.top + sheet.offsetTop, foot.left + right, foot.bottom);
   }
   new ResizeObserver(writeCover).observe(sheet);
   addEventListener('resize', writeCover, { passive: true });
+
+  /** The diorama's lean after the pointer, each axis in [-1, 1]; 0, 0 rests it. */
+  function lean(px: number, py: number): void {
+    map.el.style.setProperty('--px', px.toFixed(2));
+    map.el.style.setProperty('--py', py.toFixed(2));
+  }
 
   function setOpen(open: boolean, refocus: boolean): void {
     shownCol = Number.NaN;
@@ -147,22 +130,20 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     writeCover();
     tag.setAttribute('aria-expanded', String(open));
     sheet.inert = !open;
+    if (!open) lean(0, 0);
     if (!open && refocus && sheet.contains(document.activeElement)) tag.focus({ preventScroll: true });
   }
   const isOpen = (): boolean => root.hasAttribute('data-open');
 
   function paintHere(): void {
     const i = beds.findIndex((b) => b.id === here);
-    moth.toggleAttribute('data-off', i < 0 && visitor === null);
-    if (i >= 0 && visitor === null) moth.style.setProperty('--col', String(i));
-    for (const b of places.querySelectorAll<HTMLButtonElement>('button')) {
-      if (b.dataset.bed === here) b.setAttribute('aria-current', 'location');
-      else b.removeAttribute('aria-current');
-    }
+    if (visitor === null) map.moveMoth(i < 0 ? null : i);
+    map.mark(here);
+    index.mark(here);
   }
 
   tag.addEventListener('click', () => setOpen(!isOpen(), false));
-  places.addEventListener('click', (e) => {
+  map.places.addEventListener('click', (e) => {
     const bed = e.target instanceof Element ? e.target.closest<HTMLElement>('[data-bed]')?.dataset.bed : undefined;
     const target = beds.find((b) => b.id === bed);
     if (target !== undefined) m.send({ type: 'GOTO', place: { k: 'bed', bed: target.id } });
@@ -173,6 +154,28 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     setOpen(false, true);
     root.dispatchEvent(new CustomEvent(WORK_EVENT, { detail: id, bubbles: true }));
   });
+  sheet.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLButtonElement)) return;
+    const inPlaces = map.places.contains(t);
+    if (!inPlaces && !work.contains(t)) return;
+    const all = [...(inPlaces ? map.places : work).querySelectorAll<HTMLButtonElement>('button')];
+    const at = all.indexOf(t);
+    const next = inPlaces ? stepTo(e.key, all, at, 'ArrowLeft', 'ArrowRight') : stepTo(e.key, all, at, 'ArrowUp', 'ArrowDown');
+    if (next === null) return;
+    e.preventDefault();
+    next.focus();
+  });
+  sheet.addEventListener('pointerenter', () => {
+    box = map.el.getBoundingClientRect();
+  });
+  sheet.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse' || m.state.reduced || box === null || !isOpen()) return;
+    const px = Math.max(-1, Math.min(1, ((e.clientX - box.left) / box.width) * 2 - 1));
+    const py = Math.max(-1, Math.min(1, ((e.clientY - box.top) / box.height) * 2 - 1));
+    lean(px, py);
+  }, { passive: true });
+  sheet.addEventListener('pointerleave', () => lean(0, 0));
   document.addEventListener('keydown', (e) => {
     if (m.state.mode !== 'garden' || e.ctrlKey || e.metaKey || e.altKey) return;
     const t = e.target;
@@ -196,30 +199,12 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       name.textContent = profile.name;
       about.textContent = line === '' ? profile.location[lang] : `${profile.location[lang]} · ${line}`;
       workTitle.textContent = text('section.projects');
-      title.textContent = text('plan.title');
       tag.textContent = text('plan.tag');
       credits.textContent = text('credits.link');
       tag.setAttribute('aria-label', text('plan.label'));
       sheet.setAttribute('aria-label', text('plan.label'));
-      work.replaceChildren(...next.flatMap((b) => (isProjectBed(b.id) ? projectsOf(b.id, content.projects) : [])).filter((p) => !hasGap(p.title)).map((p) => {
-        const li = document.createElement('li');
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.project = p.id;
-        btn.textContent = p.title;
-        li.append(btn);
-        return li;
-      }));
-      places.style.setProperty('--cols', String(next.length));
-      places.replaceChildren(...next.map((b) => {
-        const li = document.createElement('li');
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.bed = b.id;
-        btn.textContent = b.title;
-        li.append(btn);
-        return li;
-      }));
+      map.mount(next, text('plan.title'));
+      index.mount(next, content.projects, (s) => text(`status.${s}`));
       paintHere();
     },
     onState(s) {
@@ -239,7 +224,7 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
       const col = colOf(visitor[0]!, anchorOf);
       if (Math.abs(col - shownCol) < MOTH_STEP) return;
       shownCol = col;
-      moth.style.setProperty('--col', col.toFixed(3));
+      map.moveMoth(col);
     },
   };
 }
