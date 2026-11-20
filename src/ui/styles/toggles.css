@@ -5,7 +5,8 @@
  * the line, with its own tilt around its punched hole and a shadow cast on the scene. The stock is a masked layer
  * behind the text (::before), so lettering is never clipped and carries no texture; the drop (::after) sits behind
  * the stock and shows through the hole. They never move during a mode switch. The panel's dialog renders an
- * identical row at the same spot (.pn-bar).
+ * identical row at the same spot (.pn-bar). One grid: every tag hangs the same drop below the wire, is the same height
+ * and type size, and only its tilt differs; touched, a tag sways on its wire and settles back.
  */
 
 #toggles,
@@ -52,7 +53,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 10px;
   font-family: var(--font-display);
   font-synthesis: none;
   pointer-events: auto;
@@ -90,21 +91,22 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
 .tg-plate,
 .tg-cv,
 .tg-exit {
-  --tilt: -1.5deg;
-  --drop: 6px;
+  --tilt: -1.2deg;
+  --swing: 3deg;
+  --drop: 8px;
   --cut: polygon(10px 0, calc(100% - 10px) 1px, 100% 11px, calc(100% - 1px) 100%, 1px calc(100% - 1px), 0 10px);
   position: relative;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
-  min-height: 50px;
+  min-height: var(--target);
   margin: var(--drop) 0 0;
-  padding: 19px 15px 9px;
+  padding: 17px 13px 7px;
   border: 0;
   background: none;
   color: var(--tg-ink);
   font: inherit;
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.2;
   text-decoration: none;
   text-shadow: var(--tg-emboss);
@@ -113,28 +115,27 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   filter: var(--tg-shadow) drop-shadow(var(--sx, 1px) var(--sy, 2px) 2px rgb(4 6 10 / 0.28));
   transform-origin: 50% var(--tg-hole);
   rotate: var(--tilt);
-  transition: rotate var(--dur-hover) var(--ease-out), scale 0.1s var(--ease-out);
+  transition: scale 0.1s var(--ease-out);
 }
 
 .tg-cv {
-  --tilt: 2.6deg;
-  --drop: 16px;
+  --tilt: 1deg;
+  --swing: -3deg;
   --sx: 3px;
   --sy: 4px;
   --cut: polygon(9px 1px, calc(100% - 11px) 0, 100% 10px, 100% calc(100% - 1px), 0 100%, 1px 9px);
 }
 
 .tg-exit {
-  --tilt: -3.4deg;
-  --drop: 9px;
+  --tilt: -1.6deg;
   --sx: -1px;
   --sy: 3px;
   --cut: polygon(11px 0, calc(100% - 9px) 0, calc(100% - 1px) 9px, 100% 100%, 1px calc(100% - 1px), 0 11px);
 }
 
 .tg-sound {
-  --tilt: 2.2deg;
-  --drop: 11px;
+  --tilt: 1.3deg;
+  --swing: -3deg;
   --sx: 2px;
   --sy: 3px;
   --cut: polygon(10px 1px, calc(100% - 10px) 0, 100% 10px, calc(100% - 1px) calc(100% - 1px), 1px 100%, 0 9px);
@@ -183,8 +184,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
 }
 
 .tg-lang {
-  --tilt: -1.8deg;
-  --drop: 4px;
+  --tilt: -0.9deg;
   padding: 0 4px;
   cursor: auto;
 }
@@ -194,7 +194,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   display: inline-grid;
   place-items: center;
   width: var(--target);
-  height: 50px;
+  height: var(--target);
   padding-top: 10px;
   color: var(--tg-ink-2);
   text-decoration: none;
@@ -210,11 +210,32 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   color: var(--tg-ink);
 }
 
-/* Touched, a tag swings back toward plumb; pressed, it gives a little. */
-.tg-sound:hover,
-.tg-cv:hover,
-.tg-exit:not([aria-disabled="true"]):hover {
-  rotate: calc(var(--tilt) * -0.4);
+/* Touched, a tag sways on its wire and comes to rest at its own tilt; pressed, it gives a little. */
+@keyframes tg-sway {
+  0%,
+  100% {
+    rotate: var(--tilt);
+  }
+
+  24% {
+    rotate: calc(var(--tilt) + var(--swing));
+  }
+
+  52% {
+    rotate: calc(var(--tilt) - var(--swing) * 0.55);
+  }
+
+  78% {
+    rotate: calc(var(--tilt) + var(--swing) * 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tg-plate:hover,
+  .tg-cv:hover,
+  .tg-exit:not([aria-disabled="true"]):hover {
+    animation: tg-sway 1.1s ease-in-out both;
+  }
 }
 
 .tg-sound:active,
@@ -299,12 +320,6 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
     transition: none;
   }
 
-  .tg-sound:hover,
-  .tg-cv:hover,
-  .tg-exit:not([aria-disabled="true"]):hover {
-    rotate: var(--tilt);
-  }
-
   .tg-sound:active,
   .tg-cv:active,
   .tg-exit:not([aria-disabled="true"]):active {
@@ -364,9 +379,8 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   .tg-plate,
   .tg-cv,
   .tg-exit {
-    min-height: var(--target);
-    padding: 15px 11px 6px;
-    font-size: 0.9375rem;
+    padding: 15px 10px 6px;
+    font-size: 0.875rem;
   }
 
   .tg-lang {

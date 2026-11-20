@@ -3,16 +3,20 @@
  * visitor and the plan corner. A card tag of the plant tag's stock, punched and tied with twine to a nail in the wall,
  * the name in the display serif; under it a slip of notebook paper with the hint. Opacity and transform only. Folded,
  * the card stays where it stood at opacity 0 (text for screen readers, never a target); the slip leaves the page.
+ * One grid with the tags (toggles.css): the card's nail sits at the height of the wire's nails, the card's left edge
+ * mirrors the tags' right edge, and the slip's words line up with the card's.
  * Contrast: --tag-ink on the card's darkest stop (#bfb49c) 8.5:1, --tag-ink-2 6.9:1; --note-ink on --note 10.4:1.
  */
 
 .wl {
-  --hy: 15px;
+  --hy: 13px;
+  --wl-pad: 20px;
+  --wl-slip-pad: 12px;
   position: fixed;
   z-index: 4;
-  top: calc(max(var(--edge), env(safe-area-inset-top, 0px)) + 18px);
-  left: max(calc(var(--edge) + 8px), env(safe-area-inset-left, 0px));
-  width: min(368px, calc(100vw - 2 * var(--edge)));
+  top: calc(max(6px, env(safe-area-inset-top, 0px)) + 18px);
+  left: max(var(--edge), env(safe-area-inset-left, 0px));
+  width: min(304px, calc(100vw - 2 * var(--edge)));
   pointer-events: none;
 }
 
@@ -23,7 +27,7 @@
 .wl-card,
 .wl-hint {
   opacity: 0;
-  translate: 0 -10px;
+  translate: 0 -8px;
   transition: opacity var(--dur-ui) var(--ease-out), translate var(--dur-ui) var(--ease-out);
 }
 
@@ -33,7 +37,7 @@
 }
 
 .wl[data-state="shown"] .wl-hint {
-  transition-delay: 120ms;
+  transition-delay: 160ms;
 }
 
 /*
@@ -52,24 +56,31 @@
   transition: none;
 }
 
-.wl[data-state="folded"] .wl-card,
+/* Folded, the card lifts away; the hint, once the visitor has walked, drops off its pin and fades. */
+.wl[data-state="folded"] .wl-card {
+  opacity: 0;
+  translate: 0 -6px;
+  transition-duration: var(--dur-ui-exit);
+  transition-delay: 0s;
+}
+
 .wl .wl-hint[data-gone] {
   opacity: 0;
-  translate: 0 8px;
-  transition-duration: var(--dur-ui-exit);
+  translate: 0 10px;
+  transition-duration: var(--dur-ui);
   transition-delay: 0s;
 }
 
 .wl-card {
   position: relative;
   isolation: isolate;
-  padding: 32px 24px 16px;
+  padding: 26px var(--wl-pad) 14px;
   color: var(--tag-ink);
   font-family: var(--font-display);
   font-synthesis: none;
-  filter: drop-shadow(0 1px 1px rgb(6 8 16 / 0.7)) drop-shadow(2px 4px 3px rgb(6 8 16 / 0.45)) drop-shadow(6px 18px 14px rgb(4 6 12 / 0.45));
+  filter: drop-shadow(0 1px 1px rgb(6 8 16 / 0.7)) drop-shadow(2px 4px 3px rgb(6 8 16 / 0.4)) drop-shadow(5px 14px 12px rgb(4 6 12 / 0.4));
   transform-origin: 50% var(--hy);
-  rotate: -1.2deg;
+  rotate: -0.8deg;
 }
 
 .wl-card::before {
@@ -84,12 +95,12 @@
     radial-gradient(90% 60% at 100% 100%, rgb(82 60 36 / 0.24), transparent 72%),
     linear-gradient(176deg, #cbc2ae 0%, #bfb49c 100%);
   box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.24), inset 0 0 18px -6px rgb(82 60 36 / 0.45);
-  clip-path: polygon(0 3px, 21% 0, 52% 2px, 79% 0, 100% 4px, calc(100% - 2px) 41%, 100% 74%, calc(100% - 1px) 100%, 58% calc(100% - 2px), 27% 100%, 2px calc(100% - 1px), 0 61%, 1px 27%);
+  clip-path: polygon(0 3px, 21% 0, 52% 2px, 79% 0, 100% 3px, calc(100% - 1px) 41%, 100% 74%, calc(100% - 1px) 100%, 58% calc(100% - 2px), 27% 100%, 1px calc(100% - 1px), 0 61%, 1px 27%);
   -webkit-mask-image: radial-gradient(circle at 50% var(--hy), transparent 3.5px, #000 4.2px);
   mask-image: radial-gradient(circle at 50% var(--hy), transparent 3.5px, #000 4.2px);
 }
 
-/* The twine from the eyelet up to a nail in the wall, and the nail's domed head. */
+/* The twine from the eyelet up to a nail in the wall, and the nail's domed head, level with the wire's nails. */
 .wl-card::after {
   content: "";
   position: absolute;
@@ -104,23 +115,26 @@
 }
 
 .wl-name {
-  font-size: 1.875rem;
-  line-height: 2rem;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
   text-wrap: balance;
 }
 
 .wl-place {
-  margin-top: 2px;
+  margin-top: 4px;
   font-family: var(--font-ui);
-  font-size: 0.9375rem;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
   color: var(--tag-ink-2);
 }
 
+/* A pencil rule between who and what, the width of the words. */
 .wl-line {
   margin-top: 10px;
-  font-size: 1rem;
-  line-height: 1.5rem;
+  padding-top: 10px;
+  border-top: 1px solid rgb(70 52 34 / 0.28);
+  font-size: 0.9375rem;
+  line-height: 1.375rem;
   text-wrap: pretty;
 }
 
@@ -129,16 +143,16 @@
   position: relative;
   isolation: isolate;
   width: fit-content;
-  max-width: calc(100% - 28px);
-  margin: 10px 0 0 22px;
-  padding: 10px 14px 11px;
+  max-width: calc(100% - var(--wl-pad) + var(--wl-slip-pad));
+  margin: 8px 0 0 calc(var(--wl-pad) - var(--wl-slip-pad));
+  padding: 8px var(--wl-slip-pad) 9px;
   color: var(--note-ink);
   font-family: var(--font-ui);
-  font-size: 0.9375rem;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
   text-wrap: pretty;
-  filter: var(--cast-paper) drop-shadow(2px 6px 6px rgb(6 8 16 / 0.4));
-  rotate: 0.8deg;
+  filter: var(--cast-paper) drop-shadow(2px 5px 5px rgb(6 8 16 / 0.36));
+  rotate: 0.5deg;
 }
 
 .wl-hint::before,
@@ -160,27 +174,40 @@
   transition: opacity var(--dur-ui-exit) var(--ease-out), visibility 0s linear var(--dur-ui-exit);
 }
 
-/* Phones: under the wire of tags and below the moon's corner, full width; the visitor stands lower in the frame. */
+/* Phones: under the wire of tags and below the moon's corner; a compact card that leaves the garden its width. */
 @media (max-width: 44.99rem) {
   .wl {
+    --hy: 11px;
+    --wl-pad: 16px;
+    --wl-slip-pad: 10px;
     top: calc(max(6px, env(safe-area-inset-top, 0px)) + 96px);
-    left: max(var(--edge), env(safe-area-inset-left, 0px));
-    width: calc(100vw - 2 * var(--edge));
+    width: min(320px, calc(100vw - 2 * var(--edge)));
   }
 
   .wl-card {
-    padding: 28px 18px 12px;
-    rotate: -0.6deg;
+    padding: 22px var(--wl-pad) 12px;
+    rotate: -0.5deg;
   }
 
   .wl-name {
-    font-size: 1.5rem;
-    line-height: 1.75rem;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+
+  .wl-place {
+    margin-top: 2px;
   }
 
   .wl-line {
-    margin-top: 6px;
-    line-height: 1.375rem;
+    margin-top: 8px;
+    padding-top: 8px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .wl-hint,
+  .wl-skip {
+    padding-block: 7px 8px;
   }
 }
 
@@ -190,31 +217,32 @@
  */
 @media (orientation: landscape) and (max-height: 30rem) {
   .wl {
-    --hy: 12px;
+    --hy: 11px;
+    --wl-pad: 14px;
     top: calc(max(4px, env(safe-area-inset-top, 0px)) + 16px);
-    left: max(var(--edge), env(safe-area-inset-left, 0px));
-    width: min(300px, 46vw);
+    width: min(280px, 44vw);
   }
 
   .wl-card {
-    padding: 22px 14px 10px;
-    rotate: -0.6deg;
+    padding: 20px var(--wl-pad) 10px;
+    rotate: -0.5deg;
   }
 
   .wl-name {
-    font-size: 1.25rem;
-    line-height: 1.5rem;
+    font-size: 1.125rem;
+    line-height: 1.375rem;
   }
 
   .wl-place {
     margin-top: 0;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
   }
 
   .wl-line {
-    margin-top: 4px;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+    margin-top: 6px;
+    padding-top: 6px;
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
   }
 
   .wl-hint,
@@ -223,11 +251,11 @@
     top: 50px;
     left: calc(100% + 14px);
     width: max-content;
-    max-width: min(420px, calc(100vw - 100% - 2 * var(--edge) - 14px));
+    max-width: min(400px, calc(100vw - 100% - 2 * var(--edge) - 14px));
     margin: 0;
-    padding: 8px 12px 9px;
-    font-size: 0.875rem;
-    line-height: 1.35;
+    padding: 7px 10px 8px;
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
   }
 
   /* The slip fades in where it stands: a rise would carry it up against the tags. */
@@ -240,7 +268,8 @@
   .wl-card,
   .wl-hint,
   .wl-skip,
-  .wl[data-state="shown"] :is(.wl-card, .wl-hint) {
+  .wl[data-state="shown"] :is(.wl-card, .wl-hint),
+  .wl .wl-hint[data-gone] {
     translate: none;
     transition: none;
   }
