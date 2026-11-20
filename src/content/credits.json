@@ -1155,6 +1155,7 @@
       "es/iris-wing",
       "estanque",
       "puerta",
+      "rosaleda",
       "salida",
       "semillero",
       "sh/clump-3"
@@ -1386,6 +1387,103 @@
       "pu/leaf-r",
       "pu/urn",
       "puerta"
+     ]
+    }
+   ]
+  },
+  {
+   "institution": "The owner's own drawings",
+   "items": [
+    {
+     "id": "own-pastel-kittens",
+     "title": "Pastel drawing of kittens",
+     "creator": "The owner of the garden (own drawing)",
+     "license": "OWN",
+     "licenseUrl": "",
+     "attribution": "Pastel drawing of kittens. Own drawing by the owner of the garden, shown with their permission.",
+     "sourceUrl": "",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "rosaleda",
+      "v/cat-kit-green",
+      "v/cat-kit-grey"
+     ]
+    },
+    {
+     "id": "own-pencil-girl-fox",
+     "title": "Pencil drawing of a girl with a rainbow fox",
+     "creator": "The owner of the garden (own drawing)",
+     "license": "OWN",
+     "licenseUrl": "",
+     "attribution": "Pencil drawing of a girl with a rainbow fox. Own drawing by the owner of the garden, shown with their permission.",
+     "sourceUrl": "",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "sa/sheet-fox",
+      "salida"
+     ]
+    },
+    {
+     "id": "own-red-dress-black-cat",
+     "title": "Painting of a child in a red dress with a black cat",
+     "creator": "The owner of the garden (own drawing)",
+     "license": "OWN",
+     "licenseUrl": "",
+     "attribution": "Painting of a child in a red dress with a black cat. Own drawing by the owner of the garden, shown with their permission.",
+     "sourceUrl": "",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "es/cat-black",
+      "es/child",
+      "estanque"
+     ]
+    },
+    {
+     "id": "own-scribble-child-bird",
+     "title": "Scribbled drawing of a child with a bird",
+     "creator": "The owner of the garden (own drawing)",
+     "license": "OWN",
+     "licenseUrl": "",
+     "attribution": "Scribbled drawing of a child with a bird. Own drawing by the owner of the garden, shown with their permission.",
+     "sourceUrl": "",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "sa/sheet-child",
+      "salida"
+     ]
+    },
+    {
+     "id": "own-white-black-cat",
+     "title": "Painting of a white and black cat",
+     "creator": "The owner of the garden (own drawing)",
+     "license": "OWN",
+     "licenseUrl": "",
+     "attribution": "Painting of a white and black cat. Own drawing by the owner of the garden, shown with their permission.",
+     "sourceUrl": "",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "rosaleda",
+      "v/cat"
      ]
     }
    ]
@@ -1818,25 +1916,6 @@
      "usedIn": [
       "es/papyrus",
       "estanque"
-     ]
-    },
-    {
-     "id": "wel-r6ssyh25-sleeping-cat",
-     "title": "A sleeping cat. Gouache, 18--.",
-     "creator": "Unknown",
-     "license": "PD",
-     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-     "attribution": "Unknown, A sleeping cat. Gouache, 18--. [between 1800 and 1899]. Wellcome Collection, Public Domain Mark 1.0.",
-     "sourceUrl": "https://wellcomecollection.org/works/r6ssyh25",
-     "changes": [
-      "cropped",
-      "cutout",
-      "tinted"
-     ],
-     "usedIn": [
-      "rosaleda",
-      "v/cat",
-      "v/cat-tail"
      ]
     },
     {
@@ -2449,6 +2528,11 @@
   }
  ],
  "own": [
-  "The Coupé in the grotto: the owner's own photograph, cut out and hand-tinted"
+  "The Coupé in the grotto: the owner's own photograph, cut out and hand-tinted",
+  "Painting of a child in a red dress with a black cat, the owner's own work",
+  "Painting of a white and black cat, the owner's own work",
+  "Pastel drawing of kittens, the owner's own work",
+  "Pencil drawing of a girl with a rainbow fox, the owner's own work",
+  "Scribbled drawing of a child with a bird, the owner's own work"
  ]
 }

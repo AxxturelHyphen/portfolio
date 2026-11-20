@@ -21,6 +21,7 @@ type Lookup = (key: string) => string;
 
 function licenceName(id: string, s: Lookup): string {
   if (id === 'PD') return s('credits.pd');
+  if (id === 'OWN') return s('credits.own');
   if (id === 'OFL-1.1') return 'SIL Open Font License 1.1';
   return id.replace(/^CC-/, 'CC ').replace(/-(\d)/, ' $1');
 }

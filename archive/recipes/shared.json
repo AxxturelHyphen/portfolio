@@ -204,6 +204,10 @@
   "peacock-rijks-barbiers-side-trail": {
    "method": "ml",
    "why": "bird on a printed ground; only its outline is kept"
+  },
+  "own-white-black-cat": {
+   "method": "raw",
+   "why": "painted ground: hand matte and local ML on the crop"
   }
  },
  "pages": [
@@ -619,42 +623,47 @@
     },
     {
      "id": "v/cat",
-     "source": "wel-r6ssyh25-sleeping-cat",
+     "source": "own-white-black-cat",
      "crop": [
-      0.1,
-      0.12,
-      0.95,
-      0.92
+      0.2,
+      0.2,
+      0.92,
+      0.86
      ],
      "size": "medium",
-     "w": 0.6,
+     "w": 0.34,
+     "ml": true,
+     "matte": [
+      [
+       0.2,
+       0.2
+      ],
+      [
+       0.89,
+       0.2
+      ],
+      [
+       0.9,
+       0.5
+      ],
+      [
+       0.87,
+       0.86
+      ],
+      [
+       0.2,
+       0.86
+      ]
+     ],
      "tint": [
       {
-       "hue": "all",
-       "sat": 0.12,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "id": "v/cat-tail",
-     "source": "wel-r6ssyh25-sleeping-cat",
-     "crop": [
-      0.7,
-      0.58,
-      0.95,
-      0.85
-     ],
-     "size": "small",
-     "largest": true,
-     "pivot": [
-      0.05,
-      0.5
-     ],
-     "tint": [
+       "hue": "pale",
+       "toward": "#e4d9c4",
+       "amount": 0.5
+      },
       {
        "hue": "all",
-       "sat": 0.12,
+       "sat": 0.6,
        "amount": 1
       }
      ]

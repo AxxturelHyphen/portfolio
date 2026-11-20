@@ -5693,6 +5693,258 @@
    "edits": []
   },
   {
+   "id": "own-pencil-girl-fox",
+   "title": "Pencil drawing of a girl with a rainbow fox",
+   "creator": "The owner of the garden (own drawing)",
+   "date": "",
+   "institution": "Owner's own work",
+   "sourceUrl": "",
+   "license": "OWN",
+   "licenseUrl": "",
+   "attribution": "Pencil drawing of a girl with a rainbow fox. Own drawing by the owner of the garden, shown with their permission.",
+   "file": "archive/raw/own/drawing-pencil-girl-fox.jpg",
+   "need": "wall-sheet-salida",
+   "category": "own",
+   "sha256": "f7fde8e14d1abb50d7a302016199ec01773dbc251270920710b97c4cf4f60a7c",
+   "usedIn": [
+    "sa/sheet-fox",
+    "salida"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "sa/sheet-fox: raw (forced: the whole sheet is the sprite: no key), crop 0,0,1,1"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/sheet-fox: pale toward #dcd0b6, amount 1"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/sheet-fox: all toward #d6c8ac, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/sheet-fox: all  S under 0.55, amount 1"
+    }
+   ]
+  },
+  {
+   "id": "own-scribble-child-bird",
+   "title": "Scribbled drawing of a child with a bird",
+   "creator": "The owner of the garden (own drawing)",
+   "date": "",
+   "institution": "Owner's own work",
+   "sourceUrl": "",
+   "license": "OWN",
+   "licenseUrl": "",
+   "attribution": "Scribbled drawing of a child with a bird. Own drawing by the owner of the garden, shown with their permission.",
+   "file": "archive/raw/own/drawing-scribble-child-bird.jpg",
+   "need": "wall-sheet-salida",
+   "category": "own",
+   "sha256": "bea06ab998a3e914f94c88b685188ac272100605c13d558a1383a2c974981745",
+   "usedIn": [
+    "sa/sheet-child",
+    "salida"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "sa/sheet-child: raw (forced: the whole sheet is the sprite: no key), crop 0,0,1,1"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/sheet-child: all toward #d9cdb4, amount 0.5"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/sheet-child: all  S under 0.4, amount 1"
+    }
+   ]
+  },
+  {
+   "id": "own-red-dress-black-cat",
+   "title": "Painting of a child in a red dress with a black cat",
+   "creator": "The owner of the garden (own drawing)",
+   "date": "",
+   "institution": "Owner's own work",
+   "sourceUrl": "",
+   "license": "OWN",
+   "licenseUrl": "",
+   "attribution": "Painting of a child in a red dress with a black cat. Own drawing by the owner of the garden, shown with their permission.",
+   "file": "archive/raw/own/drawing-red-dress-black-cat.jpg",
+   "need": "standees-estanque",
+   "category": "own",
+   "sha256": "e38fc2b94040299dbd900a46b2893482a9b8ff820ed95bf6343e84aa93d6cb85",
+   "usedIn": [
+    "es/cat-black",
+    "es/child",
+    "estanque"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "es/child: raw (forced: painted ground: local ML on each crop), crop 0.36,0.1,0.84,0.99"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "es/child: pale toward #e4d9c4, amount 0.5"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "es/child: all  S under 0.6, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "local ML matte on the crop (rembg birefnet-general), edge defringed",
+     "note": "es/child: painted ground, paper key cannot separate it"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "es/cat-black: raw (forced: painted ground: local ML on each crop), crop 0.07,0.38,0.33,0.9"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "es/cat-black: green toward #3b3a4a, amount 0.9"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "es/cat-black: all  S under 0.4, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "es/cat-black: polygon of 20 points"
+    }
+   ]
+  },
+  {
+   "id": "own-white-black-cat",
+   "title": "Painting of a white and black cat",
+   "creator": "The owner of the garden (own drawing)",
+   "date": "",
+   "institution": "Owner's own work",
+   "sourceUrl": "",
+   "license": "OWN",
+   "licenseUrl": "",
+   "attribution": "Painting of a white and black cat. Own drawing by the owner of the garden, shown with their permission.",
+   "file": "archive/raw/own/drawing-white-black-cat.jpg",
+   "need": "cat-rosaleda",
+   "category": "own",
+   "sha256": "89a519bb6a8c6d53be4a5a450c830419fef97c247efe1af66a7fc5be92df9371",
+   "usedIn": [
+    "rosaleda",
+    "v/cat"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "v/cat: raw (forced: painted ground: hand matte and local ML on the crop), crop 0.2,0.2,0.92,0.86"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat: pale toward #e4d9c4, amount 0.5"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat: all  S under 0.6, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "local ML matte on the crop (rembg birefnet-general), edge defringed",
+     "note": "v/cat: painted ground, paper key cannot separate it"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "v/cat: polygon of 5 points"
+    }
+   ]
+  },
+  {
+   "id": "own-pastel-kittens",
+   "title": "Pastel drawing of kittens",
+   "creator": "The owner of the garden (own drawing)",
+   "date": "",
+   "institution": "Owner's own work",
+   "sourceUrl": "",
+   "license": "OWN",
+   "licenseUrl": "",
+   "attribution": "Pastel drawing of kittens. Own drawing by the owner of the garden, shown with their permission.",
+   "file": "archive/raw/own/drawing-pastel-kittens.jpg",
+   "need": "kittens-rosaleda",
+   "category": "own",
+   "sha256": "4d3b5a46317fbf50311619f5ef218d36f5bb0e6646b0fa1b262b1d47a5b7f27c",
+   "usedIn": [
+    "rosaleda",
+    "v/cat-kit-green",
+    "v/cat-kit-grey"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "v/cat-kit-grey: raw (forced: pastel on pale paper: hand matte and local ML on the crop), crop 0,0.52,1,1"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat-kit-grey: pale toward #e4d9c4, amount 0.5"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat-kit-grey: all  S under 0.5, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "v/cat-kit-grey: polygon of 17 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "no key; alpha from luminance in the MASK treatment",
+     "note": "v/cat-kit-green: raw (forced: pastel on pale paper: hand matte and local ML on the crop), crop 0,0,0.85,0.56"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat-kit-green: pale toward #e4d9c4, amount 0.5"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "v/cat-kit-green: all  S under 0.5, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "local ML matte on the crop (rembg birefnet-general), edge defringed",
+     "note": "v/cat-kit-green: painted ground, paper key cannot separate it"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "v/cat-kit-green: polygon of 16 points"
+    }
+   ]
+  },
+  {
    "id": "cm-childs-1897-pansy-cover",
    "title": "Childs' Rare Flowers, Vegetables and Fruits, 1897, cover",
    "creator": "John Lewis Childs, Floral Park, NY",
@@ -6429,33 +6681,8 @@
    "need": "small-animals",
    "category": "props",
    "sha256": "9ff66805691bf87c5ff8952e4389cbfa724747f253d48c61abf32ad3acd62e8f",
-   "usedIn": [
-    "rosaleda",
-    "v/cat",
-    "v/cat-tail"
-   ],
-   "edits": [
-    {
-     "stage": "cutout",
-     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
-     "note": "v/cat: ml (leftover 0.23), crop 0.1,0.12,0.95,0.92"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "v/cat: all  S under 0.12, amount 1"
-    },
-    {
-     "stage": "cutout",
-     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
-     "note": "v/cat-tail: ml (leftover 0.23), crop 0.7,0.58,0.95,0.85"
-    },
-    {
-     "stage": "tint",
-     "tool": "OKLab hue-selected re-tint",
-     "note": "v/cat-tail: all  S under 0.12, amount 1"
-    }
-   ]
+   "usedIn": [],
+   "edits": []
   },
   {
    "id": "enc-1-081-garden-tools-ladder",
@@ -9802,6 +10029,7 @@
     "es/iris-wing",
     "estanque",
     "puerta",
+    "rosaleda",
     "salida",
     "semillero",
     "sh/clump-3"
@@ -10782,8 +11010,8 @@
    "edits": [
     {
      "stage": "cutout",
-     "tool": "classical OKLab paper key (lo 0.033, hi 0.067), morphology, edge un-mix",
-     "note": "es/lily-f: classical, crop 0.04,0.03,0.96,0.97"
+     "tool": "rembg birefnet-general (CUDAExecutionProvider), edge un-mix against the paper field",
+     "note": "es/lily-f: ml (coverage 0.57), crop 0.04,0.03,0.96,0.97"
     },
     {
      "stage": "tint",
@@ -11158,6 +11386,26 @@
    "file": "archive/raw/own/hyundai-coupe.jpg",
    "note": "The Coupé in the grotto: the owner's own photograph, cut out and hand-tinted",
    "id": "own-hyundai-coupe"
+  },
+  {
+   "file": "archive/raw/own/drawing-pencil-girl-fox.jpg",
+   "note": "Pencil drawing of a girl with a rainbow fox, the owner's own work"
+  },
+  {
+   "file": "archive/raw/own/drawing-scribble-child-bird.jpg",
+   "note": "Scribbled drawing of a child with a bird, the owner's own work"
+  },
+  {
+   "file": "archive/raw/own/drawing-red-dress-black-cat.jpg",
+   "note": "Painting of a child in a red dress with a black cat, the owner's own work"
+  },
+  {
+   "file": "archive/raw/own/drawing-white-black-cat.jpg",
+   "note": "Painting of a white and black cat, the owner's own work"
+  },
+  {
+   "file": "archive/raw/own/drawing-pastel-kittens.jpg",
+   "note": "Pastel drawing of kittens, the owner's own work"
   }
  ]
 }

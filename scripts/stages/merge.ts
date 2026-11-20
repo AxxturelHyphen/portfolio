@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Merge stage: archive/sources/*.json (SourceEntry[], one file per category) into archive/SOURCES.json with the
-// licence allowlist (PD, CC0, CC BY, CC BY-SA; never NC or ND), attribution required, unique ids, the raw file on
+// licence allowlist (PD, CC0, CC BY, CC BY-SA, or the owner's own work; never NC or ND), attribution required, unique ids, the raw file on
 // disk and its sha256. usedIn comes from the sprite sources of the shipped atlas manifests and the garden's recordings
 // (src/audio/sounds.ts, once their file is in public/audio/); own files from archive/OWN.json. Never hand-edit the
 // output. An entry that breaks a rule is left out of SOURCES.json with a warning; it is an error when a shipped atlas uses it (licence-check then trusts SOURCES.json alone).
@@ -28,6 +28,7 @@ export function normalizeLicence(raw: string): string | null {
   const s = raw.trim();
   if (/\b(NC|ND)\b|non-?commercial|no-?deriv|all rights reserved|unclear|unknown/i.test(s)) return null;
   if (/^(public domain|PD\b)/i.test(s)) return 'PD';
+  if (/^own work\b/i.test(s)) return 'OWN';
   if (/^CC0\b/i.test(s)) return 'CC0-1.0';
   const by = /^CC[- ]BY(-SA)?[- ]([1-4]\.0)\b/i.exec(s);
   if (by !== null) return `CC-BY${by[1] !== undefined ? '-SA' : ''}-${by[2]}`;
@@ -86,7 +87,9 @@ export function runMerge(cache: Cache): string {
     for (const raw of list as Record<string, unknown>[]) {
       const where = `${f} ${String(raw['id'])}`;
       const reject = (why: string): void => void (use.has(String(raw['id'])) ? problems : skipped).push(`${where}: ${why}`);
-      const missing = FIELDS.filter((k) => typeof raw[k] !== 'string' || (!MAY_BE_EMPTY.has(k) && (raw[k] as string).trim() === ''));
+      // The owner's own drawings have no record page to link and no licence deed: both stay empty.
+      const ownWork = /^own work\b/i.test(String(raw['license']));
+      const missing = FIELDS.filter((k) => typeof raw[k] !== 'string' || (!MAY_BE_EMPTY.has(k) && !(ownWork && k === 'sourceUrl') && (raw[k] as string).trim() === ''));
       if (missing.length > 0) {
         reject(`missing ${missing.join(', ')}`);
         continue;
@@ -99,7 +102,7 @@ export function runMerge(cache: Cache): string {
         reject(`licence "${e.license}" is not on the allowlist (PD, CC0, CC BY, CC BY-SA)`);
         continue;
       }
-      if (license !== 'PD' && e.licenseUrl.trim() === '') {
+      if (license !== 'PD' && license !== 'OWN' && e.licenseUrl.trim() === '') {
         reject(`licence ${license} needs licenseUrl`);
         continue;
       }

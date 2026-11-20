@@ -42,6 +42,14 @@
   "swallow-sharpe-1896-pl28": {
    "method": "raw",
    "why": "local ML matte per crop: painted ground (water, sky) that a paper key cannot separate"
+  },
+  "own-pencil-girl-fox": {
+   "method": "raw",
+   "why": "the whole sheet is the sprite: no key"
+  },
+  "own-scribble-child-bird": {
+   "method": "raw",
+   "why": "the whole sheet is the sprite: no key"
   }
  },
  "pages": [
@@ -628,6 +636,92 @@
       "color": "#141228",
       "blur": 3
      }
+    },
+    {
+     "id": "sa/sheet-fox",
+     "source": "own-pencil-girl-fox",
+     "crop": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "size": 640,
+     "w": 0.62,
+     "pivot": [
+      0.5,
+      1
+     ],
+     "warp": [
+      0.02,
+      0.02
+     ],
+     "tint": [
+      {
+       "hue": "pale",
+       "toward": "#dcd0b6",
+       "amount": 1
+      },
+      {
+       "hue": "all",
+       "toward": "#d6c8ac",
+       "amount": 0.3
+      },
+      {
+       "hue": "all",
+       "sat": 0.55,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "sa/sheet-child",
+     "source": "own-scribble-child-bird",
+     "crop": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "size": 640,
+     "w": 0.46,
+     "pivot": [
+      0.5,
+      1
+     ],
+     "warp": [
+      -0.015,
+      0.02
+     ],
+     "tint": [
+      {
+       "hue": "all",
+       "toward": "#d9cdb4",
+       "amount": 0.5
+      },
+      {
+       "hue": "all",
+       "sat": 0.4,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "id": "sa/pin",
+     "source": "code:pin",
+     "crop": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "size": "small",
+     "w": 0.045,
+     "pivot": [
+      0.5,
+      0.5
+     ],
+     "drawn": "pin"
     }
    ]
   }

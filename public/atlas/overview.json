@@ -1,6 +1,6 @@
 {
  "id": "overview",
- "hash": "0463aedbc88e96a8",
+ "hash": "cdaa80ab2dc00a0a",
  "pages": [
   {
    "w": 1024,
@@ -14,8 +14,8 @@
     "lo": "overview.0.n.lo.ktx2"
    },
    "fileBytes": {
-    "hi": 169492,
-    "lo": 66735
+    "hi": 199576,
+    "lo": 72946
    }
   }
  ],
@@ -24,35 +24,41 @@
    "page": 0,
    "uv": [
     0.0078125,
-    0.6142578125,
+    0.703125,
     0.4765625,
     0.9921875
    ],
    "size": [
     7.5,
-    6.0414648500000006
+    4.6241
    ],
    "pivot": [
     -5.133333333333334,
-    0.0019900239922773033
+    0.0026
    ],
    "pad": 8,
    "sources": [
-    "nga-19892-tavern-sign-hanging",
-    "wel-cyjn4htg",
     "met-671072",
-    "cma-117931",
-    "swallow-sharpe-1896-pl28",
-    "swallow-gould-birds-of-europe-chimney-swallow",
-    "nga-24425-globe-lantern",
     "nga-16077-zoar-bird-cage",
-    "nightingale-swaysland-1883-pl31",
     "wc-1925-schloss-dobrilugk-kien-r-ckseite-alter-frit",
     "wc-a-wish-postcard-1913-reverse",
     "wc-welcome-utah-utah-gains-statehood-back-50718307",
     "wel_cq9tqxjj",
     "nga-19941-tavern-sign-brown",
     "cm-roty-semeuse-1921-stamp",
+    "nga-24353-cage-hand-lantern",
+    "nga-24425-globe-lantern",
+    "wel-gzgs6qm9-bracken-fiddleheads",
+    "wel_r9zz3hu7",
+    "cma-118176-japanese-iris",
+    "cma_1965_294",
+    "wel-yb4y8cn4-eight-fungi",
+    "wel_kbzakfgk",
+    "cma_1955_471",
+    "wel_g4mzdzcp",
+    "own-pencil-girl-fox",
+    "code:pin",
+    "own-scribble-child-bird",
     "wel_qkbs7qjg"
    ]
   },
@@ -60,17 +66,17 @@
    "page": 0,
    "uv": [
     0.4921875,
-    0.7333984375,
+    0.71484375,
     0.9619140625,
     0.9921875
    ],
    "size": [
     7.500000000000001,
-    4.13582172
+    4.43582172
    ],
    "pivot": [
     -0.8399999999999999,
-    0.2232204535160669
+    0.2757549958522679
    ],
    "pad": 8,
    "sources": [
@@ -81,22 +87,26 @@
     "cma_1943_142",
     "cma_1965_291",
     "cma_1965_293",
-    "nga-16209-moravian-bench",
-    "wel-r6ssyh25-sleeping-cat",
-    "nga-27263-toleware-water-can",
-    "wel_etaatwun",
+    "cma_1965_294",
+    "cma_1955_471",
+    "wel-gzgs6qm9-bracken-fiddleheads",
+    "wel-yb4y8cn4-eight-fungi",
     "wel_kbzakfgk",
     "wel_r9zz3hu7",
-    "wel-gzgs6qm9-bracken-fiddleheads",
-    "cma_1955_471",
-    "cma_1965_294",
-    "wel-yb4y8cn4-eight-fungi",
+    "nga-16209-moravian-bench",
+    "own-white-black-cat",
+    "nga-27263-toleware-water-can",
+    "wel_etaatwun",
     "cma_1943_141",
     "cma_1943_138",
     "wel-easdhj2q-edible-snail",
     "nga-18277-clay-flower-pot-red-rim",
     "nga-24386-candle-lantern",
     "nga-19941-tavern-sign-brown",
+    "nga-24353-cage-hand-lantern",
+    "nga-24317-pierced-tin-lantern",
+    "own-pastel-kittens",
+    "cma-118176-japanese-iris",
     "met-344561",
     "enc-1-081-garden-tools-ladder",
     "nga-25799-trimming-shears",
@@ -108,9 +118,9 @@
    "page": 0,
    "uv": [
     0.4921875,
-    0.4873046875,
+    0.46875,
     0.9296875,
-    0.7177734375
+    0.69921875
    ],
    "size": [
     7,
@@ -124,23 +134,76 @@
    "sources": [
     "met-362366",
     "met-705858",
+    "wel_etaatwun",
     "wel_wm8trukn",
     "nga-24833-door-plate",
     "wel_fryp428j",
     "swallow-naumann-taf145",
-    "wel_etaatwun",
     "nga-24353-cage-hand-lantern",
     "nga-19941-tavern-sign-brown",
+    "wel_r9zz3hu7",
+    "cma-118176-japanese-iris",
+    "cma_1955_471",
+    "wel_kbzakfgk",
+    "cma_1965_294",
+    "wel_g4mzdzcp",
+    "wel-gzgs6qm9-bracken-fiddleheads",
+    "wel-yb4y8cn4-eight-fungi",
     "met-671072"
+   ]
+  },
+  "semillero": {
+   "page": 0,
+   "uv": [
+    0.0078125,
+    0.478515625,
+    0.4140625,
+    0.6875
+   ],
+   "size": [
+    6.5,
+    3.33352872
+   ],
+   "pivot": [
+    -4.153846153846154,
+    0.09290455430664475
+   ],
+   "pad": 8,
+   "sources": [
+    "haeckel_tubulariae",
+    "wel_etaatwun",
+    "cma_1965_294",
+    "wel-zee8ph2h-chinese-lantern-watercolour",
+    "cma_1955_471",
+    "wel_kbzakfgk",
+    "wel_g4mzdzcp",
+    "wel-yb4y8cn4-eight-fungi",
+    "wel-gzgs6qm9-bracken-fiddleheads",
+    "cma-118176-japanese-iris",
+    "wel_r9zz3hu7",
+    "nga-20836-straw-bee-skep",
+    "wel-jvrhsteu-beehives-engraving",
+    "enc-1-079-wheelbarrow-hoes",
+    "cma-117931",
+    "haeckel_nepenthaceae",
+    "haeckel_basimycetes",
+    "cma-132619-garden-hyacinth",
+    "wel-fkrcnr8h-magnolia-fruit",
+    "haeckel_coniferae",
+    "cm-burpee-1895-sweetpea-cover",
+    "cm-burpee-1897-violet-cover",
+    "nga-24317-pierced-tin-lantern",
+    "nga-19941-tavern-sign-brown",
+    "nga-24353-cage-hand-lantern"
    ]
   },
   "gruta": {
    "page": 0,
    "uv": [
     0.0078125,
-    0.3896484375,
+    0.25390625,
     0.2080078125,
-    0.5986328125
+    0.462890625
    ],
    "size": [
     3.200000000000003,
@@ -152,15 +215,14 @@
    ],
    "pad": 8,
    "sources": [
+    "met-641334",
     "haeckel_hexacoralla_69",
-    "code:placeholder",
     "met_824890",
     "met_824893",
     "met_824901",
     "haeckel_florideae",
     "wellcome_xgwhxufg",
     "wellcome_r2zuy7wu",
-    "haeckel_diatomea",
     "wellcome_rehdyr6t",
     "wel_tawc3fgb",
     "acg-cardboard002",
@@ -170,51 +232,13 @@
     "wel_n7tudz7v"
    ]
   },
-  "semillero": {
-   "page": 0,
-   "uv": [
-    0.2236328125,
-    0.2802734375,
-    0.6298828125,
-    0.4716796875
-   ],
-   "size": [
-    6.5,
-    3.0476
-   ],
-   "pivot": [
-    -4.153846153846154,
-    0.0078
-   ],
-   "pad": 8,
-   "sources": [
-    "haeckel_tubulariae",
-    "code:placeholder",
-    "wel_etaatwun",
-    "nga-20836-straw-bee-skep",
-    "wel-jvrhsteu-beehives-engraving",
-    "enc-1-079-wheelbarrow-hoes",
-    "cma-117931",
-    "haeckel_nepenthaceae",
-    "haeckel_basimycetes",
-    "cma-132619-garden-hyacinth",
-    "wel-zee8ph2h-chinese-lantern-watercolour",
-    "wel-fkrcnr8h-magnolia-fruit",
-    "haeckel_coniferae",
-    "cm-burpee-1895-sweetpea-cover",
-    "cm-burpee-1897-violet-cover",
-    "nga-24317-pierced-tin-lantern",
-    "nga-19941-tavern-sign-brown",
-    "cma-118176-japanese-iris"
-   ]
-  },
   "estanque": {
    "page": 0,
    "uv": [
-    0.0078125,
-    0.080078125,
-    0.470703125,
-    0.2646484375
+    0.2236328125,
+    0.2685546875,
+    0.6865234375,
+    0.453125
    ],
    "size": [
     7.399999999999999,
@@ -229,17 +253,27 @@
     "wc-piranesi-vase-rp-p-ob-39-601",
     "com-haeckel-lichenes",
     "wel-nqq9tnvg-papyrus-reeds",
-    "wel-r7fugtvn-sacred-lotus-leaf",
+    "wel_etaatwun",
     "peacock-rijks-white-on-branch",
+    "com-florabatava-typha",
+    "wel-r7fugtvn-sacred-lotus-leaf",
+    "disc-mclean-birds-butterflies",
+    "wel-gzgs6qm9-bracken-fiddleheads",
+    "wel_r9zz3hu7",
+    "wel_kbzakfgk",
+    "wel-yb4y8cn4-eight-fungi",
     "com-victoria-regia-pl1-leaf-stages",
     "wel-ckmupyea-frog-shore",
     "dragonfly-rijks-etching-libel",
-    "com-florabatava-typha",
     "sundial-universal-with-compass",
     "armillary-coloured-engraving",
     "feather-rijks-bernard-pencil-feather",
     "nga-19941-tavern-sign-brown",
-    "cma-118176-japanese-iris"
+    "nga-24353-cage-hand-lantern",
+    "nga-24386-candle-lantern",
+    "own-red-dress-black-cat",
+    "cma-118176-japanese-iris",
+    "cma_1965_294"
    ]
   }
  },

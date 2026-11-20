@@ -29,6 +29,7 @@ const HOLDERS: readonly [RegExp, string][] = [
   [/Biodiversity Heritage Library/, 'Biodiversity Heritage Library'],
   [/Rijksmuseum/, 'Rijksmuseum, Amsterdam'],
   [/Cleveland Museum of Art/, 'The Cleveland Museum of Art'],
+  [/^Owner's own work/, "The owner's own drawings"],
   [/^(Wikimedia Commons|Scan of Flora Batava)/, 'Wikimedia Commons'],
 ];
 

@@ -1,0 +1,67 @@
+[
+ {
+  "id": "own-pencil-girl-fox",
+  "title": "Pencil drawing of a girl with a rainbow fox",
+  "creator": "The owner of the garden (own drawing)",
+  "date": "",
+  "institution": "Owner's own work",
+  "sourceUrl": "",
+  "license": "Own work",
+  "licenseUrl": "",
+  "attribution": "Pencil drawing of a girl with a rainbow fox. Own drawing by the owner of the garden, shown with their permission.",
+  "file": "own/drawing-pencil-girl-fox.jpg",
+  "need": "wall-sheet-salida"
+ },
+ {
+  "id": "own-scribble-child-bird",
+  "title": "Scribbled drawing of a child with a bird",
+  "creator": "The owner of the garden (own drawing)",
+  "date": "",
+  "institution": "Owner's own work",
+  "sourceUrl": "",
+  "license": "Own work",
+  "licenseUrl": "",
+  "attribution": "Scribbled drawing of a child with a bird. Own drawing by the owner of the garden, shown with their permission.",
+  "file": "own/drawing-scribble-child-bird.jpg",
+  "need": "wall-sheet-salida"
+ },
+ {
+  "id": "own-red-dress-black-cat",
+  "title": "Painting of a child in a red dress with a black cat",
+  "creator": "The owner of the garden (own drawing)",
+  "date": "",
+  "institution": "Owner's own work",
+  "sourceUrl": "",
+  "license": "Own work",
+  "licenseUrl": "",
+  "attribution": "Painting of a child in a red dress with a black cat. Own drawing by the owner of the garden, shown with their permission.",
+  "file": "own/drawing-red-dress-black-cat.jpg",
+  "need": "standees-estanque"
+ },
+ {
+  "id": "own-white-black-cat",
+  "title": "Painting of a white and black cat",
+  "creator": "The owner of the garden (own drawing)",
+  "date": "",
+  "institution": "Owner's own work",
+  "sourceUrl": "",
+  "license": "Own work",
+  "licenseUrl": "",
+  "attribution": "Painting of a white and black cat. Own drawing by the owner of the garden, shown with their permission.",
+  "file": "own/drawing-white-black-cat.jpg",
+  "need": "cat-rosaleda"
+ },
+ {
+  "id": "own-pastel-kittens",
+  "title": "Pastel drawing of kittens",
+  "creator": "The owner of the garden (own drawing)",
+  "date": "",
+  "institution": "Owner's own work",
+  "sourceUrl": "",
+  "license": "Own work",
+  "licenseUrl": "",
+  "attribution": "Pastel drawing of kittens. Own drawing by the owner of the garden, shown with their permission.",
+  "file": "own/drawing-pastel-kittens.jpg",
+  "need": "kittens-rosaleda"
+ }
+]

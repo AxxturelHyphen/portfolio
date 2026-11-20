@@ -80,7 +80,7 @@ export interface Job {
   /** LK: light figure on a dark ground, alpha from luminance lo (gone) to hi (opaque). */
   lumaKey?: [number, number];
   /** Code-drawn instead of cut: the source only supplies the stock texture (the [FILL] paper-cut Coupé). */
-  drawn?: 'paper-car';
+  drawn?: 'paper-car' | 'pin';
 }
 
 /** A bloom whose poses are separate drawings (lily, pod, bud): frames listed by pose, duplicates are held poses. */

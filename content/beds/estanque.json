@@ -1093,6 +1093,38 @@
           "shadow": true,
           "react": false,
           "only": "roam"
+        },
+        {
+          "sprite": "es/child",
+          "x": 22.0,
+          "y": 0,
+          "z": 1.2,
+          "scale": 1,
+          "only": "roam",
+          "hinge": 0,
+          "lean": 8,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "h": 0.95
+        },
+        {
+          "sprite": "es/cat-black",
+          "x": 21.2,
+          "y": 0,
+          "z": 1.35,
+          "scale": 1,
+          "only": "roam",
+          "hinge": 0,
+          "lean": 8,
+          "size": "medium",
+          "group": "D",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "h": 0.5
         }
       ]
     },
