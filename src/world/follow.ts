@@ -7,6 +7,7 @@
  * frame.
  */
 import { FOLLOW, FOLLOW_FRAMINGS, NEAR_FRAMINGS, springStep, type NearFraming, type SpringState } from '../core/motion.ts';
+import { terrainY } from '../core/terrain.ts';
 import { DEG, type EnclosureData } from './layout.ts';
 import type { RigPose } from './rail.ts';
 
@@ -217,8 +218,9 @@ export interface Follower {
   readonly framing: Readonly<Framing>;
   resize(w: number, h: number): void;
   /**
-   * Follows the visitor at (x, z); snap lands at once (first frame, frozen time, reduced motion). k (0..1) blends the
-   * walking framing toward the near one, sliding the camera k of `shift` metres along x (world/fit.ts chooses both).
+   * Follows the visitor at (x, z), rising with the ground under it (core/terrain.ts: slabs and the raised bank); snap
+   * lands at once (first frame, frozen time, reduced motion). k (0..1) blends the walking framing toward the near one,
+   * sliding the camera k of `shift` metres along x (world/fit.ts chooses both).
    */
   step(x: number, z: number, dt: number, snap: boolean, k?: number, shift?: number): void;
 }
@@ -266,6 +268,7 @@ export function createFollower(lim: ViewLimits, orbit: OrbitView = REST): Follow
       framing.up /= orbit.zoom;
       framing.back /= orbit.zoom;
       followPose(fx.x, fz.x, framing, lim, pose, fx.x + shift * k);
+      pose.y += terrainY(fx.x, fz.x);
       orbitPose(pose, fx.x, fz.x, orbit.yaw, lim);
     },
   };

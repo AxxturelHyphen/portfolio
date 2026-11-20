@@ -5,6 +5,7 @@
  * strength) in one flat array, the layout of the shader's uLamp[6].
  */
 import { follow } from '../core/motion.ts';
+import { terrainY } from '../core/terrain.ts';
 import type { BedId } from '../types.ts';
 import type { BedScene3 } from './layout.ts';
 import { builtIn } from './mode.ts';
@@ -51,8 +52,9 @@ export function createLampPool(): LampPool {
 
 /**
  * Collects the flames of the standing lantern props free roam builds in `scenes` (the active bed and its neighbours),
- * at most LAMPS.candidates. A lantern already burning in `lamps` keeps its slot and strength, so a bed change never pops
- * a pool; the rest of the slots go dark. Runs on a bed change, never per frame. Returns how many were found.
+ * at most LAMPS.candidates, lifted onto the ground they stand on (core/terrain.ts, as gl/instances.ts lifts the props).
+ * A lantern already burning in `lamps` keeps its slot and strength, so a bed change never pops a pool; the rest of the
+ * slots go dark. Runs on a bed change, never per frame. Returns how many were found.
  */
 export function findLamps(scenes: readonly (BedScene3 | null)[], pool: LampPool, lamps: Float32Array): number {
   let n = 0;
@@ -62,7 +64,7 @@ export function findLamps(scenes: readonly (BedScene3 | null)[], pool: LampPool,
       for (const it of layer.items) {
         if (n >= LAMPS.candidates || !it.sprite.startsWith(LAMPS.prefix) || !builtIn(it, 'roam')) continue;
         pool.at[n * 3] = it.x;
-        pool.at[n * 3 + 1] = it.y + (it.h ?? LAMPS.defaultH) * it.scale * LAMPS.flameOfHeight;
+        pool.at[n * 3 + 1] = it.y + terrainY(it.x, it.z) + (it.h ?? LAMPS.defaultH) * it.scale * LAMPS.flameOfHeight;
         pool.at[n * 3 + 2] = it.z;
         n++;
       }
