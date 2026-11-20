@@ -15,6 +15,7 @@ import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { uiText } from '../ui/copy.ts';
 import { createLabel } from '../ui/label.ts';
 import { createModeLayers } from '../ui/mode.ts';
+import { heldMode } from '../world/exit.ts';
 import { WORK_EVENT } from '../ui/plan.ts';
 import { createWorkWalk } from '../ui/plan.walk.ts';
 import { createWelcome } from '../ui/welcome.ts';
@@ -287,7 +288,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   let settledMode: Mode | null = null;
   loop.on('dom', (c) => {
     const mode = machine.ch.mode;
-    layers.setProgress(mode.value);
+    layers.setProgress(heldMode(mode.value));
     const want = machine.state.mode;
     if (mode.settled && mode.value === (want === 'garden' ? 0 : 1) && settledMode !== want) {
       settledMode = want;

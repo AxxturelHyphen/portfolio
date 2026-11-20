@@ -12,6 +12,7 @@ import { hopsFrom } from '../core/hops.ts';
 import { CAMERA, WALK, follow, omegaFor, pushOf, springStep, walkCarry, walkElapsedS, walkOf, type SpringState } from '../core/motion.ts';
 import { DEG, type WorldLayout } from './layout.ts';
 import { createRail, filmPose, type RigPose } from './rail.ts';
+import { pushThrough } from './exit.ts';
 
 const FRAME = { zoomMax: 2, nudge: 0.16, nudgeY: 0.5, push: 0.55, hopDip: 0.35, near: 0.05, far: 400, portraitAspect: 0.8, speedTauS: 0.08 } as const;
 
@@ -286,6 +287,7 @@ export function createRig(layout: GardenLayout): GardenRig {
       pose.yaw = base.yaw;
       pose.fov = base.fov;
     }
+    pushThrough(pose);
     apply();
   }
 
