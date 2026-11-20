@@ -27,6 +27,8 @@ export interface Pond {
   setRect(r: PondRect): void;
   /** Up to MAX_REFLECTORS; extra entries are ignored. */
   setReflectors(list: readonly PondReflector[]): void;
+  /** Resizes reflector i, metres (a cutout that grows: the Estanque's boss). */
+  setReflector(i: number, h: number, w: number): void;
   /** Up to MAX_PADS; extra entries are ignored. */
   setPads(list: readonly PondPad[]): void;
   /** Reduced motion: no wake, and the shimmer holds still. */
@@ -93,6 +95,9 @@ export function createPond(): Pond {
         uniforms.uReflColour.value[i]?.set(toLinear(it.colour[0]), toLinear(it.colour[1]), toLinear(it.colour[2]));
       }
       uniforms.uReflCount.value = n;
+    },
+    setReflector(i, h, w) {
+      uniforms.uRefl.value[i]?.setZ(h).setW(w);
     },
     setPads(list) {
       const n = Math.min(MAX_PADS, list.length);

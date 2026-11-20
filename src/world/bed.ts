@@ -31,6 +31,8 @@ export interface StreamKit {
   onDom(fn: (c: Clock) => void): () => void;
   /** ui/xform.ts createMover: preallocated transform writes. */
   createMover(el: HTMLElement): DomMover;
+  /** gl/pond.ts setReflector: the Estanque's boss grows its reflection with it. */
+  setReflector(i: number, h: number, w: number): void;
 }
 
 /** Transform writer that allocates nothing per frame (ui/xform.ts Mover, seen from world). */
@@ -48,6 +50,7 @@ export interface StreamBedCtx extends BedCtx {
   mode: WorldMode;
   /** The bed's archive boss when it has no parts of its own and the behaviour plays it (the peacock), else null. */
   boss: BossHandle | null;
+  setReflector: StreamKit['setReflector'];
 }
 
 /** Shared world context of every bed: the always-resident shared atlas (null until loaded) and the garden memory. */
@@ -138,12 +141,12 @@ export class StreamBed implements Bed {
     const variant = this.env.quality.cfg.atlas;
     const manifest = this.manifest ?? (await fetchManifest(this.id, signal));
     const pageBytes = new Map<string, ArrayBuffer>();
-    await Promise.all(manifest.pages.flatMap((p) => [p.color[variant], p.normal[variant]]).map(async (file) => {
+    const boss = worldMode() === 'roam' && bossBeds.includes(this.id) && import('./boss.load.ts').then((b) => (this.bosses = b).fetchBoss(this.id, signal));
+    await Promise.all([boss, ...manifest.pages.flatMap((p) => [p.color[variant], p.normal[variant]]).map(async (file) => {
       const res = await fetch(atlasUrl(file), { signal });
       if (!res.ok) throw new Error(`atlas ${this.id}: ${file} HTTP ${res.status}`);
       pageBytes.set(file, await res.arrayBuffer());
-    }));
-    if (worldMode() === 'roam' && bossBeds.includes(this.id)) await (this.bosses = await import('./boss.load.ts')).fetchBoss(this.id, signal);
+    })]);
     if (this.scene.behaviour !== undefined) {
       const load = behaviours[`./behaviours/${this.scene.behaviour}.ts`];
       if (load === undefined) throw new Error(`bed ${this.id}: no behaviour module "${this.scene.behaviour}"`);
@@ -243,8 +246,8 @@ export class StreamBed implements Bed {
     }
     this.drawCalls = this.batches.length + (this.actors === null ? 0 : 1);
     if (this.module !== null && this.actors !== null) {
-      const ctx: StreamBedCtx = { scene: this.scene, actors: this.actors.writer, machine: env.machine, light: env.light,
-        rig: env.rig, quality: env.quality, content: env.content, moth: env.kit.moth(), onDom: env.kit.onDom, createMover: env.kit.createMover,
+      const ctx: StreamBedCtx = { ...env.kit, scene: this.scene, actors: this.actors.writer, machine: env.machine, light: env.light,
+        rig: env.rig, quality: env.quality, content: env.content, moth: env.kit.moth(),
         sprites: m.sprites, mode: worldMode(), boss: this.boss?.def.parts.length === 0 ? this.boss : null };
       this.behaviour = this.module.default(ctx);
     }

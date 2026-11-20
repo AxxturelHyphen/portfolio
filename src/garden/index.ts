@@ -120,7 +120,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const proxies = createProxies(host.proxies, machine);
   const label = createLabel(host.label, { t, tr });
   const layers = createModeLayers(host.world, host.herbario);
-  const kit = { loadAtlas, createCutoutBatch, uploadTexture, projectsOf, moth: () => moth, onDom: (fn: (c: Clock) => void) => loop.on('dom', fn), createMover };
+  const kit = { loadAtlas, createCutoutBatch, uploadTexture, projectsOf, moth: () => moth, onDom: (fn: (c: Clock) => void) => loop.on('dom', fn), createMover,
+    setReflector: gfx.pond.setReflector };
   setWorldMode(roaming ? 'roam' : 'rail');
   const world = content.garden as WorldLayout;
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;

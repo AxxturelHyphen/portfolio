@@ -32,7 +32,7 @@ const STAGGER_POSES = PLUMES / PEACOCK.featherStagger / 2;
 const TURN_MAX = 35 * DEG;
 
 export default function estanque(ctx: StreamBedCtx): BedBehaviour {
-  const { actors, machine, scene, sprites, boss, rig } = ctx;
+  const { actors, machine, scene, sprites, boss, rig, setReflector } = ctx;
   const plumeA = sprites['es/plume-1'];
   const plumeB = sprites['es/plume-2'] ?? plumeA;
   const body: SpriteRect | undefined = sprites['es/peacock'];
@@ -41,12 +41,14 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const items = (scene as BedScene3).layers.flatMap((l) => l.items).filter((it) => builtIn(it, ctx.mode));
   const bodyAt = items.find((it) => it.sprite === 'es/peacock');
   const crestAt = items.find((it) => it.sprite === 'es/peacock-crest');
+  /** The bird's reflector in the water (garden/place.ts pondOf lists the reflecting items in this order), or -1. */
+  const mirror = items.filter((it) => it.reflect).findIndex((it) => it === bodyAt);
+  const mirrorW = bodyAt?.reflect?.w ?? 0;
   const bodyRect: SpriteRect = body;
   const bodyH = bodyAt?.h ?? BODY_H;
   const foot = { x: bodyAt?.x ?? 20, y: bodyAt?.y ?? 0, z: bodyAt?.z ?? -3.4 };
   const rump = { x: foot.x, y: foot.y + RUMP.up * bodyH, z: foot.z - RUMP.back };
   const hinge = -(bodyAt?.hinge ?? 0) * DEG;
-  const grownH = boss === null ? bodyH : boss.def.scale;
   /** The bird's height now, its share of the drawn height, and its turn (radians added to every facing). */
   let size = bodyH;
   let fanScale = bodyH / BODY_H;
@@ -112,13 +114,14 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   function grow(): void {
     if (boss === null) return;
     const p = boss.run.pose;
-    size = bodyH + (grownH - bodyH) * p.grow;
+    size = bodyH + (boss.def.scale - bodyH) * p.grow;
     fanScale = size / BODY_H;
     rump.y = foot.y + RUMP.up * size;
     const toward = Math.atan2(rig.pose.x - foot.x, rig.pose.z - foot.z) - hinge;
     turn = p.turn * Math.max(-TURN_MAX, Math.min(TURN_MAX, toward));
     const k = size / bodyH;
     bodyNow.h = size;
+    setReflector(mirror, size, mirrorW * k);
     if (crestAt !== undefined) {
       crestNow.x = foot.x + (crestAt.x - foot.x) * k;
       crestNow.y = foot.y + (crestAt.y - foot.y) * k;
@@ -161,8 +164,10 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
       const near = s.mode === 'garden' && s.bed === scene.id && s.phase !== 'travel';
       const target = near ? lastPose : 0;
       const tick = Math.floor(c.t * STEP_FPS);
-      if (boss !== null && boss.run.phase === 'play') pose = Math.round(boss.run.pose.display * lastPose);
+      if (boss?.run.phase === 'play') pose = Math.round(boss.run.pose.display * lastPose);
       else if (c.frozen || s.reduced) pose = target;
+      // A first visit holds the fan shut until the boss opens it on its own timeline.
+      else if (boss?.run.phase === 'wait') pose = 0;
       else if (lastTick >= 0 && tick > lastTick) {
         const steps = tick - lastTick;
         const closeStep = Math.ceil(lastPose / PEACOCK.closePoses);

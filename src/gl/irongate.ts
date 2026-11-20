@@ -35,6 +35,8 @@ export function createIronGate(g: GateGeometry, gate: { readonly push: number },
     transparent: true,
     blending: NoBlending,
     side: DoubleSide,
+    // Opaque in the transparent list: one pass for both sides, not three's back-then-front pair.
+    forceSinglePass: true,
   });
   const mesh = new Mesh(geometry, material);
   mesh.matrixAutoUpdate = false;
