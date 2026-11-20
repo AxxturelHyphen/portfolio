@@ -90,10 +90,11 @@ const ACTOR_ORDER = 2e5;
  * allocation: the lamp colour at the `glow` share (the hung lantern's own glow), every lamp's strength divided by it so
  * the light on the figure is unchanged, lamp 0 further at the `carriedLight` share, so the one who carries it is lit
  * level with the plants beside them, and the hand light's reach shrunk to nothing, so the inner edges of a figure,
- * which all face its own chest, take no pale paper rim.
+ * which all face its own chest, take no pale paper rim. `rim` is the batch's extra moon rim (uActorRim): the visitor
+ * reads as the protagonist against the night.
  */
 export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capacity: number,
-  light?: { carriedLight: number; glow: number }): CutoutBatch {
+  light?: { carriedLight: number; glow: number; rim: number }): CutoutBatch {
   const batch = createCutoutBatch(gfx, color, normal, capacity);
   const material = batch.mesh.material as RawShaderMaterial;
   material.depthFunc = LessEqualDepth;
@@ -107,6 +108,7 @@ export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capa
     material.uniforms['uLamp'] = { value: ownLamps };
     material.uniforms['uLampColor'] = { value: ownColor };
     material.uniforms['uCursor'] = { value: ownCursor };
+    material.uniforms['uActorRim'] = { value: light.rim };
     batch.mesh.onBeforeRender = () => {
       for (let i = 0; i < ownLamps.length; i++) ownLamps[i]!.copy(lamps[i]!).setW(lamps[i]!.w / light.glow);
       ownLamps[0]!.w *= light.carriedLight;

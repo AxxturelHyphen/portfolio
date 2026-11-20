@@ -50,6 +50,7 @@ const float LAMP_CEIL = 0.26;                         // linear luma the lantern
 const float CARRIED_POOL = 1.35;                      // the carried lantern's pool leads every other light on the ground
 const float LAMP_GREEN_FADE = 0.8;                    // how far the moss under a lantern pool loses its green
 const float LAMP_GRAIN = 0.35;
+const float INVITE_POOL = 2.0;                        // a project flower's pool on the ground at its foot
 const float LAMP_LAWN = 0.08;                         // the darkest value a lantern sees on the lawn: light on grass, no smudge
 const float GROUND_FILL = 0.4;                        // the near fill on the ground, as a share of the place ambient                        // how much the ground's own grain breaks up a lantern pool
 uniform float uHandThrow;                             // 0 until a pointer arrives: a hand at rest throws no pool
@@ -190,16 +191,17 @@ void main() {
   vec3 albedo = base * GROUND_ALBEDO;
   // Moss and earth under the hand go nearly grey first: the amber light, not the moss, sets the pool's hue.
   vec3 grey = mix(albedo, vec3(luma(albedo)), POOL_GREY);
-  vec3 col = base * (0.5 + 1.6 * key) + keyLit(grey, hand * uHandThrow);
+  vec3 night = nightOf(vWorld);
+  vec3 col = base * (0.5 + 1.6 * key) * night + keyLit(grey, hand * uHandThrow);
   // The lanterns' pools on the ground's own value (fully grey: amber on moss must not turn olive), broken by its grain
   // and rolled off toward LAMP_CEIL so lit stone keeps its edges.
-  vec3 lamp = vec3(max(luma(albedo), LAMP_LAWN)) * lampLightsGain(vWorld, n, CARRIED_POOL) * (1.0 - LAMP_GRAIN + LAMP_GRAIN * 2.0 * fbm3(p * 1.7));
+  vec3 lamp = vec3(max(luma(albedo), LAMP_LAWN)) * (lampLightsGain(vWorld, n, CARRIED_POOL) + inviteLights(vWorld, n) * INVITE_POOL) * (1.0 - LAMP_GRAIN + LAMP_GRAIN * 2.0 * fbm3(p * 1.7));
   // The moss's own green fades where a lantern reaches, so amber over green never sums to olive.
   col = mix(col, vec3(luma(col)), LAMP_GREEN_FADE * sat(luma(lamp) / LAMP_CEIL * 4.0));
   col += lamp / (1.0 + luma(lamp) / LAMP_CEIL);
   // Under roam the near fill loses most of its cool cast, so the lawn reads as grass at dusk, not teal felt.
   vec3 fill = mix(neutralise(uAmbient), vec3(luma(uAmbient)), ROAM_FILL_GREY * uEye.z) * GROUND_FILL * fillAt(vDepth);
-  col += mix(fill, albedo * luma(fill) * ROAM_FILL_LIT, uEye.z);
+  col += mix(fill, albedo * luma(fill) * ROAM_FILL_LIT, uEye.z) * night;
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;

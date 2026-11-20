@@ -9,7 +9,7 @@ import { createQuality, PANEL_RENDER_SCALE, type RuntimeQuality } from '../core/
 import { arrived, installTestApi } from '../core/testapi.ts';
 import { createActorBatch, createCutoutBatch, sharedUniforms } from '../gl/cutout.material.ts';
 import { loadAtlas, uploadTexture } from '../gl/ktx2.ts';
-import { carryVisitor, setRoamLight, setStandeeTurn, writeLamps } from '../gl/lights.ts';
+import { carryVisitor, setRoamLight, setStandeeTurn, writeInvites, writeLamps } from '../gl/lights.ts';
 import { createGfx } from '../gl/renderer.ts';
 import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { createLabel } from '../ui/label.ts';
@@ -173,7 +173,11 @@ export function startGarden(host: GardenHost): GardenRuntime {
     slots = bed === null ? NO_SLOTS : (garden.beds.get(bed)?.slots ?? NO_SLOTS);
     rig.setSlots(slots);
     light.setSlots(slots);
-    if (lantern !== null) light.setLamps(bed === null ? NO_LAMPS : lampBedsOf(world.order, bed).map((b) => SCENES[b]));
+    if (lantern !== null) {
+      const near = bed === null ? [] : lampBedsOf(world.order, bed);
+      light.setLamps(bed === null ? NO_LAMPS : near.map((b) => SCENES[b]));
+      light.setInvites(near.map((b) => garden.beds.get(b)?.slots ?? NO_SLOTS));
+    }
   };
   bindBed(machine.state.bed);
   placeLight.set(machine.state.bed);
@@ -251,7 +255,10 @@ export function startGarden(host: GardenHost): GardenRuntime {
     sharedUniforms.uFocusBack.value.fromArray(light.back);
     sharedUniforms.uHandThrow.value = light.handThrow;
     sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
-    if (lantern !== null) writeLamps(light.lamps);
+    if (lantern !== null) {
+      writeLamps(light.lamps);
+      writeInvites(light.invites);
+    }
     intro.frame(machine.ch.intro.value, machine.state.phase === 'intro' || machine.ch.intro.value < 1);
     const u = gfx.film.uniforms;
     gfx.setFilm(machine.state.reduced, film.frame(c, u.uIris.value, u.uStrip.value, slots));

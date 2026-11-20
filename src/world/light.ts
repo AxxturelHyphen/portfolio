@@ -2,12 +2,14 @@
  * LightRig (ARCH 2.5, spec §3.2 and §7): the cursor light follows the pointer on its own follower; on touch it stays at
  * the last touch and drifts on a slow figure of eight when idle. Carried (free roam) it sits at the visitor and the
  * pointer no longer moves it, and the lamps (world/lamps.ts) burn: the carried lantern's flame and the standing lanterns
- * nearest the visitor on screen. The gather light rises on the focused flower. Output is world space, read by the cutout
- * material (uCursor, uGather, uFocusBack, uMoonDir).
+ * nearest the visitor on screen, and the project flowers round the visitor stand in their own warm pools (world/invites.ts).
+ * The gather light rises on the focused flower. Output is world space, read by the cutout material (uCursor, uGather,
+ * uFocusBack, uMoonDir, uLamp, uInvite).
  */
 import type { CameraRig, Clock, LightRig, Machine, ScreenPt, SlotId, SlotView, State } from '../types.ts';
 import { LIGHT, follow } from '../core/motion.ts';
 import { slotWorld } from './camera.ts';
+import { createInvitePool, findInvites, INVITES, stepInvites } from './invites.ts';
 import { createLampPool, findLamps, LAMPS, stepLamps } from './lamps.ts';
 import type { BedScene3 } from './layout.ts';
 
@@ -50,6 +52,10 @@ export interface GardenLight extends LightRig {
   setLampBudget(n: number): void;
   /** The lamp list, LAMPS.count vec4s (flame xyz, strength); all dark until a flame is carried. */
   readonly lamps: Float32Array;
+  /** The project flowers of these beds' bound slots (the active one and its neighbours) stand in their own pools (free roam). On a bed change only. */
+  setInvites(beds: readonly (readonly SlotView[])[]): void;
+  /** The flowers' pools, INVITES.count vec4s (light xyz, strength); all dark on the rail. */
+  readonly invites: Float32Array;
 }
 
 export function createLight(): GardenLight {
@@ -89,6 +95,8 @@ export function createLight(): GardenLight {
   const lamps = new Float32Array(LAMPS.count * 4);
   const pool = createLampPool();
   let lampBudget: number = LAMPS.standing;
+  const invites = new Float32Array(INVITES.count * 4);
+  const invitePool = createInvitePool();
   const seen: ScreenPt = { x: 0, y: 0, scale: 0, visible: false };
   let lampRig: CameraRig | null = null;
   const onScreen = (x: number, y: number, z: number): boolean => lampRig !== null && lampRig.project(x, y, z, seen).visible;
@@ -171,6 +179,7 @@ export function createLight(): GardenLight {
         cursor[2] = carried[1]! + GEOM.carriedRadius * GEOM.liftOfRadius;
         cursor[3] = GEOM.carriedRadius;
         stepGather(s, ch, dt, c.frozen, true);
+        stepInvites(invites, invitePool, dt, c.frozen);
         if (flame !== null) {
           lampRig = rig;
           stepLamps(lamps, flame[0]!, flame[1]!, flame[2]!, pool, lampBudget, onScreen, dt, c.frozen);
@@ -211,5 +220,9 @@ export function createLight(): GardenLight {
       lampBudget = Math.min(n, LAMPS.standing);
     },
     lamps,
+    setInvites(beds) {
+      findInvites(beds, invitePool, invites);
+    },
+    invites,
   };
 }

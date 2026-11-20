@@ -7,6 +7,7 @@ uniform vec3 uShadow;      // drop shadow onto what is behind: uv offset per uni
 uniform vec4 uDepthFade;   // haze rgb, density per metre past HAZE_START
 uniform vec4 uShadowDir;   // decal x, z, length per height, opacity
 uniform float uDepthCut;   // fragments under this alpha are discarded: no depth from soft edges (0 on the rail)
+uniform float uActorRim;   // the visitor's batch: a fuller moon rim so the figure reads as the protagonist (0 elsewhere)
 
 in vec2 vUV;
 in vec4 vRect;
@@ -58,6 +59,7 @@ const float RIM_STRENGTH = 0.22;
 // Free roam sees the plates from a metre or two: a 10 px band reads as a halo there, so the rim is a thin sharp line.
 const float ROAM_RIM_PX = 2.5;
 const float ROAM_RIM_STRENGTH = 0.12;
+const float ACTOR_RIM_WIDEN = 4.0;                    // the visitor's rim widens by this share of uActorRim
 const float RIM_DARK_LUMA = 0.08;                     // forms darker than this take the full rim
 // Behind a focused flower (or a bed's flowers at rest) the far layers fall back: softer (mip bias, never under free roam,
 // where the walker sees the plates up close) and darker.
@@ -180,7 +182,11 @@ void main() {
   vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5) * (1.0 + CUTOUT_FILL * fillAt(vDepth));
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
-  vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n);
+  vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n) + inviteLights(vWorld, n);
+  vec3 night = nightOf(vWorld);
+  ambient *= night;
+  key *= night;
+  rim *= night;
   // Leaf weight from a coarse mip of the plate, so block noise in a pale leaf never flips it on and off. Mossy stone
   // sits on the leaf threshold, where its coarse blocks would flip between amber and teal: stone is never a leaf.
   vec3 coarse = texture(uColor, vUV, LEAF_MIP_BIAS).rgb;
@@ -222,14 +228,14 @@ void main() {
   // Moon rim, after the air so the haze cannot eat it: inside the paper, where the soft alpha toward the moon runs out
   // (two taps make the gradient). Thin moon white at the very edge into cool shade, only on the moon side.
   vec2 moonUV = toSpriteUV(uMoonBack.xy + vec2(0.0, 0.2));
-  float rw = mix(RIM_PX, ROAM_RIM_PX, uEye.z) * length(fwidth(vUV));
+  float rw = mix(RIM_PX, ROAM_RIM_PX, uEye.z) * (1.0 + ACTOR_RIM_WIDEN * uActorRim) * length(fwidth(vUV));
   float edgeNear = 1.0 - rimAlpha(vUV + moonUV * rw * 0.4, tex.a);
   float edgeFar = 1.0 - rimAlpha(vUV + moonUV * rw, tex.a);
   // Thin stems and blades are open on the far side too: they take a trace of the rim, not a white outline.
   float thin = 1.0 - rimAlpha(vUV - moonUV * rw, tex.a);
   float rimBand = sat(0.7 * edgeNear + 0.3 * edgeFar) * (1.0 - shaded * 0.3) * (1.0 - 0.85 * thin);
   float dark = 1.0 - smoothstep(0.0, RIM_DARK_LUMA, luma(lit));
-  lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * mix(RIM_STRENGTH, ROAM_RIM_STRENGTH, uEye.z) * (0.3 + 0.7 * dark) * (1.0 - back) * (1.0 - 0.6 * hazed);
+  lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * (mix(RIM_STRENGTH, ROAM_RIM_STRENGTH, uEye.z) * (0.3 + 0.7 * dark) + uActorRim) * (1.0 - back) * (1.0 - 0.6 * hazed);
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach);

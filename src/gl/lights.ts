@@ -19,6 +19,9 @@ import { linearHex } from './colour.ts';
  * - uVisitor: the roaming visitor's ground point (x, z); cards flagged `fade` turn to a trace while they cover it.
  * - uLamp: lanterns burning with their own amber pool (flame xyz, strength), free roam only: lamp 0 is the lantern the
  *   visitor carries (it takes over from the hand light: uHandOn 0), lamps 1 to 5 the standing props nearest it in view.
+ * - uInvite / uInvites: the project flowers' own soft warm pools (light xyz, strength) and how many burn, free roam
+ *   only: the active bed's and its neighbours', always on, so each project reads as the brightest thing in its bed after the carried lantern.
+ * - uActorRim: the extra moon rim on the actor batch (the visitor), so the figure reads as the protagonist; 0 elsewhere.
  * - uFill: a near-foreground lift under free roam (0 on the rail).
  * - uDepthCut: cutout fragments under this alpha are discarded so their soft edges write no depth (free roam: the scene
  *   target has a depth buffer); 0 on the rail, where nothing is discarded.
@@ -26,6 +29,8 @@ import { linearHex } from './colour.ts';
 export const FLY_LIGHTS = 4;
 /** Lanterns with their own amber light (a fixed count in the shader, world/lamps.ts LAMPS.count): the carried one and five standing props. */
 export const LAMP_LIGHTS = 6;
+/** The project flowers' own warm pools (a fixed count in the shader, world/invites.ts INVITES.count). */
+export const INVITE_LIGHTS = 6;
 
 /** Shadow decals fall toward (+0.34 x, +0.94 z), length per unit of height (Rosaleda 0.5), opacity 30 %. */
 const SHADOW_DECAL = { x: 0.34, z: 0.94, lengthPerHeight: 0.5, opacity: 0.3 } as const;
@@ -71,7 +76,11 @@ export const sharedUniforms = {
   uDepthCut: { value: 0 },
   uFill: { value: 0 },
   uLamp: { value: Array.from({ length: LAMP_LIGHTS }, () => new Vector4(0, 0, 0, 0)) },
-  uLampColor: { value: linearHex('#f8b552', new Vector3(), 5.0) },
+  uLampColor: { value: linearHex('#f7ad4a', new Vector3(), 5.0) },
+  uInvite: { value: Array.from({ length: INVITE_LIGHTS }, () => new Vector4(0, 0, 0, 0)) },
+  uInvites: { value: 0 },
+  uInviteColor: { value: linearHex('#f5c584', new Vector3(), 5.0) },
+  uActorRim: { value: 0 },
 };
 export type SharedUniforms = typeof sharedUniforms;
 
@@ -113,6 +122,17 @@ export function setRoamLight(): void {
 export function writeLamps(lamps: Float32Array): void {
   const u = sharedUniforms.uLamp.value;
   for (let i = 0; i < LAMP_LIGHTS; i++) u[i]!.fromArray(lamps, i * 4);
+}
+
+/**
+ * Copies the lit flowers' pools (of INVITE_LIGHTS vec4s: light xyz, strength) to the front of uInvite and their count
+ * into uInvites, so the shader loops over the lit ones only. No allocation.
+ */
+export function writeInvites(invites: Float32Array): void {
+  const u = sharedUniforms.uInvite.value;
+  let n = 0;
+  for (let i = 0; i < INVITE_LIGHTS; i++) if (invites[i * 4 + 3]! > 0) u[n++]!.fromArray(invites, i * 4);
+  sharedUniforms.uInvites.value = n;
 }
 
 /** Points uVisitor at the visitor's own [x, z] array: three uploads it with each frame, no copy per frame. */

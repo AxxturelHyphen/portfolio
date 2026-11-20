@@ -88,7 +88,7 @@ function clustersOf(plants: readonly [number, number, number][], gap: number): n
   return [...by.values()];
 }
 
-test('the roam lawn: plants 0.25 to 1.1 m in clusters of at most 7, lanes of 1.5 m between, the path band and slots clear', () => {
+test('the roam lawn: plants 0.25 to 1.1 m in fewer clusters of at most 7 that frame the projects and the path, lanes of 1.5 m between, the path band and slots clear', () => {
   const plants = lawnPlants();
   const edge = garden.ground.path.width / 2 + LAWN.clear;
   for (const [x, z, h] of plants) {
@@ -100,7 +100,14 @@ test('the roam lawn: plants 0.25 to 1.1 m in clusters of at most 7, lanes of 1.5
   }
   const clusters = clustersOf(plants, LAWN.lane);
   expect(Math.max(...clusters.map((c) => c.length))).toBeLessThanOrEqual(LAWN.few + LAWN.more - 1);
-  expect(clusters.length / garden.ground.length).toBeGreaterThan(0.5);
+  expect(clusters.length / garden.ground.length).toBeGreaterThan(0.15);
+  expect(clusters.length / garden.ground.length, 'fewer, prettier: clean ground between the groups').toBeLessThan(0.5);
+  const projects = scenes.flatMap((s) => s.slots.filter((sl) => sl.kind === 'project').map((sl) => sl.x));
+  const framing = clusters.filter((c) => c.some((i) => {
+    const [x, z] = plants[i] ?? [0, 0];
+    return projects.some((px) => Math.abs(px - x) < 3) || z - pathZAt(garden.ground.path.points, x) < edge + 1.5;
+  }));
+  expect(framing.length / clusters.length, 'most groups frame a project flower or the path edge').toBeGreaterThan(0.6);
   expect(plants.some(([, , h]) => h > 0.9)).toBe(true);
 });
 

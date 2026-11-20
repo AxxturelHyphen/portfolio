@@ -1,5 +1,6 @@
-// Shared light chunk (src/gl/lights.ts): the hand light, the focus gather, up to 4 fireflies and 6 lanterns, all with a
-// soft falloff to zero at their reach. Linear colours.
+// Shared light chunk (src/gl/lights.ts): the hand light, the focus gather, up to 4 fireflies, 6 lanterns and the 6
+// project flowers' own pools, all with a soft falloff to zero at their reach, and the night that closes in away from the
+// roaming visitor. Linear colours.
 uniform vec4 uCursor;      // xyz, radius
 uniform vec3 uCursorColor;
 uniform float uHandOn;     // 1: the hand light shines; 0 under free roam, where the carried lantern (uLamp[0]) does
@@ -9,6 +10,10 @@ uniform vec4 uFly[4];      // xyz, intensity
 uniform vec3 uFlyColor;
 uniform vec4 uLamp[6];     // flame xyz, strength (0: dark); 0 is the carried lantern, 1 to 5 standing ones (free roam)
 uniform vec3 uLampColor;
+uniform vec4 uInvite[6];   // the project flowers' own pools: light xyz, strength; the first uInvites burn (free roam only)
+uniform int uInvites;
+uniform vec3 uInviteColor;
+uniform vec2 uVisitor;     // the roaming visitor's ground point x, z
 uniform float uFill;       // free roam: a little cool lift on the near ground and plants the lanterns do not reach (0 on the rail)
 uniform vec3 uMoonDir;     // the soft key on the faces (upper left front)
 uniform vec3 uMoonColor;
@@ -66,12 +71,12 @@ vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
   return mix(keyLit(albedo, light), albedo * luma(light) * LEAF_KEY, leaf);
 }
 
-// A lantern's throw: a soft core windowed to zero at its reach (about 3 m across the ground, shorter upward), with
+// A lantern's throw: a soft core windowed to zero at its reach (3.6 m round the carried one, shorter upward), with
 // the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc. Standing
 // lanterns throw smaller, dimmer pools (STAND_GAIN), so the carried one leads and the rest read as lamps along the beds.
-const vec3 LAMP_REACH = vec3(3.0, 1.8, 3.0);
+const vec3 LAMP_REACH = vec3(3.6, 2.1, 3.6);
 const vec3 STAND_REACH = vec3(2.4, 1.6, 2.4);
-const float STAND_GAIN = 0.8;
+const float STAND_GAIN = 0.7;
 const float LAMP_CORE = 1.5;
 const float LAMP_POSTS = 0.22;
 float lampFall(vec3 d, vec3 reach) {
@@ -99,6 +104,31 @@ vec3 lampLightsGain(vec3 p, vec3 n, float carried) {
   return uLampColor * c;
 }
 vec3 lampLights(vec3 p, vec3 n) { return lampLightsGain(p, n, 1.0); }
+
+// The project flowers' invitation: a soft warm pool round each one, reaching its face, its leaves and the ground at its
+// foot, so a project reads as the brightest thing in its bed after the carried lantern (the gather light adds on focus).
+const vec3 INVITE_REACH = vec3(1.7, 1.5, 1.7);
+vec3 inviteLights(vec3 p, vec3 n) {
+  float c = 0.0;
+  for (int i = 0; i < 6; i++) {
+    if (i >= uInvites) break;
+    vec3 d = uInvite[i].xyz - p;
+    vec3 e = d / INVITE_REACH;
+    float q = dot(e, e);
+    if (q >= 1.0) continue;
+    c += uInvite[i].w * sq(1.0 - q) / (1.0 + 2.0 * q) * wrapLight(dot(n, normalize(d + vec3(0.0, 1e-3, 0.0))), 0.6);
+  }
+  return uInviteColor * c;
+}
+
+// Free roam: the visitor's lantern is the key light and the night closes in away from the visitor. The moon and the fill
+// keep NIGHT of their light past NIGHT_REACH.y metres (darker and bluer, never black: the haze, the far air and the
+// paper floor still lift it), all of it within NIGHT_REACH.x. 0 on the rail.
+const vec2 NIGHT_REACH = vec2(1.5, 7.0);
+const vec3 NIGHT = vec3(0.33, 0.38, 0.55);
+vec3 nightOf(vec3 p) {
+  return mix(vec3(1.0), NIGHT, uEye.z * smoothstep(NIGHT_REACH.x, NIGHT_REACH.y, length(p.xz - uVisitor)));
+}
 
 // The near-foreground fill under free roam: full nearer than FILL_NEAR metres from the lens, gone past FILL_FAR.
 const vec2 FILL_DEPTH = vec2(8.0, 12.0);

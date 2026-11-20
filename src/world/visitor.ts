@@ -45,10 +45,11 @@ export const CROOK = {
  * degrees), taken on the figure's ticks. `carriedLight` is the share of the lantern's own light the actor batch takes,
  * so the figure sits level with the lit plants beside it; `glow` scales the lantern's own glow and its halo on that
  * batch (the batch divides every lamp's strength by it, so the light on the figure is unchanged): the glass burns
- * near white-yellow at the flame while the cap and foot, away from it, stay dark tin.
+ * near white-yellow at the flame while the cap and foot, away from it, stay dark tin. `rim` is the batch's extra moon rim,
+ * so the figure keeps a gentle edge of light against the night as the story's protagonist.
  */
 export const HELD = { handleM: 0.03, scaleWide: 0.7, scaleTall: 0.52, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
-  carriedLight: 0.3, glow: 0.8 } as const;
+  carriedLight: 0.3, glow: 0.8, rim: 0.22 } as const;
 /** The solid patch of the lantern plate the crook is cut from (shares of the sprite's uv rect). */
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
 

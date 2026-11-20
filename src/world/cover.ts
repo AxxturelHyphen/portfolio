@@ -13,9 +13,10 @@ import type { GroundData } from './layout.ts';
  * its plate, so nothing reads as stamped. No upright piece passes 0.34 m, so none hides the visitor, a signpost or a
  * flower; `free` keeps them off puddles, the pond, the slots and their approach, and the bed items' feet.
  *
- * Nothing lies loose on open lawn: leaves lying flat are kept only in a drift centred within COVER.pathAnchor of the
- * path edge or COVER.anchorReach of a lawn plant, the edging or a bed item's foot (`near.anchor`), as if they fell
- * there; a petal lies only within COVER.petalReach of a flowering plant (`near.bloom`).
+ * Nothing lies loose on open lawn: a drift grows only centred within COVER.pathAnchor of the path edge or
+ * COVER.anchorReach of a lawn plant, the edging or a bed item's foot (`near.anchor`), as if it spread from there, so
+ * clean ground and shadow lie between the plantings; a petal lies only within COVER.petalReach of a flowering plant
+ * (`near.bloom`).
  */
 export const COVER_PLANTS: readonly { sprite: string; h: readonly [number, number]; flat: boolean }[] = [
   { sprite: 'sh/ivy-2', h: [0.34, 0.56], flat: true },
@@ -28,13 +29,13 @@ export const COVER_PLANTS: readonly { sprite: string; h: readonly [number, numbe
 const PETAL_H = [0.08, 0.12] as const;
 
 /**
- * Drift makes: the share of each COVER_PLANTS index (then petals) in a drift of that make. Ivy carpets, leafy tufts with
- * fallen petals, and a mixed corner with a toadstool.
+ * Drift makes: the share of each COVER_PLANTS index (then petals) in a drift of that make. Ivy standing over a few of
+ * its own leaves, leafy tufts with fallen petals, and a mixed corner with a toadstool; few loose flat leaves.
  */
 const MAKES: readonly (readonly number[])[] = [
-  [0.34, 0.22, 0.2, 0.14, 0.06, 0, 0.04],
-  [0.12, 0.08, 0.1, 0.06, 0.44, 0, 0.2],
-  [0.18, 0.16, 0.16, 0.12, 0.2, 0.06, 0.12],
+  [0.2, 0.12, 0.3, 0.24, 0.08, 0, 0.06],
+  [0.06, 0.04, 0.2, 0.14, 0.36, 0, 0.2],
+  [0.1, 0.08, 0.24, 0.2, 0.2, 0.06, 0.12],
 ];
 
 export const COVER = {
@@ -87,7 +88,7 @@ export function cover(g: GroundData, tier: Tier, free: (x: number, z: number) =>
     const radius = span(COVER.radius[0], COVER.radius[1]);
     const n = n0 + Math.floor(r() * (n1 - n0 + 1));
     const turn = r() * Math.PI * 2;
-    const fell = cz - pathZAt(g.path.points, cx) - g.path.width / 2 < COVER.pathAnchor || near.anchor(cx, cz, COVER.anchorReach);
+    if (cz - pathZAt(g.path.points, cx) - g.path.width / 2 >= COVER.pathAnchor && !near.anchor(cx, cz, COVER.anchorReach)) continue;
     for (let i = 0; i < n; i++) {
       const a = turn + i * 2.399963 + (r() - 0.5) * 0.8;
       const d = radius * Math.sqrt((i + 0.5) / n);
@@ -105,7 +106,7 @@ export function cover(g: GroundData, tier: Tier, free: (x: number, z: number) =>
       if (!plant.flat && upright.some((p) => p[2] === kind && Math.hypot((p[0] ?? 0) - x, (p[1] ?? 0) - z) < COVER.twin)) continue;
       const piece = [x, z, kind, (r() * 2 - 1) * (plant.flat ? 1 : 0.5), span(plant.h[0], plant.h[1]), r()];
       if (!plant.flat) upright.push(piece);
-      if (!plant.flat || fell) pieces.push(piece);
+      pieces.push(piece);
     }
   }
 }

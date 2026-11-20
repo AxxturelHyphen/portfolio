@@ -61,6 +61,8 @@ function buildWall(g: GroundData, length: number): number[] {
 
 /** Free roam keeps the clumps this far (m) inside the closed garden's end walls. */
 const CLUMP_WALL_CLEAR = 0.3;
+/** Free roam keeps this share of the tier's clump cap (the feet of the bed items first): clean ground between plantings. */
+const ROAM_CLUMP_SHARE = 0.6;
 
 /** Clump spots by priority: cutout feet, the pond rim, then the wall foot; the tier cap keeps the first ones. */
 function buildClumps(g: GroundData, scenes: readonly BedScene3[], tier: Tier, mode: WorldMode, length: number, r: () => number): number[] {
@@ -76,7 +78,7 @@ function buildClumps(g: GroundData, scenes: readonly BedScene3[], tier: Tier, mo
     spots.push([g.pond.x + Math.cos(a) * (g.pond.rx + 0.15), g.pond.z + Math.sin(a) * (g.pond.rz + 0.15)]);
   }
   for (let x = -1.5; x < length; x += CLUMP.wallStep[0] + r() * r() * (CLUMP.wallStep[1] - CLUMP.wallStep[0])) spots.push([x + r() * 0.3, g.wall.z + CLUMP.wallInset + r() * 0.45]);
-  const cap = tier === 'low' ? g.clumps.low : g.clumps.high;
+  const cap = Math.round((tier === 'low' ? g.clumps.low : g.clumps.high) * (mode === 'roam' ? ROAM_CLUMP_SHARE : 1));
   const [ex0, ex1] = g.enclosure.x;
   const inside = mode === 'rail' ? spots : spots.filter(([x]) => x > ex0 + CLUMP_WALL_CLEAR && x < ex1 - CLUMP_WALL_CLEAR);
   const out: number[] = [];
@@ -90,13 +92,14 @@ function buildClumps(g: GroundData, scenes: readonly BedScene3[], tier: Tier, mo
 
 /**
  * Free roam's extra grass in bands, not a scatter (cook/ROAM_LOOK.md F): an irregular low edging 0.3 to 1.2 m off both
- * path edges, taller tufts along the wall foot and a few islands on the lawn, by these shares, on their own seed so the
- * lawn planted after them stays as it was. The edging tufts stand in tight groups of 3 or 5 (`group`, metres across),
- * never in an even row. Nothing lands on the path, in a puddle or in the pond.
+ * path edges (the `edge` share) and taller tufts along the wall foot (the rest), on their own seed so the lawn planted after them
+ * stays as it was. No islands on the open lawn: the ground between plantings stays clean. The edging tufts stand in
+ * tight groups of 3 or 5 (`group`, metres across), never in an even row. Nothing lands on the path, in a puddle or in
+ * the pond.
  */
 export const ROAM_BANDS = {
-  high: 270, low: 120, edge: 0.6, wall: 0.25,
-  edgeOff: [0.3, 1.2], edgeH: [0.15, 0.3], wallZ: [0.3, 1.0], wallH: [0.3, 0.5], islandH: [0.2, 0.4], islandNearZ: 6.5, tries: 20,
+  high: 120, low: 55, edge: 0.7,
+  edgeOff: [0.3, 1.2], edgeH: [0.15, 0.3], wallZ: [0.3, 1.0], wallH: [0.3, 0.5], tries: 20,
   group: [0.5, 0.18],
 } as const;
 
@@ -128,12 +131,9 @@ function roamBands(g: GroundData, count: number, out: number[]): void {
       if (pick < b.edge) {
         z = pathZAt(g.path.points, x) + goff + span(-0.5, 0.5) * b.group[1];
         h = span(b.edgeH[0], b.edgeH[1]);
-      } else if (pick < b.edge + b.wall) {
+      } else {
         z = g.wall.z + span(b.wallZ[0], b.wallZ[1]);
         h = span(b.wallH[0], b.wallH[1]);
-      } else {
-        z = span(pathZAt(g.path.points, x) + half + 1.5, b.islandNearZ);
-        h = span(b.islandH[0], b.islandH[1]);
       }
       if (!Number.isFinite(z) || pathDistance(g.path.points, x, z) < half + b.edgeOff[0] || !clearOf(g, x, z)) continue;
       out.push(x, z, Math.floor(r() * 3), (r() * 2 - 1) * 0.5, h);

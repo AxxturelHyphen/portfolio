@@ -7,20 +7,24 @@ import { builtIn, type WorldMode } from './mode.ts';
 /**
  * The lawn under free roam (cook/ROAM_ART.md 2, revised by blind pairs). The follow camera fills its lower third with
  * the few metres of lawn south of the visitor, so the band from the path to LAWN.farZ is planted as a place to walk
- * through: uneven groups of 3 or 5 lit plants, 0.25 to 0.9 m, every third group with an accent up to 1.1 m, taller
+ * through: uneven groups of 3 or 5 lit plants, 0.25 to 0.9 m, every other group with an accent up to 1.1 m, taller
  * behind lower, a few group spots left empty. Within a group every plant is a different species, and no plant stands
  * within LAWN.twin of another of its own plate anywhere on the lawn, so nothing reads as stamped. Group centres stand
  * at least LAWN.apart apart (twice the radius plus a 1.5 m lane), so a lit lane runs between any two groups north to
  * south as well as east to west. Kept clear: the path and 0.5 m either side, 1 m round each flower slot and its
  * approach from the path, the pond rim, puddles, the foot of bed items and LAWN.wallClear inside the closed garden's
  * end walls. A lawn plant never repeats the plate of a bed's fading foreground frame within LAWN.frameClear, so one
- * view never holds the same cutout twice up close. A few flat leaves lie round each group, petals only under its flowers,
- * and the low ground cover (cover.ts) runs in drifts under all of it.
+ * view never holds the same cutout twice up close. Fewer, prettier: only LAWN.keep of the group spots are planted, those
+ * that frame the story best (FRAME: near a project flower's x and the path edge), so clean ground and shadow lie between
+ * them; the low species leave out the thin grass card. A few petals lie only under a group's flowers, and the low
+ * ground cover (cover.ts) runs in drifts beside the plantings.
  */
 export const LAWN = {
-  clear: 0.5, farZ: 7.8, wallClear: 0.6, radius: 0.6, lane: 1.5, tries: 1500, slotClear: 1, itemClear: 0.7, accentEvery: 3,
-  few: 4, more: 4, litter: 2, groups: [3, 5], twin: 1.2, emptyChance: 0.1, frameClear: 4,
+  clear: 0.5, farZ: 7.8, wallClear: 0.6, radius: 0.6, lane: 1.5, tries: 1500, slotClear: 1, itemClear: 0.7, accentEvery: 2,
+  few: 4, more: 4, petals: 2, groups: [3, 5], twin: 1.2, emptyChance: 0.1, frameClear: 4, keep: 0.5,
 } as const;
+/** How a group spot scores for framing: weight and reach (m) of a project flower's x and of the path edge, and chance. */
+const FRAME = { project: 1, projectReach: 2.4, path: 0.6, pathReach: 1.6, chance: 0.35 } as const;
 const LAWN_APART = LAWN.radius * 2 + LAWN.lane;
 /** The ground cover keeps this far (m) from the feet of the bed items and the signposts. */
 const COVER_ITEM_CLEAR = 0.35;
@@ -33,6 +37,8 @@ export const LAWN_PLANTS: readonly { sprite: string; h: readonly [number, number
   { sprite: 'w/gallica', h: [0.85, 1.1] }, { sprite: 'w/cane', h: [0.9, 1.1] },
 ];
 const LOW_SPECIES = 5;
+/** The low species a group draws from: the thin grass card (clump-1) is left to the edging. */
+const LOW_PICKS: readonly number[] = [1, 2, 3, 4];
 /** Plates that flower: fallen petals lie only under these. */
 const FLOWERING: ReadonlySet<string> = new Set(['w/buttercup', 'w/poppy', 'w/gallica', 'w/cane']);
 
@@ -102,23 +108,37 @@ function twinNear(pieces: readonly number[][], kind: number, x: number, z: numbe
   return false;
 }
 
+/** The group spots that frame the story best, LAWN.keep of `spots`, in x order. */
+function framing(g: GroundData, scenes: readonly BedScene3[], spots: readonly [number, number][], r: () => number): [number, number][] {
+  const projects = scenes.flatMap((s) => s.slots.filter((sl) => sl.kind === 'project').map((sl) => sl.x));
+  const scored = spots.map(([x, z]): [number, number, number] => {
+    const dx = Math.min(...projects.map((px) => Math.abs(px - x)));
+    const dz = z - pathZAt(g.path.points, x) - g.path.width / 2;
+    const score = FRAME.project * Math.exp(-((dx / FRAME.projectReach) ** 2)) + FRAME.path * Math.exp(-((dz / FRAME.pathReach) ** 2)) + FRAME.chance * r();
+    return [x, z, score];
+  });
+  scored.sort((a, b) => b[2] - a[2]);
+  return scored.slice(0, Math.round(spots.length * LAWN.keep)).map(([x, z]): [number, number] => [x, z]).sort((a, b) => a[0] - b[0]);
+}
+
 export function buildLawn(g: GroundData, scenes: readonly BedScene3[], mode: WorldMode, tier: Tier, length: number, r: () => number): number[] {
   const keep = keepsOf(g, scenes, mode, LAWN.itemClear);
   const edge = g.path.width / 2 + LAWN.clear;
-  const centres: [number, number][] = [];
+  const spots: [number, number][] = [];
   for (let t = 0; t < LAWN.tries; t++) {
     const x = DRESS_FROM_X + r() * (length + 1 - DRESS_FROM_X);
     const z = r() * LAWN.farZ;
-    if (!lawnFree(g, keep, x, z, edge + LAWN.radius, LAWN.radius) || centres.some(([cx, cz]) => Math.hypot(cx - x, cz - z) < LAWN_APART)) continue;
-    centres.push([x, z]);
+    if (!lawnFree(g, keep, x, z, edge + LAWN.radius, LAWN.radius) || spots.some(([cx, cz]) => Math.hypot(cx - x, cz - z) < LAWN_APART)) continue;
+    spots.push([x, z]);
   }
+  const centres = framing(g, scenes, spots, r);
   const pieces: number[][] = [];
   const frames = scenes.flatMap((s) => s.layers.flatMap((l) => l.items)).filter((it) => it.fade === true && builtIn(it, mode));
   const framed = (kind: number, x: number, z: number): boolean => {
     const sprite = LAWN_PLANTS[kind]?.sprite;
     return frames.some((f) => f.sprite === sprite && Math.hypot(f.x - x, f.z - z) < LAWN.frameClear);
   };
-  const order = Array.from({ length: LOW_SPECIES }, (_, i) => i);
+  const order = [...LOW_PICKS];
   centres.forEach(([cx, cz], c) => {
     if (r() < LAWN.emptyChance) return;
     const n = LAWN.groups[Math.floor(r() * LAWN.groups.length)] ?? 3;
@@ -127,7 +147,7 @@ export function buildLawn(g: GroundData, scenes: readonly BedScene3[], mode: Wor
       [order[i], order[j]] = [order[j] ?? 0, order[i] ?? 0];
     }
     const accent = c % LAWN.accentEvery === 0;
-    const kinds = Array.from({ length: n }, (_, i) => (accent && i === 0 ? LOW_SPECIES + Math.floor(r() * 2) : (order[(i - (accent ? 1 : 0)) % LOW_SPECIES] ?? 0)));
+    const kinds = Array.from({ length: n }, (_, i) => (accent && i === 0 ? LOW_SPECIES + Math.floor(r() * 2) : (order[(i - (accent ? 1 : 0)) % order.length] ?? 1)));
     const heights = kinds.map((kind): [number, number] => {
       const [h0, h1] = LAWN_PLANTS[kind]?.h ?? [0.3, 0.5];
       return [kind, h0 + r() * (h1 - h0)];
@@ -144,13 +164,10 @@ export function buildLawn(g: GroundData, scenes: readonly BedScene3[], mode: Wor
         pieces.push([x, z, DRESS_KIND.plant + kind, (r() * 2 - 1) * 0.5, h, r()]);
       }
     });
-    for (let i = 0; i < LAWN.litter; i++) {
+    for (let i = 0; i < LAWN.petals; i++) {
       const x = cx + (r() * 2 - 1) * LAWN.radius * 1.4;
       const z = cz + (r() * 2 - 1) * LAWN.radius * 1.4;
-      const petal = r() < 0.4;
-      if (!lawnFree(g, keep, x, z, g.path.width / 2 + 0.1, 0)) continue;
-      const piece = [x, z, petal ? DRESS_KIND.petal : DRESS_KIND.litter, r() * 2 - 1, petal ? 0.1 : 0.34, r()];
-      if (!petal || blooms(pieces, x, z, COVER.petalReach)) pieces.push(piece);
+      if (lawnFree(g, keep, x, z, g.path.width / 2 + 0.1, 0) && blooms(pieces, x, z, COVER.petalReach)) pieces.push([x, z, DRESS_KIND.petal, r() * 2 - 1, 0.1, r()]);
     }
   });
   edging(g, scenes, mode, tier, pieces);
