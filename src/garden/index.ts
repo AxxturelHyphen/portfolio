@@ -312,6 +312,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   }
 
   machine.subscribe((s, prev) => {
+    if (s.project !== null) arrival.skip();
     if (s.bed !== prev.bed) {
       bindBed(s.bed);
       placeLight.set(s.bed);

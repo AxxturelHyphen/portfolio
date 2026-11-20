@@ -6,7 +6,7 @@ import type { RigPose } from '../world/rail.ts';
 /**
  * The opening of a first visit under free roam: once the cold start has come down to the gate, the iron gates of La
  * Puerta swing open on their hinges (world/gates.ts), the follow camera glides in from a little higher and further back
- * to its place behind the visitor, and the visitor's lantern catches at the end. Any key, click or tap lands it at once;
+ * to its place behind the visitor, and the visitor's lantern catches at the end. Any key, click, tap, navigation or opened project lands it at once;
  * reduced motion, frozen time and a returning visitor start at the end. Until it ends the drive counts as busy, so the
  * first visit's plate waits for it. No allocation per frame.
  */
@@ -38,6 +38,8 @@ export interface Arrival {
    * under reduced motion or frozen time (the opening ends at once).
    */
   step(dt: number, ready: boolean, still: boolean): void;
+  /** Lands the opening at once (a project opened: on phones its panel pauses the loop that would step it). */
+  skip(): void;
   /** Lifts and pulls back a follow pose by what is left of the glide. */
   shape(pose: RigPose): void;
   /** Writes the carried lantern's strength (lamp 0) into a lamp list while the opening plays; returns the list. */
@@ -87,9 +89,11 @@ export function createArrival(wanted: boolean): Arrival {
     const opts = { capture: true, passive: true, signal: listen.signal };
     window.addEventListener('keydown', end, opts);
     window.addEventListener('pointerdown', end, opts);
+    window.addEventListener('hashchange', end, opts);
   }
 
   return {
+    skip: end,
     get busy() {
       return !done;
     },
