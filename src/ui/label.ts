@@ -32,7 +32,7 @@ const GAP_PX = 18;
 const EDGE_PX = 16;
 /** The fixed controls own the top band of the screen; the rod tip and the tie stand above the tag. */
 const TOP_PX = 96;
-const NARROW = '(max-width: 44.99rem)';
+const NARROW = '(max-width:44.99rem),(max-height:30rem)';
 const SVG = 'http://www.w3.org/2000/svg';
 
 /**

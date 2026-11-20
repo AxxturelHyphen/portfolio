@@ -340,6 +340,17 @@ export function startGarden(host: GardenHost): GardenRuntime {
     const sign = e.target instanceof Element ? e.target.closest<HTMLElement>('.px-bed') : null;
     garden.hover((sign?.dataset.bed as BedId | undefined) ?? null);
   });
+  /** A tap during a boss show only skips it (world/boss.ts hears it on window): it neither walks nor works a proxy. */
+  let muted = false;
+  host.canvas.parentElement?.addEventListener('pointerdown', (e) => {
+    if ((muted = bossCamera.phase === 'play')) e.stopPropagation();
+  }, true);
+  host.canvas.parentElement?.addEventListener('click', (e) => {
+    if (!muted) return;
+    muted = false;
+    e.stopPropagation();
+    e.preventDefault();
+  }, true);
   host.proxies.addEventListener(ACTIVATE_EVENT, (e) => {
     const id = (e as CustomEvent<string>).detail;
     const [bed, slot] = id.split('/') as [BedId, string];
