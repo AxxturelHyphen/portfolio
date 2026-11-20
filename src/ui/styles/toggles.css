@@ -146,9 +146,10 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   text-decoration: line-through 2px var(--tg-mark);
 }
 
-/* Shown only once a script knows the visitor's choice. */
+/* Shown only once a script knows the visitor's choice; its place is kept meanwhile, so showing it shifts nothing (CLS 0). */
 .tg-sound[hidden] {
-  display: none;
+  display: inline-flex;
+  visibility: hidden;
 }
 
 /* The stock: masked to the tag's cut, with the punched hole and a darker rim where the punch bruised it. */
@@ -382,3 +383,4 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
     padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
 }
+
