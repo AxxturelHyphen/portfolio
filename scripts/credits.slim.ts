@@ -12,8 +12,9 @@ function shown(c: Credit): Partial<Credit> {
 }
 
 /**
- * Vite plugin (build only): src/content/credits.json ships with only the fields the credits view reads. The record ids,
- * where each work is used and the stage's own notes stay in the source file for the pipeline and the licence check.
+ * Vite plugin (build only): src/content/credits.json ships with only the fields the credits view reads, the notes on
+ * the owner's own files among them. The record ids, where each work is used and the generated line stay in the source
+ * file for the pipeline and the licence check.
  */
 export function creditsSlim(): Plugin {
   return {
@@ -24,7 +25,7 @@ export function creditsSlim(): Plugin {
       if (!CREDITS.test(id)) return null;
       const file = JSON.parse(readFileSync(id, 'utf8')) as CreditsFile;
       const groups = file.groups.map((g) => ({ institution: g.institution, items: g.items.map(shown) }));
-      return JSON.stringify({ groups, sounds: file.sounds.map(shown), fonts: file.fonts });
+      return JSON.stringify({ groups, sounds: file.sounds.map(shown), fonts: file.fonts, own: file.own });
     },
   };
 }

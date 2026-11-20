@@ -3,7 +3,8 @@ import { enterRoam } from '../helpers/roam.ts';
 
 // The credits (src/credits/view.ts, ui/credits.route.ts): reached from the plan sheet in the garden, the Herbario footer
 // or #/credits. An entry under a Creative Commons licence names its maker and links its licence; an attribution
-// licence (CC BY, BY-SA) also prints its full credit line. Esc closes the view and goes back to where it was opened.
+// licence (CC BY, BY-SA) also prints its full credit line. The owner's own drawings and photograph have a section of
+// their own, apart from the archive holders. Esc closes the view and goes back to where it was opened.
 
 test('credits from the plan: maker and licence link of a CC entry, Esc goes back to the garden', async ({ page, jardin }) => {
   await enterRoam(jardin);
@@ -18,6 +19,14 @@ test('credits from the plan: maker and licence link of a CC entry, Esc goes back
   await expect.poll(() => jardin.hash()).toBe('#/credits');
   await expect(view.getByRole('heading', { level: 3, name: 'Images' })).toBeVisible();
   await expect(view.getByRole('heading', { level: 3, name: 'Fonts' })).toBeVisible();
+
+  const own = view.getByRole('region', { name: 'Own work' });
+  await expect(own.getByRole('heading', { level: 3, name: 'Own work' })).toBeVisible();
+  await expect(own.locator('.cr-item[data-licence="OWN"]').first()).toBeVisible();
+  await expect(own.locator('.cr-item:not([data-licence="OWN"])')).toHaveCount(0);
+  await expect(own).toContainText('drawing');
+  await expect(own).toContainText('photograph');
+  await expect(view.getByRole('region', { name: 'Images' }).locator('.cr-item[data-licence="OWN"]'), 'own work is not listed again among the holders').toHaveCount(0);
 
   const entry = view.locator('.cr-item[data-licence^="CC"]').first();
   await expect(entry.locator('.cr-who')).not.toBeEmpty();
@@ -37,6 +46,7 @@ test('credits by URL in the Herbario, in Spanish; closing puts the album back on
   const view = page.getByRole('dialog', { name: 'Créditos' });
   await expect(view).toBeVisible();
   await expect(view.getByRole('heading', { level: 3, name: 'Tipografías' })).toBeVisible();
+  await expect(view.getByRole('region', { name: 'Obra propia' }).getByRole('heading', { level: 3, name: 'Obra propia' })).toBeVisible();
   await view.getByRole('button', { name: 'Cerrar' }).click();
   await expect(view).toBeHidden();
   await expect.poll(() => jardin.hash()).toBe('#/');

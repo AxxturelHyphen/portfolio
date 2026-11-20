@@ -1,4 +1,4 @@
-import type { Change, Credit, CreditsFile, FontCredit } from '../../scripts/stages/credits.ts';
+import type { Change, Credit, CreditsFile, CreditsGroup, FontCredit } from '../../scripts/stages/credits.ts';
 import data from '../content/credits.json' with { type: 'json' };
 import { lookup } from '../content/i18n.ts';
 import { esc } from '../content/herbario/html.ts';
@@ -8,8 +8,9 @@ import './credits.css';
 
 /**
  * The credits view: one native modal <dialog> holding a printed register on paper, built from src/content/credits.json
- * (written by the credits stage of npm run assets). Images by the holder of the original, then the recordings the
- * garden plays, then the fonts. Each entry
+ * (written by the credits stage of npm run assets). Images by the holder of the original, then the owner's own work
+ * (their drawings with their edit log, and any other own file by its note), then the recordings the garden plays,
+ * then the fonts. Each entry
  * names its title (linked to the original), its maker, its licence (linked to the licence) and what the pipeline
  * changed; a CC BY or BY-SA entry also prints its full attribution line. This chunk and its data load lazily
  * (ui/credits.route.ts). Esc, the close button and a click outside close it; onClose then puts the URL back.
@@ -54,9 +55,30 @@ function font(f: FontCredit, s: Lookup): string {
 </li>`;
 }
 
+const isOwn = (c: Credit): boolean => c.license === 'OWN';
+const ownGroup = (g: CreditsGroup): boolean => g.items.length > 0 && g.items.every(isOwn);
+const archive = credits.groups.filter((g) => !ownGroup(g));
+const ownItems = credits.groups.flatMap((g) => g.items.filter(isOwn));
+/** The owner's files that no drawing entry already lists (the coupé photograph), told by their note alone. */
+const ownNotes = credits.own.filter((note) => !ownItems.some((c) => note.startsWith(c.title)));
+
+function ownNote(note: string, s: Lookup): string {
+  return `<li class="cr-item" data-licence="OWN">
+<p class="cr-name">${esc(note)}</p>
+<p class="cr-lic">${esc(s('credits.own'))}.</p>
+</li>`;
+}
+
+function own(s: Lookup, lang: Lang): string {
+  if (ownItems.length === 0 && ownNotes.length === 0) return '';
+  const list = [...ownItems.map((c) => item(c, s, lang)), ...ownNotes.map((n) => ownNote(n, s))].join('');
+  return `<section class="cr-part" aria-labelledby="cr-own"><h3 class="cr-part-title" id="cr-own">${esc(s('credits.own'))}</h3>
+<ul class="cr-list cr-own">${list}</ul></section>`;
+}
+
 function render(strings: Strings, lang: Lang): string {
   const s: Lookup = (key) => lookup(strings, lang, key);
-  const groups = credits.groups.map((g, i) => `<section class="cr-group" aria-labelledby="cr-g${i}">
+  const groups = archive.map((g, i) => `<section class="cr-group" aria-labelledby="cr-g${i}">
 <h4 class="cr-holder" id="cr-g${i}">${esc(g.institution)}</h4>
 <ul class="cr-list">${g.items.map((c) => item(c, s, lang)).join('')}</ul>
 </section>`);
@@ -67,6 +89,7 @@ function render(strings: Strings, lang: Lang): string {
 <p class="cr-intro">${esc(s('credits.intro'))}</p>
 <section class="cr-part" aria-labelledby="cr-images"><h3 class="cr-part-title" id="cr-images">${esc(s('credits.images'))}</h3>
 <div class="cr-groups">${groups.join('')}</div></section>
+${own(s, lang)}
 ${credits.sounds.length === 0 ? '' : `<section class="cr-part" aria-labelledby="cr-sounds"><h3 class="cr-part-title" id="cr-sounds">${esc(s('credits.sounds'))}</h3>
 <ul class="cr-list cr-sounds">${credits.sounds.map((c) => item(c, s, lang)).join('')}</ul></section>`}
 <section class="cr-part" aria-labelledby="cr-fonts"><h3 class="cr-part-title" id="cr-fonts">${esc(s('credits.fonts'))}</h3>
