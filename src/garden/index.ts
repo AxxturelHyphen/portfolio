@@ -255,6 +255,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     /** Streaming advances only in frames: never idle while it runs; a bed entered may let a waiting project open. */
     if (garden.residency.busy) loop.wake();
     const bed = machine.state.bed;
+    if (bed !== null && garden.beds.get(bed)?.petBusy === true) loop.wake();
     const now = bed !== null && (garden.residency.stateOf(bed) === 'active' || garden.residency.failed(bed)) ? bed : null;
     if (now !== entered) {
       entered = now;

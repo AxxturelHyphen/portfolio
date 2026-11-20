@@ -214,7 +214,7 @@ export class StreamBed implements Bed {
     });
     this.flowers = out.flowers;
     this.wings = out.wings;
-    this.pets = out.pets.map(createPet);
+    this.pets = out.pets.map((p) => createPet(p, { edge: this.scene.bounds, anchor: this.slots.find((v) => v.id === p.slot)?.world ?? null }));
     this.gates = out.gates;
     this.missing = out.skipped;
     const hero = this.flowers[0]?.batch ?? this.batches[0];
@@ -260,6 +260,12 @@ export class StreamBed implements Bed {
   /** A pet slot was activated: its cutout wakes (a resident bed only; nothing happens before it is built). */
   wake(slot: string): void {
     for (let i = 0; i < this.pets.length; i++) if (this.pets[i]?.slot === slot) this.pets[i]?.wake();
+  }
+
+  /** True while a pet is awake (it moves on the frame clock, so the loop must not idle). */
+  get petBusy(): boolean {
+    for (let i = 0; i < this.pets.length; i++) if (this.pets[i]?.busy === true) return true;
+    return false;
   }
 
   get behaviourHooks(): BedBehaviour | null {

@@ -11,7 +11,7 @@ import { createMover, type Mover } from './xform.ts';
  * one <a> per link (only slots that lead somewhere are bound, world/scene.ts bindSlots), in the bed's slot order, then the two signposts of the current bed, then the garden plan
  * (ui/signposts.ts, ui/plan.ts). Tab order is DOM order. #proxies[data-phase] mirrors the phase for the CSS.
  * Each slot proxy is an ellipse sized to its hit area in world units at mount; sync() moves it by transform from the
- * rig's projection in stage 'dom', only when the rig moved. Mouse hover and keyboard focus send FOCUS, leaving sends
+ * rig's projection in stage 'dom', only when the rig or a slot's world point moved. Mouse hover and keyboard focus send FOCUS, leaving sends
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
  * Props and pets have no route: activating one dispatches `jardin:activate` (detail: the slot id); a prop travels to its
  * bed, a pet wakes and purrs. Neither opens the panel.
@@ -62,7 +62,9 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   const bedTitles = new Map<BedId, string>();
   let nodes: HTMLElement[] = [];
   let movers: Mover[] = [];
-  let world = new Float32Array(0);
+  let views: readonly SlotView[] = [];
+  /** The world points the proxies were last placed at; a slot whose point moved (a pet walking) is placed again. */
+  let world = new Float64Array(0);
   let off: boolean[] = [];
   let dirty = false;
   let signsDirty = true;
@@ -238,7 +240,8 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       nodes = slots.map(slotNode);
       movers = nodes.map(createMover);
       off = nodes.map(() => false);
-      world = new Float32Array(slots.length * 3);
+      views = slots;
+      world = new Float64Array(slots.length * 3);
       slots.forEach((v, i) => world.set(v.world, i * 3));
       const title = bedTitles.get(bed) ?? bed;
       slotsGroup.setAttribute('aria-label', title);
@@ -255,13 +258,24 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       nodes = [];
       movers = [];
       off = [];
-      world = new Float32Array(0);
+      views = [];
+      world = new Float64Array(0);
     },
 
     sync(rig: CameraRig): void {
       signs.sync(rig, signsDirty);
       signsDirty = false;
       plan.sync();
+      for (let i = 0; i < views.length; i++) {
+        const w = views[i]?.world;
+        if (w === undefined) continue;
+        for (let k = 0; k < 3; k++) {
+          const v = w[k] ?? 0;
+          if (world[i * 3 + k] === v) continue;
+          world[i * 3 + k] = v;
+          dirty = true;
+        }
+      }
       if (!rig.changed && !dirty) return;
       dirty = false;
       for (let i = 0; i < movers.length; i++) {
