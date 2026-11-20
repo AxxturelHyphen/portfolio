@@ -13,6 +13,7 @@ import type { BedScene3 } from './layout.ts';
 import type { GardenMemory } from './memory.ts';
 import { worldMode, type WorldMode } from './mode.ts';
 import { RENDER_ORDER } from './order.ts';
+import { createPet, type Pet } from './pet.ts';
 import { bindSlots, relabel } from './scene.ts';
 
 /** What the composition root (src/garden/index.ts) hands the world from gl/ and content/, which world may not import. */
@@ -51,6 +52,8 @@ export interface BedEnv {
   shared(): BuildAtlas | null; memory: GardenMemory;
   /** The back wall's z (garden.json ground.wall.z). */
   wallZ: number;
+  /** Free roam: the visitor's [x, z] (pets notice it), else null. */
+  visitor: Float32Array | null;
 }
 
 /** Load work gate owned by the residency: one grant per frame, a time slice and an upload allowance. */
@@ -101,6 +104,7 @@ export class StreamBed implements Bed {
   private batches: CutoutBatch[] = [];
   private flowers: FlowerRef[] = [];
   private wings: WingRef[] = [];
+  private pets: Pet[] = [];
   /** Placements skipped because the atlas does not hold their sprite id yet (they draw nothing). */
   missing = 0;
   private actors: CutoutBatch | null = null;
@@ -108,7 +112,7 @@ export class StreamBed implements Bed {
 
   constructor(readonly id: BedId, readonly scene: BedScene3, readonly anchorX: number, private readonly env: BedEnv, private readonly slicer: Slicer) {
     const projects = id === 'rosaleda' || id === 'estanque' || id === 'semillero' ? env.kit.projectsOf(id) : [];
-    this.slots = bindSlots({ scene, projects, profile: env.content.profile, lang: env.machine.state.lang });
+    this.slots = bindSlots({ scene, projects, profile: env.content.profile, lang: env.machine.state.lang, mode: worldMode() });
   }
 
   /** Bytes only: manifest, KTX2 files (kept for the load) and the behaviour chunk. No GPU work. */
@@ -208,6 +212,7 @@ export class StreamBed implements Bed {
     });
     this.flowers = out.flowers;
     this.wings = out.wings;
+    this.pets = out.pets.map(createPet);
     this.missing = out.skipped;
     const hero = this.flowers[0]?.batch ?? this.batches[0];
     const actorPage = m.sprites[this.scene.actorSprite ?? '']?.page;
@@ -249,6 +254,11 @@ export class StreamBed implements Bed {
     }
   }
 
+  /** A pet slot was activated: its cutout wakes (a resident bed only; nothing happens before it is built). */
+  wake(slot: string): void {
+    for (let i = 0; i < this.pets.length; i++) if (this.pets[i]?.slot === slot) this.pets[i]?.wake();
+  }
+
   get behaviourHooks(): BedBehaviour | null {
     return this.state === 'active' ? this.behaviour : null;
   }
@@ -257,6 +267,7 @@ export class StreamBed implements Bed {
     this.reveal.tick(c.dt);
     this.setUniformReveal(this.reveal.value);
     this.fadeWings(wingOpacityOf(this.env.rig.speed));
+    for (let i = 0; i < this.pets.length; i++) this.pets[i]?.update(c, this.env.visitor, s.reduced);
     if (this.state !== 'active') return;
     for (let i = 0; i < this.flowers.length; i++) {
       const f = this.flowers[i];
@@ -332,6 +343,7 @@ export class StreamBed implements Bed {
     this.actors = null;
     this.flowers = [];
     this.wings = [];
+    this.pets = [];
     if (this.tex !== null) for (const t of [...this.tex.color, ...this.tex.normal]) t.dispose();
     this.tex = null;
     this.gpuBytes = 0;

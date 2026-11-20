@@ -3,6 +3,7 @@ import { createFlower, type GardenFlower } from './flower.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
 import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
 import { builtIn, type WorldMode } from './mode.ts';
+import type { PetRef } from './pet.ts';
 import { keptLayers } from './scene.ts';
 import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
 
@@ -36,7 +37,7 @@ export interface BuildInput {
 
 export interface FlowerRef { flower: GardenFlower; batch: CutoutBatch; at: number }
 export interface WingRef { batch: CutoutBatch; at: number; quad: QuadParams; alpha: number }
-export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; skipped: number }
+export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; pets: PetRef[]; skipped: number }
 
 /** Share of the place shadow colour mixed into each value group, per camera. */
 const GROUP_MIX: Record<WorldMode, Record<ValueGroup, number>> = { rail: { L: 0, M: 0.45, D: 0.7 }, roam: { L: 0, M: 0.2, D: 0.3 } };
@@ -56,7 +57,7 @@ const FRONT_Z = 2;
 const FOOT_SPRAYS = 3;
 const FOOT_SPREAD = 0.18;
 
-type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; flower?: GardenFlower };
+type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; flower?: GardenFlower; pet?: { slot: string; quad: QuadParams } };
 interface Group { from: AtlasKey; page: number; front: boolean; entries: Entry[]; quads: number; zSum: number }
 
 export function hexRgb(hex: string, out: Float32Array): Float32Array {
@@ -132,6 +133,13 @@ export function buildBed(i: BuildInput): BuildOutput {
     return b === undefined ? null : { from: 'bed', rect: b };
   };
 
+  /** Pet slots bound for this camera, by the sprite of the item that wakes (its first placement). */
+  const pets = new Map<SpriteId, string>();
+  for (const slot of scene.slots) {
+    const id = `${scene.id}/${slot.id}`;
+    if (slot.kind === 'pet' && slot.ref !== undefined && i.slots.some((v) => v.id === id)) pets.set(slot.ref, id);
+  }
+
   for (const layer of keptLayers(scene, i.tier, i.maxLayers)) {
     for (const it of layer.items) {
       if (it.sprite === SIGN_BOARD || !builtIn(it, i.mode)) continue;
@@ -140,7 +148,14 @@ export function buildBed(i: BuildInput): BuildOutput {
       placedSize(r.rect, it.h, it.w, it.scale, size);
       const turn = turnOf(it, i.wallZ);
       const q = quadOf(it, r.rect, size, shade, mix, turn);
-      add(r.from, r.rect.page, it.wing === true ? { z: it.z, write: once(q), wing: q } : { z: it.z, write: once(q) }, 1);
+      const pet = pets.get(it.sprite);
+      const entry: Entry = { z: it.z, write: once(q) };
+      if (it.wing === true) entry.wing = q;
+      if (pet !== undefined) {
+        entry.pet = { slot: pet, quad: q };
+        pets.delete(it.sprite);
+      }
+      add(r.from, r.rect.page, entry, 1);
       if (it.foot !== 'sprays') continue;
       for (let f = 1; f <= FOOT_SPRAYS; f++) {
         const foot = exact(`${it.sprite}.foot${f}`) ?? (f === 2 ? exact(`${it.sprite}-foot`) : null);
@@ -166,7 +181,7 @@ export function buildBed(i: BuildInput): BuildOutput {
   }
 
   const ordered = [...groups.values()].sort((a, b) => a.zSum / a.entries.length - b.zSum / b.entries.length);
-  const out: BuildOutput = { batches: [], flowers: [], wings: [], skipped };
+  const out: BuildOutput = { batches: [], flowers: [], wings: [], pets: [], skipped };
   for (const g of ordered) {
     const batch = i.createBatch(g.from, g.page, Math.max(1, g.quads), g.front);
     g.entries.sort((a, b) => a.z - b.z);
@@ -174,6 +189,7 @@ export function buildBed(i: BuildInput): BuildOutput {
     for (const e of g.entries) {
       if (e.flower !== undefined) out.flowers.push({ flower: e.flower, batch, at });
       if (e.wing !== undefined) out.wings.push({ batch, at, quad: e.wing, alpha: 1 });
+      if (e.pet !== undefined) out.pets.push({ slot: e.pet.slot, batch, at, quad: e.pet.quad });
       at += e.write(batch, at);
     }
     batch.writer.count = at;

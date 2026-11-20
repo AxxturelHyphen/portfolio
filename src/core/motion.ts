@@ -334,6 +334,8 @@ export const BLOOM_POSES: readonly number[] = [0, 0.01, 0.04, 0.11, 0.23, 0.41, 
 export const BLOOM = { openS: 0.75, closeS: 0.375, startDelayTicks: 1 } as const;
 export const PEACOCK = { openS: 1.5, openPoses: 18, closeS: 0.9, closePoses: 11, featherStagger: 4, outerTrailPoses: 4 } as const;
 export const SUNDIAL = { spinUpS: 0.6, stepPerSector: 1.083, spinDownS: 1.1, hubOffset: 0.01 } as const;
+/** The Rosaleda cat (world/pet.ts): its wake runs wakeS; an approach within nearM twitches it once, again past rearmM. */
+export const PET = { wakeS: 3.6, twitchS: 0.5, nearM: 1.5, rearmM: 3 } as const;
 
 /** Bloom openness at pose index i (clamped to the table). */
 export const bloomAt = (i: number): number => BLOOM_POSES[i < 0 ? 0 : i >= BLOOM_POSES.length ? BLOOM_POSES.length - 1 : i] ?? 1;

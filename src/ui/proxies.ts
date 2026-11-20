@@ -7,13 +7,14 @@ import './styles/proxies.css';
 import { createMover, type Mover } from './xform.ts';
 
 /**
- * DOM proxies, the only picking of the garden (cook/ARCH.md 2.10): one real <button> per project flower or prop and
- * one <a> per link, in the bed's slot order, then the two signposts of the current bed, then the garden plan
+ * DOM proxies, the only picking of the garden (cook/ARCH.md 2.10): one real <button> per project flower, prop or pet and
+ * one <a> per link (only slots that lead somewhere are bound, world/scene.ts bindSlots), in the bed's slot order, then the two signposts of the current bed, then the garden plan
  * (ui/signposts.ts, ui/plan.ts). Tab order is DOM order. #proxies[data-phase] mirrors the phase for the CSS.
  * Each slot proxy is an ellipse sized to its hit area in world units at mount; sync() moves it by transform from the
  * rig's projection in stage 'dom', only when the rig moved. Mouse hover and keyboard focus send FOCUS, leaving sends
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
- * Props have no route: activating one dispatches `jardin:activate` (detail: the slot id) for the bed's behaviour.
+ * Props and pets have no route: activating one dispatches `jardin:activate` (detail: the slot id); a prop travels to its
+ * bed, a pet wakes and purrs. Neither opens the panel.
  * One polite live region announces the bed the visitor arrives in and, in free roam, the flower the visitor walks up to.
  * Free roam: Tab onto a flower off screen or out of reach walks the visitor to it (the seek hook) instead of focusing
  * it at once; it is focused on arrival.
@@ -181,7 +182,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       }
       lastPointer = 'mouse';
       if (v.kind === 'project' && v.project !== undefined) m.send({ type: 'OPEN', id: v.project.id });
-      else if (v.kind === 'prop') {
+      else if (v.kind === 'prop' || v.kind === 'pet') {
         focusSlot(v.id);
         el.dispatchEvent(new CustomEvent(ACTIVATE_EVENT, { detail: v.id, bubbles: true }));
       }

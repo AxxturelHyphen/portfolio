@@ -42,6 +42,7 @@ function rig(on = true) {
     fade: (to, s) => void fades.push([to, s]),
     hear: (x, z) => void heard.push([x, z]),
     musicBox: () => void boxes++,
+    purr: () => undefined,
   };
   const control = createSoundControl<FakeContext>({
     target,

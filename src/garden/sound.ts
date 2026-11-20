@@ -9,7 +9,8 @@ import type { BedScene3, WorldLayout } from '../world/layout.ts';
 /**
  * The garden's sound, wired to the world (audio/control.ts decides when, audio/engine.ts plays). Started once the
  * garden is interactive; never in a still (?shot, ?t) or a test run (?bench=1), so those stay silent and repeatable.
- * The music box is the Estanque's sundial (its clockwork armillary): walking up to it or activating it plays it.
+ * The music box is the Estanque's sundial (its clockwork armillary): walking up to it plays it. A pet (the Rosaleda
+ * cat) purrs when activated.
  */
 
 const BOX_BED: BedId = 'estanque';
@@ -31,12 +32,18 @@ export function soundMapOf(world: WorldLayout, scenes: Readonly<Record<BedId, Be
   };
 }
 
+export function petSlotsOf(scenes: Readonly<Record<BedId, BedScene3>>): ReadonlySet<string> {
+  return new Set(Object.values(scenes).flatMap((s) => s.slots.filter((x) => x.kind === 'pet').map((x) => `${s.id}/${x.id}`)));
+}
+
 export interface SoundHost {
   machine: Machine;
   loop: RuntimeLoop;
   q: DebugParams;
   tier: Tier;
   map: SoundMap;
+  /** Ids (bed/slot) of the pet slots: activating one purrs. */
+  pets: ReadonlySet<string>;
   /** Free roam: the visitor's [x, z], where the garden is heard from. */
   visitor: Float32Array | null;
   /** The rail: the camera's x; it is heard from the path there. */
@@ -75,7 +82,9 @@ export function startSound(h: SoundHost): void {
   h.machine.subscribe(follow);
   window.addEventListener(SOUND_EVENT, (e) => control.setOn((e as CustomEvent<boolean>).detail));
   h.proxies.addEventListener(ACTIVATE_EVENT, (e) => {
-    if ((e as CustomEvent<string>).detail === `${BOX_BED}/${BOX_SLOT}`) control.musicBox();
+    const id = (e as CustomEvent<string>).detail;
+    if (id === `${BOX_BED}/${BOX_SLOT}`) control.musicBox();
+    else if (h.pets.has(id)) control.purr();
   });
   const v = h.visitor;
   h.loop.on('dom', () => {

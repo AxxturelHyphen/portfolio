@@ -90,7 +90,11 @@ export interface SpriteRect { page: number; uv: [number, number, number, number]
 export interface BedScene { id: BedId; title: I18n; alt: I18n; pose: Pose; bounds: [number, number]; layers: Layer[]; slots: Slot[]; procedural: Proc[]; behaviour?: string }
 export interface Layer { id: string; z: number; minTier: Tier; page: number; items: Placement[] }
 export interface Placement { sprite: SpriteId; x: number; y: number; scale: number; rot?: number; flip?: boolean; tint?: [number, number, number]; sway?: number; lift?: number; dz?: number }
-export interface Slot { id: string; kind: 'project' | 'link' | 'prop'; accepts?: Project['flower']; ref?: string; x: number; y: number; z: number; scale: number; bloom?: string; hit: [number, number]; label: 'left' | 'right' | 'auto'; alt?: I18n; stand?: [number, number] }
+/**
+ * A slot is interactive only where it leads somewhere: a project flower, a link with a real href, a prop whose ref is a
+ * bed (it travels there), or a pet (ref: the sprite of its bed item, which wakes when activated). `only`: one camera.
+ */
+export interface Slot { id: string; kind: 'project' | 'link' | 'prop' | 'pet'; only?: 'rail' | 'roam'; accepts?: Project['flower']; ref?: string; x: number; y: number; z: number; scale: number; bloom?: string; hit: [number, number]; label: 'left' | 'right' | 'auto'; alt?: I18n; stand?: [number, number] }
 export type Proc = { type: 'pond' | 'sigils' | 'sundial' | 'fireflies' | 'stereoscope'; x: number; y: number; z: number; w: number; h: number; params?: Record<string, number> };
 export interface SlotView { id: SlotId; kind: Slot['kind']; project?: Project; href?: string; world: [number, number, number]; hit: [number, number]; alt: string; /** Free roam: where the visitor stands to reach it (x, z), when no shore comes near enough. */ stand?: readonly [number, number] }
 

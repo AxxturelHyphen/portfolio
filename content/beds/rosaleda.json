@@ -863,7 +863,7 @@
         },
         {
           "sprite": "v/bench",
-          "x": 5,
+          "x": 6.4,
           "y": 0,
           "z": -0.45,
           "scale": 1,
@@ -884,7 +884,7 @@
         },
         {
           "sprite": "v/cat",
-          "x": 4.8,
+          "x": 6.2,
           "y": 0.47,
           "z": -0.45,
           "scale": 1,
@@ -900,7 +900,7 @@
         },
         {
           "sprite": "v/can",
-          "x": 5.9,
+          "x": 7.3,
           "y": 0,
           "z": -0.25,
           "scale": 1,
@@ -1210,7 +1210,7 @@
         },
         {
           "sprite": "sh/lantern-tin",
-          "x": 5.5,
+          "x": 6.9,
           "y": 0.47,
           "z": -0.43,
           "scale": 1,
@@ -1471,6 +1471,26 @@
         0.4
       ],
       "label": "left"
+    },
+    {
+      "id": "cat",
+      "kind": "pet",
+      "ref": "v/cat",
+      "only": "roam",
+      "x": 6.33,
+      "y": 0.68,
+      "z": -0.45,
+      "scale": 1,
+      "hinge": 12,
+      "hit": [
+        0.65,
+        0.45
+      ],
+      "label": "right",
+      "alt": {
+        "en": "The cat",
+        "es": "El gato"
+      }
     }
   ],
   "procedural": [

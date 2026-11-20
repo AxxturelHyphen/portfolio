@@ -33,7 +33,7 @@ import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
 import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
 import { createRoamDrive } from './roam.drive.ts';
-import { soundMapOf, startSound } from './sound.ts';
+import { petSlotsOf, soundMapOf, startSound } from './sound.ts';
 import { paceStreaming } from './pace.ts';
 import type { WorldLayout } from '../world/layout.ts';
 
@@ -306,7 +306,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     if (quality.mobile && !panelHoldsMobile(s)) loop.resume('panel-mobile');
   });
 
-  /** Bed signs prefetch on hover; props with a bed reference (the ivy to the grotto) travel there. */
+  /** Bed signs prefetch on hover; props with a bed reference (the ivy to the grotto) travel there; a pet wakes. */
   host.proxies.addEventListener('pointerover', (e) => {
     const sign = e.target instanceof Element ? e.target.closest<HTMLElement>('.px-bed') : null;
     garden.hover((sign?.dataset.bed as BedId | undefined) ?? null);
@@ -314,8 +314,9 @@ export function startGarden(host: GardenHost): GardenRuntime {
   host.proxies.addEventListener(ACTIVATE_EVENT, (e) => {
     const id = (e as CustomEvent<string>).detail;
     const [bed, slot] = id.split('/') as [BedId, string];
-    const ref = SCENES[bed]?.slots.find((x) => x.id === slot)?.ref;
-    if (ref !== undefined && ref in content.garden.anchors) machine.send({ type: 'GOTO', place: { k: 'bed', bed: ref as BedId } });
+    const found = SCENES[bed]?.slots.find((x) => x.id === slot);
+    if (found?.kind === 'pet') garden.beds.get(bed)?.wake(id);
+    else if (found?.ref !== undefined && found.ref in content.garden.anchors) machine.send({ type: 'GOTO', place: { k: 'bed', bed: found.ref as BedId } });
   });
 
   loop.setCallsProbe(() => gfx.renderer.info.render.calls);
@@ -380,7 +381,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
     pace.ready();
-    startSound({ machine, loop, q, tier: quality.tier, map: soundMapOf(world, SCENES), visitor: roam?.pos ?? null, cameraX: () => rig.pose.x, proxies: host.proxies });
+    startSound({ machine, loop, q, tier: quality.tier, map: soundMapOf(world, SCENES), pets: petSlotsOf(SCENES), visitor: roam?.pos ?? null, cameraX: () => rig.pose.x, proxies: host.proxies });
     void quality.probe().then((tier) => {
       if (tier === 'fail') host.fail();
     });

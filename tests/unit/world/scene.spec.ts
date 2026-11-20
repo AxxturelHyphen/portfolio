@@ -12,7 +12,7 @@ const garden = validateGarden(json('content/garden.json'));
 const profile = json('content/profile.json') as Profile;
 const scenes = Object.fromEntries(BED_IDS.map((b) => [b, validateBedScene(json(`content/beds/${b}.json`), b)])) as Record<BedId, BedScene3>;
 const projectsFor = (b: BedId): Project[] => (b === 'rosaleda' || b === 'estanque' || b === 'semillero' ? projectsOf(b) : []);
-const bind = (b: BedId, projects = projectsFor(b)) => bindSlots({ scene: scenes[b], projects, profile, lang: 'en' });
+const bind = (b: BedId, projects = projectsFor(b), mode: 'rail' | 'roam' = 'roam') => bindSlots({ scene: scenes[b], projects, profile, lang: 'en', mode });
 const items = (s: BedScene3) => s.layers.flatMap((l) => l.items);
 
 test('garden layout: beds in order, grotto under the Semillero, rail shots S01 to S12, roam shots S13 to S18, ART film poses', () => {
@@ -47,13 +47,20 @@ test('the rail has five bed stops and four gap keys; each bed pose is its key', 
 test('every project binds to a slot of its bed, at its world position', () => {
   const bound = BED_IDS.flatMap((b) => bind(b).filter((v) => v.kind === 'project').map((v) => [v.project?.id, v.id]));
   expect(Object.fromEntries(bound)).toEqual({
-    garagic: 'rosaleda/rose-a', 'php-playground': 'rosaleda/rose-b', 'ml-math': 'semillero/pod-a', 'ai-engineering': 'semillero/bud-a',
+    garagic: 'rosaleda/rose-a', 'php-playground': 'estanque/lily-a', 'ml-math': 'semillero/pod-a', 'ai-engineering': 'semillero/bud-a',
   });
   // The bloom's pedicel sits where the plate's flower was cut from the stem (R02 finding 1: no bloom in mid-air).
   expect(bind('rosaleda').find((v) => v.id === 'rosaleda/rose-a')?.world).toEqual([11.88, 1.39, -1.63]);
-  const cards = bind('salida').filter((v) => v.kind === 'link');
-  expect(cards.map((v) => v.id)).toEqual(['salida/postcard-a', 'salida/postcard-b', 'salida/postcard-c']);
-  expect(BED_IDS.flatMap((b) => bind(b).filter((v) => v.kind === 'prop').map((v) => v.id))).toEqual(['puerta/portrait', 'estanque/sundial', 'semillero/ivy', 'gruta/coupe']);
+});
+
+test('only slots that lead somewhere are bound: real links, props naming a bed, the cat under free roam', () => {
+  const kind = (k: string, mode: 'rail' | 'roam' = 'roam') => BED_IDS.flatMap((b) => bind(b, projectsFor(b), mode).filter((v) => v.kind === k).map((v) => v.id));
+  expect(kind('link')).toEqual(['salida/postcard-a']);
+  expect(bind('salida').every((v) => v.kind !== 'link' || /^(https?:|mailto:)/.test(v.href ?? ''))).toBe(true);
+  expect(kind('prop')).toEqual(['semillero/ivy']);
+  expect(kind('pet')).toEqual(['rosaleda/cat']);
+  expect(kind('pet', 'rail')).toEqual([]);
+  expect(bind('rosaleda').find((v) => v.kind === 'pet')?.alt).toBe('The cat');
 });
 
 test('more projects than slots fails with a readable error', () => {

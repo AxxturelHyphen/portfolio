@@ -1,3 +1,4 @@
+import { purr } from './purr.ts';
 import { SOUNDS, clipsOf, fileOf, loopLength, type SoundId } from './sounds.ts';
 import { dist, levelAt, panAt, perchFor, type SoundMap } from './space.ts';
 
@@ -17,6 +18,8 @@ export interface SoundEngine {
   hear(x: number, z: number): void;
   /** Winds and plays the music box, unless it is already playing. */
   musicBox(): void;
+  /** The cat purrs once (audio/purr.ts). */
+  purr(): void;
 }
 
 export interface EngineOptions { map: SoundMap; full: boolean }
@@ -208,6 +211,9 @@ export function createEngine(ctx: AudioContext, o: EngineOptions): SoundEngine {
     },
     musicBox() {
       playBox();
+    },
+    purr() {
+      purr(ctx, master);
     },
   };
 }

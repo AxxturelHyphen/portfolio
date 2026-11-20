@@ -40,6 +40,8 @@ export interface SoundControl {
   hear(x: number, z: number): void;
   /** The music box was activated. */
   musicBox(): void;
+  /** The cat was activated. */
+  purr(): void;
 }
 
 const GESTURES = ['pointerup', 'keydown'] as const;
@@ -51,6 +53,7 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
   let ctx: C | null = null;
   let engine: SoundEngine | null = null;
   let boxWanted = false;
+  let purrWanted = false;
   let x = Number.NaN;
   let z = Number.NaN;
   let sleep: ReturnType<typeof setTimeout> | undefined;
@@ -94,7 +97,9 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
         if (!Number.isNaN(x)) e.hear(x, z);
         apply(FADE_IN_S);
         if (boxWanted) e.musicBox();
+        if (purrWanted) e.purr();
         boxWanted = false;
+        purrWanted = false;
       },
       () => undefined,
     );
@@ -131,6 +136,11 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
       if (!wanted()) return;
       if (engine !== null) engine.musicBox();
       else boxWanted = true;
+    },
+    purr() {
+      if (!wanted()) return;
+      if (engine !== null) engine.purr();
+      else purrWanted = true;
     },
   };
 }

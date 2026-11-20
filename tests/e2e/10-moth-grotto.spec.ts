@@ -5,7 +5,6 @@ import { expect, PROJECTS, test } from '../helpers/jardin.ts';
 // to honour (ARCH 2.8, behaviours/gruta.ts); P1 adjusts them in this one block if they differ.
 
 const GRUTA = {
-  host: '#proxies [data-slot*="gruta"], #proxies [data-prop="coupe"]',
   target: '#proxies [data-gruta-target]',
   score: '[data-gruta-score]',
 } as const;
@@ -30,7 +29,6 @@ test('flow 10 garden: the grotto game never blocks a project and scores with the
   if (p === undefined) return;
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/b/gruta');
-  await page.locator(GRUTA.host).first().click();
   const before = Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0);
   await page.locator(GRUTA.target).first().click();
   await expect.poll(async () => Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0)).toBeGreaterThan(before);
@@ -45,7 +43,6 @@ test('flow 10 garden: the grotto game scores with touch', async ({ page, jardin,
   test.skip(!isMobile, 'touch profiles only');
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/b/gruta');
-  await page.locator(GRUTA.host).first().tap();
   const before = Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0);
   await page.locator(GRUTA.target).first().tap();
   await expect.poll(async () => Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0)).toBeGreaterThan(before);

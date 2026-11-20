@@ -48,3 +48,14 @@ test('walking out of La Puerta keeps its cutouts until the visitor has left it',
   expect(seen.length).toBeGreaterThan(0);
   expect(seen.filter((st) => st !== 'ready' && st !== 'active')).toEqual([]);
 });
+
+test('the cat on the Rosaleda bench is a slot of its own: proximity focuses it and activating it opens nothing', async ({ page, jardin }) => {
+  await enterRoam(jardin, '#/b/rosaleda');
+  await expect(page.locator('#proxies button[data-slot="rosaleda/cat"]')).toHaveCount(1);
+  await jardin.withApi((api, a) => api.walkTo(a.x, a.z), { x: bench.x + 0.6, z: bench.z + 1.1 });
+  await expect.poll(() => jardin.withApi((api) => api.state().slot), { timeout: 10000, message: 'proximity focuses the cat' }).toBe('rosaleda/cat');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(600);
+  expect(await jardin.openDialogs(), 'the cat opens no panel').toBe(0);
+  expect(await jardin.withApi((api) => api.state().project)).toBeNull();
+});

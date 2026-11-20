@@ -64,7 +64,7 @@ quad.phase = packPhase(0, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
 const CLOSED_ORDER = { crowns: RENDER_ORDER.overview - 5, hedge: RENDER_ORDER.overview - 4, base: RENDER_ORDER.overview - 3, wall: RENDER_ORDER.overview - 2, coping: RENDER_ORDER.overview - 1 } as const;
 
 /** Free roam hands the garden the bed ahead of the walking visitor (cook/ROAM_PLAN.md section 3, Streaming). */
-export interface RoamStreaming { heading(): BedId | null; here(): BedId | null }
+export interface RoamStreaming { heading(): BedId | null; here(): BedId | null; readonly pos: Float32Array }
 
 export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; roam?: RoamStreaming }): StreamGarden {
   const { gfx, machine, content, proxies } = d;
@@ -72,7 +72,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
   const layout = content.garden as WorldLayout;
   const memory = createMemory();
   let shared: BuildAtlas | null = null;
-  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit, shared: () => shared, memory, wallZ: layout.ground.wall.z };
+  const env: BedEnv = { gfx, machine, rig: d.rig, light: d.light, quality: d.quality, content, kit: d.kit, shared: () => shared, memory, wallZ: layout.ground.wall.z, visitor: roam?.pos ?? null };
   const ground = buildGround(layout.ground, layout.order.map((b) => SCENES[b]), d.quality.tier);
   const beds = new Map<BedId, StreamBed>();
   const list: StreamBed[] = [];

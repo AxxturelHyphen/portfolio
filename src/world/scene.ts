@@ -1,5 +1,6 @@
 import type { BedId, BedScene, I18n, Lang, Layer, Profile, Project, Slot, SlotView, Tier } from '../types.ts';
 import type { BedScene3, WorldLayout } from './layout.ts';
+import { builtIn, type WorldMode } from './mode.ts';
 
 /**
  * BedScene schema, tier filtering and slot binding (cook/ARCH.md 2.6, cook/ART.md section 2).
@@ -11,7 +12,7 @@ import type { BedScene3, WorldLayout } from './layout.ts';
 export const BED_IDS: readonly BedId[] = ['puerta', 'rosaleda', 'estanque', 'semillero', 'gruta', 'salida'];
 const TIERS: readonly Tier[] = ['low', 'mid', 'high'];
 const FLOWERS: readonly string[] = ['rose', 'lily', 'pod', 'bud'];
-const SLOT_KINDS: readonly string[] = ['project', 'link', 'prop'];
+const SLOT_KINDS: readonly string[] = ['project', 'link', 'prop', 'pet'];
 const LABELS: readonly string[] = ['left', 'right', 'auto'];
 const PROCS: readonly string[] = ['pond', 'sigils', 'sundial', 'fireflies', 'stereoscope'];
 const SIZES: readonly string[] = ['hero', 'large', 'medium', 'small'];
@@ -44,7 +45,10 @@ export function slotLayer(layers: readonly Layer[], slot: Slot): number {
 const pick = (v: I18n, lang: Lang): string => v[lang];
 const isRealHref = (href: string): boolean => /^(https?:|mailto:)/.test(href) && !href.includes('[FILL');
 
-export interface BindInput { scene: BedScene; projects: readonly Project[]; profile: Profile; lang: Lang }
+export interface BindInput { scene: BedScene; projects: readonly Project[]; profile: Profile; lang: Lang; mode: WorldMode }
+
+/** A prop leads somewhere only when its ref is a bed (it travels there); otherwise it is scenery. */
+const isBedRef = (ref: string | undefined): boolean => ref !== undefined && (BED_IDS as readonly string[]).includes(ref);
 
 /** A slot's own stand point (free roam) rides on its view. */
 function withStand(view: SlotView, slot: Slot): SlotView {
@@ -54,11 +58,12 @@ function withStand(view: SlotView, slot: Slot): SlotView {
 
 /**
  * Binds slots to content. Project slots are positional templates: projects (already in projectsOf order) take the
- * free slot that accepts their flower, biggest slot first. Unused project slots are left out. Throws when a project
- * finds no slot, so `npm run check` fails before the garden does.
+ * free slot that accepts their flower, biggest slot first. Unused project slots are left out, and so is every slot that
+ * leads nowhere (a link without a real href, a prop whose ref is not a bed) or belongs to the other camera: those stay
+ * scenery. Throws when a project finds no slot, so `npm run check` fails before the garden does.
  */
 export function bindSlots(b: BindInput): SlotView[] {
-  const { scene, projects, profile, lang } = b;
+  const { scene, projects, profile, lang, mode } = b;
   const views: SlotView[] = [];
   const free = scene.slots.filter((s) => s.kind === 'project').sort((a, c) => c.scale - a.scale);
   for (const p of projects) {
@@ -69,13 +74,14 @@ export function bindSlots(b: BindInput): SlotView[] {
     views.push(withStand({ id: `${scene.id}/${slot.id}`, kind: 'project', project: p, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: p.title }, slot));
   }
   for (const slot of scene.slots) {
-    if (slot.kind === 'project') continue;
+    if (slot.kind === 'project' || !builtIn(slot, mode) || (slot.kind === 'prop' && !isBedRef(slot.ref))) continue;
     const view = withStand({ id: `${scene.id}/${slot.id}`, kind: slot.kind, world: [slot.x, slot.y, slot.z], hit: slot.hit, alt: '' }, slot);
     if (slot.kind === 'link') {
       const link = profile.links.find((l) => l.key === slot.ref);
       if (link === undefined) throw new Error(`bed ${scene.id}: link slot ${slot.id} names unknown profile link "${slot.ref ?? ''}"`);
+      if (!isRealHref(link.href)) continue;
       view.alt = pick(link.label, lang);
-      if (isRealHref(link.href)) view.href = link.href;
+      view.href = link.href;
     } else {
       view.alt = slot.alt === undefined ? '' : pick(slot.alt, lang);
     }
@@ -194,7 +200,20 @@ function checkSlot(e: Errors, v: unknown, path: string, ids: Set<string>): void 
   e.tuple(s.hit, 2, `${path}.hit`);
   e.tuple(s.stand, 2, `${path}.stand`, true);
   e.oneOf(s.label, LABELS, `${path}.label`);
-  e.i18n(s.alt, `${path}.alt`, s.kind !== 'prop');
+  e.i18n(s.alt, `${path}.alt`, s.kind !== 'prop' && s.kind !== 'pet');
+  e.oneOf(s.only, MODES, `${path}.only`, true);
+}
+
+/** A pet slot names the sprite of an item of its bed drawn under the same camera (the one that wakes). */
+function checkPets(e: Errors, slots: unknown[], layers: unknown[], id: BedId): void {
+  const items = layers.flatMap((l) => ((l as Raw | null)?.items as Raw[] | undefined) ?? []);
+  slots.forEach((v, i) => {
+    const s = (v ?? {}) as Raw;
+    if (s.kind !== 'pet') return;
+    const mode = s.only as WorldMode | undefined;
+    const found = items.some((it) => it.sprite === s.ref && (mode === undefined || builtIn(it as { only?: WorldMode }, mode)));
+    if (!found) e.fail(`${id}.slots[${i}].ref`, `no item draws pet sprite "${String(s.ref)}" under its camera`);
+  });
 }
 
 /** Throws with every schema error of one bed file listed. */
@@ -212,7 +231,9 @@ export function validateBedScene(raw: unknown, id: BedId): BedScene3 {
   if (zs.length < 1 || zs.length > 12) e.fail(`${id}.layers`, 'expected 1 to 12 page groups');
   for (let i = 1; i < zs.length; i++) if ((zs[i] ?? 0) < (zs[i - 1] ?? 0)) e.fail(`${id}.layers[${i}].z`, 'layers go far to near');
   const slotIds = new Set<string>();
-  e.arr(s.slots, `${id}.slots`).forEach((v, i) => checkSlot(e, v, `${id}.slots[${i}]`, slotIds));
+  const slots = e.arr(s.slots, `${id}.slots`);
+  slots.forEach((v, i) => checkSlot(e, v, `${id}.slots[${i}]`, slotIds));
+  checkPets(e, slots, e.arr(s.layers, `${id}.layers`), id);
   e.arr(s.procedural, `${id}.procedural`).forEach((v, i) => {
     const p = e.obj(v, `${id}.procedural[${i}]`);
     e.oneOf(p.type, PROCS, `${id}.procedural[${i}].type`);

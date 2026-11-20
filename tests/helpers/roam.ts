@@ -39,11 +39,15 @@ export async function enterRoam(j: Jardin, hash = '#/', query: Record<string, st
   await j.settled();
 }
 
-/** Waits (polling every frame) until proximity or a tap focused a slot of `bed`; returns the slot id. */
+/**
+ * Waits (polling every frame) until proximity or a tap focused a project flower of `bed` (not the cat or a prop on the
+ * way); returns the slot id.
+ */
 export async function focusIn(page: Page, bed: string, timeout = 15000): Promise<string> {
   const handle = await page.waitForFunction((b) => {
     const s = window.__jardin?.state();
-    return s !== undefined && s.phase === 'focus' && s.slot !== null && s.slot.startsWith(`${b}/`) ? s.slot : null;
+    if (s === undefined || s.phase !== 'focus' || s.slot === null || !s.slot.startsWith(`${b}/`)) return null;
+    return document.querySelector(`#proxies [data-slot="${CSS.escape(s.slot)}"][data-project]`) === null ? null : s.slot;
   }, bed, { polling: 'raf', timeout });
   return (await handle.jsonValue()) as string;
 }
