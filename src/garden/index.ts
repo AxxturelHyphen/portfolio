@@ -34,6 +34,7 @@ import { createLabelDrive } from './label.ts';
 import { createPlaceLighting, prepareGl, signAnchorsOf } from './place.ts';
 import { createRoamDrive } from './roam.drive.ts';
 import { soundMapOf, startSound } from './sound.ts';
+import { paceStreaming } from './pace.ts';
 import type { WorldLayout } from '../world/layout.ts';
 
 /**
@@ -119,6 +120,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const spawn = q.shot === undefined ? undefined : shots[q.shot]?.visitor;
   const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), ...(spawn === undefined ? {} : { spawn }) }) : null;
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
+  const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
   if (roam !== null) setStandeeTurn(1);
   const lantern = roam === null ? null : createVisitorLantern(roam.pos, world.ground.pond);
@@ -214,6 +216,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     input.frame();
     roam?.frame(c);
     if (figureBatch !== null && roam?.walking === true) void startFigure();
+    pace.frame(machine.state, roam?.walking === true);
     if (introShot !== null) machine.ch.intro.snap(introShot);
     if (!snapping) return;
     for (let i = 0; i < CHANNELS.length; i++) {
@@ -376,6 +379,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
     gardenReady = true;
     machine.send({ type: 'GARDEN_READY' });
+    pace.ready();
     startSound({ machine, loop, q, tier: quality.tier, map: soundMapOf(world, SCENES), visitor: roam?.pos ?? null, cameraX: () => rig.pose.x, proxies: host.proxies });
     void quality.probe().then((tier) => {
       if (tier === 'fail') host.fail();

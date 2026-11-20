@@ -10,7 +10,11 @@ import type { Slicer, StreamBed } from './bed.ts';
  * STREAM.maxFails it is marked failed, so nothing waits on it (a project there opens without its bed). A load never starts
  * until total + incoming fits the tier budget; loads run one at a time in priority order. Load work is cut into
  * slices: at most STREAM.sliceMs per frame and STREAM.uploadsPerFrame texture uploads, none while ch.open moves.
+ * The reach narrows what streams (garden/index.ts keeps the first load to the overview and shared atlases): 'none' holds
+ * every bed, 'own' streams the beds the camera is at or heading to (and a hovered one), 'all' their neighbours too.
  */
+
+export type StreamReach = 'none' | 'own' | 'all';
 
 export interface StreamResidency extends Residency, Slicer {
   readonly order: readonly BedId[];
@@ -20,6 +24,8 @@ export interface StreamResidency extends Residency, Slicer {
   readonly busy: boolean;
   /** The bed failed STREAM.maxFails times and is no longer retried this visit. */
   failed(b: BedId): boolean;
+  /** Widens or narrows what streams ('all' by default) and applies it to the last want at once. */
+  reach(r: StreamReach): void;
 }
 
 const MB = 1024 * 1024;
@@ -43,6 +49,10 @@ export function createResidency(beds: ReadonlyMap<BedId, StreamBed>, g: GardenLa
   const fails = new Map<BedId, number>();
   const retryAt = new Map<BedId, number>();
   let lastHover: BedId | null = null;
+  let reach: StreamReach = 'all';
+  /** The last want() arguments, applied again when the reach changes. */
+  let lastActive: BedId | null = null;
+  let lastHeading: BedId | null = null;
   let now = 0;
   const bytes = { beds: 0, shared: 0, targets: 0, total: 0, budget: 0 };
   let loading: StreamBed | null = null;
@@ -164,17 +174,21 @@ export function createResidency(beds: ReadonlyMap<BedId, StreamBed>, g: GardenLa
     failed: isFailed,
 
     want(active, heading, hover) {
+      lastActive = active;
+      lastHeading = heading;
       wanted.length = 0;
       const add = (b: BedId | null): void => {
         if (b !== null && !wanted.includes(b)) wanted.push(b);
       };
-      add(heading);
-      add(active);
+      if (reach !== 'none') {
+        add(heading);
+        add(active);
+      }
       const around: BedId[] = [];
-      if (heading !== null) neighbours(heading, around);
-      if (active !== null) neighbours(active, around);
+      if (reach === 'all' && heading !== null) neighbours(heading, around);
+      if (reach === 'all' && active !== null) neighbours(active, around);
       for (const b of around) add(b);
-      if (hover !== null) lastHover = hover;
+      if (hover !== null && reach !== 'none') lastHover = hover;
       for (const [b, bed] of beds) {
         if (wanted.includes(b)) continue;
         if (b === lastHover && bed.state !== 'loading' && bed.state !== 'ready' && bed.state !== 'active') continue;
@@ -183,8 +197,14 @@ export function createResidency(beds: ReadonlyMap<BedId, StreamBed>, g: GardenLa
         settle(b, 'left residency');
       }
       for (let i = 0; i < wanted.length; i++) prefetch(wanted[i] as BedId);
-      if (hover !== null) prefetch(hover);
+      if (hover !== null && reach !== 'none') prefetch(hover);
       pump();
+    },
+
+    reach(r) {
+      if (r === reach) return;
+      reach = r;
+      res.want(lastActive, lastHeading, null);
     },
 
     stateOf(b) {
