@@ -38,6 +38,7 @@ const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
 uniform vec4 uEnclose;                                // free roam: the closed garden x0, z0, x1, z1; x1 < x0 on the rail
+uniform float uMarch;                                 // the relief march through slabs and edging: 1, or 0 on the low tier
 const vec3 HEDGE_FOOT = vec3(0.008, 0.017, 0.013);    // #22352e in deep shade: the ground beyond the walls
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
 const vec2 WALL_AO = vec2(0.45, 0.6);                 // free roam: occlusion along the end walls and the kerb, depth and reach (m)
@@ -142,11 +143,11 @@ float lineScreen(vec2 p, float tone) {
 void main() {
   vec2 p = vWorld.xz;
   vec3 view = normalize(vWorld - uCamPos);
-  // Free roam: march the view ray down through the hard detail; p becomes the point it meets, cut 1 on a side face.
+  // Free roam, above the low tier: march the view ray down through the hard detail; p becomes the point it meets, cut 1 on a side face.
   float cut = 0.0;
   float hitY = vWorld.y;
   float tile = 0.0;
-  if (uRelief > 0.0 && pathDist(p) < uEdging.x + uEdging.y + RELIEF_REACH) {
+  if (uRelief * uMarch > 0.0 && pathDist(p) < uEdging.x + uEdging.y + RELIEF_REACH) {
     float top = uBank.z + uEdging.z + 0.005 - vWorld.y;
     vec2 run = view.xz / min(view.y, -0.05);
     float stepH = top / float(RELIEF_STEPS);

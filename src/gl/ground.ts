@@ -26,6 +26,8 @@ export interface Ground {
   enclose(x0: number, z0: number, x1: number, z1: number): void;
   /** Photo stone and its normal map (CC0, repeat-wrapped by the caller's loader); null keeps the code-drawn stone. */
   setStone(color: Texture | null, normal: Texture | null): void;
+  /** The parallax march through the slabs and the edging, on or off (off on the low tier); the relief itself stays. */
+  setMarch(on: boolean): void;
   /** Textures the warm-up must upload before first use. */
   readonly textures: readonly Texture[];
   dispose(): void;
@@ -81,6 +83,7 @@ export function createGround(moonBody: Vector3): Ground {
     uPuddles: { value: 0 },
     uMoonBody: { value: moonBody },
     uRelief: { value: 0 },
+    uMarch: { value: 1 },
     uBank: { value: new Vector4(TERRAIN.bankFront[0], TERRAIN.bankFront[1], TERRAIN.bank, TERRAIN.ramp) },
     uEdging: { value: new Vector4(TERRAIN.edging[0], TERRAIN.edging[1], TERRAIN.edging[2], TERRAIN.slab) },
     uPond: { value: new Vector4() },
@@ -131,6 +134,9 @@ export function createGround(moonBody: Vector3): Ground {
     setLayout,
     enclose(x0, z0, x1, z1) {
       uniforms.uEnclose.value.set(x0, z0, x1, z1);
+    },
+    setMarch(on) {
+      uniforms.uMarch.value = on ? 1 : 0;
     },
     setStone(color, normal) {
       for (const t of [color, normal]) if (t !== null) t.wrapS = t.wrapT = RepeatWrapping;

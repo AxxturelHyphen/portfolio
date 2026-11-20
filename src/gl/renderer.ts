@@ -162,6 +162,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     film.tick(c, reduced, exposure);
     renderer.info.reset();
     shadow.render(depth && quality.tier !== 'low');
+    ground.setMarch(quality.tier !== 'low');
     renderer.setRenderTarget(target.target);
     if (depth) renderer.clearDepth();
     renderer.render(scene, camera);
