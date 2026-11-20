@@ -188,9 +188,19 @@
   opacity: 0.34;
 }
 
+/* The tags on the left, the frame counter at the gate's right edge, all on one baseline under the strip. */
 .rl-controls {
   display: flex;
+  align-items: center;
   gap: 0.125rem;
+  padding-right: clamp(60px, 22%, 120px);
+}
+
+.rl-count {
+  margin-left: auto;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2, var(--note-ink));
 }
 
 /* A small paper tag on a 48 px target: chamfered cut, punched hole, the mark drawn in ink. */

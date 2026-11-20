@@ -17,7 +17,9 @@ import { bindToggles, isPending, paintMode, renderToggles } from './toggles.ts';
  *    project runs the exit while the dialog is still in the top layer, and close() follows it.
  * Its bar repeats the fixed controls at their own spot (the modal would otherwise make them inert). The page's
  * ribbon bookmark is the "Close" button. Esc, the ribbon and a click beside the page never close directly: they send
- * CLOSE (BACK when no project is the intent), and the state decides. Sections fade up once the page shows.
+ * CLOSE (BACK when no project is the intent), and the state decides.
+ * Opening, the page slides in and unfolds from its outer edge while a soft shadow under it (.pn-lift) grows, as if the
+ * sheet were lifted off the garden; once it is half open the contents rise 40 ms apart. Closing runs the same back.
  * Over the garden the case carries the project's film (ui/reel.ts, a lazy chunk fetched when a flower is first
  * focused) under its head, and the media list is left to it; over the Herbario the case is unchanged.
  */
@@ -47,18 +49,30 @@ const EXIT_TIMEOUT_MS = 1000;
 /** The panel shows after this even if the film's flower or first frame has not decoded yet. */
 const FILM_WAIT_MS = 1500;
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-/** From this step of setProgress the sections fade up (once per opening). */
-const UNFOLD_STEP = 50;
+/** From this step of setProgress the contents rise (once per opening). */
+const UNFOLD_STEP = 40;
+/** The side page starts this far out and this far turned away from its outer edge (matches --pn-from in panel.css). */
+const SLIDE_PX = 56;
+const UNFOLD_DEG = 14;
+/** The lift shadow starts this small and only shows from LIFT_START of the opening on. */
+const LIFT_FROM = 0.92;
+const LIFT_START = 0.35;
 
 /** Precomputed style strings so setProgress allocates nothing per frame. */
 const OPACITY: string[] = [];
 const SIDE: string[] = [];
 const SHEET: string[] = [];
+const LIFT_OPACITY: string[] = [];
+const LIFT: string[] = [];
 for (let i = 0; i <= STEPS; i++) {
-  const rest = 1 - i / STEPS;
-  OPACITY.push(String(i / STEPS));
-  SIDE.push(`translate3d(${(rest * 48).toFixed(2)}px, 0, 0)`);
+  const t = i / STEPS;
+  const rest = 1 - t;
+  const late = Math.max(0, (t - LIFT_START) / (1 - LIFT_START));
+  OPACITY.push(String(t));
+  SIDE.push(i === STEPS ? 'none' : `perspective(1600px) translate3d(${(rest * SLIDE_PX).toFixed(2)}px, 0, 0) rotateY(${(-rest * UNFOLD_DEG).toFixed(2)}deg)`);
   SHEET.push(`translate3d(0, ${(rest * 100).toFixed(2)}%, 0)`);
+  LIFT_OPACITY.push(late.toFixed(3));
+  LIFT.push(`scale(${(LIFT_FROM + (1 - LIFT_FROM) * late).toFixed(4)})`);
 }
 
 function settle(el: HTMLElement): Promise<unknown> {
@@ -105,13 +119,16 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
   barEl.className = 'pn-bar';
   const page = document.createElement('div');
   page.className = 'pn-page';
+  const lift = document.createElement('div');
+  lift.className = 'pn-lift';
+  lift.setAttribute('aria-hidden', 'true');
   const closeEl = document.createElement('button');
   closeEl.type = 'button';
   closeEl.className = 'pn-close';
   closeEl.dataset.close = '';
   const body = document.createElement('div');
   body.className = 'pn-body';
-  page.append(closeEl, body);
+  page.append(lift, closeEl, body);
   el.replaceChildren(barEl, page);
   bindToggles(barEl, m);
 
@@ -141,6 +158,8 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
     delete el.dataset.unfold;
     page.style.removeProperty('opacity');
     page.style.removeProperty('transform');
+    lift.style.removeProperty('opacity');
+    lift.style.removeProperty('transform');
     shownStep = -1;
   }
 
@@ -230,7 +249,9 @@ export function createPanel(el: HTMLDialogElement, c: Pick<Content, 'projects' |
       if (i >= UNFOLD_STEP) el.dataset.unfold = '';
       else if (i === 0) delete el.dataset.unfold;
       page.style.opacity = OPACITY[i] ?? '1';
-      page.style.transform = (sheet.matches ? SHEET : SIDE)[i] ?? 'none';
+      page.style.transform = m.state.reduced ? 'none' : ((sheet.matches ? SHEET : SIDE)[i] ?? 'none');
+      lift.style.opacity = LIFT_OPACITY[i] ?? '1';
+      lift.style.transform = m.state.reduced ? 'none' : (LIFT[i] ?? 'none');
     },
 
     commitOpen(): void {

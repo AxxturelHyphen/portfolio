@@ -1,0 +1,231 @@
+/*
+ * Case content: shared by the panel and the no-JS details in the Herbario. One type scale on a 0.5rem grid: the name
+ * in Kalnia, section names in Kalnia like a hand on a label, body in Schibsted at reading size. Sections sit apart
+ * on hairline rules; on a wide page their names stand in a column of their own.
+ */
+
+.c-head {
+  display: grid;
+  gap: 0.75rem;
+  padding-bottom: 2rem;
+}
+
+.c-title {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: 2.5rem;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.pn .c-head {
+  padding-right: 4.5rem;
+}
+
+.c-title:focus {
+  outline: none;
+}
+
+.c-oneliner {
+  font-size: 1.125rem;
+  line-height: 1.55;
+  max-width: var(--measure);
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.c-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.25rem;
+  font-size: var(--text-sm);
+}
+
+.c-meta > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.c-meta dt,
+.c-h {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+/* On the notebook's grey paper the display serif's hairlines need the full ink to read as headings (10.4:1). */
+.pn :is(.c-h, .c-meta dt) {
+  color: var(--ink);
+}
+
+/* The status chip says its own name: its term stays for screen readers only. */
+.pn .c-meta > div:has(> .c-status) > dt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.pn .c-status[data-status] {
+  padding: 0.125rem 0.625rem;
+  border: 1px solid currentcolor;
+  border-radius: 3px;
+  background: var(--chip);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.4;
+  transform: none;
+}
+
+.c-part {
+  display: grid;
+  gap: 0.5rem;
+  padding-block: 1.25rem 1.5rem;
+  border-top: 1px solid var(--rule);
+}
+
+@container panel (min-width: 32rem) {
+  .pn .c-part:not(.rl) {
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    column-gap: 1.5rem;
+  }
+
+  .pn .c-part:not(.rl) > .c-h {
+    padding-top: 0.125rem;
+  }
+}
+
+.c-h {
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+
+.c-text {
+  max-width: var(--measure);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.c-private {
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.c-link-list > li + li {
+  margin-top: 0.375rem;
+}
+
+a.c-link:hover {
+  color: var(--rose);
+}
+
+/* The stack as tidy paper chips, plain words without the Herbario's dots. */
+.pn .c-stack .h-tags {
+  gap: 0.5rem;
+  clip-path: none;
+  font-style: normal;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.pn .c-stack .h-tags > li {
+  padding: 0.1875rem 0.625rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  background: var(--chip);
+  line-height: 1.4;
+}
+
+.pn .c-stack .h-tags > li + li::before {
+  content: none;
+}
+
+/* Links as clear actions on 44 px targets; the first is the main one, inked solid. */
+.pn .c-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.pn .c-link-list > li + li {
+  margin-top: 0;
+}
+
+.pn a.c-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--target);
+  padding: 0 1rem;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+
+.pn a.c-link::after {
+  content: "\2197" / "";
+  font-weight: 400;
+}
+
+.pn .c-link-list > li:first-child > a.c-link {
+  background: var(--ink);
+  color: var(--note);
+}
+
+.pn a.c-link:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+.pn a.c-link:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 2px;
+}
+
+.c-media-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.c-media-item {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: var(--mount);
+  border: 1px solid var(--rule-strong);
+}
+
+img.c-media-item {
+  opacity: 0;
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+
+img.c-media-item.is-ready {
+  opacity: 1;
+}
+
+.c-media-fill {
+  color: var(--ink-3);
+}
+
+.c-media-fill + .c-media-fill {
+  margin-top: -0.5rem;
+}
+
+@container panel (max-width: 30rem) {
+  .c-title {
+    font-size: 2.125rem;
+  }
+}

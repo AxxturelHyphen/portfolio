@@ -62,6 +62,9 @@ function tag(cls: string, label: string, marks: string): string {
   return `<button type="button" class="rl-btn ${cls}"><span class="rl-sr">${esc(label)}</span>${marks}</button>`;
 }
 
+/** The frame counter beside the tags, in figures only (the status line reads the frame out in words). */
+const countOf = (i: number, n: number): string => `${i + 1} / ${n}`;
+
 /** The plates for a project's gaps, in strip order. */
 function platesOf(id: string): Plate[] {
   return plateIndex.frames.filter((f) => f.project === id).map((f) => ({ src: `frames/${f.file}`, title: f.plateTitle, name: f.name }));
@@ -123,12 +126,14 @@ export function createReel(o: ReelOptions): Reel {
 ${tag('rl-prev', s('film.prev'), mark(MARK.prev))}
 ${toggle}
 ${tag('rl-next', s('film.next'), mark(MARK.next))}
+<span class="rl-count" aria-hidden="true">${countOf(0, n)}</span>
 </div>
 <p class="rl-sr" role="status" aria-live="polite"></p>`;
 
   const strip = el.querySelector<HTMLElement>('.rl-strip')!;
   const gate = el.querySelector<HTMLElement>('.rl-gate')!;
   const status = el.querySelector<HTMLElement>('[role="status"]')!;
+  const count = el.querySelector<HTMLElement>('.rl-count')!;
   const stopBtn = el.querySelector<HTMLButtonElement>('.rl-stop');
   const cells = Array.from(strip.children) as HTMLElement[];
   const videos = cells.map((c) => c.querySelector('video'));
@@ -204,6 +209,7 @@ ${tag('rl-next', s('film.next'), mark(MARK.next))}
     const from = index;
     index = stepOf(index, n, dir);
     el.dataset.at = String(index);
+    count.textContent = countOf(index, n);
     if (motion.pull) slide(from, index, dir);
     else strip.style.transform = at(index);
     if (byHand) status.textContent = `${cells[index]?.getAttribute('aria-label') ?? ''}. ${frames[index]?.alt ?? ''}`;
