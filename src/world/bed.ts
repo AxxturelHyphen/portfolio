@@ -53,7 +53,7 @@ export interface BedEnv {
   shared(): BuildAtlas | null; memory: GardenMemory;
   /** The back wall's z (garden.json ground.wall.z). */
   wallZ: number;
-  /** Free roam: the visitor's [x, z] (pets notice it), else null. */
+  /** Free roam: the visitor's [x, z] (pets and project flowers notice it), else null. */
   visitor: Float32Array | null;
 }
 
@@ -199,7 +199,7 @@ export class StreamBed implements Bed {
     const order = this.id === 'gruta' ? RENDER_ORDER.hidden : RENDER_ORDER.bed;
     const out = buildBed({
       scene: this.scene, tier: env.quality.tier, maxLayers: env.quality.cfg.maxLayers, mode: worldMode(), wallZ: env.wallZ, bed: { manifest: m, tex }, shared,
-      slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine,
+      slots: this.slots, visited: (id) => env.memory.visited(id), reduced: env.machine, visitor: env.visitor,
       createBatch: (from, page, capacity, front) => {
         const t = from === 'shared' && shared !== null ? shared.tex : tex;
         const color = t.color[page];

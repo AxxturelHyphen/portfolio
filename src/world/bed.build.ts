@@ -32,6 +32,8 @@ export interface BuildInput {
   /** Project id to visited, from the garden memory. */
   visited(id: string): boolean;
   reduced: { readonly state: { readonly reduced: boolean } };
+  /** Free roam: the visitor's [x, z] that project flowers open toward, else null. */
+  visitor?: Float32Array | null;
   /** `front`: a batch of free roam's foreground frames, painted over the ground dressing (RENDER_ORDER.front). */
   createBatch(from: AtlasKey, page: number, capacity: number, front: boolean): CutoutBatch;
 }
@@ -177,7 +179,7 @@ export function buildBed(i: BuildInput): BuildOutput {
     const rect = frame0 === undefined ? undefined : bed.manifest.sprites[frame0];
     if (bloom === undefined || rect === undefined) { skipped++; continue; }
     const turn = turnFlag(view.world[2], i.wallZ, true);
-    const flower = createFlower({ slot: view, bloom, sprites: bed.manifest.sprites, scale: slot.scale, env: i.reduced, hinge: slot.hinge * DEG, turn });
+    const flower = createFlower({ slot: view, bloom, sprites: bed.manifest.sprites, scale: slot.scale, env: i.reduced, hinge: slot.hinge * DEG, turn, visitor: i.visitor ?? null });
     flower.setVisited(view.project !== undefined && i.visited(view.project.id));
     add('bed', rect.page, { z: view.world[2], write: (b, at) => flower.write(b.writer, at), flower }, flower.quads);
   }

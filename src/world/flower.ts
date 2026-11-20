@@ -7,10 +7,13 @@
  * Entering the project unfurls it further: on the open channel (setEntered), it opens to its last pose, swells and leans
  * back a little in UNFURL_STEPS stop-motion steps while the iris closes on it, and folds back as the panel closes.
  * Frozen time and reduced motion switch it open or shut at once.
+ * Its life (flower.life.ts) sways and breathes it at rest, opens it toward a visitor within reach and pops it as the
+ * project opens; a flower within reach opens like a focused one.
  */
 import type { Clock, Flower, InstanceWriter, Project, QuadParams, SlotView, SpriteRect, BloomDef, SpriteId } from '../types.ts';
 import { BLOOM_POSES, EASE_OUT, STEP_FPS, UI, bloomAt, clamp01 } from '../core/motion.ts';
 import { packPhase } from './quadflags.ts';
+import { createFlowerLife } from './flower.life.ts';
 
 const LAST_POSE = BLOOM_POSES.length - 1;
 const CLOSE_POSES_PER_TICK = 2;
@@ -37,6 +40,8 @@ export interface FlowerOptions {
   hinge: number;
   /** QUAD_FLAG.turn when the flower stands as a standee (quadflags.ts turnFlag), else 0 or left out. */
   turn?: number;
+  /** Free roam: the visitor's [x, z], read every frame (left out or null: no visitor). */
+  visitor?: ArrayLike<number> | null;
 }
 
 export interface GardenFlower extends Flower {
@@ -94,11 +99,14 @@ export function createFlower(o: FlowerOptions): GardenFlower {
   let enterK = 0;
   let enterUp = false;
   let unfurl = 0;
+  const life = createFlowerLife(slot, swayPhase);
+  const visitor = o.visitor ?? null;
+  const facingOf = (): number => -hinge * (1 - EASE_OUT(turn));
 
   function setQuad(rect: SpriteRect | undefined, z: number, rot: number, k: number): void {
     const u = EASE_OUT(unfurl);
-    const s = scale * k * (1 + UNFURL.scale * u);
-    rot += UNFURL.lean * u;
+    const s = scale * k * (1 + UNFURL.scale * u) * life.scale;
+    rot += UNFURL.lean * u + life.rot;
     quad.x = slot.world[0];
     quad.y = slot.world[1];
     quad.z = z;
@@ -109,7 +117,7 @@ export function createFlower(o: FlowerOptions): GardenFlower {
     quad.py = rect === undefined ? 0 : rect.pivot[1];
     quad.uv = rect === undefined ? NO_UV : rect.uv;
     quad.phase = phase;
-    quad.facing = -hinge * (1 - EASE_OUT(turn));
+    quad.facing = facingOf() + life.yaw;
   }
 
   return {
@@ -125,13 +133,16 @@ export function createFlower(o: FlowerOptions): GardenFlower {
       visited = on;
     },
     setEntered(k, up) {
+      if (up && !enterUp) life.pop();
       enterK = k;
       enterUp = up;
     },
     update(c: Clock) {
-      const target = focused || visited || enterUp ? LAST_POSE : rest;
+      const still = env.state.reduced;
+      if (life.step(c, visitor, facingOf(), still)) dirty = true;
+      const target = focused || visited || enterUp || life.near ? LAST_POSE : rest;
       const tick = Math.floor(c.t * STEP_FPS);
-      if (c.frozen || env.state.reduced) {
+      if (c.frozen || still) {
         pose = target;
       } else if (lastTick >= 0 && tick > lastTick) {
         const n = tick - lastTick;
@@ -140,7 +151,7 @@ export function createFlower(o: FlowerOptions): GardenFlower {
       lastTick = tick;
       const nextOpen = quantise(bloomAt(pose), bloom.steps);
       const nextTurn = c.frozen ? (focused ? 1 : 0) : clamp01(turn + ((focused ? 1 : -1) * c.dt) / UI.flowerTurnS);
-      const nextUnfurl = unfurlOf(enterK, enterUp, c.frozen || env.state.reduced);
+      const nextUnfurl = unfurlOf(enterK, enterUp, c.frozen || still);
       if (pose !== shownPose || nextOpen !== openness || nextTurn !== turn || nextUnfurl !== unfurl) dirty = true;
       openness = nextOpen;
       turn = nextTurn;
