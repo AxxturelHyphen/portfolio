@@ -37,6 +37,7 @@ import { createPlaceLighting, prepareGl, signAnchorsOf, signPostsOf } from './pl
 import { createSignDrive } from './signs.drive.ts';
 import { createFigureLoader } from './figure.ts';
 import { createRoamDrive } from './roam.drive.ts';
+import { orbitModeOf } from '../world/orbit.ts';
 import { petSlotsOf, soundMapOf, startSound } from './sound.ts';
 import { paceStreaming } from './pace.ts';
 import type { WorldLayout } from '../world/layout.ts';
@@ -123,7 +124,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
   const spawn = q.shot === undefined ? undefined : shots[q.shot]?.visitor;
   const arrival = createArrival(roaming && q.shot === undefined && q.t === undefined && (location.hash === '' || location.hash === '#/') && !machine.state.reduced);
-  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), arrival, ...(spawn === undefined ? {} : { spawn }) }) : null;
+  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), arrival, orbit: orbitModeOf(new URLSearchParams(location.search).get('orbit'), q.shot !== undefined), ...(spawn === undefined ? {} : { spawn }) }) : null;
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });

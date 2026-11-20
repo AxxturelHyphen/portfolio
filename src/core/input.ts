@@ -1,4 +1,5 @@
 import type { CameraRig, LightRig, Loop, Machine } from '../types.ts';
+import { createOrbitGesture, ORBIT_KEYS, type OrbitInput } from './orbit.gesture.ts';
 
 /**
  * Unified input (spec section 7, cook/ARCH.md 2.1 and 2.5): pointer drag with inertia, wheel and pinch zoom, tap,
@@ -6,8 +7,10 @@ import type { CameraRig, LightRig, Loop, Machine } from '../types.ts';
  * Handlers accumulate into module-owned numbers; the 'input' frame stage applies them once per frame.
  * Proxies (ui) own clicks, hover and Enter on flowers and beds; the canvas gets what they do not.
  * Free roam (the optional `roam` dep, the default): arrows and WASD hold walk directions instead of stepping beds, a
- * pointer down on the canvas walks there and a drag steers toward the pointer; no pan, fling, zoom or swipe. Enter on
- * the page or the canvas opens the focused flower (focused by walking up to it, cook/ROAM_PLAN.md section 3).
+ * pointer down on the canvas walks there and a drag steers toward the pointer; no pan, fling or swipe. Q and E, a
+ * right-button drag, a drag begun off the walkable ground and two fingers orbit the camera, the wheel and a pinch zoom
+ * it (core/orbit.gesture.ts). Enter on the page or the canvas opens the focused flower (focused by walking up to it,
+ * cook/ROAM_PLAN.md section 3).
  */
 
 export const GESTURE = {
@@ -32,6 +35,11 @@ export interface RoamControl {
   pointAt(xPx: number, yPx: number): void;
   /** Opens the focused flower as activating its proxy would. */
   activate(): void;
+  readonly orbit: OrbitInput;
+  /** True when the point (CSS px) is open ground a press walks to, not a wall or the sky. */
+  walkable(xPx: number, yPx: number): boolean;
+  /** Stops the walk toward a pointer (a second finger came down to orbit). */
+  halt(): void;
 }
 
 /** Walk keys in free roam: arrows by key, WASD by physical position. */
@@ -70,6 +78,8 @@ export function createInput(d: InputDeps): Input {
   let steerId = -1;
   let steerX = 0;
   let steerY = 0;
+  let turn = 0;
+  const gesture = roam === null ? null : createOrbitGesture(roam.orbit, surface, GESTURE.tapPx);
 
   const garden = (): boolean => machine.state.mode === 'garden';
   const phase = (): string => machine.state.phase;
@@ -115,7 +125,7 @@ export function createInput(d: InputDeps): Input {
   const spread = (): number => Math.hypot((px[0] ?? 0) - (px[1] ?? 0), (py[0] ?? 0) - (py[1] ?? 0));
 
   function onDown(e: PointerEvent): void {
-    if (!garden() || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (!garden() || (e.pointerType === 'mouse' && e.button !== 0 && roam === null)) return;
     anyInput();
     if (roam !== null) {
       roamDown(e);
@@ -142,7 +152,15 @@ export function createInput(d: InputDeps): Input {
 
   /** Free roam: one pointer at a time walks toward the ground under it while held. */
   function roamDown(e: PointerEvent): void {
-    if (steerId !== -1 || panelUp()) return;
+    if (panelUp() || roam === null || gesture === null) return;
+    if (gesture.down(e, e.pointerType !== 'mouse' || roam.walkable(e.clientX, e.clientY))) {
+      if (steerId !== -1 && e.pointerType !== 'mouse') {
+        steerId = -1;
+        roam.halt();
+      }
+      return;
+    }
+    if (steerId !== -1) return;
     steerId = e.pointerId;
     steerX = downX = e.clientX;
     steerY = downY = e.clientY;
@@ -153,7 +171,9 @@ export function createInput(d: InputDeps): Input {
   }
 
   function roamUp(e: PointerEvent): void {
-    if (e.pointerId !== steerId) return;
+    const orbited = gesture?.up(e) ?? 'miss';
+    if (orbited === 'tap') roam?.pointAt(e.clientX, e.clientY);
+    if (orbited !== 'miss' || e.pointerId !== steerId) return;
     steerId = -1;
     if (e.type === 'pointerup') roam?.pointAt(e.clientX, e.clientY);
     if (surface.hasPointerCapture(e.pointerId)) surface.releasePointerCapture(e.pointerId);
@@ -163,6 +183,7 @@ export function createInput(d: InputDeps): Input {
   function onMove(e: PointerEvent): void {
     if (!garden()) return;
     if (roam !== null) {
+      if (gesture?.move(e) === true) loop.wake();
       if (e.pointerId !== steerId) return;
       loop.wake();
       steerX = e.clientX;
@@ -230,9 +251,10 @@ export function createInput(d: InputDeps): Input {
     if (!garden()) return;
     e.preventDefault();
     anyInput();
-    if (roam !== null || !inOverview()) return;
     const unit = e.deltaMode === 1 ? GESTURE.lineHeightPx : e.deltaMode === 2 ? innerHeight : 1;
     const dy = e.deltaY * unit;
+    if (gesture !== null) gesture.wheel(dy, e.ctrlKey ? GESTURE.pinchWheelRate : GESTURE.wheelRate);
+    if (roam !== null || !inOverview()) return;
     const dx = e.deltaX * unit;
     if (!e.ctrlKey && Math.abs(dx) > Math.abs(dy)) {
       panPx -= dx;
@@ -279,12 +301,21 @@ export function createInput(d: InputDeps): Input {
    */
   function roamKey(e: KeyboardEvent, t: EventTarget | null): boolean {
     const bit = WALK_KEYS[e.code] ?? WALK_KEYS[e.key];
-    if (bit === undefined) return false;
+    const dir = ORBIT_KEYS[e.code];
+    if (bit === undefined && dir === undefined) return false;
     const owned = t instanceof Element && t.closest(OWN_WALK_KEYS) !== null;
     if (owned || panelUp() || phase() === 'intro') return true;
     e.preventDefault();
-    setHeld(held | bit);
+    if (bit !== undefined) setHeld(held | bit);
+    else if (dir !== undefined) setTurn(dir);
     return true;
+  }
+
+  function setTurn(dir: number): void {
+    if (dir === turn) return;
+    turn = dir;
+    roam?.orbit.setKeys(dir);
+    loop.wake();
   }
 
   function setHeld(bits: number): void {
@@ -297,6 +328,7 @@ export function createInput(d: InputDeps): Input {
   function onKeyUp(e: KeyboardEvent): void {
     const bit = WALK_KEYS[e.code] ?? WALK_KEYS[e.key];
     if (bit !== undefined) setHeld(held & ~bit);
+    if (ORBIT_KEYS[e.code] === turn) setTurn(0);
   }
 
   const ac = new AbortController();
@@ -310,7 +342,11 @@ export function createInput(d: InputDeps): Input {
   window.addEventListener('keydown', onKey, { signal: ac.signal });
   if (roam !== null) {
     window.addEventListener('keyup', onKeyUp, { signal: ac.signal });
-    window.addEventListener('blur', () => setHeld(0), { signal: ac.signal });
+    window.addEventListener('blur', () => {
+      setHeld(0);
+      setTurn(0);
+    }, { signal: ac.signal });
+    surface.addEventListener('contextmenu', (e) => e.preventDefault(), { signal: ac.signal });
   }
 
   return {

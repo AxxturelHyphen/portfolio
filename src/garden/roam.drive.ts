@@ -1,6 +1,6 @@
 import { hopsFrom } from '../core/hops.ts';
 import type { RoamControl } from '../core/input.ts';
-import { APPROACH } from '../core/motion.ts';
+import { APPROACH, ORBIT } from '../core/motion.ts';
 import type { BedId, Clock, Loop, Machine, Phase, ProjectId, SlotId, SlotView } from '../types.ts';
 import type { GardenProxies } from '../ui/proxies.ts';
 import { createApproach } from '../world/approach.ts';
@@ -14,6 +14,7 @@ import { occluderBlocks, propBlocks } from '../world/occluders.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
 import type { GardenLight } from '../world/light.ts';
 import { builtIn } from '../world/mode.ts';
+import { createOrbit, type OrbitMode } from '../world/orbit.ts';
 import { createProximity, PROXIMITY, reachDist } from '../world/proximity.ts';
 import { bedAhead, createVisitor, HEADING, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
 import type { Arrival } from './arrival.ts';
@@ -30,7 +31,8 @@ import type { Arrival } from './arrival.ts';
  * the page opens it; the bed ahead in the walking direction streams in early; travel ends once the visitor is inside.
  * The approach (world/approach.ts): while proximity focuses a slot, the camera eases toward a nearer framing as far as
  * the subject and the visitor's pool still fit the frame beside the plant tag (world/fit.ts), and back out when the
- * visitor walks on.
+ * visitor walks on. The orbit (world/orbit.ts) turns the follow camera about the visitor; held walk keys turn with it,
+ * and the bed it looks toward streams in early.
  */
 
 export interface RoamDeps {
@@ -47,6 +49,8 @@ export interface RoamDeps {
   spawn?: readonly [number, number];
   /** The first visit's opening: it shapes the follow pose and keeps the drive busy until it ends. */
   arrival?: Pick<Arrival, 'busy' | 'shape'>;
+  /** The orbit: free by default, 'fixed' for stills, or a held yaw in degrees (?orbit). */
+  orbit?: OrbitMode;
 }
 
 export interface RoamDrive extends RoamControl {
@@ -129,7 +133,8 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   const first = intent.k === 'bed' ? intent.bed : intent.k === 'project' ? d.bedOfProject(intent.id) : null;
   const start = first ?? beds[0] ?? world.order[0]!;
   const visitor = createVisitor(area, d.spawn?.[0] ?? anchorOf(start), d.spawn?.[1] ?? standZ(start));
-  const follower = createFollower(limits);
+  const orbit = createOrbit(d.orbit ?? 'free');
+  const follower = createFollower(limits, orbit);
   const hit = new Float32Array(3);
   /** The bed this drive last asked for: a bed change to any other came from elsewhere. */
   let asked: BedId | null = start;
@@ -270,6 +275,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   function look(): void {
     const vx = visitor.vel[0]!;
     if (Math.abs(vx) > HEADING.minSpeed) dir = Math.sign(vx);
+    else if (Math.abs(orbit.yaw) > (ORBIT.lookDeg * Math.PI) / 180) dir = Math.sign(orbit.yaw);
     ahead = dir === 0 ? null : bedAhead(visitor.pos[0]!, dir, beds, boundsOf, HEADING.withinM);
   }
 
@@ -288,11 +294,12 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   return {
     pos: visitor.pos,
     travel: walk,
+    orbit,
     get walking() {
       return visitor.busy;
     },
     get busy() {
-      return visitor.busy || approach.busy || ((startPending || d.arrival?.busy === true) && machine.state.mode === 'garden');
+      return visitor.busy || approach.busy || orbit.busy || ((startPending || d.arrival?.busy === true) && machine.state.mode === 'garden');
     },
     setHeld(bits) {
       if (bits !== 0) seeking = null;
@@ -302,6 +309,13 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       if (!rig.groundAt(xPx, yPx, hit)) return;
       seeking = null;
       visitor.walkTo(hit[0]!, hit[2]!);
+    },
+    walkable(xPx, yPx) {
+      return rig.groundAt(xPx, yPx, hit) && hit[2]! >= limits.back && hit[0]! >= limits.minX && hit[0]! <= limits.maxX;
+    },
+    halt() {
+      seeking = null;
+      visitor.halt();
     },
     walkTo(x, z) {
       visitor.walkTo(x, z);
@@ -337,6 +351,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
     arrived,
     frame(c) {
       if (walk.active && !visitor.assisted) walk.cancel();
+      visitor.setYaw(orbit.yaw);
       if (visitor.assisted) {
         assisted(c);
       } else {
@@ -352,12 +367,13 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       seekStep();
       refit(speed, c.frozen);
       approach.step(speed, visitor.pos[0]!, visitor.pos[1]!, shown, fit.k > 0, armed, c.dt, s.reduced ? 'reduced' : c.frozen ? 'frozen' : 'run');
-      if (visitor.busy || approach.busy) loop.wake();
+      if (visitor.busy || approach.busy || orbit.busy) loop.wake();
       if (s.phase === 'travel' && s.bed !== null && arrived(s.bed)) d.refresh();
     },
     follow(c) {
       const x = visitor.pos[0]!;
       const z = visitor.pos[1]!;
+      orbit.step(c.dt, machine.state.reduced);
       follower.step(x, z, c.dt, c.frozen || machine.state.reduced || cut, held ?? approach.k * fit.k, fit.shift);
       cut = false;
       const p = follower.pose;

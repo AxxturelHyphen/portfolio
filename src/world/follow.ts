@@ -2,8 +2,9 @@
  * The follow camera of free roam (cook/ROAM_PLAN.md section 3): a fixed yaw looking along -z at the back wall, a
  * framing per aspect, a critically damped follower on the visitor, and clamps so the frame stays inside the closed
  * garden. The end walls let the view centre on the visitor near both ends: the clamp only keeps the sky that shows over
- * an end wall near the horizon, and the frame from looking past the front corners. Pure math on caller-owned objects:
- * no allocation per frame.
+ * an end wall near the horizon, and the frame from looking past the front corners. The orbit (world/orbit.ts) turns the
+ * clamped pose about the visitor and brings it nearer or farther. Pure math on caller-owned objects: no allocation per
+ * frame.
  */
 import { FOLLOW, FOLLOW_FRAMINGS, NEAR_FRAMINGS, springStep, type NearFraming, type SpringState } from '../core/motion.ts';
 import { DEG, type EnclosureData } from './layout.ts';
@@ -185,6 +186,30 @@ export function followPose(px: number, pz: number, f: Framing, lim: ViewLimits, 
   return out;
 }
 
+/** An orbited camera keeps this far (m) inside the end wall planes. */
+const WALL_GAP = 0.6;
+
+/**
+ * Turns the follow pose by yaw (radians) about the visitor's ground point (px, pz), so the visitor keeps its place on
+ * screen, and keeps the camera inside the end walls. Writes into pose.
+ */
+export function orbitPose(pose: RigPose, px: number, pz: number, yaw: number, lim: ViewLimits): RigPose {
+  if (yaw === 0) return pose;
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  const ox = pose.x - px;
+  const oz = pose.z - pz;
+  pose.x = Math.min(lim.maxX - WALL_GAP, Math.max(lim.minX + WALL_GAP, px + ox * c - oz * s));
+  pose.z = pz + ox * s + oz * c;
+  pose.yaw = yaw;
+  return pose;
+}
+
+/** What the follower reads of the orbit each step: yaw (radians) and zoom (distance divisor). */
+export interface OrbitView { readonly yaw: number; readonly zoom: number }
+
+const REST: OrbitView = { yaw: 0, zoom: 1 };
+
 export interface Follower {
   /** The camera pose the rig mixes in place of the rail walk (same object every frame). */
   readonly pose: Readonly<RigPose>;
@@ -200,7 +225,7 @@ export interface Follower {
 
 const blankParams = (): FramingParams => ({ up: 0, downDeg: 0, fov: 0, moonAt: 0, at: 0 });
 
-export function createFollower(lim: ViewLimits): Follower {
+export function createFollower(lim: ViewLimits, orbit: OrbitView = REST): Follower {
   const framing: Framing = { up: 0, back: 0, pitch: 0, fov: 0, aspect: 16 / 9, moonAt: 0 };
   const pose: RigPose = { x: 0, y: 0, z: 0, pitch: 0, yaw: 0, fov: 0 };
   const fx: SpringState = { x: 0, v: 0 };
@@ -238,7 +263,10 @@ export function createFollower(lim: ViewLimits): Follower {
       }
       kNow = k;
       blendFraming(framing.aspect, k, walk, near, mix, framing);
+      framing.up /= orbit.zoom;
+      framing.back /= orbit.zoom;
       followPose(fx.x, fz.x, framing, lim, pose, fx.x + shift * k);
+      orbitPose(pose, fx.x, fz.x, orbit.yaw, lim);
     },
   };
 }

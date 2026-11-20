@@ -275,6 +275,8 @@ export type LandscapeFraming = Exclude<keyof typeof FOLLOW_FRAMINGS, 'phone'>;
  * trails a 3.2 m/s walk by 2 * tauS * speed (0.64 m) and settles in 6.64 * tauS (0.66 s).
  */
 export const FOLLOW: Readonly<{ framing: LandscapeFraming; at: number; tauS: number }> = { framing: 'low', at: 0.62, tauS: 0.1 };
+/** Free roam orbit (world/orbit.ts): yaw arc and turn rates (degrees), zoom range, idle time before the spring back and its duration (s). */
+export const ORBIT = { maxDeg: 35, keyDegPerS: 70, dragDegPerPx: 0.2, zoomMin: 0.7, zoomMax: 1.3, zoomTauS: 0.12, idleS: 1.5, backS: 1.1, lookDeg: 10 } as const;
 
 /** A near framing: a follow framing plus where the visitor's ground point sits, as a share of the height from the top. */
 export interface NearFraming extends FollowFraming { readonly at: number }

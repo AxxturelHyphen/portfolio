@@ -21,7 +21,7 @@ export interface WalkArea {
   props?: Float32Array;
 }
 
-/** Held direction bits (screen and world agree: the camera never turns). */
+/** Held direction bits, on screen: turned by the camera's orbit yaw into the world (setYaw). */
 export const HOLD = { left: 1, right: 2, up: 4, down: 8 } as const;
 
 /** Waypoints round the pond sit this far out, in units of the body-inflated semi-axes. */
@@ -41,6 +41,8 @@ export interface Visitor {
   /** True while an assisted move (signpost, plan, history) carries the visitor. */
   readonly assisted: boolean;
   setHeld(bits: number): void;
+  /** The camera's yaw (radians, positive toward +x): up walks away from the camera, right to its right. */
+  setYaw(yaw: number): void;
   walkTo(x: number, z: number): void;
   place(x: number, z: number): void;
   /** Starts an assisted move to (x, z) along the path (world/assist.ts walks it); steering cancels it. */
@@ -110,6 +112,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   const pa = area.pond.rx + r;
   const pb = area.pond.rz + r;
   let held = 0;
+  let cosYaw = 1;
+  let sinYaw = 0;
   let hasTarget = false;
   let tx = 0;
   let tz = 0;
@@ -234,8 +238,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       const dz = (held & HOLD.down ? 1 : 0) - (held & HOLD.up ? 1 : 0);
       const d = Math.hypot(dx, dz);
       if (d > 0) {
-        want[0] = (dx / d) * ROAM.speed;
-        want[1] = (dz / d) * ROAM.speed;
+        want[0] = ((dx * cosYaw - dz * sinYaw) / d) * ROAM.speed;
+        want[1] = ((dx * sinYaw + dz * cosYaw) / d) * ROAM.speed;
       }
       return;
     }
@@ -284,6 +288,10 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
         hasTarget = false;
         assisting = false;
       }
+    },
+    setYaw(yaw) {
+      cosYaw = Math.cos(yaw);
+      sinYaw = Math.sin(yaw);
     },
     walkTo(x, z) {
       assisting = false;
