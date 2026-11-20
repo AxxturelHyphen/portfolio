@@ -6,6 +6,7 @@ import type { GardenProxies } from '../ui/proxies.ts';
 import { createApproach } from '../world/approach.ts';
 import { createAssistWalk, type TravelSource } from '../world/assist.ts';
 import type { GardenRig } from '../world/camera.ts';
+import type { RigPose } from '../world/rail.ts';
 import { createFitter, type Fit, type Subject } from '../world/fit.ts';
 import { createFollower, moonElevation, viewLimitsOf } from '../world/follow.ts';
 import { SCENES } from '../world/garden.ts';
@@ -15,6 +16,7 @@ import type { GardenLight } from '../world/light.ts';
 import { builtIn } from '../world/mode.ts';
 import { createProximity, PROXIMITY, reachDist } from '../world/proximity.ts';
 import { bedAhead, createVisitor, HEADING, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
+import type { Arrival } from './arrival.ts';
 
 /**
  * Free roam, the default way through the garden (cook/ROAM_PLAN.md P1 to P7): owns the visitor and its follow camera
@@ -43,6 +45,8 @@ export interface RoamDeps {
   refresh(): void;
   /** Where the visitor starts (a roam shot), else the stand point of the bed the URL names. */
   spawn?: readonly [number, number];
+  /** The first visit's opening: it shapes the follow pose and keeps the drive busy until it ends. */
+  arrival?: Pick<Arrival, 'busy' | 'shape'>;
 }
 
 export interface RoamDrive extends RoamControl {
@@ -74,7 +78,10 @@ export interface RoamDrive extends RoamControl {
   seek(slot: SlotId, offScreen: boolean): boolean;
   /** The film inputs of the running assisted walk. */
   readonly travel: TravelSource;
-  /** True while the visitor or the camera's approach still moves, or a cold start has yet to come down to the gate. */
+  /**
+   * True while the visitor or the camera's approach still moves, a cold start has yet to come down to the gate or the
+   * first visit's opening still plays.
+   */
   readonly busy: boolean;
   /** True while the visitor walks (keys, a target, an assisted walk). */
   readonly walking: boolean;
@@ -158,7 +165,9 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   let viewH = 1;
   let held: number | null = null;
 
-  rig.setFollow(follower.pose);
+  /** The follow pose as the rig sees it: the follower's, shaped by the opening while it plays. */
+  const framed: RigPose = { ...follower.pose };
+  rig.setFollow(framed);
   light.carry(visitor.pos);
 
   machine.subscribe((s, prev) => {
@@ -283,7 +292,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       return visitor.busy;
     },
     get busy() {
-      return visitor.busy || approach.busy || (startPending && machine.state.mode === 'garden');
+      return visitor.busy || approach.busy || ((startPending || d.arrival?.busy === true) && machine.state.mode === 'garden');
     },
     setHeld(bits) {
       if (bits !== 0) seeking = null;
@@ -351,6 +360,14 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       const z = visitor.pos[1]!;
       follower.step(x, z, c.dt, c.frozen || machine.state.reduced || cut, held ?? approach.k * fit.k, fit.shift);
       cut = false;
+      const p = follower.pose;
+      framed.x = p.x;
+      framed.y = p.y;
+      framed.z = p.z;
+      framed.pitch = p.pitch;
+      framed.yaw = p.yaw;
+      framed.fov = p.fov;
+      d.arrival?.shape(framed);
     },
     resize(w, h) {
       follower.resize(w, h);

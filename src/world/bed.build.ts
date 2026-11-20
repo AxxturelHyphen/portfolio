@@ -1,5 +1,6 @@
 import type { AtlasManifest, AtlasTextures, BloomDef, CutoutBatch, QuadParams, SlotView, SpriteId, SpriteRect, Tier } from '../types.ts';
 import { createFlower, type GardenFlower } from './flower.ts';
+import { gateLeafOf, isGateLeaf, type GateLeaf } from './gates.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
 import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
 import { builtIn, type WorldMode } from './mode.ts';
@@ -37,7 +38,7 @@ export interface BuildInput {
 
 export interface FlowerRef { flower: GardenFlower; batch: CutoutBatch; at: number }
 export interface WingRef { batch: CutoutBatch; at: number; quad: QuadParams; alpha: number }
-export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; pets: PetRef[]; skipped: number }
+export interface BuildOutput { batches: CutoutBatch[]; flowers: FlowerRef[]; wings: WingRef[]; pets: PetRef[]; gates: GateLeaf[]; skipped: number }
 
 /** Share of the place shadow colour mixed into each value group, per camera. */
 const GROUP_MIX: Record<WorldMode, Record<ValueGroup, number>> = { rail: { L: 0, M: 0.45, D: 0.7 }, roam: { L: 0, M: 0.2, D: 0.3 } };
@@ -57,7 +58,7 @@ const FRONT_Z = 2;
 const FOOT_SPRAYS = 3;
 const FOOT_SPREAD = 0.18;
 
-type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; flower?: GardenFlower; pet?: { slot: string; quad: QuadParams } };
+type Entry = { z: number; write: (b: CutoutBatch, at: number) => number; wing?: QuadParams; flower?: GardenFlower; pet?: { slot: string; quad: QuadParams }; gate?: { sprite: SpriteId; quad: QuadParams } };
 interface Group { from: AtlasKey; page: number; front: boolean; entries: Entry[]; quads: number; zSum: number }
 
 export function hexRgb(hex: string, out: Float32Array): Float32Array {
@@ -151,6 +152,7 @@ export function buildBed(i: BuildInput): BuildOutput {
       const pet = pets.get(it.sprite);
       const entry: Entry = { z: it.z, write: once(q) };
       if (it.wing === true) entry.wing = q;
+      if (isGateLeaf(it.sprite)) entry.gate = { sprite: it.sprite, quad: q };
       if (pet !== undefined) {
         entry.pet = { slot: pet, quad: q };
         pets.delete(it.sprite);
@@ -181,7 +183,7 @@ export function buildBed(i: BuildInput): BuildOutput {
   }
 
   const ordered = [...groups.values()].sort((a, b) => a.zSum / a.entries.length - b.zSum / b.entries.length);
-  const out: BuildOutput = { batches: [], flowers: [], wings: [], pets: [], skipped };
+  const out: BuildOutput = { batches: [], flowers: [], wings: [], pets: [], gates: [], skipped };
   for (const g of ordered) {
     const batch = i.createBatch(g.from, g.page, Math.max(1, g.quads), g.front);
     g.entries.sort((a, b) => a.z - b.z);
@@ -190,6 +192,8 @@ export function buildBed(i: BuildInput): BuildOutput {
       if (e.flower !== undefined) out.flowers.push({ flower: e.flower, batch, at });
       if (e.wing !== undefined) out.wings.push({ batch, at, quad: e.wing, alpha: 1 });
       if (e.pet !== undefined) out.pets.push({ slot: e.pet.slot, batch, at, quad: e.pet.quad });
+      const gate = e.gate === undefined ? null : gateLeafOf(e.gate.sprite, e.gate.quad, batch, at);
+      if (gate !== null) out.gates.push(gate);
       at += e.write(batch, at);
     }
     batch.writer.count = at;

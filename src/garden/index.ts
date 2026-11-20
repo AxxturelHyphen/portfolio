@@ -27,6 +27,7 @@ import { LAMPS, lampBedsOf } from '../world/lamps.ts';
 import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode, worldModeOf } from '../world/mode.ts';
 import { createVisitorLantern } from '../world/visitor.ts';
+import { createArrival, driveArrival } from './arrival.ts';
 import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createLabelDrive } from './label.ts';
@@ -119,7 +120,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const world = content.garden as WorldLayout;
   const bedOfProject = (id: ProjectId): BedId | null => content.projects.find((p) => p.id === id)?.bed ?? null;
   const spawn = q.shot === undefined ? undefined : shots[q.shot]?.visitor;
-  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), ...(spawn === undefined ? {} : { spawn }) }) : null;
+  const arrival = createArrival(roaming && q.shot === undefined && q.t === undefined && (location.hash === '' || location.hash === '#/') && !machine.state.reduced);
+  const roam = roaming ? createRoamDrive({ machine, rig, light, loop, world, bedOfProject, proxies, refresh: () => host.refresh(), arrival, ...(spawn === undefined ? {} : { spawn }) }) : null;
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
@@ -236,6 +238,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
   loop.on('camera', (c) => {
     const s = machine.state;
+    driveArrival(arrival, c, machine);
     roam?.follow(c);
     rig.update(c, s, machine.ch);
     gfx.setPose(rig.pose);
@@ -262,7 +265,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     sharedUniforms.uHandThrow.value = light.handThrow;
     sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
     if (lantern !== null) {
-      writeLamps(light.lamps);
+      writeLamps(arrival.carried(light.lamps));
       writeInvites(light.invites);
     }
     intro.frame(machine.ch.intro.value, machine.state.phase === 'intro' || machine.ch.intro.value < 1);

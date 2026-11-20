@@ -8,6 +8,7 @@ import { spring } from '../core/spring.ts';
 import { OPEN_HALF, STREAM, wingOpacityOf } from '../core/motion.ts';
 import { buildBed, type BuildAtlas, type FlowerRef, type WingRef } from './bed.build.ts';
 import { UNFURL } from './flower.ts';
+import { swingGates, type GateLeaf } from './gates.ts';
 import type { GardenRig } from './camera.ts';
 import type { BedScene3 } from './layout.ts';
 import type { GardenMemory } from './memory.ts';
@@ -105,6 +106,7 @@ export class StreamBed implements Bed {
   private flowers: FlowerRef[] = [];
   private wings: WingRef[] = [];
   private pets: Pet[] = [];
+  private gates: GateLeaf[] = [];
   /** Placements skipped because the atlas does not hold their sprite id yet (they draw nothing). */
   missing = 0;
   private actors: CutoutBatch | null = null;
@@ -213,6 +215,7 @@ export class StreamBed implements Bed {
     this.flowers = out.flowers;
     this.wings = out.wings;
     this.pets = out.pets.map(createPet);
+    this.gates = out.gates;
     this.missing = out.skipped;
     const hero = this.flowers[0]?.batch ?? this.batches[0];
     const actorPage = m.sprites[this.scene.actorSprite ?? '']?.page;
@@ -268,6 +271,7 @@ export class StreamBed implements Bed {
     this.setUniformReveal(this.reveal.value);
     this.fadeWings(wingOpacityOf(this.env.rig.speed));
     for (let i = 0; i < this.pets.length; i++) this.pets[i]?.update(c, this.env.visitor, s.reduced);
+    swingGates(this.gates);
     if (this.state !== 'active') return;
     for (let i = 0; i < this.flowers.length; i++) {
       const f = this.flowers[i];
@@ -344,6 +348,7 @@ export class StreamBed implements Bed {
     this.flowers = [];
     this.wings = [];
     this.pets = [];
+    this.gates = [];
     if (this.tex !== null) for (const t of [...this.tex.color, ...this.tex.normal]) t.dispose();
     this.tex = null;
     this.gpuBytes = 0;

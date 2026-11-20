@@ -198,7 +198,7 @@ void main() {
     float glass = smoothstep(0.02, 0.12, luma(tex.rgb)) * (0.25 + 0.75 * core);
     vec3 glow = uLampColor * GLOW * (0.35 + core) * mix(vec3(1.0), albedo / max(luma(albedo), 1e-3), 0.3);
     lit = paperShoulder(mix(albedo * (ambient + key) * FRAME_DARK, glow, glass) + albedo * hand * 0.15 * (1.0 - glass));
-    lit = mix(lit, FLAME_CORE, smoothstep(FLAME_CORE_FROM.x, FLAME_CORE_FROM.y, core) * glass);
+    lit = mix(lit, FLAME_CORE, smoothstep(FLAME_CORE_FROM.x, FLAME_CORE_FROM.y, core) * glass * min(luma(uLampColor), 1.0));
   }
 
   // The light that moves the edges and shadows: the hand where it reaches, else the key.

@@ -112,7 +112,7 @@ export function createActorBatch(gfx: Gfx, color: Texture, normal: Texture, capa
     batch.mesh.onBeforeRender = () => {
       for (let i = 0; i < ownLamps.length; i++) ownLamps[i]!.copy(lamps[i]!).setW(lamps[i]!.w / light.glow);
       ownLamps[0]!.w *= light.carriedLight;
-      ownColor.copy(sharedUniforms.uLampColor.value).multiplyScalar(light.glow);
+      ownColor.copy(sharedUniforms.uLampColor.value).multiplyScalar(light.glow * lamps[0]!.w);
       ownCursor.copy(sharedUniforms.uCursor.value).setW(0);
     };
   }
