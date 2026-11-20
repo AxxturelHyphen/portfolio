@@ -1,6 +1,6 @@
 {
  "id": "semillero",
- "hash": "e68e75a93509ad32",
+ "hash": "fd1249d356d0cfe4",
  "pages": [
   {
    "w": 512,
@@ -32,6 +32,22 @@
    "fileBytes": {
     "hi": 620749,
     "lo": 208785
+   }
+  },
+  {
+   "w": 1024,
+   "h": 1024,
+   "color": {
+    "hi": "semillero.2.c.ktx2",
+    "lo": "semillero.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "semillero.2.n.ktx2",
+    "lo": "semillero.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 188516,
+    "lo": 70970
    }
   }
  ],
@@ -91,7 +107,7 @@
     1.3206
    ],
    "pivot": [
-    0.5824,
+    0.5822,
     0.0078
    ],
    "pad": 8,
@@ -496,6 +512,174 @@
    "pad": 8,
    "sources": [
     "haeckel_coniferae"
+   ]
+  },
+  "se/stag-body": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.3427734375,
+    0.607421875,
+    0.9921875
+   ],
+   "size": [
+    0.2558,
+    0.2771
+   ],
+   "pivot": [
+    0.3205,
+    0.006
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-leg-fr": {
+   "page": 2,
+   "uv": [
+    0.623046875,
+    0.689453125,
+    0.8173828125,
+    0.9921875
+   ],
+   "size": [
+    0.0837,
+    0.1304
+   ],
+   "pivot": [
+    0.0781,
+    0.0129
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-mandible-r": {
+   "page": 2,
+   "uv": [
+    0.623046875,
+    0.3779296875,
+    0.791015625,
+    0.673828125
+   ],
+   "size": [
+    0.0734,
+    0.1292
+   ],
+   "pivot": [
+    0.2333,
+    0.0132
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-leg-fl": {
+   "page": 2,
+   "uv": [
+    0.623046875,
+    0.0693359375,
+    0.8291015625,
+    0.3623046875
+   ],
+   "size": [
+    0.0897,
+    0.1276
+   ],
+   "pivot": [
+    0.8961,
+    0.0133
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-mandible-l": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.0341796875,
+    0.158203125,
+    0.3271484375
+   ],
+   "size": [
+    0.0664,
+    0.1293
+   ],
+   "pivot": [
+    0.74,
+    0.0133
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-head": {
+   "page": 2,
+   "uv": [
+    0.173828125,
+    0.1015625,
+    0.4169921875,
+    0.3271484375
+   ],
+   "size": [
+    0.1089,
+    0.101
+   ],
+   "pivot": [
+    0.5109,
+    0.0173
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-antenna-l": {
+   "page": 2,
+   "uv": [
+    0.8447265625,
+    0.88671875,
+    0.962890625,
+    0.9921875
+   ],
+   "size": [
+    0.0655,
+    0.0585
+   ],
+   "pivot": [
+    0.5441,
+    0.037
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
+   ]
+  },
+  "se/stag-antenna-r": {
+   "page": 2,
+   "uv": [
+    0.8447265625,
+    0.7724609375,
+    0.96875,
+    0.87109375
+   ],
+   "size": [
+    0.0723,
+    0.0575
+   ],
+   "pivot": [
+    0.5256,
+    0.0396
+   ],
+   "pad": 8,
+   "sources": [
+    "beetle-jacobson-plate26"
    ]
   }
  },

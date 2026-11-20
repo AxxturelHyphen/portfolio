@@ -6007,6 +6007,198 @@
    "edits": []
   },
   {
+   "id": "beetle-jacobson-plate26",
+   "title": "Beetles of Russia and Western Europe, plate 26: Lucanus cervus (male, fig. 14) among other lucanids and scarabs",
+   "creator": "Georgiy Jacobson (author); chromolithograph plates after Calwers Kaeferbuch and drawings by O. Somina",
+   "date": "1905-1915",
+   "institution": "A. F. Devrien, St. Petersburg; scan via the Zoological Institute RAS (zin.ru) and Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georgiy_Jacobson_-_Beetles_Russia_and_Western_Europe_-_plate_26.jpg",
+   "license": "PD",
+   "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "attribution": "Jacobson, G. G. (1905-1915). Zhuki Rossii i Zapadnoj Evropy (Beetles of Russia and Western Europe), plate 26. St. Petersburg: A. F. Devrien. Scan via Wikimedia Commons.",
+   "file": "archive/raw/insects/beetle-jacobson-plate26.jpg",
+   "need": "stag-beetle",
+   "category": "insects",
+   "sha256": "cb42c9de79173978f663d4f286fd27e82a300f22e642b4c70dbb799f9869c8ba",
+   "usedIn": [
+    "se/stag-antenna-l",
+    "se/stag-antenna-r",
+    "se/stag-body",
+    "se/stag-head",
+    "se/stag-leg-fl",
+    "se/stag-leg-fr",
+    "se/stag-mandible-l",
+    "se/stag-mandible-r"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-body: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.345,0.44255,0.74818,0.71626"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-body: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-body: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-body: polygon of 31 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-head: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.46273,0.35415,0.62,0.45168"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-head: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-head: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-head: polygon of 20 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-mandible-l: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.42273,0.30348,0.53364,0.42899"
+    },
+    {
+     "stage": "sprite",
+     "tool": "painted out",
+     "note": "se/stag-mandible-l: 0.47409,0.30937,0.49182,0.32292"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-mandible-l: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-mandible-l: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-mandible-l: polygon of 26 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-mandible-r: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.54545,0.30348,0.65636,0.42899"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-mandible-r: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-mandible-r: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-mandible-r: polygon of 26 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-antenna-l: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.40091,0.39776,0.48091,0.45197"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-antenna-l: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-antenna-l: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-antenna-l: polygon of 10 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-antenna-r: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.60273,0.39835,0.69182,0.45138"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-antenna-r: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-antenna-r: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-antenna-r: polygon of 12 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-leg-fl: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.37182,0.36417,0.505,0.48851"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-leg-fl: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-leg-fl: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-leg-fl: polygon of 23 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "se/stag-leg-fr: classical (forced: ink and colour on white paper: the paper key separates the figures cleanly), crop 0.595,0.36123,0.72364,0.48851"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-leg-fr: all GM #54466e/#bba48c/#fbeccb, amount 0.85"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "se/stag-leg-fr: warm toward #b86f52, amount 0.3"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "se/stag-leg-fr: polygon of 24 points"
+    }
+   ]
+  },
+  {
    "id": "own-pencil-girl-fox",
    "title": "Pencil drawing of a girl with a rainbow fox",
    "creator": "The owner of the garden (own drawing)",
@@ -9671,7 +9863,10 @@
    "need": "paper-cardboard",
    "category": "textures",
    "sha256": "b4a1a66a8d5104f26198f9ddc0a6227c4a29c9b327ccfdb9e96d1a670dbd3eb3",
-   "usedIn": [],
+   "usedIn": [
+    "gr/car",
+    "gruta"
+   ],
    "edits": []
   },
   {

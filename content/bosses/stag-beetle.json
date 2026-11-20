@@ -1,0 +1,133 @@
+{
+  "id": "stag-beetle",
+  "bed": "semillero",
+  "at": [
+    30.2,
+    1.1,
+    -6.9
+  ],
+  "scale": 2.5,
+  "parts": [
+    {
+      "role": "body",
+      "sprite": "se/stag-body",
+      "parent": null,
+      "pivot": [
+        0.4973,
+        0.9941
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "z": 2,
+      "rest": 0
+    },
+    {
+      "role": "head",
+      "sprite": "se/stag-head",
+      "parent": "body",
+      "pivot": [
+        0.5254,
+        0.9245
+      ],
+      "offset": [
+        0.0,
+        2.441
+      ],
+      "z": 3,
+      "rest": 0
+    },
+    {
+      "role": "mandibleL",
+      "sprite": "se/stag-mandible-l",
+      "parent": "head",
+      "pivot": [
+        0.7138,
+        0.7905
+      ],
+      "offset": [
+        -0.247,
+        0.38
+      ],
+      "z": 1,
+      "rest": 0
+    },
+    {
+      "role": "mandibleR",
+      "sprite": "se/stag-mandible-r",
+      "parent": "head",
+      "pivot": [
+        0.3873,
+        0.7906
+      ],
+      "offset": [
+        0.247,
+        0.38
+      ],
+      "z": 1,
+      "rest": 0
+    },
+    {
+      "role": "antennaL",
+      "sprite": "se/stag-antenna-l",
+      "parent": "head",
+      "pivot": [
+        0.7695,
+        0.4254
+      ],
+      "offset": [
+        -0.477,
+        0.228
+      ],
+      "z": 1,
+      "rest": 0
+    },
+    {
+      "role": "antennaR",
+      "sprite": "se/stag-antenna-r",
+      "parent": "head",
+      "pivot": [
+        0.2847,
+        0.4242
+      ],
+      "offset": [
+        0.476,
+        0.228
+      ],
+      "z": 1,
+      "rest": 0
+    },
+    {
+      "role": "legFL",
+      "sprite": "se/stag-leg-fl",
+      "parent": "body",
+      "pivot": [
+        0.8041,
+        0.8919
+      ],
+      "offset": [
+        -0.38,
+        2.165
+      ],
+      "z": 0,
+      "rest": 0
+    },
+    {
+      "role": "legFR",
+      "sprite": "se/stag-leg-fr",
+      "parent": "body",
+      "pivot": [
+        0.1492,
+        0.8699
+      ],
+      "offset": [
+        0.391,
+        2.193
+      ],
+      "z": 0,
+      "rest": 0
+    }
+  ],
+  "motion": "stag-beetle"
+}

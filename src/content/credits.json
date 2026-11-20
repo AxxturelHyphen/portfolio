@@ -2,8 +2,52 @@
  "generated": "npm run assets (credits stage) from archive/SOURCES.json and public/fonts/LICENSES; do not edit by hand",
  "groups": [
   {
+   "institution": "A. F. Devrien, St. Petersburg; scan via the Zoological Institute RAS (zin.ru) and Wikimedia Commons",
+   "items": [
+    {
+     "id": "beetle-jacobson-plate26",
+     "title": "Beetles of Russia and Western Europe, plate 26: Lucanus cervus (male, fig. 14) among other lucanids and scarabs",
+     "creator": "Georgiy Jacobson (author); chromolithograph plates after Calwers Kaeferbuch and drawings by O. Somina",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Jacobson, G. G. (1905-1915). Zhuki Rossii i Zapadnoj Evropy (Beetles of Russia and Western Europe), plate 26. St. Petersburg: A. F. Devrien. Scan via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georgiy_Jacobson_-_Beetles_Russia_and_Western_Europe_-_plate_26.jpg",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted",
+      "retouched"
+     ],
+     "usedIn": [
+      "se/stag-antenna-l",
+      "se/stag-antenna-r",
+      "se/stag-body",
+      "se/stag-head",
+      "se/stag-leg-fl",
+      "se/stag-leg-fr",
+      "se/stag-mandible-l",
+      "se/stag-mandible-r"
+     ]
+    }
+   ]
+  },
+  {
    "institution": "ambientCG",
    "items": [
+    {
+     "id": "acg-cardboard002",
+     "title": "Cardboard 002",
+     "creator": "Lennart Demes (ambientCG)",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://docs.ambientcg.com/license/",
+     "attribution": "Cardboard 002, ambientCG.com, CC0",
+     "sourceUrl": "https://ambientcg.com/view?id=Cardboard002",
+     "changes": [],
+     "usedIn": [
+      "gr/car",
+      "gruta"
+     ]
+    },
     {
      "id": "acg-paper006",
      "title": "Paper 006",
