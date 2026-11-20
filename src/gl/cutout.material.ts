@@ -1,4 +1,4 @@
-import { AlwaysDepth, DoubleSide, GLSL3, LessEqualDepth, Mesh, NoBlending, NormalBlending, RawShaderMaterial, Vector3, Vector4 } from 'three';
+import { AlwaysDepth, DoubleSide, GLSL3, LessEqualDepth, Mesh, NoBlending, NormalBlending, RawShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
 import type { DepthModes, Texture } from 'three';
 import type { CutoutBatch, CutoutUniforms, Gfx } from '../types.ts';
 import { createCutoutGeometry } from './instances.ts';
@@ -15,10 +15,16 @@ const SHADOW = { offset: 0.02, softness: 2.5, strength: 0.7 } as const;
 const VERTEX = common + vertexBody;
 /** The paper edge gain every cutout reads (uThick): 1 shows the card's cut edge under free roam, 0 turns it off. */
 const paperEdge = { value: 1 };
+/**
+ * The drawn line every cutout reads (uBoil): x turns the pencil contour and the boiling edge on, y lets the edge boil
+ * on twelves. Under reduced motion the line is drawn and holds still.
+ */
+const lineBoil = { value: new Vector2(1, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1) };
 
-/** Paper thickness on or off for every cutout (off on the low tier). The actors never show it. */
+/** Paper thickness and the drawn line on or off for every cutout (off on the low tier). The actors never show thickness. */
 export function setPaperEdge(on: boolean): void {
   paperEdge.value = on ? 1 : 0;
+  lineBoil.value.x = paperEdge.value;
 }
 const FRAGMENT = common + lights + fragmentBody;
 
@@ -76,7 +82,7 @@ export function createCutoutMaterial(color: Texture, normal: Texture): { materia
     glslVersion: GLSL3,
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
-    uniforms: { ...sharedUniforms, ...uniforms, uThick: paperEdge },
+    uniforms: { ...sharedUniforms, ...uniforms, uThick: paperEdge, uBoil: lineBoil },
     transparent: true,
     premultipliedAlpha: true,
     blending: NormalBlending,

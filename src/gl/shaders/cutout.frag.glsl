@@ -9,6 +9,8 @@ uniform vec4 uShadowDir;   // decal x, z, length per height, opacity
 uniform float uDepthCut;   // fragments under this alpha are discarded: no depth from soft edges (0 on the rail)
 uniform float uActorRim;   // the visitor's batch: a fuller moon rim so the figure reads as the protagonist (0 elsewhere)
 uniform float uShadowPass; // 1 while drawing the lantern's shadow map: the silhouette alone, alpha tested
+uniform float uTime;
+uniform vec2 uBoil;        // x: the drawn line on (0 on the low tier), y: it boils (0 under reduced motion)
 
 in vec2 vUV;
 in vec4 vRect;
@@ -157,19 +159,53 @@ const vec2 RELIEF_LUMA = vec2(0.45, 1.2);             // luma over the local mea
 const float RELIEF_SHADE = 0.55;                      // the light the deepest joint keeps
 float stoneHeight(vec2 uv, float mean) { return smoothstep(RELIEF_LUMA.x, RELIEF_LUMA.y, luma(texture(uColor, uv, 1.0).rgb) / mean); }
 
+// The line breathes: near the silhouette the plate is redrawn on twelves, a cycle of BOIL_POSES poses, each pushing
+// the cut edge (and the paper edge behind it) up to BOIL_PX on screen along a low-frequency noise fixed to the plate.
+const float BOIL_FPS = 12.0;
+const float BOIL_POSES = 3.0;
+const float BOIL_PX = 1.5;
+const float BOIL_TEXELS = 32.0;                       // texels per wobble cell
+const float BOIL_BAND_BIAS = 3.0;                     // the band near the edge that moves, from about mip 3 of the alpha
+// A pencil contour about a pixel wide just inside the cut, of varying pressure and broken in places. Its gaps hold
+// still; only its pressure is redrawn with each pose, so it reads drawn without flickering.
+const vec2 INK_PX = vec2(0.9, 1.7);                   // pixels inside the cut where the line is full and where it ends
+const float INK_TEXELS = 12.0;
+const vec2 INK_BREAK = vec2(0.3, 0.48);               // noise where a gap closes and where the line is whole
+const float INK_PRESSURE = 0.45;                      // the lightest stroke as a share of the darkest
+const float INK = 0.75;
+const vec3 GRAPHITE = vec3(0.011, 0.010, 0.012);      // #1b1a1c soft pencil, linear
+
+float boilPose() { return mod(floor(uTime * BOIL_FPS), BOIL_POSES) * uBoil.y; }
+
+vec2 boilOffset(float pose) {
+  vec2 p = vUV * vec2(textureSize(uColor, 0)) / BOIL_TEXELS + pose * vec2(7.31, 3.17);
+  vec2 wobble = vec2(valueNoise(p), valueNoise(p + 19.7)) * 2.0 - 1.0;
+  float band = 1.0 - sq(2.0 * texture(uColor, vUV, BOIL_BAND_BIAS).a - 1.0);
+  return wobble * BOIL_PX * fwidth(vUV) * band * uBoil.x;
+}
+
+// How much pencil this pixel takes: `a` is the plate's alpha before the rect clip, so tiles never ink their seams.
+float inkOf(float a, float pose) {
+  float inside = (a - CUT) / max(fwidth(a), 1e-4);
+  vec2 p = vUV * vec2(textureSize(uColor, 0)) / INK_TEXELS;
+  float pressure = mix(INK_PRESSURE, 1.0, valueNoise(p + pose * vec2(5.3, 11.1)));
+  float whole = smoothstep(INK_BREAK.x, INK_BREAK.y, valueNoise(p * 0.37 + 41.0));
+  return (1.0 - smoothstep(INK_PX.x, INK_PX.y, inside)) * pressure * whole * INK * uBoil.x;
+}
+
 float inRect(vec2 uv) {
   vec2 inside = step(vRect.xy, uv) * step(uv, vRect.zw);
   return inside.x * inside.y;
 }
 
 // x: how much of the cut edge this pixel sees, y: how deep the edge seen lies, 0 at the face and 1 at the back.
-vec2 paperSide() {
+vec2 paperSide(vec2 boil) {
   float reach = vSide.w * min(1.0 / max(abs(vSide.z), 1e-4), SIDE_SLOPE / max(length(vSideN), 1e-4));
   vec2 stride = -vSide.xy * reach / SIDE_TAPS;
   float hit = 0.0;
   float depth = 0.0;
   for (float i = 1.0; i <= SIDE_TAPS; i++) {
-    vec2 uv = vUV + stride * i;
+    vec2 uv = vUV + boil + stride * i;
     float a = smoothstep(0.3, 0.7, texture(uColor, uv, 0.0).a) * inRect(uv) * (1.0 - hit);
     depth += a * i / SIDE_TAPS;
     hit += a;
@@ -210,8 +246,11 @@ void main() {
   // The colour softens behind the focus; the alpha stays sharp so tiled flats never open a seam.
   // A quad grown for the paper edge shows its face and its drop shadow only inside the sprite's rect.
   float rect = vSide.w > 0.0 ? inRect(vUV) : 1.0;
-  float rawA = texture(uColor, vUV).a * rect;
-  vec2 uv = vUV;
+  float pose = boilPose();
+  vec2 boil = boilOffset(pose);
+  vec2 uv = clamp(vUV + boil, vRect.xy, vRect.zw);
+  float plateA = texture(uColor, uv).a;
+  float rawA = plateA * rect;
   float relief = 1.0;
   if (vStone * vSide.w > 0.0) {
     float mean = max(luma(texture(uColor, vUV, 6.0).rgb), 1e-3);
@@ -260,7 +299,7 @@ void main() {
   float leaf = leafWeight(coarse) * (1.0 - vStone);
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
   float foot = 1.0 - FOOT_SHADE.y * uEye.z * (1.0 - vOrient.w) * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
-  vec2 side = vSide.w > 0.0 && tex.a < 0.99 ? paperSide() : vec2(0.0);
+  vec2 side = vSide.w > 0.0 && tex.a < 0.99 ? paperSide(boil) : vec2(0.0);
   vec3 sideLit = vec3(0.0);
   if (side.x > 1e-3) {
     vec3 sn = normalize(vSideN + vec3(0.0, 1e-4, 0.0));
@@ -315,6 +354,7 @@ void main() {
   float rimBand = sat(0.7 * edgeNear + 0.3 * edgeFar) * (1.0 - shaded * 0.3) * (1.0 - 0.85 * thin);
   float dark = 1.0 - smoothstep(0.0, RIM_DARK_LUMA, luma(lit));
   lit += mix(RIM_SHADE, RIM_MOON, edgeNear) * rimBand * (mix(RIM_STRENGTH, ROAM_RIM_STRENGTH, uEye.z) * (0.3 + 0.7 * dark) + uActorRim) * (1.0 - back) * (1.0 - 0.6 * hazed);
+  lit = mix(lit, GRAPHITE, inkOf(plateA, pose) * (1.0 - hazed) * (1.0 - 0.7 * back));
 
   // Drop shadow onto the paper behind: the sprite's alpha pushed away from the light, inside its gutter.
   float shadow = rectAlpha(vUV - lightUV * uShadow.x * vLift, uShadow.y) * uShadow.z * sat(vLift * 4.0) * (0.6 + 0.4 * reach) * rect;
