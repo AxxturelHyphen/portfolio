@@ -37,6 +37,9 @@ test('the visitor cannot walk into the Rosaleda bench from in front or behind', 
 
 test('walking out of La Puerta keeps its cutouts until the visitor has left it', async ({ jardin }) => {
   await enterRoam(jardin, '#/b/puerta');
+  // Streaming is paced (garden/pace.ts): the bed the garden opens on streams a moment after it is ready, so the walk
+  // starts once its cutouts are in; what is checked is that they stay.
+  await expect.poll(() => jardin.withApi((api) => api.residency().puerta), { timeout: 15000 }).toMatch(/^(ready|active)$/);
   await jardin.withApi((api) => { void api.goto('#/b/estanque'); });
   const seen: string[] = [];
   for (let i = 0; i < 40; i++) {
