@@ -17,6 +17,7 @@ import { linearHex } from './colour.ts';
  * - uEye: the camera on the ground plane (x, z, written with uViewProj) and the standee turn weight: 0 on the rail,
  *   1 under free roam (cook/ROAM_PLAN.md 3), so rail views never move.
  * - uVisitor: the roaming visitor's ground point (x, z); cards flagged `fade` turn to a trace while they cover it.
+ * - uPart: the grotto's ivy curtain (centre x, z, half width, metres apart): its cards part as the visitor nears it.
  * - uLamp: lanterns burning with their own amber pool (flame xyz, strength), free roam only: lamp 0 is the lantern the
  *   visitor carries (it takes over from the hand light: uHandOn 0), lamps 1 to 5 the standing props nearest it in view.
  * - uInvite / uInvites: the project flowers' own soft warm pools (light xyz, strength) and how many burn, free roam
@@ -51,6 +52,7 @@ export const sharedUniforms = {
   uCamPos: { value: new Vector3(0, 2.6, 4.6) },
   uEye: { value: new Vector3(0, 4.6, 0) },
   uVisitor: { value: new Float32Array(2) as Float32Array },
+  uPart: { value: new Vector4(0, 0, 0, 0) },
   uCamRight: { value: new Vector3(1, 0, 0) },
   uCamUp: { value: new Vector3(0, 1, 0) },
   uTime: { value: 0 },

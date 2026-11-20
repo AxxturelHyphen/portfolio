@@ -30,6 +30,7 @@ import { createVisitorLantern } from '../world/visitor.ts';
 import { createArrival, driveArrival } from './arrival.ts';
 import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
+import { createMothDrive } from './moth.ts';
 import { createLabelDrive } from './label.ts';
 import { createPlaceLighting, prepareGl, signAnchorsOf, signPostsOf } from './place.ts';
 import { createSignDrive } from './signs.drive.ts';
@@ -127,6 +128,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
   if (roam !== null) setStandeeTurn(1);
   const lantern = roam === null ? null : createVisitorLantern(roam.pos, world.ground.pond);
+  const mothDrive = lantern === null || roam === null ? null : createMothDrive(gfx, moth, lantern.flame, roam.pos);
   if (lantern !== null) {
     setRoamLight();
     light.carryFlame(lantern.flame);
@@ -243,6 +245,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     rig.update(c, s, machine.ch);
     gfx.setPose(rig.pose);
     lantern?.frame(c, s.reduced);
+    mothDrive?.frame(c, s.reduced);
     light.update(c, s, machine.ch, rig);
     moth.update(c, s, machine.ch, light, slots);
   });
@@ -348,6 +351,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   };
   const ready = Promise.all([signs === null ? gfx.warm() : signs.ready.then(() => gfx.warm()), garden.ready]).then(async () => {
     const batch = attachLantern();
+    mothDrive?.attach(garden.sharedAtlas());
     /** The figure is drawn from the first frame: a roam shot (a still) and the low tier load their page at once. */
     const first = spawn !== undefined ? quality.cfg.atlas : 'lo';
     if (batch !== null) await loadFigure(batch, first).catch(() => undefined);

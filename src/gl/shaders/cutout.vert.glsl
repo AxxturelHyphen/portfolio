@@ -9,6 +9,7 @@ uniform vec4 uFocusBack;   // the plane the far layers fall back behind, amount
 uniform vec4 uShadowDir;   // decal direction x, z on the ground; length per unit of height; opacity
 uniform vec3 uEye;         // camera x, z on the ground; standee turn weight (0 on the rail, 1 under free roam)
 uniform vec2 uVisitor;     // the roaming visitor's ground point x, z
+uniform vec4 uPart;        // the grotto's ivy curtain: centre x, z, half width, how far it parts (metres)
 
 in vec3 position;   // corner x, y; kind
 in vec4 aPos;       // x, y, z, rotation (radians)
@@ -44,6 +45,7 @@ const float TURN_K = 0.7;            // and turns this share of it, so the hinge
 const float FADE_TO = 0.35;          // a fading card's opacity while it covers the visitor
 const float FADE_EDGE = 0.3;         // metres either side of its outline over which it fades: about 0.2 s of walking
 const vec2 HUNG_SHADOW = vec2(1.5, 0.9); // a hanging cutout's shadow below it: width and depth as shares of its width
+const float PART_DEPTH = 0.3;        // cards within this depth of the curtain's plane belong to it
 
 float bit(float flags, float b) { return mod(floor(flags / b), 2.0); }
 
@@ -109,6 +111,10 @@ void main() {
     float push = step(1e-4, aAnim.x) * (1.0 - smoothstep(0.0, mix(PUSH_RADIUS, ROAM_PUSH_RADIUS, uEye.z), length(away)));
     angle += sign(away.x + 1e-4) * push * PUSH_MAX;
     local.x += angle * bend * bend * aSize.y;
+    // The ivy curtain parts from its middle, most at the foot where the visitor would brush through it; stone stays.
+    vec2 toPart = aPos.xz - uPart.xy;
+    float inCurtain = step(abs(toPart.x), uPart.z) * step(abs(toPart.y), PART_DEPTH) * (1.0 - bit(flags, 256.0));
+    local.x += inCurtain * sign(toPart.x + 1e-4) * uPart.w * (1.0 - 0.5 * corner.y);
 
     float c = cos(aPos.w);
     float s = sin(aPos.w);

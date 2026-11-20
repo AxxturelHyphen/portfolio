@@ -1,11 +1,16 @@
 /**
- * The moth (ARCH 2.8, spec §16). P1: flight and wing logic only; it draws through the shared actor batch later
- * (pos and wing are what the writer reads). Canvas only: no DOM node, no hit area, so it never blocks input.
- * Flight is a full-rate follower; wing poses step on the 12 fps clock (one pose per tick = 3 flaps/s at 4 poses).
+ * The moth (ARCH 2.8, spec §16). Canvas only: no DOM node, no hit area, so it never blocks input.
+ * On the rail it is flight and wing logic (pos and wing are what a writer reads); flight is a full-rate follower and
+ * wing poses step on the 12 fps clock (one pose per tick = 3 flaps/s at 4 poses).
+ * Under free roam (roam()) it keeps to the grotto's ivy and is drawn out to the visitor's lantern (moth.roam.ts),
+ * flutters on an erratic path (moth.flutter.ts) and is drawn as two hinged wing cards (moth.draw.ts).
  */
-import type { Clock, LightRig, Machine, Moth, ScreenPt, SlotView, State } from '../types.ts';
+import type { Clock, InstanceWriter, LightRig, Machine, Moth, ScreenPt, SlotView, SpriteRect, State } from '../types.ts';
 import { INTRO, MOTH, STEP_FPS, clamp01, follow } from '../core/motion.ts';
 import type { GardenRig } from './camera.ts';
+import { createMothDraw } from './moth.draw.ts';
+import { flutterAt } from './moth.flutter.ts';
+import { createMothRoam, type MothRoam } from './moth.roam.ts';
 
 type MothMode = Moth['mode'];
 
@@ -27,11 +32,18 @@ const TIMING = { circleS: 2, restWingTicks: 6 } as const;
 /** Wing openness per flap pose (closed, half, open, half) and the landed opening over 6 poses. */
 const FLAP: readonly number[] = [0.15, 0.6, 1, 0.6];
 
+/** The roll into a turn under free roam: radians per m/s of sideways speed, the most it rolls, its follow time (s). */
+const BANK = { perMS: 0.35, max: 0.5, tauS: 0.15 } as const;
+
 export interface GardenMoth extends Moth {
   /** World x, y, z and wing openness 0..1. */
   readonly pos: Float32Array;
   /** 0 hidden (before the intro reaches it), 1 shown. */
   readonly alpha: number;
+  /** Free roam: the moth lives at `home` (the grotto's mouth, world x, y, z) and answers the lantern at `flame`. */
+  roam(flame: Float32Array, home: Float32Array): void;
+  /** Free roam: the batch and the moth plate to draw the wings with. */
+  attach(writer: InstanceWriter, rect: SpriteRect): void;
 }
 
 export function createMoth(rig: GardenRig): GardenMoth {
@@ -51,6 +63,11 @@ export function createMoth(rig: GardenRig): GardenMoth {
   let flapPose = 0;
   let landPose = 0;
   let tickCount = 0;
+  let flight: MothRoam | null = null;
+  const draw = createMothDraw();
+  const flutter = new Float32Array(4);
+  let bank = 0;
+  let lastX = 0;
 
   function nearestProject(slots: readonly SlotView[], x: number, y: number): SlotView | null {
     let best: SlotView | null = null;
@@ -137,11 +154,44 @@ export function createMoth(rig: GardenRig): GardenMoth {
     pos[3] = mode === 'land' && landPose > 0 ? landPose / MOTH.landOpenPoses : (FLAP[flapPose] ?? 1);
   }
 
+  /** Free roam: phase, flight centre, flutter and bank, then the wing cards. */
+  function roamStep(c: Clock, s: State, f: MothRoam): void {
+    f.step(c, s.reduced, pos);
+    mode = f.mode;
+    const t = f.target;
+    const first = !placed;
+    if (first || c.frozen || s.reduced) {
+      pos[0] = t[0]!;
+      pos[1] = t[1]!;
+      pos[2] = t[2]!;
+      placed = true;
+    } else {
+      pos[0] = follow(pos[0]!, t[0]!, f.tauS, c.dt);
+      pos[1] = follow(pos[1]!, t[1]!, f.tauS, c.dt);
+      pos[2] = follow(pos[2]!, t[2]!, f.tauS, c.dt);
+    }
+    flutterAt(c.t, f.wander, s.reduced, flutter);
+    const x = pos[0]! + flutter[0]!;
+    const still = first || c.frozen || s.reduced || c.dt <= 0;
+    const lean = still ? 0 : Math.max(-BANK.max, Math.min(BANK.max, (-(x - lastX) / c.dt) * BANK.perMS));
+    bank = still ? 0 : follow(bank, lean, BANK.tauS, c.dt);
+    lastX = x;
+    pos[3] = flutter[3]!;
+    draw.write(x, pos[1]! + flutter[1]!, pos[2]! + flutter[2]!, flutter[3]!, bank, alpha);
+  }
+
   return {
     pos,
     get mode() { return mode; },
     get alpha() { return alpha; },
+    roam(flame, home) {
+      flight = createMothRoam(flame, home);
+    },
+    attach(writer, rect) {
+      draw.attach(writer, rect);
+    },
     celebrate() {
+      flight?.celebrate();
       celebrateS = TIMING.circleS;
       centre[0] = pos[0]!;
       centre[1] = pos[1]!;
@@ -159,10 +209,14 @@ export function createMoth(rig: GardenRig): GardenMoth {
       lastLight[1] = ly;
       celebrateS = c.frozen ? 0 : Math.max(0, celebrateS - dt);
       angle = c.frozen ? PATH.circleRadPerS * c.t : angle + PATH.circleRadPerS * dt;
-
-      mode = choose(s, ch, light, slots, viewH);
       const introAt = INTRO.moth[0] / INTRO.totalS;
       alpha = s.phase === 'intro' ? clamp01((ch.intro.value - introAt) / (1 - introAt)) : 1;
+      if (flight !== null) {
+        roamStep(c, s, flight);
+        return;
+      }
+
+      mode = choose(s, ch, light, slots, viewH);
 
       if (!placed || c.frozen) {
         pos[0] = target[0]!;
