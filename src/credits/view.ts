@@ -2,6 +2,7 @@ import type { Change, Credit, CreditsFile, FontCredit } from '../../scripts/stag
 import data from '../content/credits.json' with { type: 'json' };
 import { lookup } from '../content/i18n.ts';
 import { esc } from '../content/herbario/html.ts';
+import { ATTRIBUTION } from './attribution.ts';
 import type { Lang, Strings } from '../types.ts';
 import './credits.css';
 
@@ -17,9 +18,6 @@ import './credits.css';
 const credits = data as CreditsFile;
 
 type Lookup = (key: string) => string;
-
-/** Licences whose terms ask for the attribution line to be shown with the work. */
-const ATTRIBUTION = /^CC-BY/;
 
 function licenceName(id: string, s: Lookup): string {
   if (id === 'PD') return s('credits.pd');
