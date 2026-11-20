@@ -28,8 +28,8 @@
   {
     "id": "php-playground",
     "title": "PHP Playground",
-    "bed": "rosaleda",
-    "flower": "rose",
+    "bed": "estanque",
+    "flower": "lily",
     "status": "shipped",
     "importance": 2,
     "private": false,
