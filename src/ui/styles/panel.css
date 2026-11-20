@@ -287,3 +287,16 @@
     height: 88px;
   }
 }
+
+/* A phone on its side: the hanging tags are compact (toggles.css), so the card starts just under them and keeps the room. */
+@media (min-width: 45rem) and (max-height: 30rem) {
+  .pn-page {
+    --pn-room: calc(100dvh - 72px - max(var(--edge), env(safe-area-inset-bottom, 0px)));
+    top: 72px;
+  }
+
+  .pn-close {
+    height: 72px;
+    padding-bottom: 18px;
+  }
+}
