@@ -291,6 +291,29 @@
      "usedIn": [
       "es/lily-b"
      ]
+    },
+    {
+     "id": "moth-huebner-v3-n104",
+     "title": "Sammlung europaeischer Schmetterlinge, Lepidoptera III (Bombyces and Sphinges), hand-coloured plate (IA leaf 104)",
+     "creator": "Jacob Hubner (1761-1826)",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Hubner, J. Sammlung europaeischer Schmetterlinge. Augsburg, 1793 onward. University of Alberta Libraries, Bruce Peel Special Collections, via Internet Archive (bp_4921842-3).",
+     "sourceUrl": "https://archive.org/details/bp_4921842-3/page/n104",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "sa/moth-antennaL",
+      "sa/moth-antennaR",
+      "sa/moth-body",
+      "sa/moth-wingFL",
+      "sa/moth-wingFR",
+      "sa/moth-wingHL",
+      "sa/moth-wingHR"
+     ]
     }
    ]
   },

@@ -644,8 +644,157 @@
    "need": "moths",
    "category": "birds",
    "sha256": "3ee0fef6cb74deceeefbc509f4de5ef446c7385e12800f0c0947955bc2ac47e9",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "sa/moth-antennaL",
+    "sa/moth-antennaR",
+    "sa/moth-body",
+    "sa/moth-wingFL",
+    "sa/moth-wingFR",
+    "sa/moth-wingHL",
+    "sa/moth-wingHR"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-body: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.4712,0.4851,0.5958,0.642"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-body: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-body: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-body: polygon of 13 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-wingFL: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.1097,0.4751,0.5129,0.652"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingFL: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingFL: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-wingFL: polygon of 17 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-wingFR: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.51,0.2651,0.8021,0.5591"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingFR: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingFR: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-wingFR: polygon of 17 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-wingHL: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.3196,0.5394,0.564,0.7706"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingHL: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingHL: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-wingHL: polygon of 15 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-wingHR: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.5206,0.4623,0.818,0.6706"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingHR: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-wingHR: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-wingHR: polygon of 15 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-antennaL: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.3954,0.4523,0.5164,0.5277"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-antennaL: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-antennaL: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-antennaL: polygon of 8 points"
+    },
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.016, hi 0.035), morphology, edge un-mix",
+     "note": "sa/moth-antennaR: classical (forced: hand-coloured plate on plain cream paper: the paper key separates it cleanly), crop 0.4801,0.4151,0.5393,0.5177"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-antennaR: all toward #5a4668, amount 0.3"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "sa/moth-antennaR: all  S under 0.8, amount 1"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "sa/moth-antennaR: polygon of 8 points"
+    }
+   ]
   },
   {
    "id": "moth-huebner-v3-n110",

@@ -1,0 +1,118 @@
+{
+  "id": "moth-queen",
+  "bed": "salida",
+  "at": [
+    41,
+    2.2,
+    -5.9
+  ],
+  "scale": 1.5049,
+  "parts": [
+    {
+      "role": "body",
+      "sprite": "sa/moth-body",
+      "parent": null,
+      "pivot": [
+        0.4856,
+        0.2785
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "z": 4,
+      "rest": 0
+    },
+    {
+      "role": "wingFL",
+      "sprite": "sa/moth-wingFL",
+      "parent": "body",
+      "pivot": [
+        0.9449,
+        0.784
+      ],
+      "offset": [
+        -0.2348,
+        0.1159
+      ],
+      "z": 1,
+      "rest": 0
+    },
+    {
+      "role": "wingFR",
+      "sprite": "sa/moth-wingFR",
+      "parent": "body",
+      "pivot": [
+        0.0551,
+        0.7795
+      ],
+      "offset": [
+        0.216,
+        0.0575
+      ],
+      "z": 1,
+      "rest": 0
+    },
+    {
+      "role": "wingHL",
+      "sprite": "sa/moth-wingHL",
+      "parent": "body",
+      "pivot": [
+        0.942,
+        0.0581
+      ],
+      "offset": [
+        -0.3165,
+        -0.1202
+      ],
+      "z": 0,
+      "rest": 0
+    },
+    {
+      "role": "wingHR",
+      "sprite": "sa/moth-wingHR",
+      "parent": "body",
+      "pivot": [
+        0.0572,
+        0.0586
+      ],
+      "offset": [
+        0.1561,
+        -0.2517
+      ],
+      "z": 0,
+      "rest": 0
+    },
+    {
+      "role": "antennaL",
+      "sprite": "sa/moth-antennaL",
+      "parent": "body",
+      "pivot": [
+        0.9046,
+        0.8275
+      ],
+      "offset": [
+        -0.0142,
+        0.3687
+      ],
+      "z": 5,
+      "rest": 0
+    },
+    {
+      "role": "antennaR",
+      "sprite": "sa/moth-antennaR",
+      "parent": "body",
+      "pivot": [
+        0.0798,
+        0.9161
+      ],
+      "offset": [
+        0.0677,
+        0.3346
+      ],
+      "z": 5,
+      "rest": 0
+    }
+  ],
+  "motion": "moth-queen"
+}
