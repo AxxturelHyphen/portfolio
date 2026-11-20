@@ -11,6 +11,7 @@ uniform vec3 uEye;         // z: 0 on the rail, 1 under free roam
 uniform vec2 uVisitor;     // the roaming visitor's ground point x, z
 uniform vec4 uPart;        // the grotto's ivy curtain: centre x, z, half width, how far it parts (metres)
 uniform float uThick;      // paper edge gain: 1, or 0 on the low tier and for the actors (cutout.material.ts)
+uniform float uShadowPass; // 1 while the cutouts draw the lantern's shadow map (gl/shadow.ts)
 
 in vec3 position;   // corner x, y; kind
 in vec4 aPos;       // x, y, z, rotation (radians)
@@ -51,6 +52,7 @@ const float FADE_TO = 0.35;          // a fading card's opacity while it covers 
 const float FADE_EDGE = 0.3;         // metres either side of its outline over which it fades: about 0.2 s of walking
 const vec2 HUNG_SHADOW = vec2(1.5, 0.9); // a hanging cutout's shadow below it: width and depth as shares of its width
 const float PART_DEPTH = 0.3;        // cards within this depth of the curtain's plane belong to it
+const float FOOT_BACK = 0.25;        // free roam: the decal starts this share of its length behind the foot (its occlusion)
 
 float bit(float flags, float b) { return mod(floor(flags / b), 2.0); }
 
@@ -105,6 +107,7 @@ void main() {
   if (kind < 0.5) {
     // Ground decal: only for standing cutouts with the pivot at the foot.
     float casts = (1.0 - flat_) * (1.0 - bit(flags, 8.0)) * step(aSize.w, 0.1) * step(1e-4, uShadowDir.w);
+    corner.y -= FOOT_BACK * uEye.z * (1.0 - corner.y) * (1.0 - bit(flags, 128.0));
     float across = (corner.x - aSize.z) * aSize.x * (1.0 + 0.35 * corner.y);
     float along = corner.y * uShadowDir.z * aSize.y;
     world = aPos.xyz + right * across + vec3(uShadowDir.x, 0.0, uShadowDir.y) * along + vec3(0.0, DECAL_LIFT - aSize.w * aSize.y, 0.0);
@@ -160,6 +163,8 @@ void main() {
   }
 
   vHung = kind > 0.5 ? bit(flags, 128.0) : 0.0;
+  // The lantern's shadow: only standing paper casts, never a decal, a flat or the hung lantern itself.
+  if (uShadowPass > 0.5 && (kind < 0.5 || flat_ > 0.5 || vHung > 0.5)) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   vUV = mix(aUV.xy, aUV.zw, corner);
   vRect = vec4(min(aUV.x, aUV.z), min(aUV.y, aUV.w), max(aUV.x, aUV.z), max(aUV.y, aUV.w));
   vWorld = world;

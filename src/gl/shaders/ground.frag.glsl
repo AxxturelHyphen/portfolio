@@ -43,6 +43,7 @@ uniform float uWallZ;                                 // content/garden.json gro
 uniform vec4 uEnclose;                                // free roam: the closed garden x0, z0, x1, z1; x1 < x0 on the rail
 const vec3 HEDGE_FOOT = vec3(0.008, 0.017, 0.013);    // #22352e in deep shade: the ground beyond the walls
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
+const vec2 WALL_AO = vec2(0.45, 0.6);                 // free roam: occlusion along the end walls and the kerb, depth and reach (m)
 const vec3 POOL_SHAPE = vec3(0.35, 1.5, 0.75);        // the hand's throw: shift into the scene, length, width (radii)
 const float POOL = 0.45;
 const float POOL_GREY = 0.8;
@@ -135,6 +136,8 @@ void main() {
   float pebble = smoothstep(0.22, 0.1, clod.x + 0.08 * valueNoise(p * 40.0)) * step(0.88, hash12(clod.zw));
   base *= (0.72 + 0.56 * grain) * (0.85 + 0.3 * valueNoise(p * 23.0)) * (1.0 + 0.5 * pebble) * mix(1.0, mix(0.32, ROAM_NEAR_DIM, uEye.z), sat((z + 1.0) / 4.5));
   base *= mix(0.45, 1.0, smoothstep(uWallZ, uWallZ + WALL_FADE, z + 0.08 * valueNoise(p * 7.0)));
+  vec2 wallGap = min(p - uEnclose.xy, uEnclose.zw - p);
+  base *= 1.0 - WALL_AO.x * step(uEnclose.x, uEnclose.z) * (1.0 - smoothstep(0.0, WALL_AO.y, min(wallGap.x, wallGap.y)));
   vec3 n = vec3(0.0, 1.0, 0.0);
 
   // Moss at the wall foot.

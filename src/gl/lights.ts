@@ -1,4 +1,5 @@
 import { Matrix4, Vector2, Vector3, Vector4 } from 'three';
+import type { Texture } from 'three';
 import { linearHex } from './colour.ts';
 
 /**
@@ -26,6 +27,8 @@ import { linearHex } from './colour.ts';
  * - uFill: a near-foreground lift under free roam (0 on the rail).
  * - uDepthCut: cutout fragments under this alpha are discarded so their soft edges write no depth (free roam: the scene
  *   target has a depth buffer); 0 on the rail, where nothing is discarded.
+ * - uShadowVP / uShadowMap / uShadowOn: the carried lantern's shadow map (gl/shadow.ts), seen straight down from its
+ *   flame; uShadowPass is 1 while the cutouts draw into it.
  */
 export const FLY_LIGHTS = 4;
 /** Lanterns with their own amber light (a fixed count in the shader, world/lamps.ts LAMPS.count): the carried one and five standing props. */
@@ -83,7 +86,13 @@ export const sharedUniforms = {
   uInvites: { value: 0 },
   uInviteColor: { value: linearHex('#f5c584', new Vector3(), 5.0) },
   uActorRim: { value: 0 },
+  uShadowVP: { value: new Matrix4() },
+  uShadowMap: { value: null as Texture | null },
+  uShadowOn: { value: 0 },
+  uShadowPass: { value: 0 },
 };
+/** The camera layer the cutout batches also sit on: the lantern's shadow pass draws only them. */
+export const SHADOW_LAYER = 1;
 export type SharedUniforms = typeof sharedUniforms;
 
 const DEG = Math.PI / 180;

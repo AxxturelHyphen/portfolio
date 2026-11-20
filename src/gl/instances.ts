@@ -49,8 +49,11 @@ export function packPhase(phase: number, flags: number): number {
 
 interface Range { start: number; count: number }
 
-/** A batch geometry: one unit quad, instanced with fixed capacity. Buffers are allocated once and updated in place. */
-export interface CutoutGeometry { readonly geometry: InstancedBufferGeometry; readonly writer: InstanceWriter }
+/**
+ * A batch geometry: one unit quad, instanced with fixed capacity. Buffers are allocated once and updated in place.
+ * `bounds` is the ground box (x0, z0, x1, z1) every committed quad has reached, grown by its size: it only grows.
+ */
+export interface CutoutGeometry { readonly geometry: InstancedBufferGeometry; readonly writer: InstanceWriter; readonly bounds: Float32Array }
 
 const unit = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
@@ -90,6 +93,7 @@ export function createCutoutGeometry(capacity: number): CutoutGeometry {
   const floatRange: Range = { start: 0, count: 0 };
   const tintRange: Range = { start: 0, count: 0 };
   let count = 0;
+  const bounds = new Float32Array([Infinity, Infinity, -Infinity, -Infinity]);
 
   const writer: InstanceWriter = {
     capacity,
@@ -114,11 +118,19 @@ export function createCutoutGeometry(capacity: number): CutoutGeometry {
       const a = from < 0 ? 0 : from;
       const b = to > capacity ? capacity : to;
       if (b <= a) return;
+      for (let i = a; i < b; i++) {
+        const o = i * FLOATS_PER_QUAD;
+        const r = Math.max(Math.abs(floats[o + 4]!), Math.abs(floats[o + 5]!));
+        bounds[0] = Math.min(bounds[0]!, floats[o]! - r);
+        bounds[1] = Math.min(bounds[1]!, floats[o + 2]! - r);
+        bounds[2] = Math.max(bounds[2]!, floats[o]! + r);
+        bounds[3] = Math.max(bounds[3]!, floats[o + 2]! + r);
+      }
       markRange(interleaved.updateRanges, floatRange, a * FLOATS_PER_QUAD, (b - a) * FLOATS_PER_QUAD);
       markRange(tint.updateRanges, tintRange, a * TINT_BYTES, (b - a) * TINT_BYTES);
       interleaved.needsUpdate = true;
       tint.needsUpdate = true;
     },
   };
-  return { geometry, writer };
+  return { geometry, writer, bounds };
 }

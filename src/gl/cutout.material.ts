@@ -1,8 +1,8 @@
-import { AlwaysDepth, DoubleSide, GLSL3, LessEqualDepth, Mesh, NormalBlending, RawShaderMaterial, Vector3, Vector4 } from 'three';
-import type { Texture } from 'three';
+import { AlwaysDepth, DoubleSide, GLSL3, LessEqualDepth, Mesh, NoBlending, NormalBlending, RawShaderMaterial, Vector3, Vector4 } from 'three';
+import type { DepthModes, Texture } from 'three';
 import type { CutoutBatch, CutoutUniforms, Gfx } from '../types.ts';
 import { createCutoutGeometry } from './instances.ts';
-import { sharedUniforms } from './lights.ts';
+import { SHADOW_LAYER, sharedUniforms } from './lights.ts';
 import common from './shaders/common.glsl?raw';
 import lights from './shaders/lights.glsl?raw';
 import vertexBody from './shaders/cutout.vert.glsl?raw';
@@ -22,6 +22,31 @@ export function setPaperEdge(on: boolean): void {
 }
 const FRAGMENT = common + lights + fragmentBody;
 
+/**
+ * Every live cutout batch, its ground box (instances.ts) and the state it keeps outside the lantern's shadow pass
+ * (shadow.ts), which draws only the batches within reach of the flame, depth tested, depth writing and opaque (opaque
+ * also draws a two sided material once, not back then front).
+ */
+interface Live { mesh: Mesh; material: RawShaderMaterial; bounds: Float32Array; func: DepthModes; write: boolean; shown: boolean }
+const live: Live[] = [];
+/** Switches every cutout batch into the shadow pass's state round the flame at (x, z) within `reach` metres, and back. No allocation. */
+export function setShadowPass(pass: boolean, x = 0, z = 0, reach = 0): void {
+  for (let i = 0; i < live.length; i++) {
+    const k = live[i]!;
+    const m = k.material;
+    const b = k.bounds;
+    if (pass) {
+      k.func = m.depthFunc;
+      k.write = m.depthWrite;
+      k.shown = k.mesh.visible;
+    }
+    k.mesh.visible = k.shown && (!pass || (b[0]! < x + reach && b[2]! > x - reach && b[1]! < z + reach && b[3]! > z - reach));
+    m.depthFunc = pass ? LessEqualDepth : k.func;
+    m.depthWrite = pass || k.write;
+    m.blending = pass ? NoBlending : NormalBlending;
+    m.transparent = !pass;
+  }
+}
 /**
  * The one lit cutout material. Premultiplied output; instance order and renderOrder are paint order: the depth test
  * always passes, and the depth written (only when the scene target has a depth buffer, free roam) serves the actors
@@ -69,11 +94,14 @@ export function createCutoutMaterial(color: Texture, normal: Texture): { materia
  * here: the atlas owner disposes them.
  */
 export function createCutoutBatch(_gfx: Gfx, color: Texture, normal: Texture, capacity: number): CutoutBatch {
-  const { geometry, writer } = createCutoutGeometry(capacity);
+  const { geometry, writer, bounds } = createCutoutGeometry(capacity);
   const { material, uniforms } = createCutoutMaterial(color, normal);
   const mesh = new Mesh(geometry, material);
   mesh.frustumCulled = false;
   mesh.matrixAutoUpdate = false;
+  mesh.layers.enable(SHADOW_LAYER);
+  const entry: Live = { mesh, material, bounds, func: AlwaysDepth, write: true, shown: true };
+  live.push(entry);
   return {
     mesh,
     writer,
@@ -82,6 +110,8 @@ export function createCutoutBatch(_gfx: Gfx, color: Texture, normal: Texture, ca
       mesh.removeFromParent();
       geometry.dispose();
       material.dispose();
+      const at = live.indexOf(entry);
+      if (at >= 0) live.splice(at, 1);
     },
   };
 }

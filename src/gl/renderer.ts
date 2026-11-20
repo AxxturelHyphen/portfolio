@@ -11,6 +11,7 @@ import { sharedUniforms } from './lights.ts';
 import { createPond } from './pond.ts';
 import type { Pond } from './pond.ts';
 import { residentTextureBytes } from './ktx2.ts';
+import { createLanternShadow } from './shadow.ts';
 import { createSky } from './sky.ts';
 import type { Sky } from './sky.ts';
 import { createSceneTarget, fitPixels } from './targets.ts';
@@ -81,6 +82,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
   scene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh);
   const target = createSceneTarget(depth);
   const film = createFilmPass(renderer, quality);
+  const shadow = createLanternShadow(renderer, scene, camera);
 
   const size: PixelSize = { w: 0, h: 0 };
   let cssW = canvas.clientWidth;
@@ -159,6 +161,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     fireflies.update(c);
     film.tick(c, reduced, exposure);
     renderer.info.reset();
+    shadow.render(depth && quality.tier !== 'low');
     renderer.setRenderTarget(target.target);
     if (depth) renderer.clearDepth();
     renderer.render(scene, camera);
@@ -220,7 +223,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
       out.geometries = info.memory.geometries;
       out.programs = info.programs?.length ?? 0;
       out.texBytes = residentTextureBytes();
-      out.targetBytes = target.bytes + film.targetBytes;
+      out.targetBytes = target.bytes + film.targetBytes + shadow.bytes;
       return out;
     },
     setFilm(r: boolean, e: number): void {

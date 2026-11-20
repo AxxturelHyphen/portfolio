@@ -8,6 +8,7 @@ uniform vec4 uDepthFade;   // haze rgb, density per metre past HAZE_START
 uniform vec4 uShadowDir;   // decal x, z, length per height, opacity
 uniform float uDepthCut;   // fragments under this alpha are discarded: no depth from soft edges (0 on the rail)
 uniform float uActorRim;   // the visitor's batch: a fuller moon rim so the figure reads as the protagonist (0 elsewhere)
+uniform float uShadowPass; // 1 while drawing the lantern's shadow map: the silhouette alone, alpha tested
 
 in vec2 vUV;
 in vec4 vRect;
@@ -36,6 +37,7 @@ const float ROAM_HAZE_START = 7.0;                   // free roam sees the wall 
 const float DECAL_SOFT_BIAS = 3.5;                    // alpha from about mip 3: 30 to 70 px soft
 const float DECAL_COVERAGE = 3.0;                     // sparse plants still cast a readable patch
 const float CONTACT = 0.55;                           // the darker line where the paper meets the ground
+const vec2 FOOT_AO = vec2(0.4, 0.14);                 // free roam: occlusion round the foot, depth and reach (share of the decal)
 const float EDGE_LIGHT = 0.55;
 const float EDGE_DARK = 0.38;
 const vec3 PAPER_RIM = vec3(0.815, 0.716, 0.597);    // #e9dccb pale paper edge, linear
@@ -143,7 +145,8 @@ const float EDGE_BACK = 0.4;                          // the share of light the 
 const float EDGE_AMBIENT = 0.7;                       // the dusk fill on the edge: dimmer than on the face
 const float EDGE_LAMP = 0.6;                          // the lanterns graze the edge
 const vec2 EDGE_FIBRE = vec2(0.82, 0.6);              // the fibre grain: darkest share, texels per grain
-const vec2 FOOT_SHADE = vec2(0.1, 0.4);               // contact shade on the paper near the ground: height (m), depth
+const vec2 FOOT_SHADE = vec2(0.14, 0.4);              // free roam: occlusion on standing paper near the ground: height (m), depth
+const float EDGE_RIM = 1.4;                           // the moon grazing the cut edges that face it (tops, coping)
 
 // Stone relief under free roam (not on the low tier): the courses stand out of their mortar. A texel's height is its
 // luma against the tile's local mean (joints dark, faces pale); stepping along the eye's ray into the wall finds the
@@ -185,13 +188,18 @@ vec4 decal() {
   float spread = size.x * (0.04 + 0.1 * vDecal);
   float a = 0.25 * (rectAlpha(vUV + vec2(-spread, 0.0), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(spread, 0.0), DECAL_SOFT_BIAS)
     + rectAlpha(vUV + vec2(0.0, -spread), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(0.0, spread), DECAL_SOFT_BIAS));
-  float foot = rectAlpha(vec2(vUV.x, vRect.y + size.y * 0.02), 1.0);
-  float contact = CONTACT * foot * (1.0 - smoothstep(0.0, 0.06, vDecal));
+  float foot = rectAlpha(vec2(vUV.x, vRect.y + size.y * 0.02), 1.0 + uEye.z);
+  float contact = foot * (CONTACT * (1.0 - smoothstep(0.0, 0.06, abs(vDecal))) + FOOT_AO.x * uEye.z * exp(-sq(vDecal / FOOT_AO.y)));
   float op = (uShadowDir.w * sat(a * DECAL_COVERAGE) * pow(1.0 - vDecal, 1.4) + contact) * vTint.a * uReveal;
   return vec4(neutralise(uShadowColor) * 0.5 * op, op);
 }
 
 void main() {
+  if (uShadowPass > 0.5) {
+    if (texture(uColor, vUV).a * inRect(vUV) < 0.5) discard;
+    outColor = vec4(0.0);
+    return;
+  }
   if (vFrame.w < 0.5) {
     outColor = decal();
     if (outColor.a < uDepthCut) discard;
@@ -251,13 +259,13 @@ void main() {
   vec3 coarse = texture(uColor, vUV, LEAF_MIP_BIAS).rgb;
   float leaf = leafWeight(coarse) * (1.0 - vStone);
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) + leafKeyLit(albedo, hand, leaf));
-  float foot = 1.0 - FOOT_SHADE.y * step(1e-5, vSide.w) * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
+  float foot = 1.0 - FOOT_SHADE.y * uEye.z * (1.0 - vOrient.w) * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
   vec2 side = vSide.w > 0.0 && tex.a < 0.99 ? paperSide() : vec2(0.0);
   vec3 sideLit = vec3(0.0);
   if (side.x > 1e-3) {
     vec3 sn = normalize(vSideN + vec3(0.0, 1e-4, 0.0));
     vec3 sideLight = (neutralise(uAmbient) * EDGE_AMBIENT + neutralise(uMoonColor) * wrapLight(dot(sn, uMoonDir), 0.2)) * night
-      + (handLights(vWorld, sn) + lampLights(vWorld, sn)) * EDGE_LAMP;
+      + uRimColor * EDGE_RIM * sq(sq(max(dot(sn, uMoonDir), 0.0))) * night + (handLights(vWorld, sn) + lampLights(vWorld, sn)) * EDGE_LAMP;
     float fibre = mix(EDGE_FIBRE.x, 1.0, valueNoise(vUV * vec2(textureSize(uColor, 0)) / EDGE_FIBRE.y));
     sideLit = paperShoulder(PAPER_EDGE * mix(1.0, EDGE_BACK, side.y) * fibre * sideLight) * foot;
   }

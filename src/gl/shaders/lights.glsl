@@ -89,6 +89,24 @@ float lampFall(vec3 d, vec3 reach) {
 // The carried lantern's own base shades the ground straight below it: a soft dark dot inside its pool.
 const vec2 LAMP_FOOT = vec2(0.3, 0.06);   // radius where the dot starts and inside which it is darkest (m)
 const float LAMP_FOOT_DARK = 0.9;
+// The carried lantern's shadow (gl/shadow.ts): the cutouts and the visitor seen straight down from the flame. The
+// receiver steps SHADOW_LIFT metres toward the flame (no acne on the paper that casts), four bilinear compares about
+// SHADOW_SOFT texels apart give a soft edge, and the shade keeps SHADOW_KEEP of the light (paper glows through).
+uniform mat4 uShadowVP;
+uniform highp sampler2DShadow uShadowMap;
+uniform float uShadowOn;
+const float SHADOW_LIFT = 0.05;
+const float SHADOW_SOFT = 1.6;
+const float SHADOW_KEEP = 0.12;
+float lampShadow(vec3 p, vec3 toLamp) {
+  vec4 c = uShadowVP * vec4(p + normalize(toLamp) * SHADOW_LIFT, 1.0);
+  vec3 s = c.xyz / c.w * 0.5 + 0.5;
+  if (uShadowOn < 0.5 || c.w <= 0.0 || max(abs(s.x - 0.5), abs(s.y - 0.5)) > 0.5) return 1.0;
+  vec2 t = SHADOW_SOFT / vec2(textureSize(uShadowMap, 0));
+  float lit = texture(uShadowMap, vec3(s.xy + t * vec2(-1.0, -0.4), s.z)) + texture(uShadowMap, vec3(s.xy + t * vec2(0.4, -1.0), s.z))
+    + texture(uShadowMap, vec3(s.xy + t * vec2(1.0, 0.4), s.z)) + texture(uShadowMap, vec3(s.xy + t * vec2(-0.4, 1.0), s.z));
+  return mix(SHADOW_KEEP, 1.0, lit * 0.25);
+}
 vec3 lampLightsGain(vec3 p, vec3 n, float carried) {
   float c = 0.0;
   for (int i = 0; i < 6; i++) {
@@ -98,7 +116,7 @@ vec3 lampLightsGain(vec3 p, vec3 n, float carried) {
     vec3 e = dl / reach;
     if (dot(e, e) >= 1.0) continue;   // outside the pool: lampFall is 0 there
     float l = uLamp[i].w * (i == 0 ? carried : STAND_GAIN) * lampFall(dl, reach) * wrapLight(dot(n, normalize(dl + vec3(0.0, 1e-3, 0.0))), 0.5);
-    if (i == 0) l *= 1.0 - LAMP_FOOT_DARK * (1.0 - smoothstep(LAMP_FOOT.y, LAMP_FOOT.x, length(dl.xz))) * step(0.3, dl.y);
+    if (i == 0) l *= (1.0 - LAMP_FOOT_DARK * (1.0 - smoothstep(LAMP_FOOT.y, LAMP_FOOT.x, length(dl.xz))) * step(0.3, dl.y)) * lampShadow(p, dl);
     c += l;
   }
   return uLampColor * c;
