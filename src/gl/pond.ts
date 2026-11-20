@@ -1,5 +1,6 @@
 import { BufferAttribute, BufferGeometry, GLSL3, Mesh, NormalBlending, RawShaderMaterial, Sphere, Vector3, Vector4 } from 'three';
 import { sharedUniforms } from './lights.ts';
+import { WAKE_SOURCES, createWake } from './pond.wake.ts';
 import common from './shaders/common.glsl?raw';
 import lights from './shaders/lights.glsl?raw';
 import vertexBody from './shaders/pond.vert.glsl?raw';
@@ -8,23 +9,33 @@ import fragmentBody from './shaders/pond.frag.glsl?raw';
 /**
  * The still pond of the Estanque (cook/ART.md 2.3): one procedural draw on the ground plane. Dark water, a long broken
  * moon reflection, slow ripples, rings under the hand light, a soft wet bank, and the cutouts that stand near the water
- * mirrored as cheap vertical smears (no second pass, no render target).
+ * mirrored as cheap vertical smears (no second pass, no render target). It is alive under the visitor: the lanterns
+ * lay warm wobbling columns on it, soft ripples spread from the bank where the visitor walks (pond.wake.ts), the floating
+ * pads breathe rings and a wet rim, and a slow shimmer runs over the mirrored sky.
  *
  * World places it from the bed JSON: `setRect` with the water's bounding rectangle on the ground (the ellipse inscribed
- * in it is the water), `setReflectors` with the cutouts that should mirror in it. Both are load-time calls.
+ * in it is the water), `setReflectors` with the cutouts that should mirror in it, `setPads` with the floating pads. All
+ * are load-time calls. The wake reads the visitor (uVisitor) itself before each draw; `setCalm` stills it.
  */
 export interface PondRect { x0: number; z0: number; x1: number; z1: number }
 /** A standing cutout mirrored in the water: its foot (x, z), height and width in metres, its mean plate colour (sRGB 0..1). */
 export interface PondReflector { x: number; z: number; h: number; w: number; colour: readonly [number, number, number] }
+/** A pad lying on the water: its centre (x, z) and radius in metres. */
+export interface PondPad { x: number; z: number; r: number }
 export interface Pond {
   readonly mesh: Mesh;
   setRect(r: PondRect): void;
   /** Up to MAX_REFLECTORS; extra entries are ignored. */
   setReflectors(list: readonly PondReflector[]): void;
+  /** Up to MAX_PADS; extra entries are ignored. */
+  setPads(list: readonly PondPad[]): void;
+  /** Reduced motion: no wake, and the shimmer holds still. */
+  setCalm(calm: boolean): void;
   dispose(): void;
 }
 
 export const MAX_REFLECTORS = 8;
+export const MAX_PADS = 6;
 /** Paint order: after the ground (-1e5), before the wall and every bed layer. */
 export const POND_ORDER = -9e4;
 
@@ -41,7 +52,12 @@ export function createPond(): Pond {
     uRefl: { value: Array.from({ length: MAX_REFLECTORS }, () => new Vector4()) },
     uReflColour: { value: Array.from({ length: MAX_REFLECTORS }, () => new Vector3()) },
     uReflCount: { value: 0 },
+    uWake: { value: Array.from({ length: WAKE_SOURCES }, () => new Vector4()) },
+    uPads: { value: Array.from({ length: MAX_PADS }, () => new Vector4()) },
+    uPadCount: { value: 0 },
+    uCalm: { value: 0 },
   };
+  const wake = createWake(uniforms.uWake.value);
   const material = new RawShaderMaterial({
     glslVersion: GLSL3,
     vertexShader: common + vertexBody,
@@ -57,6 +73,11 @@ export function createPond(): Pond {
   mesh.frustumCulled = false;
   mesh.matrixAutoUpdate = false;
   mesh.renderOrder = POND_ORDER;
+  mesh.onBeforeRender = () => {
+    if (uniforms.uCalm.value > 0 || sharedUniforms.uEye.value.z < 0.5) return;
+    const at = sharedUniforms.uVisitor.value;
+    wake.step(at[0] ?? 0, at[1] ?? 0, sharedUniforms.uTime.value, uniforms.uRect.value);
+  };
 
   return {
     mesh,
@@ -72,6 +93,19 @@ export function createPond(): Pond {
         uniforms.uReflColour.value[i]?.set(toLinear(it.colour[0]), toLinear(it.colour[1]), toLinear(it.colour[2]));
       }
       uniforms.uReflCount.value = n;
+    },
+    setPads(list) {
+      const n = Math.min(MAX_PADS, list.length);
+      for (let i = 0; i < n; i++) {
+        const it = list[i];
+        if (it !== undefined) uniforms.uPads.value[i]?.set(it.x, it.z, it.r, i * 2.39);
+      }
+      uniforms.uPadCount.value = n;
+    },
+    setCalm(calm) {
+      const was = uniforms.uCalm.value > 0;
+      uniforms.uCalm.value = calm ? 1 : 0;
+      if (calm && !was) wake.clear();
     },
     dispose() {
       mesh.removeFromParent();

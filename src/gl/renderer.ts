@@ -225,6 +225,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     },
     setFilm(r: boolean, e: number): void {
       reduced = r;
+      pond.setCalm(r);
       exposure = e;
     },
     setIntroMotifs(rects): void {

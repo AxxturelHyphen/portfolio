@@ -3,7 +3,7 @@ import type { GroundLayout } from '../gl/ground.ts';
 import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
 import { setMoon, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
-import { MAX_REFLECTORS, type PondRect, type PondReflector } from '../gl/pond.ts';
+import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
@@ -162,19 +162,24 @@ export function signAnchorsOf(posts: readonly SignPost[], mode: WorldMode): Sign
     ? { bed: p.bed, to: p.to, dir: p.dir, at: plankCentre(p, [0, 0, 0]), board }
     : { bed: p.bed, to: p.to, dir: p.dir, at: [p.x, p.labelY, p.z] }));
 }
+/** Floating pads by sprite name, and their radius on the water as a share of the drawn width. */
+const PAD_PREFIX = 'es/pad-';
+const PAD_RADIUS = 0.42;
 
 /** The Estanque water from its bed file: the pond procedural's rectangle and the items marked to reflect (gl/pond.ts). */
-export function pondOf(scene: BedScene3, mode: WorldMode): { rect: PondRect; reflectors: PondReflector[] } | null {
+export function pondOf(scene: BedScene3, mode: WorldMode): { rect: PondRect; reflectors: PondReflector[]; pads: PondPad[] } | null {
   const p = scene.procedural.find((x) => x.type === 'pond');
   if (p === undefined) return null;
   const reflectors: PondReflector[] = [];
+  const pads: PondPad[] = [];
   for (const l of scene.layers) {
     for (const it of l.items) {
+      if (it.flat === true && it.sprite.startsWith(PAD_PREFIX) && builtIn(it, mode)) pads.push({ x: it.x, z: it.z, r: (it.w ?? 0) * it.scale * PAD_RADIUS });
       if (it.reflect === undefined || !builtIn(it, mode)) continue;
       reflectors.push({ x: it.x, z: it.z, h: (it.h ?? it.reflect.w) * it.scale, w: it.reflect.w * it.scale, colour: it.reflect.colour });
     }
   }
-  return { rect: { x0: p.x - p.w / 2, z0: p.z - p.h / 2, x1: p.x + p.w / 2, z1: p.z + p.h / 2 }, reflectors: reflectors.slice(0, MAX_REFLECTORS) };
+  return { rect: { x0: p.x - p.w / 2, z0: p.z - p.h / 2, x1: p.x + p.w / 2, z1: p.z + p.h / 2 }, reflectors: reflectors.slice(0, MAX_REFLECTORS), pads: pads.slice(0, MAX_PADS) };
 }
 
 /**
@@ -201,4 +206,5 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
   if (pond === null) return;
   gfx.pond.setRect(pond.rect);
   gfx.pond.setReflectors(pond.reflectors);
+  gfx.pond.setPads(pond.pads);
 }
