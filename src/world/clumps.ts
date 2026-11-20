@@ -1,15 +1,19 @@
 import type { AtlasManifest, CutoutBatch, QuadParams } from '../types.ts';
+import { bodySeed, takesBody, writeBody } from './body.ts';
 import { CLUMP_STRIDE, type GroundBuild } from './ground.ts';
 import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
 
 /**
  * Grass clumps (cook/ART.md section 1): each is three parallel blade cards 4 cm apart, leaning 6, 12 and 18 degrees,
- * never crossed quads. One instanced batch from the shared atlas. A clump sprite missing from the shared manifest draws
+ * never crossed quads; under the orbiting camera the middle card folds along its stem into a shallow V (body.ts), so a
+ * clump keeps its body from the side. One instanced batch from the shared atlas. A clump sprite missing from the shared manifest draws
  * nothing. Species, height and tint vary per clump so no two neighbours repeat (cook/R02_FINDINGS.md 2). Clumps clear
  * of the wall foot turn as standees under free roam.
  */
 
 const CARDS = 3;
+/** The card that folds when the clump takes a body. */
+const FOLDED = 1;
 const GAP = 0.04;
 const LEAN_DEG = [6, 12, 18] as const;
 const DEG = Math.PI / 180;
@@ -27,7 +31,8 @@ export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, cre
   const first = clumpSprite(m, 0);
   if (g.clumpCount === 0 || first === null) return null;
   const page = m.sprites[first]?.page ?? 0;
-  const batch = createBatch(page, g.clumpCount * CARDS);
+  const bodied = takesBody(g.mode, g.tier);
+  const batch = createBatch(page, g.clumpCount * (bodied ? CARDS + 1 : CARDS));
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: [0, 0, 0, 0], sway: 0.04, phase: 0, lift: 0, facing: 0, tint: [1, 1, 1, 1] };
   const tints = g.mode === 'roam' ? ROAM_TINTS : TINTS;
   let at = 0;
@@ -53,7 +58,7 @@ export function writeClumps(g: GroundBuild, wallZ: number, m: AtlasManifest, cre
       q.py = rect.pivot[1];
       q.uv = rect.uv;
       q.phase = packPhase((i * 0.618034 + k * 0.3) * Math.PI * 2, flags);
-      batch.writer.set(at++, q);
+      at += writeBody(batch.writer, at, q, bodied && k === FOLDED ? 'fold' : null, bodySeed(q.x, q.z));
     }
   }
   batch.writer.count = at;

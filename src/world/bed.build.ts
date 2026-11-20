@@ -1,4 +1,5 @@
 import type { AtlasManifest, AtlasTextures, BloomDef, CutoutBatch, QuadParams, SlotView, SpriteId, SpriteRect, Tier } from '../types.ts';
+import { bodyOf, bodyQuads, bodySeed, takesBody, writeBody, type Body } from './body.ts';
 import { createFlower, type GardenFlower } from './flower.ts';
 import { gateLeafOf, isGateLeaf, type GateLeaf } from './gates.ts';
 import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.ts';
@@ -12,7 +13,8 @@ import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
  * Turns a bed's 3D placements into instanced cutout batches: one batch per atlas page used (bed pages and the shared
  * pages), quads sorted far to near inside a batch and batches ordered by depth, since paint order is depth order while
  * the renderer has no depth buffer. Hinge is the yaw; lean, ground-lying, decal and standee flags ride in the phase
- * (quadflags.ts).
+ * (quadflags.ts). Under free roam off the low tier the bed's upright plants take a body (body.ts); project flowers,
+ * signs, pets, gate leaves, near masks and fading frames stay single cards.
  * Value groups D and M are mixed toward the place shadow colour by tint (cook/ART.md laws); under free roam far less,
  * since from 7 to 14 m the rail's mix turned every plant but the project flowers into a violet ghost (cook/ROAM_LOOK.md).
  */
@@ -106,10 +108,14 @@ const once = (q: QuadParams) => (b: CutoutBatch, at: number): number => {
   return 1;
 };
 
+/** The body of a bed placement: an upright, leaning plant that is no near mask and no fading frame. */
+const bodyOfItem = (it: Placement3): Body | null => (it.flat === true || it.lean === 0 || it.wing === true || it.fade === true ? null : bodyOf(it.sprite));
+
 export function buildBed(i: BuildInput): BuildOutput {
   const { scene, bed, shared } = i;
   const shade = hexRgb(scene.shade, new Float32Array(3));
   const mix = GROUP_MIX[i.mode];
+  const bodied = takesBody(i.mode, i.tier);
   const groups = new Map<string, Group>();
   const size: [number, number] = [0, 0];
   let skipped = 0;
@@ -152,14 +158,16 @@ export function buildBed(i: BuildInput): BuildOutput {
       const turn = turnOf(it, i.wallZ);
       const q = quadOf(it, r.rect, size, shade, mix, turn);
       const pet = pets.get(it.sprite);
-      const entry: Entry = { z: it.z, write: once(q) };
+      const body = bodied && pet === undefined && !isGateLeaf(it.sprite) ? bodyOfItem(it) : null;
+      const seed = bodySeed(it.x, it.z);
+      const entry: Entry = { z: it.z, write: (b, at) => writeBody(b.writer, at, q, body, seed) };
       if (it.wing === true) entry.wing = q;
       if (isGateLeaf(it.sprite)) entry.gate = { sprite: it.sprite, quad: q };
       if (pet !== undefined) {
         entry.pet = { slot: pet, quad: q };
         pets.delete(it.sprite);
       }
-      add(r.from, r.rect.page, entry, 1);
+      add(r.from, r.rect.page, entry, bodyQuads(body));
       if (it.foot !== 'sprays') continue;
       for (let f = 1; f <= FOOT_SPRAYS; f++) {
         const foot = exact(`${it.sprite}.foot${f}`) ?? (f === 2 ? exact(`${it.sprite}-foot`) : null);

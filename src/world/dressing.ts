@@ -1,4 +1,5 @@
 import type { AtlasManifest, CutoutBatch, QuadParams, SpriteRect } from '../types.ts';
+import { bodyOf, bodySeed, takesBody, writeBody } from './body.ts';
 import { clumpSprite } from './clumps.ts';
 import { COVER_PLANTS } from './cover.ts';
 import { DRESS_KIND, DRESS_STRIDE, EDGE_PLANTS, LAWN_PLANTS, type GroundBuild } from './ground.ts';
@@ -13,7 +14,8 @@ import { QUAD_FLAG, packPhase, turnFlag } from './quadflags.ts';
  * competing with it. Under free roam (the lawn, ground.ts) nothing is a silhouette: every piece stays lit with a
  * slight green, straw or warm cast, standing pieces clear of the wall foot turn as standees, and the wild plants of the
  * second shared page draw in a second batch hung under the first (one more draw call, roam only). The lawn's ground cover
- * (cover.ts) draws in the same two batches.
+ * (cover.ts) draws in the same two batches. Under free roam off the low tier every standing plant takes a body (body.ts):
+ * a grass piece folds its first card, a single-card plant folds or crosses by its species.
  */
 
 const CLUMP_CARDS = 2;
@@ -52,11 +54,12 @@ function spriteOf(m: AtlasManifest, kind: number, i: number): string | null {
 export function writeDressing(g: GroundBuild, wallZ: number, m: AtlasManifest, createBatch: (page: number, capacity: number) => CutoutBatch): CutoutBatch | null {
   const probe = m.sprites['sh/ivy'];
   if (g.dressCount === 0 || probe === undefined) return null;
-  const batch = createBatch(probe.page, g.dressCount * CLUMP_CARDS);
+  const bodied = takesBody(g.mode, g.tier);
+  const batch = createBatch(probe.page, g.dressCount * (bodied ? CLUMP_CARDS + 1 : CLUMP_CARDS));
   fill(g, wallZ, m, probe.page, batch);
   const wild = m.sprites[WILD_PROBE];
   if (g.mode === 'roam' && wild !== undefined && wild.page !== probe.page) {
-    const plants = createBatch(wild.page, g.dressCount);
+    const plants = createBatch(wild.page, g.dressCount * (bodied ? 2 : 1));
     fill(g, wallZ, m, wild.page, plants);
     plants.mesh.renderOrder = RENDER_ORDER.near;
     batch.mesh.add(plants.mesh);
@@ -68,6 +71,7 @@ function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, bat
   const tint: [number, number, number, number] = [1, 1, 1, 1];
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: [0, 0, 0, 0], sway: 0, phase: 0, lift: 0, facing: 0, tint };
   const roam = g.mode === 'roam';
+  const bodied = takesBody(g.mode, g.tier);
   let at = 0;
   for (let i = 0; i < g.dressCount; i++) {
     const o = i * DRESS_STRIDE;
@@ -100,7 +104,7 @@ function fill(g: GroundBuild, wallZ: number, m: AtlasManifest, page: number, bat
       q.uv = rect.uv;
       q.sway = flat ? 0 : 0.03;
       q.phase = packPhase((i * 0.618034 + k * 0.3) * Math.PI * 2, flags);
-      batch.writer.set(at++, q);
+      at += writeBody(batch.writer, at, q, bodied && !flat && k === 0 && id !== null ? bodyOf(id) : null, bodySeed(q.x, q.z));
     }
   }
   batch.writer.count = at;

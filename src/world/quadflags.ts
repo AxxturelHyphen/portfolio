@@ -3,7 +3,7 @@
  * gl/instances.ts (world may not import gl); tests/unit/world/quadflags.spec.ts keeps the two equal.
  */
 export const QUAD_FLAG = { flat: 1, fullRate: 2, noLean: 4, noShadow: 8, silhouette: 16, turn: 32, fade: 64, hung: 128, stone: 256 } as const;
-const PHASE_SPAN = 8;
+export const PHASE_SPAN = 8;
 
 export function packPhase(phase: number, flags: number): number {
   const tau = Math.PI * 2;

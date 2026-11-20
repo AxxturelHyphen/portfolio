@@ -26,6 +26,8 @@ export interface GroundBuild {
   dress: Float32Array; dressCount: number;
   /** The camera the dressing was laid out for. */
   mode: WorldMode;
+  /** The tier it was laid out for: the low tier keeps every plant a single card (body.ts). */
+  tier: Tier;
 }
 
 const CLUMP = { wallInset: 0.3, wallStep: [0.35, 1.9], rimCount: 18, footSpread: 0.25, h: [0.2, 0.55] } as const;
@@ -207,6 +209,6 @@ export function buildGround(g: GroundData, scenes: readonly BedScene3[], tier: T
     wall: new Float32Array(wall), wallCount: wall.length / WALL_STRIDE,
     clumps: new Float32Array(clumps), clumpCount: clumps.length / CLUMP_STRIDE,
     dress: new Float32Array(dress), dressCount: dress.length / DRESS_STRIDE,
-    mode,
+    mode, tier,
   };
 }

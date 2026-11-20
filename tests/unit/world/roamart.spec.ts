@@ -39,7 +39,7 @@ function built(scene: BedScene3, mode: WorldMode): QuadParams[] {
 }
 
 const item = (x: number, only?: WorldMode): Placement3 => ({
-  sprite: 'sh/clump-1', x, y: 0, z: 1, scale: 1, h: 0.3, hinge: 0, lean: 8, size: 'small', group: 'M', foot: 'none', shadow: true, react: false,
+  sprite: 'sh/pot-a', x, y: 0, z: 1, scale: 1, h: 0.3, hinge: 0, lean: 8, size: 'small', group: 'M', foot: 'none', shadow: true, react: false,
   ...(only === undefined ? {} : { only }),
 });
 const scene = (items: Placement3[]): BedScene3 => ({ ...(scenes[0] as BedScene3), layers: [{ id: 'verge', z: 1, minTier: 'low', page: 0, items }], slots: [] });
