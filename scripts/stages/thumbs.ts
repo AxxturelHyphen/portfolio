@@ -17,7 +17,7 @@ const QUALITY = '62';
 /** The specimen sprite per project. */
 const SPECIMENS: readonly { project: string; sprite: string }[] = [
   { project: 'garagic', sprite: 'ro/a-bloom-9' },
-  { project: 'php-playground', sprite: 'ro/b-bloom-9' },
+  { project: 'php-playground', sprite: 'es/lily-f' },
   { project: 'adhd-guija', sprite: 'es/lily-e' },
   { project: 'ml-math', sprite: 'se/pod-3' },
   { project: 'ai-engineering', sprite: 'se/bud-a' },

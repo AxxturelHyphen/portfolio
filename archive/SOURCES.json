@@ -1473,8 +1473,7 @@
    "category": "birds",
    "sha256": "1ee8d50b143aa5915b62511917386fbe7d1a73c6842fb2c0ec9e2037c5468aee",
    "usedIn": [
-    "sa/swallow-hero",
-    "salida"
+    "sa/swallow-hero"
    ],
    "edits": [
     {
@@ -1592,8 +1591,7 @@
    "category": "birds",
    "sha256": "3a7e78a4a7fd38a04cefa16b9129aeeaebfc15ff9ce86f13707c763f89a12cd6",
    "usedIn": [
-    "sa/nightingale",
-    "salida"
+    "sa/nightingale"
    ],
    "edits": [
     {
@@ -1861,8 +1859,7 @@
    "category": "birds",
    "sha256": "5a05cdd0c37b743f155d8b1bb8e04dbfa83751196cf8ca3a9aaa52b762dd1dd7",
    "usedIn": [
-    "sa/swallow-pair",
-    "salida"
+    "sa/swallow-pair"
    ],
    "edits": [
     {
@@ -2265,7 +2262,8 @@
    "category": "celestial",
    "sha256": "61c700a9db053a4efb645eb510730cefd45f1ac33f8301106b7e02be3be6a569",
    "usedIn": [
-    "es/disc"
+    "es/disc",
+    "estanque"
    ],
    "edits": [
     {
@@ -3159,7 +3157,8 @@
    "category": "garden",
    "sha256": "c8d44ed8b7bf6efc4378a2f85dbcbf7a810aaefa4638a349947c71a658f17722",
    "usedIn": [
-    "gr/door"
+    "gr/door",
+    "gruta"
    ],
    "edits": [
     {
@@ -3639,8 +3638,7 @@
    "category": "garden",
    "sha256": "4b4bc5b890724c2192827e6e1350cfafcbbd82c8fc9944db652511c45ba3e230",
    "usedIn": [
-    "sa/canopy",
-    "salida"
+    "sa/canopy"
    ],
    "edits": [
     {
@@ -3676,7 +3674,6 @@
    "sha256": "fb14d2e78466bed216547b0c4a95834884d2451b4b5969e6864d09436f6516e2",
    "usedIn": [
     "sa/branch",
-    "salida",
     "semillero",
     "v/cypress"
    ],
@@ -5146,8 +5143,7 @@
    "usedIn": [
     "gr/rosette-1",
     "gr/rosette-2",
-    "gr/rosette-3",
-    "gruta"
+    "gr/rosette-3"
    ],
    "edits": [
     {
@@ -5776,6 +5772,7 @@
    "category": "props",
    "sha256": "7b76413d0a522fd6c7d75c02dc852001732a2a9e0a0182a085b80dbd31525e0d",
    "usedIn": [
+    "rosaleda",
     "semillero",
     "sh/lantern-tin"
    ],
@@ -5802,7 +5799,11 @@
    "category": "props",
    "sha256": "e98a95f59b315085e46e05b58670b7fd772154d33444a4fcad57585e74c9a03f",
    "usedIn": [
+    "estanque",
     "puerta",
+    "rosaleda",
+    "salida",
+    "semillero",
     "sh/lantern-cage"
    ],
    "edits": [
@@ -5828,6 +5829,7 @@
    "category": "props",
    "sha256": "4e8e1d674b79daba7fba435d35291b4b25f9885b007a8661caa7cfa628966046",
    "usedIn": [
+    "estanque",
     "rosaleda",
     "sh/lantern-candle"
    ],
@@ -6697,8 +6699,7 @@
    "category": "props",
    "sha256": "d3aef76e18e1de9c01f4a23cee97f47fd74758a1460098da107ad99946a4e4c6",
    "usedIn": [
-    "sa/sign",
-    "salida"
+    "sa/sign"
    ],
    "edits": [
     {
@@ -7689,7 +7690,10 @@
    "category": "roses",
    "sha256": "3e6fa6ed6de61af1cf658d8a50bdd6f8f90a7df896f42803651a4adcc7f9e1d0",
    "usedIn": [
+    "puerta",
     "rosaleda",
+    "salida",
+    "semillero",
     "w/gallica"
    ],
    "shipped": [
@@ -7850,9 +7854,6 @@
     "ro/b-tight",
     "ro/rose-b",
     "rosaleda"
-   ],
-   "shipped": [
-    "public/thumbs/php-playground.avif"
    ],
    "edits": [
     {
@@ -8028,6 +8029,7 @@
    "category": "roses",
    "sha256": "ab488eea0e40529d919eaad0f64df84af3994b8ae5c8522517e9f186b1a47c70",
    "usedIn": [
+    "estanque",
     "puerta",
     "rosaleda",
     "semillero",
@@ -8249,6 +8251,9 @@
    "category": "roses",
    "sha256": "47f41709d7b44f1e2b96e1b971341a403af77c8afed0e05f68c6bc5d0164def1",
    "usedIn": [
+    "puerta",
+    "salida",
+    "semillero",
     "sh/clump-1"
    ],
    "edits": [
@@ -8353,7 +8358,11 @@
    "category": "roses",
    "sha256": "e60729014745d4dd2a7e728c4ae2824c3de22e38c240b40f5552b8bafe98a199",
    "usedIn": [
+    "estanque",
+    "puerta",
     "rosaleda",
+    "salida",
+    "semillero",
     "w/cane"
    ],
    "edits": [
@@ -8480,7 +8489,11 @@
    "category": "roses",
    "sha256": "1ab36c93e113f2947679bd68d65ec8fc829bcd762d01e803c29be480cee5cd1c",
    "usedIn": [
+    "estanque",
+    "puerta",
     "rosaleda",
+    "salida",
+    "semillero",
     "w/poppy"
    ],
    "edits": [
@@ -8506,7 +8519,11 @@
    "category": "roses",
    "sha256": "39956e534be8e392dbb6d51918fd66fe99de5e06db9d92ca6732ef5194dfbf54",
    "usedIn": [
+    "estanque",
+    "puerta",
     "rosaleda",
+    "salida",
+    "semillero",
     "w/buttercup"
    ],
    "edits": [
@@ -9793,6 +9810,8 @@
    "usedIn": [
     "es/iris-wing",
     "estanque",
+    "puerta",
+    "salida",
     "semillero",
     "sh/clump-3"
    ],
@@ -10317,7 +10336,11 @@
    "category": "water",
    "sha256": "6072a6ba8c505d0f85ff4700d3d6894ce19ebad5bc571afdff75b25477537c1e",
    "usedIn": [
+    "estanque",
+    "puerta",
     "rosaleda",
+    "salida",
+    "semillero",
     "w/fungi",
     "w/fungi-2"
    ],
@@ -10366,7 +10389,11 @@
    "category": "water",
    "sha256": "f56b1945714870e16054ebca1a3c744c6b27cf26d33fc479498bff3c80350d21",
    "usedIn": [
+    "estanque",
+    "puerta",
     "rosaleda",
+    "salida",
+    "semillero",
     "w/fiddle"
    ],
    "edits": [
@@ -10755,8 +10782,29 @@
    "need": "lilies",
    "category": "water",
    "sha256": "3b206f196bc5c2da29ed18425b843b972724913140cbbde42944589482a6228e",
-   "usedIn": [],
-   "edits": []
+   "usedIn": [
+    "es/lily-f"
+   ],
+   "shipped": [
+    "public/thumbs/php-playground.avif"
+   ],
+   "edits": [
+    {
+     "stage": "cutout",
+     "tool": "classical OKLab paper key (lo 0.033, hi 0.067), morphology, edge un-mix",
+     "note": "es/lily-f: classical, crop 0.04,0.03,0.96,0.97"
+    },
+    {
+     "stage": "tint",
+     "tool": "OKLab hue-selected re-tint",
+     "note": "es/lily-f: pink toward #c56966, amount 0.4"
+    },
+    {
+     "stage": "cutout",
+     "tool": "hand garbage matte",
+     "note": "es/lily-f: polygon of 31 points"
+    }
+   ]
   },
   {
    "id": "com-indian-sacred-lotus-cresswell",

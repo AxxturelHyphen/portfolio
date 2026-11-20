@@ -95,8 +95,7 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/nightingale",
-      "salida"
+      "sa/nightingale"
      ]
     },
     {
@@ -150,8 +149,7 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/swallow-hero",
-      "salida"
+      "sa/swallow-hero"
      ]
     },
     {
@@ -329,7 +327,8 @@
       "cutout"
      ],
      "usedIn": [
-      "es/disc"
+      "es/disc",
+      "estanque"
      ]
     }
    ]
@@ -405,8 +404,7 @@
       "retouched"
      ],
      "usedIn": [
-      "sa/sign",
-      "salida"
+      "sa/sign"
      ]
     },
     {
@@ -461,6 +459,7 @@
       "cutout"
      ],
      "usedIn": [
+      "rosaleda",
       "semillero",
       "sh/lantern-tin"
      ]
@@ -478,7 +477,11 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
       "puerta",
+      "rosaleda",
+      "salida",
+      "semillero",
       "sh/lantern-cage"
      ]
     },
@@ -495,6 +498,7 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
       "rosaleda",
       "sh/lantern-candle"
      ]
@@ -872,6 +876,28 @@
    ]
   },
   {
+   "institution": "Scan of Paxton's Flower Garden via Wikimedia Commons",
+   "items": [
+    {
+     "id": "com-paxton-nymphaea-rubra-98",
+     "title": "Nymphaea rubra as Nymphaea lotus L. (Paxton's Flower Garden, vol. 3, plate 100)",
+     "creator": "John Lindley and Joseph Paxton; drawing by L. A. L. Constans",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "John Lindley and Joseph Paxton; drawing by L. A. L. Constans, Nymphaea rubra as Nymphaea lotus L. (Paxton's Flower Garden, vol. 3, plate 100), 1853. Scan of Paxton's Flower Garden via Wikimedia Commons. Public domain, via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nymphaea_lotus_Paxton_98.jpg",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "es/lily-f"
+     ]
+    }
+   ]
+  },
+  {
    "institution": "The Cleveland Museum of Art",
    "items": [
     {
@@ -974,7 +1000,10 @@
       "cutout"
      ],
      "usedIn": [
+      "puerta",
       "rosaleda",
+      "salida",
+      "semillero",
       "w/gallica"
      ]
     },
@@ -1047,7 +1076,11 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
+      "puerta",
       "rosaleda",
+      "salida",
+      "semillero",
       "w/cane"
      ]
     },
@@ -1118,7 +1151,6 @@
      ],
      "usedIn": [
       "sa/branch",
-      "salida",
       "semillero",
       "v/cypress"
      ]
@@ -1139,6 +1171,8 @@
      "usedIn": [
       "es/iris-wing",
       "estanque",
+      "puerta",
+      "salida",
       "semillero",
       "sh/clump-3"
      ]
@@ -1327,7 +1361,8 @@
       "retouched"
      ],
      "usedIn": [
-      "gr/door"
+      "gr/door",
+      "gruta"
      ]
     },
     {
@@ -1442,6 +1477,7 @@
       "tinted"
      ],
      "usedIn": [
+      "estanque",
       "puerta",
       "rosaleda",
       "semillero",
@@ -1480,6 +1516,9 @@
       "cutout"
      ],
      "usedIn": [
+      "puerta",
+      "salida",
+      "semillero",
       "sh/clump-1"
      ]
     },
@@ -1496,7 +1535,11 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
+      "puerta",
       "rosaleda",
+      "salida",
+      "semillero",
       "w/poppy"
      ]
     },
@@ -1585,7 +1628,11 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
+      "puerta",
       "rosaleda",
+      "salida",
+      "semillero",
       "w/buttercup"
      ]
     },
@@ -1696,8 +1743,7 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/canopy",
-      "salida"
+      "sa/canopy"
      ]
     },
     {
@@ -1748,7 +1794,11 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
+      "puerta",
       "rosaleda",
+      "salida",
+      "semillero",
       "w/fiddle"
      ]
     },
@@ -1873,7 +1923,11 @@
       "cutout"
      ],
      "usedIn": [
+      "estanque",
+      "puerta",
       "rosaleda",
+      "salida",
+      "semillero",
       "w/fungi",
       "w/fungi-2"
      ]
@@ -2106,8 +2160,7 @@
      "usedIn": [
       "gr/rosette-1",
       "gr/rosette-2",
-      "gr/rosette-3",
-      "gruta"
+      "gr/rosette-3"
      ]
     },
     {
@@ -2239,8 +2292,7 @@
       "tinted"
      ],
      "usedIn": [
-      "sa/swallow-pair",
-      "salida"
+      "sa/swallow-pair"
      ]
     },
     {
