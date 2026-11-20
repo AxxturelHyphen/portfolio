@@ -235,7 +235,7 @@ html[data-mode="garden"] {
   padding: 0;
 }
 
-/* The stack as stamped words on one italic line: no chips, no pills. */
+/* The stack as italic words parted by middle dots; the notebook card draws them as chips instead (case.css). */
 .h-tags {
   display: flex;
   flex-wrap: wrap;
@@ -273,7 +273,8 @@ html[data-mode="garden"] {
   }
 }
 
-/* Status as a stamped word: rose ink in a double ruled frame, set a little askew like a rubber stamp. No dots. */
+/* Status as a word in rose ink in a double ruled frame; the Herbario, the notebook card and print set it upright
+   (album.css, case.css, print.css). */
 [data-status]:is(.h-status, .c-status) {
   display: inline-block;
   padding: 0.0625em 0.5em 0.125em;

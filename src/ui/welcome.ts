@@ -1,7 +1,6 @@
 import { UI } from '../core/motion.ts';
 import type { Content, Machine, State } from '../types.ts';
 import { uiText } from './copy.ts';
-import { clearCover, covers, setCover } from './cover.ts';
 import './styles/welcome.css';
 import { gapFree, hintKeys, WELCOME } from './welcome.rules.ts';
 
@@ -35,13 +34,6 @@ export interface Welcome {
 }
 
 type Stage = 'wait' | 'shown' | 'hinted' | 'folded';
-
-/** Room kept round the card and the slip in their covers: the tilt, the shadow, and the nail and twine over the card (px). */
-const COVER_PAD_PX = 8;
-const NAIL_PX = 18;
-
-/** A screen box (px). */
-interface Box { l: number; t: number; r: number; b: number }
 
 function seen(): boolean {
   try {
@@ -104,33 +96,6 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     skip.textContent = uiText(content.strings, lang, isTouch() ? 'intro.skipTouch' : 'intro.skipKeys');
   }
 
-  /** The card's and the slip's laid-out boxes (transforms aside), padded; read on a resize or a size change only. */
-  const cardBox: Box = { l: 0, t: 0, r: 0, b: 0 };
-  const slipBox: Box = { l: 0, t: 0, r: 0, b: 0 };
-
-  function boxOf(out: Box, at: DOMRect, el: HTMLElement, top: number): void {
-    out.l = at.left + el.offsetLeft - COVER_PAD_PX;
-    out.t = at.top + el.offsetTop - top;
-    out.r = at.left + el.offsetLeft + el.offsetWidth + COVER_PAD_PX;
-    out.b = at.top + el.offsetTop + el.offsetHeight + COVER_PAD_PX;
-  }
-
-  /** The covers the signposts keep off (ui/cover.ts): the card while it stands, the slip while the hint shows. */
-  function writeCover(): void {
-    const cardOn = held || stage === 'shown' || stage === 'hinted';
-    if (cardOn) setCover(covers.plate, cardBox.l, cardBox.t, cardBox.r, cardBox.b);
-    else clearCover(covers.plate);
-    if (stage === 'shown') setCover(covers.slip, slipBox.l, slipBox.t, slipBox.r, slipBox.b);
-    else clearCover(covers.slip);
-  }
-
-  function measure(): void {
-    const at = root.getBoundingClientRect();
-    boxOf(cardBox, at, card, NAIL_PX);
-    boxOf(slipBox, at, hint, COVER_PAD_PX);
-    writeCover();
-  }
-
   /** The card and the skip slip while the intro plays (welcome.css [data-intro]), then the card alone ([data-held]). */
   function setIntro(): void {
     const s = machine.state;
@@ -143,7 +108,6 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     if (hold !== held) {
       held = hold;
       root.toggleAttribute('data-held', hold);
-      writeCover();
     }
   }
 
@@ -153,7 +117,6 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     stage = 'hinted';
     clearTimeout(hintTimer);
     hint.toggleAttribute('data-gone', true);
-    writeCover();
     window.setTimeout(() => (hint.hidden = true), UI.panelCloseS * 1000);
   }
 
@@ -163,7 +126,6 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     stage = 'folded';
     clearTimeout(cardTimer);
     root.dataset.state = 'folded';
-    writeCover();
   }
 
   function show(): void {
@@ -173,7 +135,6 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     x0 = v === null ? 0 : v[0]!;
     z0 = v === null ? 0 : v[1]!;
     root.dataset.state = 'shown';
-    writeCover();
     hintTimer = window.setTimeout(dropHint, WELCOME.hintMs);
     cardTimer = window.setTimeout(fold, WELCOME.cardMs);
   }
@@ -185,10 +146,6 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     hint.hidden = true;
   }
   world.insertBefore(root, before);
-  const sized = new ResizeObserver(measure);
-  sized.observe(card);
-  sized.observe(hint);
-  addEventListener('resize', measure, { passive: true });
 
   machine.subscribe((s, prev) => {
     if (s.lang !== prev.lang) paint();

@@ -305,15 +305,14 @@ export const APPROACH = { fastMps: 1.5, fastS: 0.3, leaveM: 1, inS: 1.2, outS: 0
  * band of fixed controls (topPx, ui/label.ts TOP_PX) and ends above a bottom band (bottomShare of the height, where
  * the cane labels stand); beside the subject stands the plant tag (ui/label.ts: width clamp(300 px, 19 vw, 368 px),
  * about tagAspect as tall as wide, gapPx past the subject's hit reach, on the side with more room). Below narrowPx
- * of width the tag is a strip of about phoneTagPx above the bottom edge (measured 177 to 190 px plus its 10 px margin), with
- * phoneCanePx over it, the room the docked cane labels once took (free roam now stands its signs in the world).
+ * of width the tag is a strip of about phoneTagPx above the bottom edge (measured 177 to 190 px plus its 10 px margin).
  * The subject grows to at most cap of the frame height; less than minGain times its walking size is no gain. The
  * search takes `steps` steps toward the near framing and may slide the camera up to maxShiftM toward the subject.
  * nudge and nudgeY mirror the rig's focus nudge toward the slot (world/camera.ts FRAME), which the fit measures too.
  */
 export const APPROACH_FIT = {
   margin: 0.06, cap: 0.45, minGain: 1.25, steps: 20, maxShiftM: 0.8, topPx: 96, bottomShare: 0.12,
-  tagMinPx: 300, tagVw: 0.19, tagMaxPx: 368, tagAspect: 0.72, gapPx: 18, edgePx: 16, narrowPx: 720, phoneTagPx: 200, phoneCanePx: 140,
+  tagMinPx: 300, tagVw: 0.19, tagMaxPx: 368, tagAspect: 0.72, gapPx: 18, edgePx: 16, narrowPx: 720, phoneTagPx: 200,
   nudge: 0.16, nudgeY: 0.5,
 } as const;
 

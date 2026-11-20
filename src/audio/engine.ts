@@ -6,7 +6,7 @@ import { dist, levelAt, panAt, perchFor, type SoundMap } from './space.ts';
  * The garden's sound (its own chunk, loaded on the first gesture that starts sound): one AudioContext, every file
  * fetched and decoded once, after the garden is interactive. A cricket bed under everything; the Estanque water
  * louder as the visitor nears the pond; now and then a nightingale (or, rarely, an owl) from a tree or box a few metres
- * away; and the music box at the sundial, wound and played once when the visitor comes close or activates it, running
+ * away; and the music box at the sundial, wound and played once when the visitor comes close, running
  * down at the end. Positional sounds are a gain and a stereo pan set from the visitor's ground position, at most ten
  * times a second, so the main thread does next to nothing. The low tier keeps the bed and the music box only.
  */
@@ -16,8 +16,6 @@ export interface SoundEngine {
   fade(to: number, seconds: number): void;
   /** The visitor stands at (x, z). Allocates nothing. */
   hear(x: number, z: number): void;
-  /** Winds and plays the music box, unless it is already playing. */
-  musicBox(): void;
   /** The cat purrs once (audio/purr.ts). */
   purr(): void;
 }
@@ -208,9 +206,6 @@ export function createEngine(ctx: AudioContext, o: EngineOptions): SoundEngine {
       const d = dist(map.box, x, z);
       if (!boxOn && boxArmed && d < BOX.start) playBox();
       else if (!boxOn && !boxArmed && d > BOX.rearm && now - boxQuietAt > BOX.rest) boxArmed = true;
-    },
-    musicBox() {
-      playBox();
     },
     purr() {
       purr(ctx, master);

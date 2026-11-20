@@ -82,9 +82,7 @@ export function startSound(h: SoundHost): void {
   h.machine.subscribe(follow);
   window.addEventListener(SOUND_EVENT, (e) => control.setOn((e as CustomEvent<boolean>).detail));
   h.proxies.addEventListener(ACTIVATE_EVENT, (e) => {
-    const id = (e as CustomEvent<string>).detail;
-    if (id === `${BOX_BED}/${BOX_SLOT}`) control.musicBox();
-    else if (h.pets.has(id)) control.purr();
+    if (h.pets.has((e as CustomEvent<string>).detail)) control.purr();
   });
   const v = h.visitor;
   h.loop.on('dom', () => {

@@ -38,8 +38,6 @@ export interface SoundControl {
   setDuck(duck: boolean): void;
   /** The visitor stands at (x, z). */
   hear(x: number, z: number): void;
-  /** The music box was activated. */
-  musicBox(): void;
   /** The cat was activated. */
   purr(): void;
 }
@@ -52,7 +50,6 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
   let duck = false;
   let ctx: C | null = null;
   let engine: SoundEngine | null = null;
-  let boxWanted = false;
   let purrWanted = false;
   let x = Number.NaN;
   let z = Number.NaN;
@@ -96,9 +93,7 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
         engine = e;
         if (!Number.isNaN(x)) e.hear(x, z);
         apply(FADE_IN_S);
-        if (boxWanted) e.musicBox();
         if (purrWanted) e.purr();
-        boxWanted = false;
         purrWanted = false;
       },
       () => undefined,
@@ -131,11 +126,6 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
       x = atX;
       z = atZ;
       if (engine !== null && wanted()) engine.hear(atX, atZ);
-    },
-    musicBox() {
-      if (!wanted()) return;
-      if (engine !== null) engine.musicBox();
-      else boxWanted = true;
     },
     purr() {
       if (!wanted()) return;

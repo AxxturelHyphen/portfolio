@@ -2,7 +2,6 @@ import { loadContent } from '../content/load.ts';
 import { CREDITS_HASH } from '../core/router.ts';
 import type { BedId, Machine, State } from '../types.ts';
 import { uiText } from './copy.ts';
-import { clearCover, covers, setCover } from './cover.ts';
 import { createPlanIndex } from './plan.index.ts';
 import { createPlanMap } from './plan.map.ts';
 import './styles/plan.css';
@@ -19,8 +18,7 @@ import { gapFree } from './welcome.rules.ts';
  * (ui/plan.index.ts). A place card travels there (GOTO). A project button folds the plan and dispatches WORK_EVENT
  * (detail: the project id) for the garden to walk the visitor to that flower and focus it (ui/plan.walk.ts). Arrow
  * keys move along the places and through the projects, Home and End jump to the ends. Esc folds the plan first (the
- * garden's own Esc then waits for the next press), and focus returns to the label. While open, the box the sheet and
- * its corner take is written to ui/cover.ts for the cane labels.
+ * garden's own Esc then waits for the next press), and focus returns to the label.
  */
 
 export interface Plan {
@@ -105,19 +103,6 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
     return beds.length - 1;
   }
 
-  /** The open sheet's laid-out box (transforms aside) from the corner's foot up; read on open, resize and sheet resize. */
-  function writeCover(): void {
-    if (!isOpen()) {
-      clearCover(covers.plan);
-      return;
-    }
-    const foot = root.getBoundingClientRect();
-    const right = Math.max(sheet.offsetLeft + sheet.offsetWidth, tag.offsetWidth);
-    setCover(covers.plan, foot.left, foot.top + sheet.offsetTop, foot.left + right, foot.bottom);
-  }
-  new ResizeObserver(writeCover).observe(sheet);
-  addEventListener('resize', writeCover, { passive: true });
-
   /** The diorama's lean after the pointer, each axis in [-1, 1]; 0, 0 rests it. */
   function lean(px: number, py: number): void {
     map.el.style.setProperty('--px', px.toFixed(2));
@@ -127,7 +112,6 @@ export function createPlan(parent: HTMLElement, m: Machine): Plan {
   function setOpen(open: boolean, refocus: boolean): void {
     shownCol = Number.NaN;
     root.toggleAttribute('data-open', open);
-    writeCover();
     tag.setAttribute('aria-expanded', String(open));
     sheet.inert = !open;
     if (!open) lean(0, 0);

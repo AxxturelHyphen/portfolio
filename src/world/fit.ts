@@ -68,7 +68,7 @@ export function createFitter(lim: ViewLimits): Fitter {
     const height = b.y - a.y;
     const narrow = wPx < F.narrowPx;
     const top = F.topPx / hPx + F.margin;
-    const bottom = (narrow ? 1 - (F.phoneTagPx + F.phoneCanePx + F.edgePx) / hPx : 1 - F.bottomShare) - F.margin;
+    const bottom = (narrow ? 1 - (F.phoneTagPx + F.edgePx) / hPx : 1 - F.bottomShare) - F.margin;
     const lo = Math.min(a.x, v.x);
     const hi = Math.max(b.x, v.x);
     if (a.depth <= 0 || lo < F.margin || hi > 1 - F.margin || Math.min(a.y, vt.y) < top || Math.max(b.y, v.y) > bottom) return -1;
