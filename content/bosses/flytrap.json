@@ -1,0 +1,15 @@
+{
+  "id": "flytrap",
+  "bed": "gruta",
+  "at": [33.7, 0, -9.3],
+  "scale": 2.0,
+  "parts": [
+    { "role": "stem", "sprite": "gr/ft-stem", "parent": null, "pivot": [0.51, 0.996], "offset": [0, 0], "z": 0, "rest": 0 },
+    { "role": "leaf3", "sprite": "gr/ft-leaf-3", "parent": "stem", "pivot": [0.96, 0.04], "offset": [-0.03, 0.02], "z": 1, "rest": 0 },
+    { "role": "leaf1", "sprite": "gr/ft-leaf-1", "parent": "stem", "pivot": [0.96, 0.93], "offset": [-0.03, 0.06], "z": 2, "rest": 0 },
+    { "role": "leaf2", "sprite": "gr/ft-leaf-2", "parent": "stem", "pivot": [0.02, 0.9], "offset": [0.03, 0.05], "z": 3, "rest": 0 },
+    { "role": "lobeBottom", "sprite": "gr/ft-lobe-bottom", "parent": "leaf2", "pivot": [0.5, 0.97], "offset": [0.94, 0.24], "z": 4, "rest": -8 },
+    { "role": "lobeTop", "sprite": "gr/ft-lobe-top", "parent": "leaf2", "pivot": [0.5, 0.97], "offset": [0.94, 0.24], "z": 5, "rest": -8 }
+  ],
+  "motion": "flytrap"
+}

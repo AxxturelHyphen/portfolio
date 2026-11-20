@@ -1,6 +1,6 @@
 {
  "id": "gruta",
- "hash": "a2de6659f90b8324",
+ "hash": "4fc6d378756bf82f",
  "pages": [
   {
    "w": 2048,
@@ -32,6 +32,22 @@
    "fileBytes": {
     "hi": 515608,
     "lo": 168766
+   }
+  },
+  {
+   "w": 1024,
+   "h": 2048,
+   "color": {
+    "hi": "gruta.2.c.ktx2",
+    "lo": "gruta.2.c.lo.ktx2"
+   },
+   "normal": {
+    "hi": "gruta.2.n.ktx2",
+    "lo": "gruta.2.n.lo.ktx2"
+   },
+   "fileBytes": {
+    "hi": 133676,
+    "lo": 53531
    }
   }
  ],
@@ -538,6 +554,132 @@
    "pad": 8,
    "sources": [
     "wel-xwb8cbjq-three-ferns-1850"
+   ]
+  },
+  "gr/ft-stem": {
+   "page": 2,
+   "uv": [
+    0.0078125,
+    0.49609375,
+    0.5419921875,
+    0.99609375
+   ],
+   "size": [
+    0.5384,
+    1.0079
+   ],
+   "pivot": [
+    0.51,
+    0.0039
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-ellis-dionaea-muscipula-1769"
+   ]
+  },
+  "gr/ft-leaf-3": {
+   "page": 2,
+   "uv": [
+    0.5576171875,
+    0.91650390625,
+    0.7744140625,
+    0.99609375
+   ],
+   "size": [
+    0.4471,
+    0.3283
+   ],
+   "pivot": [
+    0.1418,
+    0.0245
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-ellis-dionaea-muscipula-1769"
+   ]
+  },
+  "gr/ft-lobe-top": {
+   "page": 2,
+   "uv": [
+    0.7900390625,
+    0.93994140625,
+    0.9228515625,
+    0.99609375
+   ],
+   "size": [
+    0.442,
+    0.3737
+   ],
+   "pivot": [
+    0.2638,
+    0.0348
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-ellis-dionaea-muscipula-1769"
+   ]
+  },
+  "gr/ft-leaf-2": {
+   "page": 2,
+   "uv": [
+    0.5576171875,
+    0.8544921875,
+    0.80078125,
+    0.90869140625
+   ],
+   "size": [
+    0.5042,
+    0.2248
+   ],
+   "pivot": [
+    0.6669,
+    0.036
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-ellis-dionaea-muscipula-1769"
+   ]
+  },
+  "gr/ft-leaf-1": {
+   "page": 2,
+   "uv": [
+    0.5576171875,
+    0.79296875,
+    0.775390625,
+    0.8466796875
+   ],
+   "size": [
+    0.4512,
+    0.2226
+   ],
+   "pivot": [
+    0.905,
+    0.0364
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-ellis-dionaea-muscipula-1769"
+   ]
+  },
+  "gr/ft-lobe-bottom": {
+   "page": 2,
+   "uv": [
+    0.81640625,
+    0.8798828125,
+    0.94140625,
+    0.93212890625
+   ],
+   "size": [
+    0.4,
+    0.3344
+   ],
+   "pivot": [
+    0.3229,
+    0.0374
+   ],
+   "pad": 8,
+   "sources": [
+    "wc-ellis-dionaea-muscipula-1769"
    ]
   }
  },

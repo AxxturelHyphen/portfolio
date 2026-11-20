@@ -1271,5 +1271,24 @@
   ],
   "background": "toned paper",
   "notes": "1786 drawing of a walled garden seen frontally with an ornate pavilion-gate in the centre wall and pruned trees on both sides; light line work on pale paper with a few small inscriptions at the right edge. A symmetric walled-garden gate view; delicate lines need a strong levels pass."
+ },
+ {
+  "id": "wc-ellis-dionaea-muscipula-1769",
+  "title": "Venus's Fly-trap (Dionaea muscipula), hand-coloured engraved plate",
+  "creator": "John Ellis (author), engraved by James Roberts",
+  "date": "1769",
+  "institution": "Wikimedia Commons, from the Hunt Institute for Botanical Documentation (Carnegie Mellon University) copy of Ellis's letter to Linnaeus",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dionaea_muscipula02.jpg",
+  "license": "Public domain",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "attribution": "Ellis, J. (1769). Venus's Fly-trap, Dionaea muscipula. Engraved by James Roberts, hand-coloured. Public domain, via Wikimedia Commons.",
+  "file": "garden/wc-ellis-dionaea-muscipula-1769.jpg",
+  "need": "flytrap",
+  "px": [
+   1316,
+   1763
+  ],
+  "background": "toned paper",
+  "notes": "One plate with a tall flowering stalk, a rosette of leaves and several traps seen open from the front and from the side, with a fly. Pale paper with faint show-through text from the verso. Cut by hand into the flytrap boss rig: the stalk with its flowers, three leaves, and the front-open trap split along its hinge into two lobes."
  }
 ]

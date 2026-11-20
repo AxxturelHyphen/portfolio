@@ -2418,6 +2418,28 @@
      ]
     },
     {
+     "id": "wc-ellis-dionaea-muscipula-1769",
+     "title": "Venus's Fly-trap (Dionaea muscipula), hand-coloured engraved plate",
+     "creator": "John Ellis (author), engraved by James Roberts",
+     "license": "PD",
+     "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+     "attribution": "Ellis, J. (1769). Venus's Fly-trap, Dionaea muscipula. Engraved by James Roberts, hand-coloured. Public domain, via Wikimedia Commons.",
+     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dionaea_muscipula02.jpg",
+     "changes": [
+      "cropped",
+      "cutout",
+      "tinted"
+     ],
+     "usedIn": [
+      "gr/ft-leaf-1",
+      "gr/ft-leaf-2",
+      "gr/ft-leaf-3",
+      "gr/ft-lobe-bottom",
+      "gr/ft-lobe-top",
+      "gr/ft-stem"
+     ]
+    },
+    {
      "id": "wc-welcome-utah-utah-gains-statehood-back-50718307",
      "title": "\"Welcome Utah\" statehood postcard, reverse",
      "creator": "Unknown publisher (scan by Familypapers)",
