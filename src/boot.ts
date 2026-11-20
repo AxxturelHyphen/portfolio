@@ -1,6 +1,7 @@
 import './ui/fonts.css';
 import './ui/styles/base.css';
 import './ui/styles/toggles.css';
+import './ui/styles/toggles.sway.css';
 import './ui/styles/panel.css';
 import './content/herbario/herbario.css';
 import './content/herbario/sheet.css';

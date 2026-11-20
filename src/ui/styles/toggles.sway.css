@@ -1,0 +1,34 @@
+/* Touched, a tag sways on its wire and comes to rest at its own tilt; pressed, it gives a little. */
+@keyframes tg-sway {
+  0%,
+  100% {
+    rotate: var(--tilt);
+  }
+
+  24% {
+    rotate: calc(var(--tilt) + var(--swing));
+  }
+
+  52% {
+    rotate: calc(var(--tilt) - var(--swing) * 0.55);
+  }
+
+  78% {
+    rotate: calc(var(--tilt) + var(--swing) * 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tg-plate:hover,
+  .tg-cv:hover,
+  .tg-exit:not([aria-disabled="true"]):hover {
+    animation: tg-sway 1.1s ease-in-out both;
+  }
+}
+
+.tg-sound:active,
+.tg-cv:active,
+.tg-exit:not([aria-disabled="true"]):active {
+  scale: 0.98;
+}
+
