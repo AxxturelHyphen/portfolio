@@ -19,7 +19,7 @@ export interface Motion {
   idle(p: BossPose, t: number): void;
 }
 
-const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
+export const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 const ease = (x: number): number => x * x * (3 - 2 * x);
 /** Eased share of the way from a to b seconds. */
 const seg = (t: number, a: number, b: number): number => ease(clamp01((t - a) / (b - a)));

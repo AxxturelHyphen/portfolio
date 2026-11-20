@@ -39,6 +39,7 @@ export function validateBoss(raw: unknown, id: string): BossDef {
   e.oneOf(b.bed, BED_IDS as readonly BedId[], `${id}.bed`);
   e.tuple(b.at, 3, `${id}.at`);
   e.num(b.scale, `${id}.scale`);
+  e.tuple(b.tint, 4, `${id}.tint`, true);
   if (typeof b.scale === 'number' && b.scale <= 0) e.fail(`${id}.scale`, 'expected metres above 0');
   const motion = MOTIONS[typeof b.motion === 'string' ? b.motion : ''];
   if (motion === undefined) e.fail(`${id}.motion`, `expected one of ${Object.keys(MOTIONS).join(', ')}`);

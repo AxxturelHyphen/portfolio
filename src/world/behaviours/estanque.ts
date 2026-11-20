@@ -55,8 +55,9 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const bodyNow = { x: foot.x, y: foot.y, z: foot.z, h: bodyH, hinge: bodyAt?.hinge ?? 0 };
   const crestNow = { x: 0, y: 0, z: 0, w: 0, hinge: crestAt?.hinge ?? 0 };
 
-  // The bird's own tint (free roam dusks the white plate), shared by the plumes so fan and body stay one paper.
-  const tint = [...(bodyAt?.tint ?? [1, 1, 1]), 1];
+  // The bird's own tint (free roam dusks the white plate; the boss file's when it is the boss), shared by the plumes so
+  // fan and body stay one paper.
+  const tint = boss?.def.tint ?? [...(bodyAt?.tint ?? [1, 1, 1]), 1];
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: plumeA.uv, sway: 0, phase: 0, lift: 0, facing: 0, tint };
   const stillFlags = QUAD_FLAG.noLean | QUAD_FLAG.noShadow;
   const lastPose = PEACOCK.openPoses + STAGGER_POSES;

@@ -13,11 +13,12 @@ import type { BedId, Clock, CutoutBatch, InstanceWriter, Machine, QuadParams, Sp
 import { channelsSettled } from '../core/loop.ts';
 import { STEP_FPS } from '../core/motion.ts';
 import { bossCamera } from './boss.camera.ts';
-import { MOTIONS, createPose, type BossPose, type Motion } from './boss.motions.ts';
+import { MOTIONS, clamp01, createPose, type BossPose, type Motion } from './boss.motions.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export interface BossPart { role: string; sprite: SpriteId; parent: string | null; pivot: [number, number]; offset: [number, number]; z: number; rest: number }
-export interface BossDef { id: string; bed: BedId; at: [number, number, number]; scale: number; parts: BossPart[]; motion: string }
+/** tint: the plates' night colour (rgb multiplier, opacity; a luma under 0.75 reads as a shaded layer), white if absent. */
+export interface BossDef { id: string; bed: BedId; at: [number, number, number]; scale: number; tint?: [number, number, number, number]; parts: BossPart[]; motion: string }
 export type BossPhase = 'wait' | 'play' | 'idle';
 
 export const BOSS = {
@@ -29,12 +30,9 @@ export const BOSS = {
   backS: 0.7,
   /** Paint order step between parts (metres toward the eye). */
   zStep: 0.004,
-  /** The night's tint on the plates. */
-  tint: [0.62, 0.6, 0.7, 1],
 } as const;
 
 const DEG = Math.PI / 180;
-const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
 /** The bosses that have played in this visit: page state, so a bed streamed out and back does not play again. */
 const PLAYED = new Set<string>();
@@ -152,7 +150,7 @@ export function createChain(def: BossDef, sprites: Readonly<Record<SpriteId, Spr
   /** Only the root, standing on the ground, lays a ground shadow; every part casts the lantern's. */
   const ground = packPhase(0, QUAD_FLAG.noLean);
   const hung = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow);
-  const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: rootRect.uv, sway: 0, phase: hung, lift: 0, facing: 0, tint: BOSS.tint };
+  const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: rootRect.uv, sway: 0, phase: hung, lift: 0, facing: 0, tint: def.tint ?? [1, 1, 1, 1] };
 
   function solve(pose: BossPose): void {
     for (const i of order) {
