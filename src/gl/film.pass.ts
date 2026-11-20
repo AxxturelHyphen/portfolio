@@ -1,5 +1,6 @@
 import { BufferGeometry, Camera, DataTexture, Float32BufferAttribute, GLSL3, Mesh, RawShaderMaterial, Scene, Vector2, Vector3, Vector4 } from 'three';
 import type { Texture, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { STEP_FPS } from '../core/motion.ts';
 import type { Clock, FilmPass, FilmUniforms, Quality } from '../types.ts';
 import { displayHex } from './colour.ts';
 import { createFilmDrive } from './film.drive.ts';
@@ -10,6 +11,7 @@ import common from './shaders/common.glsl?raw';
 import vertexShader from './shaders/film.vert.glsl?raw';
 import fragmentBody from './shaders/film.frag.glsl?raw';
 import kaleido from './shaders/kaleido.glsl?raw';
+import marks from './shaders/marks.glsl?raw';
 
 // Look constants (cook/SHOTS.md B). Display-referred unless noted.
 /** Grain std at mid grey: 2.5 levels of 255 (1 %), 1.0 level at the black and white points (luminance weighted). */
@@ -82,16 +84,21 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
   const clear = new DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1);
   clear.needsUpdate = true;
   const uniforms = filmUniforms(black);
-  const extras: FilmExtras & { uHighlight: { value: Vector3 }; uKaleido: { value: Texture }; uKRect: { value: Vector4[] }; uIntro: { value: number } } = {
+  const extras: FilmExtras & {
+    uHighlight: { value: Vector3 }; uKaleido: { value: Texture }; uKRect: { value: Vector4[] }; uIntro: { value: number };
+    uBoil: { value: number }; uHatch: { value: number };
+  } = {
     uScratch: { value: new Vector3() },
     uHalGain: { value: HALATION_GAIN },
     uHighlight: { value: displayHex(HIGHLIGHT, new Vector3()) },
     uKaleido: { value: clear },
     uKRect: { value: Array.from({ length: 5 }, () => new Vector4()) },
     uIntro: { value: 1 },
+    uBoil: { value: 0 },
+    uHatch: { value: 1 },
   };
   const material = new RawShaderMaterial({
-    glslVersion: GLSL3, vertexShader, fragmentShader: common + kaleido + fragmentBody, uniforms: { ...uniforms, ...extras }, depthTest: false, depthWrite: false,
+    glslVersion: GLSL3, vertexShader, fragmentShader: common + kaleido + marks + fragmentBody, uniforms: { ...uniforms, ...extras }, depthTest: false, depthWrite: false,
   });
   const mesh = new Mesh(geometry, material);
   mesh.frustumCulled = false;
@@ -117,6 +124,7 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
   const render = (target: WebGLRenderTarget): void => {
     uniforms.uScene.value = target.texture;
     renderer.getDrawingBufferSize(buffer);
+    extras.uHatch.value = quality.cfg.tier === 'low' ? 0 : 1;
     uniforms.uRes.value.set(buffer.x * quality.cfg.filmScale, buffer.y * quality.cfg.filmScale);
     // A fully shut iris (radius 0) covers every pixel, so the halation would never be read.
     const seen = uniforms.uFilmOn.value > 0.5 && uniforms.uIris.value.z > 0;
@@ -140,7 +148,10 @@ export function createFilmPass(renderer: WebGLRenderer, quality: Quality): FilmD
       fitHalation();
     },
     render,
-    tick: drive.tick,
+    tick(c, reduced, exposure) {
+      drive.tick(c, reduced, exposure);
+      extras.uBoil.value = reduced ? 0 : Math.floor(c.t * STEP_FPS);
+    },
     setIntro(page, intro) {
       extras.uKaleido.value = page ?? clear;
       extras.uIntro.value = intro;

@@ -1,6 +1,6 @@
-// The combined film pass (cook/ARCH.md 2.7; common.glsl prepended): strip slide, weave, lens softness and edge fringe,
-// halation, flicker, encode, vignette, grade (gain, shoulder, hand-tint regions, warm highlights, lifted black), iris,
-// frame line, dust, hairline scratch, grain. uScene is the linear scene target; only its lower-left uScale fraction is
+// The combined film pass (cook/ARCH.md 2.7; common.glsl, kaleido.glsl and marks.glsl prepended): strip slide, weave,
+// lens softness and edge fringe, halation, flicker, encode, vignette, grade (gain, chalk palette, shoulder, hand-tint
+// regions, warm highlights, lifted black), pencil hatching and paper tooth, iris, frame line, dust, hairline scratch, grain. uScene is the linear scene target; only its lower-left uScale fraction is
 // used. uRes is the film grid in px (output size times filmScale): on the low tier grain and dust are evaluated on a
 // half-resolution grid inside this same pass. Colours after the encode are display-referred.
 uniform sampler2D uScene;
@@ -197,7 +197,7 @@ vec3 picture(vec2 uv, float k1080) {
   col = max(col - IN_BLACK, 0.0) * (1.0 / (1.0 - IN_BLACK));
   col = pow(max(col * uGain, 0.0), 1.0 / uGamma);
   col = col * col / (col + TOE) * (1.0 + TOE);
-  col = tint(col);
+  col = chalk(tint(col));
   float y = luma(col);
   float rolled = y < SHOULDER ? y : SHOULDER + (WHITE - SHOULDER) * (1.0 - exp(-(y - SHOULDER) / (WHITE - SHOULDER)));
   col *= rolled / max(y, 1e-4);
@@ -245,7 +245,7 @@ void main() {
   float shut = smoothstep(uIris.z - 2.0 * uIris.w, uIris.z, irisD);
   vec3 irisCol = uIntro < 1.0 ? uLift + kaleido(vUv, aspect) * (1.0 - uLift) : uIrisColor;
   // Behind the closed blades the picture is never seen: skip the scene reads, halation and grade there.
-  vec3 col = shut < 1.0 ? mix(picture(uv + uWeave, k1080), irisCol, shut) : irisCol;
+  vec3 col = shut < 1.0 ? mix(marks(picture(uv + uWeave, k1080), film, k1080), irisCol, shut) : irisCol;
   col = mix(col, BAR_COLOR, barMask);
   col = mix(col, BAR_EDGE, barEdge);
   col = mix(col, mix(BAR_COLOR, PERF_LIGHT, perfHole), perf);
