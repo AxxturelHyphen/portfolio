@@ -5,6 +5,7 @@ import type { BenchSpot, PropSpot, SolidProps } from '../world/props.solid.ts';
 import { BENCH_SEAT } from '../world/props.solid.ts';
 import { hash01 } from '../world/wall.ts';
 import { SolidBuilder } from './masonry.ts';
+import type { SolidPaint } from './solid.paint.ts';
 
 /**
  * Free roam's solid props as merged geometry, one builder per material (world/props.solid.ts says where they stand):
@@ -21,7 +22,7 @@ export type PropBuilders = Record<PropKind, SolidBuilder>;
  * Each kind's tile of the shared atlas and tint (gl/solid.material.ts): blackened iron, the glass warm with a light of
  * its own matching the lantern cards' lit panes, red-brown fired clay, and weathered brown painted wood.
  */
-export const PROP_LOOK: Readonly<Record<PropKind, { tile: string; tint: readonly [number, number, number]; glow?: readonly [number, number, number] }>> = {
+export const PROP_LOOK: Readonly<Record<PropKind, SolidPaint>> = {
   iron: { tile: 'tile/rim', tint: [0.4, 0.37, 0.35] },
   glass: { tile: 'tile/paper', tint: [1, 0.82, 0.55], glow: [0.5, 0.28, 0.09] },
   clay: { tile: 'tile/paper', tint: [0.8, 0.45, 0.32] },

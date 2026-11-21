@@ -91,7 +91,8 @@ function mothIdle(p: BossPose, t: number): void {
   part(p, 'antennaR').angle = -6 * twitch;
 }
 
-const BEETLE = { seconds: 5, hideM: 2.2, peekM: 0.6, riseS: 1.2, sinkAt: 4 } as const;
+/** The beetle climbs hideM up the wall face into its display, then settles peekM back down to rest under the coping. */
+const BEETLE = { seconds: 5, hideM: 0.5, peekM: 0.2, riseS: 1.2, sinkAt: 4 } as const;
 
 function beetlePlay(p: BossPose, t: number): void {
   reset(p);

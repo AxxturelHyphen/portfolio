@@ -154,8 +154,8 @@ export function createChain(def: BossDef, sprites: Readonly<Record<SpriteId, Spr
   const angle = new Float64Array(n);
   const sx = new Float64Array(n);
   const sy = new Float64Array(n);
-  /** Only the root, standing on the ground, lays a ground shadow; every part casts the lantern's. */
-  const ground = packPhase(0, QUAD_FLAG.noLean);
+  /** Only the root of a boss standing on the ground lays a ground shadow; every part casts the lantern's. */
+  const ground = def.at[1] > 0 ? packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow) : packPhase(0, QUAD_FLAG.noLean);
   const hung = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow);
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: rootRect.uv, sway: 0, phase: hung, lift: 0, facing: 0, tint: def.tint ?? [1, 1, 1, 1] };
 

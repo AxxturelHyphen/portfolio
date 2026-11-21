@@ -18,7 +18,8 @@ import { createMover, type Mover } from './xform.ts';
  * bed, a pet wakes and purrs. Neither opens the panel.
  * One polite live region announces the bed the visitor arrives in and, in free roam, the flower the visitor walks up to.
  * Free roam: Tab onto a flower off screen or out of reach walks the visitor to it (the seek hook) instead of focusing
- * it at once; it is focused on arrival.
+ * it at once; it is focused on arrival. A plank that names the visitor's bed is folded away in the world
+ * (garden/signs.drive.ts), so its board button is inert: no pointer, focus or screen reader reaches it.
  */
 
 /** Proxy boxes are laid out at this many CSS px per world unit; the transform scales them to the projection. */
@@ -78,6 +79,12 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   let roaming = false;
   let near: SlotId | null = null;
   let said: SlotId | null = null;
+  let signAnchors: readonly SignAnchor[] = [];
+
+  function foldBoards(): void {
+    const bed = m.state.bed;
+    for (const b of el.querySelectorAll<HTMLElement>('.px-sign[data-board]')) b.inert = signAnchors[Number(b.dataset['anchor'])]?.to === bed;
+  }
   let seek: ((slot: SlotId, offScreen: boolean) => boolean) | null = null;
   /** The next focus comes from a Tab press (not a click, a script or the panel handing focus back). */
   let tabbed = false;
@@ -202,6 +209,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     el.dataset.phase = s.phase;
     signs.onState(s);
     plan.onState(s);
+    foldBoards();
     signsDirty = true;
   };
   m.subscribe(follow);
@@ -217,7 +225,9 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
     },
 
     setSigns(anchors: readonly SignAnchor[]): void {
+      signAnchors = anchors;
       signs.setAnchors(anchors);
+      foldBoards();
       signsDirty = true;
     },
 
@@ -225,6 +235,7 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       roaming = true;
       seek = walkTo;
       signs.setRoam();
+      foldBoards();
       plan.follow(at, anchors);
       signsDirty = true;
     },

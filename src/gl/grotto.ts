@@ -1,27 +1,29 @@
 import { ConeGeometry, IcosahedronGeometry, Matrix4, Quaternion, Vector3 } from 'three';
-import type { BufferGeometry, Mesh } from 'three';
+import type { BufferGeometry } from 'three';
 import { terrainY } from '../core/terrain.ts';
 import { rng } from '../world/groundplan.ts';
 import { DOME, GROTTO, grottoRocks, type Rock } from '../world/grotto.ts';
-import { SolidBuilder, solidMesh } from './masonry.ts';
-import { solidMaterial } from './solid.material.ts';
+import type { SolidBuilder } from './masonry.ts';
+import type { SolidPaint } from './solid.paint.ts';
 
 /**
  * The grotto chamber as faceted rock (world/grotto.ts lays it out): the dome's inner shell, the floor running on from
  * the lawn at the terrain's height with a hollow for the puddle and rising into the dome's foot, and the boulders and
  * stalactites, all on the shared lit solid material, so the carried lantern's pool lights them. Flat shaded: every
- * triangle carries its own face normal. The shell and the floor paint before the beds' cards (they lie behind
- * everything in the chamber and the cards' contact shadows lie on the floor); the rocks paint after the cards, depth
- * tested, so they stand among them. Load time only; the low tier builds the same room with fewer facets.
+ * triangle carries its own face normal. The shell and the floor go into the builder that paints before the beds' cards
+ * (they lie behind everything in the chamber and the cards' contact shadows lie on the floor); the rocks into the one
+ * that paints after the cards, depth tested, so they stand among them. Load time only; the low tier builds the same room
+ * with fewer facets.
  */
 
 /**
  * Damp stone in the night's violet blue, the floor a shade darker, a little moss only where the floor rises into the
- * dome's foot: the warm lantern pool lights the chamber, not the moon.
+ * dome's foot: the warm lantern pool lights the chamber, not the moon. The rock is the garden wall's stone laid large
+ * (rock: times the tile's size) with the hand-made marks of solid.frag.glsl ROCK; the floor a calm sandstone, laid large.
  */
-const ROCK = { tile: 'tile/coping', tint: [0.3, 0.36, 0.64] } as const;
-const FLOOR = { tile: 'tile/coping', tint: [0.24, 0.29, 0.54] } as const;
-const MOSS = { tile: 'tile/moss', tint: [0.3, 0.34, 0.48] } as const;
+const ROCK: SolidPaint = { tile: 'tile/wall', tint: [0.46, 0.5, 0.78], rock: 1.7 };
+const FLOOR: SolidPaint = { tile: 'tile/coping', tint: [0.24, 0.29, 0.54], rock: 1.4 };
+const MOSS: SolidPaint = { tile: 'tile/moss', tint: [0.3, 0.34, 0.48], rock: 1.5 };
 /** The floor turns to moss where it has risen this share of the way into the dome's foot. */
 const MOSS_FROM = 0.35;
 /** Facets per tier: the dome's azimuth and elevation steps, the floor's grid, the rocks' subdivision. */
@@ -98,7 +100,7 @@ function floorY(x: number, z: number, jitter: number): number {
 }
 
 /** The floor's facets: stone on the open floor, moss at the dome's foot. */
-function floor(stone: SolidBuilder, moss: SolidBuilder, cells: number): void {
+function floor(out: SolidBuilder, cells: number): void {
   const f = GROTTO.floor;
   const nx = cells;
   const nz = Math.round((cells * (f.z1 - f.z0)) / (f.x1 - f.x0));
@@ -119,7 +121,7 @@ function floor(stone: SolidBuilder, moss: SolidBuilder, cells: number): void {
       at(i + 1, j, q);
       at(i + 1, j + 1, r);
       at(i, j + 1, s);
-      const out = footOf((p.x + r.x) / 2, (p.z + r.z) / 2) >= MOSS_FROM ? moss : stone;
+      out.paint(footOf((p.x + r.x) / 2, (p.z + r.z) / 2) >= MOSS_FROM ? MOSS : FLOOR);
       facet(out, p, s, r);
       facet(out, p, r, q);
     }
@@ -167,21 +169,10 @@ function rocks(out: SolidBuilder, low: boolean, detail: number): void {
   });
 }
 
-/** The grotto's meshes: the shell and floor at `backOrder`, the rocks at `rockOrder`. Free roam only, after the terrain is set. */
-export function grottoMeshes(low: boolean, backOrder: number, rockOrder: number): Mesh[] {
+/** The grotto's solids into two builders: the shell and floor into `back`, the rocks into `front`. Free roam only, after the terrain is set. */
+export function grottoSolids(low: boolean, back: SolidBuilder, front: SolidBuilder): void {
   const d = low ? DETAIL.low : DETAIL.high;
-  const shell = new SolidBuilder();
-  dome(shell, d.az, d.el);
-  const ground = new SolidBuilder();
-  const moss = new SolidBuilder();
-  floor(ground, moss, d.floor);
-  const stone = new SolidBuilder();
-  rocks(stone, low, d.rock);
-  const rock = solidMaterial(ROCK.tile, ROCK.tint);
-  return [
-    solidMesh(shell, rock, backOrder),
-    solidMesh(ground, solidMaterial(FLOOR.tile, FLOOR.tint), backOrder),
-    solidMesh(moss, solidMaterial(MOSS.tile, MOSS.tint), backOrder),
-    solidMesh(stone, rock, rockOrder),
-  ];
+  dome(back.paint(ROCK), d.az, d.el);
+  floor(back, d.floor);
+  rocks(front.paint(ROCK), low, d.rock);
 }

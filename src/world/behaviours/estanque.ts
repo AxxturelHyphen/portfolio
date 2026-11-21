@@ -6,8 +6,10 @@
  * other scaling). The actor batch samples the hero page (scene.actorSprite): plumes first, then a copy of the body
  * and crest over their roots, so the fan grows from behind the bird. Frozen time and reduced motion show the end pose.
  * Under free roam the bird is also the Estanque's archive boss (world/boss.ts, content/bosses/peacock.json): its first
- * display of the visit grows it to the boss's monumental height, opens the fan on the boss's timeline and turns it
- * slowly toward the visitor's camera; from then on it stays monumental (the bed hides its own small copy).
+ * display of the visit brings it to the boss's height, opens the fan on the boss's timeline and turns it slowly toward
+ * the visitor's camera; from then on the boss draws the bird (the bed hides its own copy). On the garden wall the fan
+ * spreads about three body widths and stays under the coping, and the plumes' tint pales from the rim to the centre,
+ * so the pencil lines read as feathers rather than one flat colour.
  */
 import type { BedBehaviour, Clock, QuadParams, SpriteRect } from '../../types.ts';
 import { PEACOCK, STEP_FPS } from '../../core/motion.ts';
@@ -30,8 +32,10 @@ const RISE = { closed: 10, open: 100 } as const;
 const STAGGER_POSES = PLUMES / PEACOCK.featherStagger / 2;
 /** The boss's turn toward the camera, at most this far from the bird's own hinge (radians). */
 const TURN_MAX = 35 * DEG;
-/** Under free roam the bird stands before the garden wall: a smaller fan stays inside the wall, clear of the moon. */
-const ROAM_FAN = 0.7;
+/** Under free roam the bird rests before the garden wall: a fan about three body widths across, under the coping. */
+const ROAM_FAN = 1.25;
+/** The outermost plumes keep this share of the bird's tint; the centre pair the whole of it. */
+const RIM_SHADE = 0.82;
 
 export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const { actors, machine, scene, sprites, boss, rig, setReflector } = ctx;
@@ -63,6 +67,7 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   // The bird's own tint (free roam dusks the white plate; the boss file's when it is the boss), shared by the plumes so
   // fan and body stay one paper.
   const tint = boss?.def.tint ?? [...(bodyAt?.tint ?? [1, 1, 1]), 1];
+  const plumeTint = new Float32Array(4);
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: plumeA.uv, sway: 0, phase: 0, lift: 0, facing: 0, tint };
   const stillFlags = QUAD_FLAG.noLean | QUAD_FLAG.noShadow;
   const lastPose = PEACOCK.openPoses + STAGGER_POSES;
@@ -95,6 +100,10 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     q.uv = rect.uv;
     q.facing = 6 * DEG + turn;
     q.phase = packPhase(rank * 0.7, stillFlags);
+    const shade = 1 - (1 - RIM_SHADE) * reach * (side > 0 ? 1 : 0.8);
+    for (let c = 0; c < 3; c++) plumeTint[c] = (tint[c] ?? 1) * shade;
+    plumeTint[3] = tint[3] ?? 1;
+    q.tint = plumeTint;
   }
 
   function writeCopy(rect: SpriteRect, at: { x: number; y: number; z: number; h?: number; w?: number; hinge: number }): void {
@@ -111,9 +120,10 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     q.uv = rect.uv;
     q.facing = -at.hinge * DEG + turn;
     q.phase = packPhase(0, stillFlags);
+    q.tint = tint;
   }
 
-  /** The boss's size and turn now: grown from the bird's height to the boss's, turned toward the camera. */
+  /** The boss's size and turn now: from the bird's height to the boss's, turned toward the camera. */
   function grow(): void {
     if (boss === null) return;
     const p = boss.run.pose;
@@ -131,9 +141,9 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
       crestNow.z = crestAt.z;
       crestNow.w = (crestAt.w ?? 0.16) * k;
     }
-    const grown = size > bodyH + 1e-3;
-    if (grown !== hidden) boss.own(grown);
-    hidden = grown;
+    const drawn = boss.run.phase !== 'wait';
+    if (drawn !== hidden) boss.own(drawn);
+    hidden = drawn;
   }
 
   function write(): void {

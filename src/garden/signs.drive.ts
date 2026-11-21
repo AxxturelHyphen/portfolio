@@ -1,7 +1,7 @@
 import { createSignboardMeshes } from '../gl/signboards.ts';
 import type { Clock, Gfx, Lang, Loop, Machine, QuadParams } from '../types.ts';
 import { RENDER_ORDER } from '../world/order.ts';
-import { MAX_SIGNS, PARTS, PLANK_PART, flameInPlank, signQuads, type SignQuads } from '../world/signboard.ts';
+import { MAX_SIGNS, PARTS, PLANK_PART, PLANK_SPRITE, flameInPlank, signQuads, type SignQuads } from '../world/signboard.ts';
 import { createAtlasCanvas, displayFontReady, paintAtlas } from '../world/signboard.paint.ts';
 import type { SignPost } from './place.ts';
 
@@ -12,7 +12,9 @@ import type { SignPost } from './place.ts';
  * on screen has one): its plank brightens a little and, unless motion is reduced, sways once on its hook with its
  * wooden board. The sign under the pointer and the focused one are kept by index when they come, so a button
  * retargeted under the pointer never leaves a plank awake. Otherwise it stands still apart from the lantern's slow
- * flicker. The quads are written only while a sign changes; nothing is allocated per frame.
+ * flicker. A board that names the bed the visitor stands in folds up into its arm and fades (at once under reduced
+ * motion); the post, the arm and the lantern stay, and its button is taken out of reach (ui/proxies.ts). The quads are
+ * written only while a sign changes; nothing is allocated per frame.
  */
 
 const NEAR_M = 3;
@@ -22,6 +24,8 @@ const FLICKER_STEP = 1.7;
 const REST = { tint: 0.84, glow: 0.6, tauS: 0.18 } as const;
 /** One sway on the hook: its amplitude (radians, about 3.5 degrees) and length (s). */
 const SWAY = { rad: 0.06, s: 0.6 } as const;
+/** How long a board takes to fold away or back (s). */
+const FOLD_S = 0.3;
 /** Paint order: after every bed, the near dressing and the foreground frames; before the fireflies and the actors. */
 const ORDER = RENDER_ORDER.front + 50;
 
@@ -42,7 +46,8 @@ export interface SignDrive {
   readonly ready: Promise<void>;
 }
 
-interface Sign { quads: SignQuads; glow: QuadParams; level: number; swayT: number; awake: boolean }
+/** fold: 0 the board hangs, 1 it is folded away. */
+interface Sign { quads: SignQuads; glow: QuadParams; level: number; swayT: number; awake: boolean; fold: number }
 
 export function createSignDrive(d: SignDriveDeps): SignDrive {
   const { machine, visitor } = d;
@@ -56,11 +61,13 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
     const glow: QuadParams = {
       ...quads.plank, sway: flame[0]!, lift: flame[1]!, phase: i * FLICKER_STEP, tint: new Float32Array([1, 1, 1, REST.glow]),
     };
-    return { quads, glow, level: 0, swayT: -1, awake: false };
+    const fold = p.to === machine.state.bed ? 1 : 0;
+    return { quads, glow, level: 0, swayT: -1, awake: false, fold };
   });
   const batch = meshes.batch.writer;
   signs.forEach((s, i) => {
     (s.quads.plank.tint as Float32Array).fill(REST.tint, 0, 3);
+    folded(s, i);
     batch.set(i * PARTS + PLANK_PART, s.quads.plank);
     batch.set(i * PARTS + PLANK_PART + 1, s.quads.lantern);
     meshes.glow.set(i, s.glow);
@@ -111,7 +118,18 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
     wake();
   });
 
-  /** One sign's frame: wake on the visitor, the pointer or the focus, ease the light, run the sway; whether its quads changed. */
+  /** Writes the board's fold into its face card, its pool and its wooden body. */
+  function folded(s: Sign, i: number): void {
+    const open = 1 - s.fold;
+    s.quads.plank.h = PLANK_SPRITE.h * open;
+    s.glow.h = PLANK_SPRITE.h * open;
+    (s.quads.plank.tint as Float32Array)[3] = open;
+    (s.glow.tint as Float32Array)[3] = (REST.glow + (1 - REST.glow) * s.level) * open;
+    meshes.swing(i, s.quads.plank.rot, open);
+  }
+
+  /** One sign's frame: wake on the visitor, the pointer or the focus, ease the light, run the sway, fold a board that names
+   * the visitor's bed; whether its quads changed. */
   function step(s: Sign, i: number, p: SignPost, c: Clock): boolean {
     const dx = visitor[0]! - p.x;
     const dz = visitor[1]! - p.z;
@@ -129,12 +147,15 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
       if (k >= 1) s.swayT = -1;
       else rot = SWAY.rad * Math.sin(2 * Math.PI * k) * (1 - k) * (1 - k);
     }
-    if (s.level === before && rot === s.quads.plank.rot) return false;
+    const fold = s.fold;
+    const away = p.to === machine.state.bed ? 1 : 0;
+    s.fold = c.frozen || machine.state.reduced ? away : away > fold ? Math.min(1, fold + c.dt / FOLD_S) : Math.max(0, fold - c.dt / FOLD_S);
+    if (s.level === before && rot === s.quads.plank.rot && s.fold === fold) return false;
     const tint = s.quads.plank.tint as Float32Array;
     tint[0] = tint[1] = tint[2] = REST.tint + (1 - REST.tint) * s.level;
-    (s.glow.tint as Float32Array)[3] = REST.glow + (1 - REST.glow) * s.level;
     s.quads.plank.rot = rot;
     s.glow.rot = rot;
+    folded(s, i);
     return true;
   }
 
@@ -147,7 +168,6 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
       batch.commit(at, at + 1);
       meshes.glow.set(i, s.glow);
       meshes.glow.commit(i, i + 1);
-      meshes.swing(i, s.quads.plank.rot);
     }
   });
   return { ready };

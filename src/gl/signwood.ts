@@ -3,7 +3,8 @@ import type { Material } from 'three';
 import { terrainY } from '../core/terrain.ts';
 import { BOARD, type SignSpot } from '../world/signboard.ts';
 import { hash01 } from '../world/wall.ts';
-import type { SolidBuilder } from './masonry.ts';
+import { SolidBuilder } from './masonry.ts';
+import type { SolidPaint } from './solid.paint.ts';
 
 /**
  * Free roam's signposts in real timber (world/signboard.ts lays them out): each post a square, slightly irregular
@@ -54,14 +55,19 @@ export function signWood(b: SolidBuilder, spots: readonly SignSpot[]): void {
 
 export interface SignBoards {
   readonly mesh: InstancedMesh;
-  /** Turns sign i's board on its hook by `rot` (radians, as the face card's rot). No allocation. */
-  swing(i: number, rot: number): void;
+  /** Turns sign i's board on its hook by `rot` (radians, as the face card's rot), `open` of its height hung below the
+   * hook (0 folded away into the arm). No allocation. */
+  swing(i: number, rot: number, open: number): void;
 }
 
-/** One instanced board body per sign, hung at rest; `tilts[i]` is sign i's painted tilt (radians, clockwise). */
-export function createSignBoards(spots: readonly SignSpot[], tilts: readonly number[], material: Material, order: number): SignBoards {
-  const geometry = new BoxGeometry(1, 1, 1);
-  const mesh = new InstancedMesh(geometry, material, Math.max(1, spots.length));
+/**
+ * One instanced board body per sign under `paint`, drawn with the instanced solid material, hung at rest; `tilts[i]` is
+ * sign i's painted tilt (radians, clockwise).
+ */
+export function createSignBoards(spots: readonly SignSpot[], tilts: readonly number[], paint: SolidPaint, material: Material, order: number): SignBoards {
+  const unit = new SolidBuilder().paint(paint);
+  unit.box(0, -0.5, 0, 1, 1, 1, 0);
+  const mesh = new InstancedMesh(unit.geometry(), material, Math.max(1, spots.length));
   mesh.count = spots.length;
   mesh.frustumCulled = false;
   mesh.matrixAutoUpdate = false;
@@ -75,14 +81,14 @@ export function createSignBoards(spots: readonly SignSpot[], tilts: readonly num
     return new Matrix4().makeTranslation(x, BOARD.arm.under + terrainY(x, z), z - BODY.gap - BODY.depth / 2);
   });
   const tilt = spots.map((_, i) => new Matrix4().makeRotationZ(-(tilts[i] ?? 0)).multiply(size));
-  const swing = (i: number, rot: number): void => {
+  const swing = (i: number, rot: number, open: number): void => {
     const hook = hooks[i];
     const body = tilt[i];
     if (hook === undefined || body === undefined) return;
-    m.copy(hook).multiply(r.makeRotationZ(rot)).multiply(toCentre).multiply(body);
+    m.copy(hook).multiply(r.makeRotationZ(rot)).multiply(r.makeScale(1, open, 1)).multiply(toCentre).multiply(body);
     mesh.setMatrixAt(i, m);
     mesh.instanceMatrix.needsUpdate = true;
   };
-  spots.forEach((_, i) => swing(i, 0));
+  spots.forEach((_, i) => swing(i, 0, 1));
   return { mesh, swing };
 }

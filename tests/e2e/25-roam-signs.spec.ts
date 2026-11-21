@@ -1,14 +1,15 @@
 import { expect, test } from '../helpers/jardin.ts';
 import { enterRoam, roamAt, untilStill } from '../helpers/roam.ts';
 
-// Free roam's signboards (ui/signposts.ts): every plank on screen takes a click or a tap, not only the current place's
-// two, with the pointer cursor; the Tab order keeps only the current place's two signs. The press sends the sign's
-// GOTO (the same handler as the current signs, 20-roam-assist.spec.ts walks one). A plank pointing at the current place leads to the place it stands in.
+// Free roam's signboards (ui/signposts.ts, garden/signs.drive.ts): a plank that names the place the visitor stands in
+// folds away in the world, and its board button is inert (no pointer, focus or screen reader reaches it); the Tab order
+// keeps only the current place's two signs. Walking on, the planks naming the new place fold and the others come back.
 
-/** The Estanque stand point (x, m). */
+/** The Estanque stand point (x, m), and a point inside the Rosaleda. */
 const ESTANQUE_X = 20;
+const ROSALEDA_X = 12;
 
-test('roam signs: a plank of another place on screen takes the click or tap; Tab keeps the current two', async ({ page, jardin }, info) => {
+test('roam signs: a plank naming the current place folds away and its button is inert; Tab keeps the current two', async ({ page, jardin }) => {
   await enterRoam(jardin, '#/b/estanque');
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.keyboard.down('ArrowLeft');
@@ -23,21 +24,21 @@ test('roam signs: a plank of another place on screen takes the click or tap; Tab
     .map((n) => (n as HTMLElement).dataset['dir'] ?? 'board'));
   expect(tabbable.sort(), 'only the current place\'s two signs are in the Tab order').toEqual(['next', 'prev']);
 
-  const board = page.locator('#proxies .px-sign[data-board][data-bed="rosaleda"]:not([hidden])').first();
-  await expect(board, 'the Rosaleda plank pointing back here is on screen and leads to the Rosaleda').toBeVisible();
-  const hit = await board.evaluate((n) => {
+  // The Rosaleda's plank pointing here names the Estanque: on screen, folded, and its button lets the pointer through.
+  const folded = page.locator('#proxies .px-sign[data-board][data-bed="rosaleda"]:not([hidden])').first();
+  await expect(folded).toBeAttached();
+  const hit = await folded.evaluate((n) => {
     const r = n.getBoundingClientRect();
-    const x = r.x + r.width / 2;
-    const y = r.y + r.height / 2;
-    return { x, y, top: n.contains(document.elementFromPoint(x, y)), cursor: getComputedStyle(n).cursor, tab: (n as HTMLElement).tabIndex };
+    return { inert: (n as HTMLElement).inert, top: n.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
   });
-  expect(hit.top, 'the plank\'s button is the topmost target at its centre').toBe(true);
-  expect(hit.cursor).toBe('pointer');
-  expect(hit.tab, 'out of the Tab order').toBe(-1);
+  expect(hit.inert, 'the folded plank\'s button is inert').toBe(true);
+  expect(hit.top, 'the pointer passes through it').toBe(false);
 
-  await board.evaluate((n) => n.addEventListener('click', () => n.setAttribute('data-pressed', ''), { once: true }));
-  if (info.project.name.startsWith('mobile')) await page.touchscreen.tap(hit.x, hit.y);
-  else await page.mouse.click(hit.x, hit.y);
-  await expect(board, 'the press lands on the plank\'s button').toHaveAttribute('data-pressed', '');
-  expect(await board.evaluate((n) => n.contains(document.activeElement)), 'a press leaves the focus where it was').toBe(false);
+  await jardin.withApi((api, x: number) => api.walkTo(x, 1), ROSALEDA_X);
+  await expect.poll(() => jardin.withApi((api) => api.state().bed), { timeout: 15000 }).toBe('rosaleda');
+  const inert = await page.locator('#proxies .px-sign[data-board]').evaluateAll((ns) => ns
+    .filter((n) => (n as HTMLElement).inert)
+    .map((n) => (n as HTMLElement).dataset['bed'] ?? '')
+    .sort());
+  expect(inert, 'only the planks naming the Rosaleda (leading to where they stand) are folded').toEqual(['estanque', 'puerta']);
 });

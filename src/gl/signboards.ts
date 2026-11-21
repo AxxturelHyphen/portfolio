@@ -28,8 +28,8 @@ export interface SignboardMeshes {
   readonly texture: CanvasTexture;
   /** The lantern's slow flicker on or off (off under reduced motion). */
   setFlicker(on: boolean): void;
-  /** Turns sign i's wooden board on its hook with its face card (radians). No allocation. */
-  swing(i: number, rot: number): void;
+  /** Turns sign i's wooden board on its hook with its face card (radians), `open` of its height unfolded. No allocation. */
+  swing(i: number, rot: number, open: number): void;
 }
 
 export function createSignboardMeshes(gfx: Gfx, canvas: HTMLCanvasElement, spots: readonly SignSpot[], order: number): SignboardMeshes {
@@ -69,8 +69,7 @@ export function createSignboardMeshes(gfx: Gfx, canvas: HTMLCanvasElement, spots
   glow.frustumCulled = false;
   glow.matrixAutoUpdate = false;
   glow.renderOrder = order + 1;
-  const wood = PROP_LOOK.wood;
-  const boards = createSignBoards(spots, spots.map((_, i) => plankTilt(i)), solidMaterial(wood.tile, wood.tint, { instanced: true }), order);
+  const boards = createSignBoards(spots, spots.map((_, i) => plankTilt(i)), PROP_LOOK.wood, solidMaterial(true), order);
   gfx.scene.add(batch.mesh, boards.mesh, glow);
   return {
     batch,

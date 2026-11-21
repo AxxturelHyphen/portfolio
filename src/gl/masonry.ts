@@ -1,10 +1,12 @@
 import { BufferAttribute, BufferGeometry, Matrix3, Mesh, Vector3 } from 'three';
 import type { Material, Matrix4 } from 'three';
+import { solidPaint, type PaintAttributes, type SolidPaint } from './solid.paint.ts';
 
 /**
- * Solid built things as plain geometry (world/enclosure.ts blocks, world/solids.ts rim stones and kerbs, gl/props.ts and
- * gl/signwood.ts props): every piece is merged into one indexed BufferGeometry of world positions and normals per
- * material, so each kind of piece is one draw. Load time only.
+ * Solid built things as plain geometry (world/enclosure.ts blocks, world/solids.ts rim stones and kerbs, gl/grotto.ts,
+ * gl/props.ts and gl/signwood.ts props): pieces are merged into one indexed BufferGeometry of world positions, normals
+ * and each vertex's paint (gl/solid.paint.ts: the builder's paint when the vertex was added), so every kind
+ * of piece that paints at the same order shares one draw. Load time only.
  */
 
 /** Floats per block (world/enclosure.ts BLOCK): centre x, bottom y, centre z, width, height, depth, yaw. */
@@ -22,11 +24,28 @@ export class SolidBuilder {
   private readonly pos: number[] = [];
   private readonly nrm: number[] = [];
   private readonly idx: number[] = [];
+  private readonly tint: number[] = [];
+  private readonly look: number[] = [];
+  private readonly glow: number[] = [];
+  private now: PaintAttributes = solidPaint({ tile: 'tile/wall', tint: [1, 1, 1] });
+
+  /** The paint of every vertex added from now on. */
+  paint(p: SolidPaint): this {
+    this.now = solidPaint(p);
+    return this;
+  }
+
+  private painted(): void {
+    this.tint.push(...this.now.tint);
+    this.look.push(...this.now.look);
+    this.glow.push(...this.now.glow);
+  }
 
   /** Adds one vertex and returns its index. */
   vertex(x: number, y: number, z: number, nx: number, ny: number, nz: number): number {
     this.pos.push(x, y, z);
     this.nrm.push(nx, ny, nz);
+    this.painted();
     return this.pos.length / 3 - 1;
   }
 
@@ -110,10 +129,20 @@ export class SolidBuilder {
       this.pos.push(point.x, point.y, point.z);
       point.fromBufferAttribute(n, i).applyMatrix3(toWorld).normalize();
       this.nrm.push(point.x, point.y, point.z);
+      this.painted();
     }
     const index = g.getIndex();
     const count = index === null ? p.count : index.count;
     for (let i = 0; i < count; i++) this.idx.push(first + (index === null ? i : index.getX(i)));
+    return this;
+  }
+
+  /** Every piece of another builder, with its own paint. */
+  append(other: SolidBuilder): this {
+    const first = this.pos.length / 3;
+    const pairs = [[this.pos, other.pos], [this.nrm, other.nrm], [this.tint, other.tint], [this.look, other.look], [this.glow, other.glow]] as const;
+    for (const [to, from] of pairs) for (const v of from) to.push(v);
+    for (const i of other.idx) this.idx.push(first + i);
     return this;
   }
 
@@ -125,6 +154,9 @@ export class SolidBuilder {
     const g = new BufferGeometry();
     g.setAttribute('position', new BufferAttribute(new Float32Array(this.pos), 3));
     g.setAttribute('normal', new BufferAttribute(new Float32Array(this.nrm), 3));
+    g.setAttribute('aTint', new BufferAttribute(new Float32Array(this.tint), 3));
+    g.setAttribute('aLook', new BufferAttribute(new Float32Array(this.look), 4));
+    g.setAttribute('aGlow', new BufferAttribute(new Float32Array(this.glow), 3));
     g.setIndex(new BufferAttribute(new Uint32Array(this.idx), 1));
     return g;
   }

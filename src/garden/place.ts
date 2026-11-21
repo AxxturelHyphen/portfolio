@@ -2,10 +2,10 @@ import type { GlGfx } from '../gl/renderer.ts';
 import type { GroundLayout } from '../gl/ground.ts';
 import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
-import { grottoMeshes } from '../gl/grotto.ts';
+import { grottoSolids } from '../gl/grotto.ts';
 import { createIronGate } from '../gl/irongate.ts';
 import { SolidBuilder, solidMesh } from '../gl/masonry.ts';
-import { buildProps, PROP_LOOK, type PropBuilders } from '../gl/props.ts';
+import { buildProps, PROP_LOOK, type PropBuilders, type PropKind } from '../gl/props.ts';
 import { signWood } from '../gl/signwood.ts';
 import { bindSolidTiles, solidMaterial } from '../gl/solid.material.ts';
 import { setMoon, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
@@ -61,7 +61,7 @@ const ROAM_DUSK: Readonly<Partial<Record<BedId, Pick<PlaceLight, 'skyTop' | 'sky
   rosaleda: { ...ROAM_SKY, ambient: '#424554' },
   estanque: { ...ROAM_SKY, ambient: '#3b4051' },
   semillero: { ...ROAM_SKY, ambient: '#3d404e' },
-  salida: { ...ROAM_SKY, ambient: '#3f4250' },
+  salida: { ...ROAM_SKY, ambient: '#4a4d5c' },
   gruta: { ...ROAM_SKY, ambient: '#282a3c' },
 };
 /** The overview (S02): the moon right of centre over the pond, x 68, y 26 of the frame. */
@@ -207,11 +207,9 @@ export function closedGroundLayoutOf(g: WorldLayout): GroundLayout {
   return { ...groundLayoutOf(g), x0: e.x[0] - CLOSED_MARGIN.side, x1: e.x[1] + CLOSED_MARGIN.side, z0: g.ground.wall.z - CLOSED_MARGIN.far };
 }
 
-/** The closed garden's solid walls paint after its crowns and hedge (world/garden.ts CLOSED_ORDER), then the Salida's iron gate, then the beds. */
+/** The closed garden's solid walls and the grotto's rock shell and floor paint after its crowns and hedge (world/garden.ts CLOSED_ORDER), then the Salida's iron gate, then the beds. */
 const WALL_ORDER = RENDER_ORDER.overview - 2;
 const GATE_ORDER = RENDER_ORDER.overview - 0.5;
-/** The grotto's rock shell and floor paint after the walls and before every card (gl/grotto.ts); its rocks with the ground stones. */
-const GROTTO_BACK_ORDER = RENDER_ORDER.overview - 1;
 /** The pond rim, the bank kerbs and the solid props paint after every bed card, depth tested, so they stand among the plants by depth. */
 const GROUND_STONE_ORDER = RENDER_ORDER.front + 40;
 const RIM_TINT = [0.78, 0.76, 0.7] as const;
@@ -232,22 +230,23 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
   if (closed) {
     gfx.ground.enclose(e.x[0], g.ground.wall.z - CLOSED_MARGIN.shade, e.x[1], e.front);
     gfx.scene.add(createIronGate(ironGateOf(e.door, g.ground.wall.z), exitGate, GATE_ORDER));
+    // Two draws for every static solid: the walls and the grotto's shell and floor before the cards, the ground stones,
+    // the grotto's rocks and the props after them.
+    const back = new SolidBuilder();
+    const front = new SolidBuilder();
     const walls = masonryOf(enclosureRuns(e, g.ground.wall.z, g.ground.wall.h), e.baseH);
-    for (const k of ['stone', 'base', 'coping'] as const) gfx.scene.add(solidMesh(new SolidBuilder().blocks(walls[k]), solidMaterial(STONES[k].tile, STONES[k].tint), WALL_ORDER));
-    gfx.scene.add(...grottoMeshes(tier === 'low', GROTTO_BACK_ORDER, GROUND_STONE_ORDER));
-    const rim = new SolidBuilder();
-    for (const s of pondRim(g.ground.pond)) rim.prism(s.outline, s.y0, s.y1);
-    gfx.scene.add(solidMesh(rim, solidMaterial(STONES.coping.tile, RIM_TINT), GROUND_STONE_ORDER));
-    const kerb = new SolidBuilder();
-    for (const s of kerbStones(g.ground.path.points, g.ground.pond)) kerb.prism(s.outline, s.y0, s.y1);
-    gfx.scene.add(solidMesh(kerb, solidMaterial(KERB_TILE, STONES.base.tint), GROUND_STONE_ORDER));
+    for (const k of ['stone', 'base', 'coping'] as const) back.paint(STONES[k]).blocks(walls[k]);
+    grottoSolids(tier === 'low', back, front);
+    front.paint({ tile: STONES.coping.tile, tint: RIM_TINT });
+    for (const s of pondRim(g.ground.pond)) front.prism(s.outline, s.y0, s.y1);
+    front.paint({ tile: KERB_TILE, tint: STONES.base.tint });
+    for (const s of kerbStones(g.ground.path.points, g.ground.pond)) front.prism(s.outline, s.y0, s.y1);
     const props: PropBuilders = { iron: new SolidBuilder(), glass: new SolidBuilder(), clay: new SolidBuilder(), wood: new SolidBuilder() };
+    for (const kind of Object.keys(props) as PropKind[]) props[kind].paint(PROP_LOOK[kind]);
     buildProps(solidProps(scenes), props);
     signWood(props.wood, signPostsOf(g, scenes, mode).slice(0, MAX_SIGNS));
-    for (const [kind, b] of Object.entries(props) as [keyof PropBuilders, SolidBuilder][]) {
-      const look = PROP_LOOK[kind];
-      if (!b.empty) gfx.scene.add(solidMesh(b, solidMaterial(look.tile, look.tint, look.glow === undefined ? {} : { glow: look.glow }), GROUND_STONE_ORDER));
-    }
+    for (const b of Object.values(props)) front.append(b);
+    gfx.scene.add(solidMesh(back, solidMaterial(), WALL_ORDER), solidMesh(front, solidMaterial(), GROUND_STONE_ORDER));
     void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
   }
   const pond = pondOf(scenes.estanque, mode);
