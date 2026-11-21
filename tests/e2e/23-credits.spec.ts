@@ -28,7 +28,7 @@ test('credits from the plan: maker and licence link of a CC entry, Esc goes back
   await expect(own).toContainText('photograph');
   await expect(view.getByRole('region', { name: 'Images' }).locator('.cr-item[data-licence="OWN"]'), 'own work is not listed again among the holders').toHaveCount(0);
 
-  const entry = view.locator('.cr-item[data-licence^="CC"]').first();
+  const entry = view.locator('.cr-item[data-licence^="CC"]').filter({ hasText: 'Changed:' }).first();
   await expect(entry.locator('.cr-who')).not.toBeEmpty();
   await expect(entry.locator('.cr-lic a')).toHaveAttribute('href', /^https:\/\//);
   await expect(entry.locator('.cr-lic')).toContainText('Changed:');

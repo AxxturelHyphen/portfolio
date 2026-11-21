@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { expect, PROJECTS, test } from '../helpers/jardin.ts';
 
 // Flow 10: the moth and the grotto easter egg (spec 16) never block opening or closing a project, and the egg
@@ -8,6 +9,10 @@ const GRUTA = {
   target: '#proxies [data-gruta-target]',
   score: '[data-gruta-score]',
 } as const;
+
+// A tap while the flytrap show plays only skips it (27-roam-boss), so the game is tried until a hit counts.
+const score = async (page: Page): Promise<number> =>
+  Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0);
 
 test('flow 10 garden: the moth never blocks opening or closing a project', async ({ page, jardin }) => {
   const p = PROJECTS[0];
@@ -29,9 +34,11 @@ test('flow 10 garden: the grotto game never blocks a project and scores with the
   if (p === undefined) return;
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/b/gruta');
-  const before = Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0);
-  await page.locator(GRUTA.target).first().click();
-  await expect.poll(async () => Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0)).toBeGreaterThan(before);
+  const before = await score(page);
+  await expect.poll(async () => {
+    await page.locator(GRUTA.target).first().click();
+    return score(page);
+  }).toBeGreaterThan(before);
   await jardin.goto(`#/p/${p.id}`); // leaving mid-game must work
   await jardin.expectOpen(p);
   await page.keyboard.press('Escape');
@@ -43,7 +50,9 @@ test('flow 10 garden: the grotto game scores with touch', async ({ page, jardin,
   test.skip(!isMobile, 'touch profiles only');
   await jardin.visit({ mode: 'garden' });
   await jardin.goto('#/b/gruta');
-  const before = Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0);
-  await page.locator(GRUTA.target).first().tap();
-  await expect.poll(async () => Number(((await page.locator(GRUTA.score).textContent()) ?? '0').replace(/\D/g, '') || 0)).toBeGreaterThan(before);
+  const before = await score(page);
+  await expect.poll(async () => {
+    await page.locator(GRUTA.target).first().tap();
+    return score(page);
+  }).toBeGreaterThan(before);
 });
