@@ -7,6 +7,7 @@ uniform sampler2D uNormal;
 uniform vec4 uTile;        // metres per tile, normal map gain, then the tile's uv inset (its outer texels fade)
 uniform vec4 uRect;        // the tile's uv rect on its atlas page
 uniform vec3 uTint;
+uniform vec3 uGlow;        // a light of its own (a lantern's warm glass), under the paper's shoulder
 uniform vec3 uCamPos;
 uniform vec4 uHaze;        // haze rgb, density per metre past ROAM_HAZE_START
 
@@ -18,7 +19,6 @@ out vec4 outColor;
 const float ROAM_HAZE_START = 7.0;
 const float AMBIENT_GAIN = 1.6;
 const float FILL = 0.6;
-const float TINT_FLOOR = 0.5;
 const float KNEE = 0.22;
 const float CEIL = 0.36;
 const vec2 FOOT_SHADE = vec2(0.14, 0.4);
@@ -47,7 +47,7 @@ void main() {
   vec2 uv = uRect.xy + (uRect.zw - uRect.xy) * uTile.z + fract(p) * span;
   vec2 dx = dFdx(p) * span;
   vec2 dy = dFdy(p) * span;
-  vec3 albedo = textureGrad(uColor, uv, dx, dy).rgb * max(uTint, vec3(TINT_FLOOR));
+  vec3 albedo = textureGrad(uColor, uv, dx, dy).rgb * uTint;
   vec2 nxy = textureGrad(uNormal, uv, dx, dy).xy * 2.0 - 1.0;
   n = normalize(n + (t * nxy.x - b * nxy.y) * uTile.y);
 
@@ -56,7 +56,7 @@ void main() {
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n) + inviteLights(vWorld, n);
-  vec3 lit = paperShoulder(albedo * (ambient + key + rim) * night + keyLit(albedo, hand));
+  vec3 lit = paperShoulder(albedo * (ambient + key + rim) * night + keyLit(albedo, hand) + uGlow);
   lit *= 1.0 - FOOT_SHADE.y * uEye.z * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
 
   vec3 v = normalize(uCamPos - vWorld);

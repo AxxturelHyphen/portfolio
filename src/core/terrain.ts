@@ -1,6 +1,6 @@
 /**
  * The free-roam ground's height (cook/PLAN_3D.md F3): the path's slabs stand a few cm proud of the soil and the planted
- * ground north of the path is a raised bank behind a low tile edging, kept off the pond rim. gl's ground shader draws
+ * ground north of the path is a raised bank behind a low stone kerb (world/solids.ts), kept off the pond rim. gl's ground shader draws
  * the same surface (shaders/ground.height.glsl, fed TERRAIN as uniforms); this copy lifts every cutout onto it
  * (gl/instances.ts) and lands taps on it (world/camera.ts). Zero until set, so the rail stays flat. Pure, no allocation.
  */
@@ -9,8 +9,8 @@ export const TERRAIN = {
   slab: 0.03, slabEdge: [0.6, 0.8],
   /** Bank height (m), the world z where its front starts rising and where it is full, its ramp behind the edging (m). */
   bank: 0.12, bankFront: [-0.95, -1.25], ramp: 0.3,
-  /** Edging: distance from the path centre to its face, its width, its rise above the bank (m). */
-  edging: [0.82, 0.11, 0.025],
+  /** The bank's edge, where its stone kerb stands: distance from the path centre to its face, its width, its rise above the bank (m). */
+  edging: [0.82, 0.11, 0.04],
   /** The bank gives out between these multiples of the pond's semi-axes. */
   pondClear: [1.15, 1.45],
 } as const;

@@ -9,6 +9,7 @@ import { terrainY } from '../core/terrain.ts';
 import type { BedId } from '../types.ts';
 import type { BedScene3 } from './layout.ts';
 import { builtIn } from './mode.ts';
+import { lanternRest } from './props.solid.ts';
 
 export const LAMPS = {
   /** Lamps in the shader: the carried lantern and up to `standing` props. */
@@ -52,7 +53,8 @@ export function createLampPool(): LampPool {
 
 /**
  * Collects the flames of the standing lantern props free roam builds in `scenes` (the active bed and its neighbours),
- * at most LAMPS.candidates, lifted onto the ground they stand on (core/terrain.ts, as gl/instances.ts lifts the props).
+ * at most LAMPS.candidates, where they stand (world/props.solid.ts lanternRest: a lantern near the bench on its seat),
+ * lifted onto the ground there (core/terrain.ts).
  * A lantern already burning in `lamps` keeps its slot and strength, so a bed change never pops a pool; the rest of the
  * slots go dark. Runs on a bed change, never per frame. Returns how many were found.
  */
@@ -60,14 +62,14 @@ export function findLamps(scenes: readonly (BedScene3 | null)[], pool: LampPool,
   let n = 0;
   for (const scene of scenes) {
     if (scene === null) continue;
-    for (const layer of scene.layers) {
-      for (const it of layer.items) {
-        if (n >= LAMPS.candidates || !it.sprite.startsWith(LAMPS.prefix) || !builtIn(it, 'roam')) continue;
-        pool.at[n * 3] = it.x;
-        pool.at[n * 3 + 1] = it.y + terrainY(it.x, it.z) + (it.h ?? LAMPS.defaultH) * it.scale * LAMPS.flameOfHeight;
-        pool.at[n * 3 + 2] = it.z;
-        n++;
-      }
+    const items = scene.layers.flatMap((l) => l.items);
+    for (const it of items) {
+      if (n >= LAMPS.candidates || !it.sprite.startsWith(LAMPS.prefix) || !builtIn(it, 'roam')) continue;
+      const rest = lanternRest(it, items);
+      pool.at[n * 3] = rest.x;
+      pool.at[n * 3 + 1] = rest.y + terrainY(rest.x, it.z) + (it.h ?? LAMPS.defaultH) * it.scale * LAMPS.flameOfHeight;
+      pool.at[n * 3 + 2] = it.z;
+      n++;
     }
   }
   pool.n = n;

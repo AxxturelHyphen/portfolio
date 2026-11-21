@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ARM_RECT, ATLAS, BOARD, LANTERN_RECT, MAX_SIGNS, PLANK_SPRITE, POST_RECT, flameInPlank, plankCentre, plankRect, signQuads, type AtlasRect } from '../../../src/world/signboard.ts';
+import { ATLAS, BOARD, LANTERN_RECT, MAX_SIGNS, PLANK_SPRITE, flameInPlank, plankCentre, plankRect, signQuads, type AtlasRect } from '../../../src/world/signboard.ts';
 
 // Free roam's signposts (world/signboard.ts): every part has its own place in the painted atlas, the lantern hangs
 // past the plank on the side the sign points, and the button's centre is the board's.
@@ -7,7 +7,7 @@ import { ARM_RECT, ATLAS, BOARD, LANTERN_RECT, MAX_SIGNS, PLANK_SPRITE, POST_REC
 const meets = (a: AtlasRect, b: AtlasRect): boolean => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 test('the atlas holds every part apart and inside the page', () => {
-  const rects = [POST_RECT, ARM_RECT, LANTERN_RECT, ...Array.from({ length: MAX_SIGNS }, (_, i) => plankRect(i))];
+  const rects = [LANTERN_RECT, ...Array.from({ length: MAX_SIGNS }, (_, i) => plankRect(i))];
   for (const r of rects) {
     expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= ATLAS.side && r.y + r.h <= ATLAS.side, JSON.stringify(r)).toBe(true);
   }
@@ -34,7 +34,6 @@ test('the button lies on the board, and a sign pointing back mirrors the one poi
   const back = signQuads({ x: 10, z: -1, dir: -1 }, 1);
   expect(on.plank.x - 10).toBeCloseTo(10 - back.plank.x, 6);
   expect(on.lantern.x - 10).toBeCloseTo(10 - back.lantern.x, 6);
-  expect(on.arm.px + back.arm.px).toBeCloseTo(1, 6);
   expect(on.plank.y, 'the plank hangs from the arm').toBe(BOARD.arm.under);
   expect(on.plank.y - on.plank.py * on.plank.h, 'the board hangs over the visitor (1.4 m)').toBeGreaterThan(1.4);
 });

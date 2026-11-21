@@ -4,20 +4,23 @@ import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
 import { createIronGate } from '../gl/irongate.ts';
 import { SolidBuilder, solidMesh } from '../gl/masonry.ts';
+import { buildProps, PROP_LOOK, type PropBuilders } from '../gl/props.ts';
+import { signWood } from '../gl/signwood.ts';
 import { bindSolidTiles, solidMaterial } from '../gl/solid.material.ts';
 import { setMoon, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
 import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import { enclosureRuns, masonryOf, STONES } from '../world/enclosure.ts';
-import { bankKerbs, KERB_SHAPE, pondRim } from '../world/solids.ts';
+import { kerbStones, pondRim } from '../world/solids.ts';
+import { solidProps } from '../world/props.solid.ts';
 import { exitGate } from '../world/exit.ts';
 import type { StreamGarden } from '../world/garden.ts';
 import { ironGateOf } from '../world/irongate.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
 import { builtIn, type WorldMode } from '../world/mode.ts';
 import { RENDER_ORDER } from '../world/order.ts';
-import { BOARD as SIGN_BOARD, plankCentre, type SignSpot } from '../world/signboard.ts';
+import { BOARD as SIGN_BOARD, MAX_SIGNS, plankCentre, type SignSpot } from '../world/signboard.ts';
 
 /**
  * What the world data hands to gl and ui at load: the ground layout from garden.json (path, puddles), the light of each
@@ -205,15 +208,17 @@ export function closedGroundLayoutOf(g: WorldLayout): GroundLayout {
 /** The closed garden's solid walls paint after its crowns and hedge (world/garden.ts CLOSED_ORDER), then the Salida's iron gate, then the beds. */
 const WALL_ORDER = RENDER_ORDER.overview - 2;
 const GATE_ORDER = RENDER_ORDER.overview - 0.5;
-/** The pond rim and the bank kerbs paint after every bed card, depth tested, so they stand among the plants by depth. */
+/** The pond rim, the bank kerbs and the solid props paint after every bed card, depth tested, so they stand among the plants by depth. */
 const GROUND_STONE_ORDER = RENDER_ORDER.front + 40;
 const RIM_TINT = [0.78, 0.76, 0.7] as const;
-const KERB_TINT = [0.66, 0.56, 0.48] as const;
+/** The kerb's own stone tile under the wall base course's tint, so it lights as the wall's foot does. */
+const KERB_TILE = 'tile/kerb';
 
 /**
  * Everything gl must have before warm() so no texture uploads or compiles on first draw: the ground layout and the pond,
- * once. Free roam clips the ground to the closed garden, raises its walls (their stone tiles bind once the shared atlas is up), hangs the iron gate in the Salida's doorway and reflects the
- * roam variants in the pond.
+ * once. Free roam clips the ground to the closed garden, raises its walls, the pond rim, the bank kerbs and the solid
+ * props with the signposts' timber (their tiles bind once the shared atlas is up), hangs the iron gate in the Salida's
+ * doorway and reflects the roam variants in the pond.
  */
 export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode,
   garden: Pick<StreamGarden, 'ready' | 'sharedAtlas'>): void {
@@ -229,8 +234,15 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
     for (const s of pondRim(g.ground.pond)) rim.prism(s.outline, s.y0, s.y1);
     gfx.scene.add(solidMesh(rim, solidMaterial(STONES.coping.tile, RIM_TINT), GROUND_STONE_ORDER));
     const kerb = new SolidBuilder();
-    for (const line of bankKerbs(g.ground.path.points, g.ground.pond)) kerb.ribbon(line, KERB_SHAPE.width, KERB_SHAPE.bottom, KERB_SHAPE.top);
-    gfx.scene.add(solidMesh(kerb, solidMaterial(STONES.base.tile, KERB_TINT), GROUND_STONE_ORDER));
+    for (const s of kerbStones(g.ground.path.points, g.ground.pond)) kerb.prism(s.outline, s.y0, s.y1);
+    gfx.scene.add(solidMesh(kerb, solidMaterial(KERB_TILE, STONES.base.tint), GROUND_STONE_ORDER));
+    const props: PropBuilders = { iron: new SolidBuilder(), glass: new SolidBuilder(), clay: new SolidBuilder(), wood: new SolidBuilder() };
+    buildProps(solidProps(scenes), props);
+    signWood(props.wood, signPostsOf(g, scenes, mode).slice(0, MAX_SIGNS));
+    for (const [kind, b] of Object.entries(props) as [keyof PropBuilders, SolidBuilder][]) {
+      const look = PROP_LOOK[kind];
+      if (!b.empty) gfx.scene.add(solidMesh(b, solidMaterial(look.tile, look.tint, look.glow === undefined ? {} : { glow: look.glow }), GROUND_STONE_ORDER));
+    }
     void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
   }
   const pond = pondOf(scenes.estanque, mode);

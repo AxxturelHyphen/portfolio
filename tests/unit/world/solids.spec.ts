@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { SolidBuilder } from '../../../src/gl/masonry.ts';
 import { BLOCK, enclosureRuns, masonryOf } from '../../../src/world/enclosure.ts';
-import { bankKerbs, KERB_SHAPE, pondRim } from '../../../src/world/solids.ts';
+import { kerbStones, pondRim } from '../../../src/world/solids.ts';
 import { traceLayout } from './rig.trace.ts';
 
 const ground = traceLayout.ground;
@@ -33,10 +33,10 @@ test('every solid faces outward: blocks, rim stones and kerbs wind with their no
   for (const s of pondRim(ground.pond)) rim.prism(s.outline, s.y0, s.y1);
   expect(rim.empty).toBe(false);
   expect(inverted(rim)).toBe(0);
-  const kerbs = bankKerbs(ground.path.points, ground.pond);
-  expect(kerbs.length).toBeGreaterThan(0);
+  const kerbs = kerbStones(ground.path.points, ground.pond);
+  expect(kerbs.length).toBeGreaterThan(20);
   const kerb = new SolidBuilder();
-  for (const line of kerbs) kerb.ribbon(line, KERB_SHAPE.width, KERB_SHAPE.bottom, KERB_SHAPE.top);
+  for (const s of kerbs) kerb.prism(s.outline, s.y0, s.y1);
   expect(inverted(kerb)).toBe(0);
 });
 
@@ -50,5 +50,20 @@ test('the pond rim rings the shore and every stone stands in the ground', () => 
       expect(r).toBeGreaterThan(0.9);
       expect(r).toBeLessThan(1.12);
     }
+  }
+});
+
+test('the kerb is laid as stones end to end, each standing in the ground and no taller than the bank and its rise', () => {
+  const stones = kerbStones(ground.path.points, ground.pond);
+  for (const s of stones) {
+    expect(s.y0).toBeLessThan(0);
+    expect(s.y1).toBeGreaterThan(0);
+    expect(s.y1).toBeLessThan(0.18);
+    let len = 0;
+    for (let i = 0; i < s.outline.length; i += 2) {
+      const j = (i + 2) % s.outline.length;
+      len = Math.max(len, Math.hypot(s.outline[j]! - s.outline[i]!, s.outline[j + 1]! - s.outline[i + 1]!));
+    }
+    expect(len, 'a stone, not a log').toBeLessThan(0.5);
   }
 });

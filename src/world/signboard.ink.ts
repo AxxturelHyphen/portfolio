@@ -107,22 +107,3 @@ export function speckle(ctx: CanvasRenderingContext2D, b: Readonly<Box>, color: 
   }
   ctx.restore();
 }
-
-/** A knot in the wood: a dark heart in two uneven rings, the grain's eye. */
-export function knot(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, ink: string, rand: Rand): void {
-  ctx.save();
-  ctx.strokeStyle = ink;
-  ctx.fillStyle = ink;
-  ctx.globalAlpha = 0.8;
-  ctx.beginPath();
-  ctx.ellipse(x, y, rx * 0.45, ry * 0.45, rand() * 0.4 - 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  for (const k of [1, 1.6]) {
-    ctx.globalAlpha = 0.55 / k;
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.ellipse(x + (rand() - 0.5), y + (rand() - 0.5) * 2, rx * k, ry * k, rand() * 0.3 - 0.15, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.restore();
-}

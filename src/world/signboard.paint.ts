@@ -1,19 +1,19 @@
 /**
  * Paints free roam's signposts into one canvas atlas (layout in world/signboard.ts) as hand-cut, engraved paper like
- * the garden's archival cutouts: the wooden post with a knot or two, the arm with its brace and hooks, a small tin
- * lantern, and one plank per sign. A plank is faded bottle green paint, dry-brushed and hatched, scissor-cut with a
+ * the garden's archival cutouts: a small tin lantern and one plank per sign (the post and arm are real timber,
+ * gl/signwood.ts). A plank is faded bottle green paint, dry-brushed and hatched, scissor-cut with a
  * chipped corner worn back to wood and hung a degree or two off level, with a hand-ruled cream border, the place name
  * lettered in Kalnia cream and an engraved manicule pointing the way. Every part has a thin dark ink edge and no
  * sheen. Seeded, so a sign keeps its cut and wear; run at load and on a language change, never per frame.
  */
 import { MANICULE } from '../core/manicule.ts';
-import { cutOutline, dryBrush, hatch, knot, seeded, speckle, type Box, type Pt, type Rand } from './signboard.ink.ts';
-import { ARM_RECT, ATLAS, BOARD, LANTERN_RECT, POST_RECT, plankRect } from './signboard.ts';
+import { cutOutline, dryBrush, hatch, seeded, speckle, type Box, type Pt, type Rand } from './signboard.ink.ts';
+import { ATLAS, BOARD, LANTERN_RECT, plankRect } from './signboard.ts';
 
 const EDGE = '#16110c';
 const LETTERING = '#e3d7b7';
 const PAINT = { base: '#36463b', chalk: '#8d9a86', shade: '#1b241e', fleck: '#d3d6c3' } as const;
-const WOOD = { base: '#5a4630', shade: '#241a11', light: '#8c7150', bare: '#7b6446' } as const;
+const WOOD = { shade: '#241a11', bare: '#7b6446' } as const;
 const IRON = '#1d1a17';
 export const FONT_FAMILY = 'Kalnia, Georgia, "Times New Roman", serif';
 /** Lettering size (m) for a one-line name, the least a name may shrink to, and the line step of a two-line name. */
@@ -23,67 +23,6 @@ const INNER = { border: 0.035, inset: 0.05, hand: 0.22, gap: 0.035 } as const;
 /** How far off level a plank hangs (degrees, least and most), and the bite of its chipped corner (px). */
 const TILT = { least: 0.8, most: 2 } as const;
 const CHIP = { least: 18, most: 30 } as const;
-/** The brace's reach along the arm from the post (m). */
-const BRACE_REACH = 0.32;
-
-/** Fills a cut outline with flat colour, lets `marks` texture it inside the cut, then inks its edge. */
-function cutPiece(ctx: CanvasRenderingContext2D, path: Path2D, fill: string, edge: number, marks: () => void): void {
-  ctx.fillStyle = fill;
-  ctx.fill(path);
-  ctx.save();
-  ctx.clip(path);
-  marks();
-  ctx.restore();
-  ctx.strokeStyle = EDGE;
-  ctx.lineWidth = edge;
-  ctx.lineJoin = 'round';
-  ctx.stroke(path);
-}
-
-/** Engraved wood inside a box: dry-brushed light and dark along the grain, hatched darker on one side. */
-function woodMarks(ctx: CanvasRenderingContext2D, b: Readonly<Box>, upright: boolean, rand: Rand): void {
-  dryBrush(ctx, b, WOOD.light, 0.45, 36, upright, rand);
-  dryBrush(ctx, b, WOOD.shade, 0.5, 28, upright, rand);
-  const angle = upright ? Math.PI / 2 : 0;
-  hatch(ctx, b, angle, 5, WOOD.shade, 0.35, rand);
-  const shade = upright ? { ...b, w: b.w * 0.4 } : { ...b, y: b.y + b.h * 0.55, h: b.h * 0.45 };
-  hatch(ctx, shade, angle, 3, WOOD.shade, 0.6, rand);
-}
-
-function paintPost(ctx: CanvasRenderingContext2D, rand: Rand): void {
-  const { x, y, w, h } = POST_RECT;
-  const outline: Pt[] = [
-    [x + 3.5, y + h], [x + 2, y + h * 0.72], [x + 5, y + h * 0.5], [x + 3, y + h * 0.3], [x + 4, y + 16], [x + w * 0.4, y + 2], [x + w - 4, y + 11],
-    [x + w - 4, y + h * 0.29], [x + w - 0.5, y + h * 0.335], [x + w - 4, y + h * 0.38], [x + w - 6, y + h * 0.6], [x + w - 3, y + h * 0.8], [x + w - 3.5, y + h],
-  ];
-  cutPiece(ctx, cutOutline(outline, 18, 2, rand), WOOD.base, 2.6, () => {
-    woodMarks(ctx, { x, y, w, h }, true, rand);
-    knot(ctx, x + w - 8, y + h * 0.335, 3.4, 7, WOOD.shade, rand);
-    knot(ctx, x + 10, y + h * (0.58 + rand() * 0.2), 3, 6, WOOD.shade, rand);
-  });
-}
-
-function paintArm(ctx: CanvasRenderingContext2D, rand: Rand): void {
-  const { x, y, w, h } = ARM_RECT;
-  const px = ATLAS.woodPxM;
-  const beam = Math.round(BOARD.arm.beam * px);
-  const postX = x - BOARD.arm.from * px;
-  const reach = postX + BRACE_REACH * px;
-  const brace: Pt[] = [[postX + 1, y + h - 1], [postX + 7, y + h - 1], [reach + 4, y + beam - 1], [reach - 4, y + beam - 1]];
-  cutPiece(ctx, cutOutline(brace, 12, 1.6, rand), WOOD.base, 2, () => woodMarks(ctx, { x: postX, y: y + beam, w: reach - postX + 4, h: h - beam }, false, rand));
-  const beamOutline: Pt[] = [
-    [x + 2, y + 3.5], [x + w * 0.5, y + 3], [x + w - 4, y + 2.5], [x + w - 2, y + beam * 0.6], [x + w - 5, y + beam + 1], [x + w * 0.5, y + beam + 1.5], [x + 2, y + beam + 2],
-  ];
-  cutPiece(ctx, cutOutline(beamOutline, 20, 2, rand), WOOD.base, 2.2, () => woodMarks(ctx, { x, y, w, h: beam + 2 }, false, rand));
-  // Iron rings under the beam where the plank's bridle and the lantern hang.
-  ctx.strokeStyle = IRON;
-  ctx.lineWidth = 1.6;
-  for (const at of [BOARD.plank.hookAt, BOARD.lantern.at]) {
-    ctx.beginPath();
-    ctx.arc(postX + at * px, y + beam + 4.5, 2.5, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-}
 
 /** A pierced tin lantern: hook ring, cap, four panes of warm glass between dark bars, a base, all inked round. */
 function paintLantern(ctx: CanvasRenderingContext2D): void {
@@ -223,6 +162,14 @@ function wear(ctx: CanvasRenderingContext2D, at: Pt, rand: Rand): void {
   ctx.restore();
 }
 
+/** How far off level a plank hangs (radians, clockwise on the page), the first draw of its seeded hand. */
+function tiltOf(rand: Rand): number {
+  return ((TILT.least + rand() * (TILT.most - TILT.least)) * Math.PI / 180) * (rand() < 0.5 ? -1 : 1);
+}
+
+/** Sign i's plank tilt as painted (radians, clockwise on the page): its wooden body hangs the same (gl/signwood.ts). */
+export const plankTilt = (i: number): number => tiltOf(seeded(i + 11));
+
 function paintPlank(ctx: CanvasRenderingContext2D, i: number, name: string, dir: -1 | 1): void {
   const r = plankRect(i);
   const px = ATLAS.plankPxM;
@@ -233,7 +180,7 @@ function paintPlank(ctx: CanvasRenderingContext2D, i: number, name: string, dir:
   const hh = (BOARD.plank.h * px) / 2;
   const cx = r.x + r.w / 2;
   const cy = r.y + m + BOARD.plank.bridle * px + hh;
-  const tilt = ((TILT.least + rand() * (TILT.most - TILT.least)) * Math.PI / 180) * (rand() < 0.5 ? -1 : 1);
+  const tilt = tiltOf(rand);
   const cos = Math.cos(tilt);
   const sin = Math.sin(tilt);
   // The bridle: two cords from the board's top, a little slack, up to one ring on the arm's hook.
@@ -307,14 +254,11 @@ export function createAtlasCanvas(): HTMLCanvasElement {
   return c;
 }
 
-/** Paints the shared parts and every plank (`names[i]` and `dirs[i]` for sign i) into the atlas. */
+/** Paints the lantern and every plank (`names[i]` and `dirs[i]` for sign i) into the atlas. */
 export function paintAtlas(canvas: HTMLCanvasElement, names: readonly string[], dirs: readonly (-1 | 1)[]): void {
   const ctx = canvas.getContext('2d');
   if (ctx === null) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const rand = seeded(3);
-  paintPost(ctx, rand);
-  paintArm(ctx, rand);
   paintLantern(ctx);
   names.forEach((n, i) => paintPlank(ctx, i, n, dirs[i] ?? 1));
 }

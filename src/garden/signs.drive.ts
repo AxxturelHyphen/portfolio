@@ -9,10 +9,10 @@ import type { SignPost } from './place.ts';
  * Free roam's signposts in the world (world/signboard.ts, gl/signboards.ts): built once at load, lettered once the
  * display face is in and again on a language change. A sign wakes when the visitor comes within NEAR_M of its post,
  * or the pointer or keyboard focus is on a button over it (ui/signposts.ts, data-anchor = the sign's index; every plank
- * on screen has one): its plank brightens a little and, unless motion is reduced, sways once on its hook. The sign
- * under the pointer and the focused one are kept by index when they come, so a button retargeted under the pointer
- * never leaves a plank awake. Otherwise it stands still apart from the
- * lantern's slow flicker. The quads are written only while a sign changes; nothing is allocated per frame.
+ * on screen has one): its plank brightens a little and, unless motion is reduced, sways once on its hook with its
+ * wooden board. The sign under the pointer and the focused one are kept by index when they come, so a button
+ * retargeted under the pointer never leaves a plank awake. Otherwise it stands still apart from the lantern's slow
+ * flicker. The quads are written only while a sign changes; nothing is allocated per frame.
  */
 
 const NEAR_M = 3;
@@ -48,7 +48,7 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
   const { machine, visitor } = d;
   const posts = d.posts.slice(0, MAX_SIGNS);
   const canvas = createAtlasCanvas();
-  const meshes = createSignboardMeshes(d.gfx, canvas, posts.length, posts.length * PARTS, ORDER);
+  const meshes = createSignboardMeshes(d.gfx, canvas, posts, ORDER);
   const flame = new Float32Array(2);
   const signs: Sign[] = posts.map((p, i) => {
     const quads = signQuads(p, i);
@@ -61,10 +61,8 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
   const batch = meshes.batch.writer;
   signs.forEach((s, i) => {
     (s.quads.plank.tint as Float32Array).fill(REST.tint, 0, 3);
-    batch.set(i * PARTS, s.quads.post);
-    batch.set(i * PARTS + 1, s.quads.arm);
     batch.set(i * PARTS + PLANK_PART, s.quads.plank);
-    batch.set(i * PARTS + 3, s.quads.lantern);
+    batch.set(i * PARTS + PLANK_PART + 1, s.quads.lantern);
     meshes.glow.set(i, s.glow);
   });
   batch.count = signs.length * PARTS;
@@ -149,6 +147,7 @@ export function createSignDrive(d: SignDriveDeps): SignDrive {
       batch.commit(at, at + 1);
       meshes.glow.set(i, s.glow);
       meshes.glow.commit(i, i + 1);
+      meshes.swing(i, s.quads.plank.rot);
     }
   });
   return { ready };

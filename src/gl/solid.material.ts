@@ -8,7 +8,7 @@ import fragmentBody from './shaders/solid.frag.glsl?raw';
 
 /**
  * The lit paper solid: real geometry (gl/masonry.ts) painted with a stone tile of the shared atlas at its real scale and
- * lit like the cutouts round it (solid.frag.glsl), back faces culled, opaque and depth tested. It sits in the transparent
+ * lit like the cutouts round it (solid.frag.glsl), a lantern's glass with a warm light of its own, back faces culled, opaque and depth tested. It sits in the transparent
  * list at its mesh's paint order, so it lands among the cutouts as the iron gate does, and goes through the film pass
  * with the rest of the scene. Every material is made before Gfx.warm() with a stand-in texture, so its program compiles
  * there; bindSolidTiles hands them their tiles once the shared atlas is up (a texture swap, no recompile).
@@ -32,13 +32,23 @@ const standInNormal = pixel(128, 128, 255, false);
 interface Made { tile: string; material: RawShaderMaterial }
 const made: Made[] = [];
 
-/** The solid material for one atlas tile (e.g. 'tile/wall') under a tint; one per tile and tint, shared by every caller. */
-export function solidMaterial(tile: string, tint: readonly [number, number, number]): RawShaderMaterial {
-  const key = `${tile}|${tint.join(',')}`;
+type Rgb = readonly [number, number, number];
+/** A material's extras: a warm light of its own (a lantern's glass), and instancing (pieces moved one by one). */
+export interface SolidOptions { glow?: Rgb; instanced?: boolean }
+
+/**
+ * The solid material for one atlas tile (e.g. 'tile/wall') under a tint; one per tile, tint and options, shared by
+ * every caller.
+ */
+export function solidMaterial(tile: string, tint: Rgb, options: SolidOptions = {}): RawShaderMaterial {
+  const glow = options.glow ?? [0, 0, 0];
+  const instanced = options.instanced === true;
+  const key = `${tile}|${tint.join(',')}|${glow.join(',')}|${instanced ? 'i' : ''}`;
   const found = made.find((m) => m.material.name === key);
   if (found !== undefined) return found.material;
   const material = new RawShaderMaterial({
     name: key,
+    defines: instanced ? { INSTANCED: '' } : {},
     glslVersion: GLSL3,
     vertexShader: common + vertexBody,
     fragmentShader: common + lights + fragmentBody,
@@ -49,6 +59,7 @@ export function solidMaterial(tile: string, tint: readonly [number, number, numb
       uTile: { value: new Vector4(1, NORMAL_GAIN, INSET, 0) },
       uRect: { value: new Vector4(0, 0, 1, 1) },
       uTint: { value: new Vector3(...tint) },
+      uGlow: { value: new Vector3(...glow) },
     },
     transparent: true,
     blending: NoBlending,

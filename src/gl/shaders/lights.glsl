@@ -91,13 +91,14 @@ const vec2 LAMP_FOOT = vec2(0.3, 0.06);   // radius where the dot starts and ins
 const float LAMP_FOOT_DARK = 0.9;
 // The carried lantern's shadow (gl/shadow.ts): the cutouts and the visitor seen straight down from the flame. The
 // receiver steps SHADOW_LIFT metres toward the flame (no acne on the paper that casts), four bilinear compares about
-// SHADOW_SOFT texels apart give a soft edge, and the shade keeps SHADOW_KEEP of the light (paper glows through).
+// SHADOW_SOFT texels apart give a soft edge, and the shade keeps SHADOW_KEEP of the light (paper glows through): enough
+// that a spiky plant's long shadow reads as a soft shade on the ground, never as black spikes.
 uniform mat4 uShadowVP;
 uniform highp sampler2DShadow uShadowMap;
 uniform float uShadowOn;
 const float SHADOW_LIFT = 0.05;
-const float SHADOW_SOFT = 1.6;
-const float SHADOW_KEEP = 0.12;
+const float SHADOW_SOFT = 2.2;
+const float SHADOW_KEEP = 0.42;
 float lampShadow(vec3 p, vec3 toLamp) {
   vec4 c = uShadowVP * vec4(p + normalize(toLamp) * SHADOW_LIFT, 1.0);
   vec3 s = c.xyz / c.w * 0.5 + 0.5;

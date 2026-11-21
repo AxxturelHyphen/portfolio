@@ -38,7 +38,7 @@ const float PATCH_SCALE = 0.45;                       // fbm frequency per metre
 const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
 uniform vec4 uEnclose;                                // free roam: the closed garden x0, z0, x1, z1; x1 < x0 on the rail
-uniform float uMarch;                                 // the relief march through slabs and edging: 1, or 0 on the low tier
+uniform float uMarch;                                 // the relief march through the slabs: 1, or 0 on the low tier
 const vec3 HEDGE_FOOT = vec3(0.008, 0.017, 0.013);    // #22352e in deep shade: the ground beyond the walls
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
 const vec2 WALL_AO = vec2(0.45, 0.6);                 // free roam: occlusion along the end walls and the kerb, depth and reach (m)
@@ -62,10 +62,9 @@ const float CELL = 0.42;                              // flagstone size
 const float STONE_REACH = HALF_WIDTH + CELL * 0.6;    // the farthest a stone reaches from the path centre
 const float SLAB_GAP = 0.008;                         // half the dark gap between slabs (m)
 const float SLAB_BEVEL = 0.022;                       // their soft rounded rim (m)
-const int RELIEF_STEPS = 6;                           // parallax march through the slabs and the edging
-const float RELIEF_REACH = 0.5;                       // how far past the edging the march still runs (m)
-const float CUT_SHADE = 0.6;                          // a slab's or tile's cut face against its top
-const vec3 TILE = vec3(0.075, 0.034, 0.020);          // #4e3427 the edging's fired clay, in the pots' family
+const int RELIEF_STEPS = 6;                           // parallax march through the slabs
+const float RELIEF_REACH = 0.3;                       // how far past the slabs the march still runs (m)
+const float CUT_SHADE = 0.6;                          // a slab's cut face against its top
 const float PITCH = 0.012;                            // line screen on the ground: 12 mm
 const float LINE_CONTRAST = 0.22;
 const float GLINT_AZ = 0.1047;                        // 6 degrees
@@ -107,17 +106,12 @@ float onPathOf(vec4 v, vec2 p) {
   return step(pathDist((v.zw + 0.5) * CELL), HALF_WIDTH) * step(pathDist(p), STONE_REACH);
 }
 
-// Hard detail's absolute height (-1 where there is none): slabs with a bevelled rim and a gap between them, the edging
-// in front of the bank.
+// Hard detail's absolute height (-1 where there is none): slabs with a bevelled rim and a gap between them. The bank's
+// kerb in front of it is real stone (gl/masonry.ts, world/solids.ts).
 float detailAt(vec2 q) {
-  float pd = pathDist(q);
-  float back = uEdging.x + uEdging.y;
-  float edging = smoothstep(uEdging.x, uEdging.x + 0.01, pd) * (1.0 - smoothstep(back - 0.01, back, pd)) * bankKeep(q) * (uBank.z + uEdging.z);
-  float d = edging;
-  if (pd < STONE_REACH) {
-    vec4 v = flagstone(q);
-    d = max(d, onPathOf(v, q) * uEdging.w * smoothstep(SLAB_GAP, SLAB_GAP + SLAB_BEVEL, v.y * CELL));
-  }
+  if (pathDist(q) >= STONE_REACH) return -1.0;
+  vec4 v = flagstone(q);
+  float d = onPathOf(v, q) * uEdging.w * smoothstep(SLAB_GAP, SLAB_GAP + SLAB_BEVEL, v.y * CELL);
   return d > 0.002 ? d : -1.0;
 }
 
@@ -145,10 +139,8 @@ void main() {
   vec3 view = normalize(vWorld - uCamPos);
   // Free roam, above the low tier: march the view ray down through the hard detail; p becomes the point it meets, cut 1 on a side face.
   float cut = 0.0;
-  float hitY = vWorld.y;
-  float tile = 0.0;
-  if (uRelief * uMarch > 0.0 && pathDist(p) < uEdging.x + uEdging.y + RELIEF_REACH) {
-    float top = uBank.z + uEdging.z + 0.005 - vWorld.y;
+  if (uRelief * uMarch > 0.0 && pathDist(p) < STONE_REACH + RELIEF_REACH) {
+    float top = max(uEdging.w + 0.005 - vWorld.y, 0.005);
     vec2 run = view.xz / min(view.y, -0.05);
     float stepH = top / float(RELIEF_STEPS);
     for (int i = 0; i <= RELIEF_STEPS; i++) {
@@ -157,12 +149,10 @@ void main() {
       float f = detailAt(q) - vWorld.y;
       if (f >= s) {
         cut = step(stepH, f - s);
-        hitY = vWorld.y + (cut > 0.0 ? s : f);
         p = cut > 0.0 ? q : p + run * f;
         break;
       }
     }
-    tile = step(STONE_REACH, pathDist(p)) * step(0.004, hitY - vWorld.y);
   }
   float z = p.y;
   float grain = fbm3(p * 1.7);
@@ -189,9 +179,9 @@ void main() {
     vec2 e = vec2(0.06, 0.0);
     float h0 = baseHeight(p, pathDist(p));
     n = normalize(vec3(h0 - baseHeight(p + e, pathDist(p + e)), e.x, h0 - baseHeight(p + e.yx, pathDist(p + e.yx))));
-    // The soil at the edging's foot sits in its shade.
+    // The soil at the kerb's foot sits in its shade.
     float pd = pathDist(p);
-    base *= 1.0 - 0.45 * bankKeep(p) * smoothstep(uEdging.x - 0.16, uEdging.x, pd) * step(pd, uEdging.x) * (1.0 - tile);
+    base *= 1.0 - 0.45 * bankKeep(p) * smoothstep(uEdging.x - 0.16, uEdging.x, pd) * step(pd, uEdging.x);
   }
 
   // Moss at the wall foot.
@@ -221,12 +211,6 @@ void main() {
     n = normalize(mix(n, sn, stoneMask));
   }
 
-  // The edging: small fired tiles set on end, laid out on the face by height when the ray meets their side.
-  if (tile > 0.0) {
-    vec4 b = voronoi(cut > 0.0 ? vec2((p.x - p.y) * 9.0, hitY * 22.0) : p * 9.0 + 4.0);
-    vec3 clay = TILE * (0.7 + 0.6 * hash12(b.zw)) * (0.8 + 0.4 * fbm3(p * 14.0));
-    base = mix(base * 0.35, clay, smoothstep(0.03, 0.09, b.y));
-  }
   if (cut > 0.0) {
     base *= CUT_SHADE;
     n = normalize(vec3(-view.x, 0.2, -view.z));

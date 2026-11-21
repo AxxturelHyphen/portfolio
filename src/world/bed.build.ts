@@ -6,6 +6,7 @@ import { DEG, type BedScene3, type Placement3, type ValueGroup } from './layout.
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { builtIn, type WorldMode } from './mode.ts';
 import type { PetRef } from './pet.ts';
+import { isSolidProp } from './props.solid.ts';
 import { keptLayers } from './scene.ts';
 import { placedSize, resolveSprite, type AtlasKey } from './sprites.ts';
 
@@ -53,6 +54,8 @@ const WING_TINT: readonly number[] = [0.13, 0.11, 0.2, 1];
  * signpost); it is not drawn, since its plate is a frame with an empty black centre that read as a hole in the garden.
  */
 const SIGN_BOARD: SpriteId = 'sh/board';
+/** Under free roam the lanterns, the pot and the bench are real geometry (world/props.solid.ts, gl/props.ts): no card. */
+const cardOf = (sprite: SpriteId, mode: WorldMode): boolean => sprite !== SIGN_BOARD && !(mode === 'roam' && isSolidProp(sprite));
 /**
  * Under free roam, cards standing south of this z (between the path and the lens: the foreground frames) are batched
  * apart and painted after the ground dressing, since paint order is depth order and the lawn lies behind them. The low
@@ -72,6 +75,12 @@ export function hexRgb(hex: string, out: Float32Array): Float32Array {
   out[2] = (n & 255) / 255;
   return out;
 }
+
+/**
+ * A plant standing in a pot (foot 'pot') stands on the solid pot's soil under free roam: its own ground shadow would
+ * lie flat at the pot's lip, over the pot, so it casts none there.
+ */
+const potted = (it: Placement3, mode: WorldMode): Placement3 => (mode === 'roam' && it.foot === 'pot' && it.shadow ? { ...it, shadow: false } : it);
 
 /** Flags of a placement. */
 function flagsOf(it: Placement3): number {
@@ -148,11 +157,11 @@ export function buildBed(i: BuildInput): BuildOutput {
 
   for (const layer of keptLayers(scene, i.tier, i.maxLayers)) {
     for (const it of layer.items) {
-      if (it.sprite === SIGN_BOARD || !builtIn(it, i.mode)) continue;
+      if (!cardOf(it.sprite, i.mode) || !builtIn(it, i.mode)) continue;
       const r = resolveSprite(it.sprite, bed.manifest, shared?.manifest ?? null);
       if (r === null) { skipped++; continue; }
       placedSize(r.rect, it.h, it.w, it.scale, size);
-      const q = quadOf(it, r.rect, size, shade, mix);
+      const q = quadOf(potted(it, i.mode), r.rect, size, shade, mix);
       const pet = pets.get(it.sprite);
       const body = bodied && pet === undefined && !isGateLeaf(it.sprite) ? bodyOfItem(it) : null;
       const seed = bodySeed(it.x, it.z);

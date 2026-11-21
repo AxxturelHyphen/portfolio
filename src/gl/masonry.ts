@@ -1,10 +1,10 @@
-import { BufferAttribute, BufferGeometry, Mesh } from 'three';
-import type { Material } from 'three';
+import { BufferAttribute, BufferGeometry, Matrix3, Mesh, Vector3 } from 'three';
+import type { Material, Matrix4 } from 'three';
 
 /**
- * Solid built things as plain geometry (world/enclosure.ts blocks, world/solids.ts rim stones and kerbs): every piece is
- * merged into one indexed BufferGeometry of world positions and face normals per material, so each stone is one draw.
- * Load time only.
+ * Solid built things as plain geometry (world/enclosure.ts blocks, world/solids.ts rim stones and kerbs, gl/props.ts and
+ * gl/signwood.ts props): every piece is merged into one indexed BufferGeometry of world positions and normals per
+ * material, so each kind of piece is one draw. Load time only.
  */
 
 /** Floats per block (world/enclosure.ts BLOCK): centre x, bottom y, centre z, width, height, depth, yaw. */
@@ -14,6 +14,8 @@ const FACES = [
   [0, 1, 1, 2], [0, -1, 2, 1], [1, 1, 2, 0], [1, -1, 0, 2], [2, 1, 0, 1], [2, -1, 1, 0],
 ] as const;
 const CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const;
+const point = new Vector3();
+const toWorld = new Matrix3();
 
 /** Grows a geometry piece by piece: positions and normals per vertex, triangles by index. */
 export class SolidBuilder {
@@ -97,54 +99,22 @@ export class SolidBuilder {
     for (let i = 0; i < n; i++) this.triangle(centre, centre + 1 + i, centre + 1 + ((i + 1) % n));
   }
 
-  /**
-   * A kerb along a centre line (x, z pairs): `width` wide from y0 to y1, its sides following the line's turns and its
-   * ends closed. The top is one strip, so the kerb shows no joints.
-   */
-  ribbon(line: readonly number[], width: number, y0: number, y1: number): void {
-    const n = line.length / 2;
-    const left: number[] = [];
-    for (let i = 0; i < n; i++) {
-      const a = Math.max(0, i - 1);
-      const b = Math.min(n - 1, i + 1);
-      const dx = line[b * 2]! - line[a * 2]!;
-      const dz = line[b * 2 + 1]! - line[a * 2 + 1]!;
-      const l = Math.hypot(dx, dz) || 1;
-      left.push(dz / l, -dx / l);
+  /** A three geometry (Box, Cylinder, Lathe...) placed by `m`: its positions and normals carried into world space. */
+  merge(g: BufferGeometry, m: Matrix4): this {
+    const p = g.getAttribute('position');
+    const n = g.getAttribute('normal');
+    const first = this.pos.length / 3;
+    toWorld.getNormalMatrix(m);
+    for (let i = 0; i < p.count; i++) {
+      point.fromBufferAttribute(p, i).applyMatrix4(m);
+      this.pos.push(point.x, point.y, point.z);
+      point.fromBufferAttribute(n, i).applyMatrix3(toWorld).normalize();
+      this.nrm.push(point.x, point.y, point.z);
     }
-    const edge = (side: number, y: number, ny: number, flip: boolean): number => {
-      const first = this.pos.length / 3;
-      for (let i = 0; i < n; i++) {
-        const ox = left[i * 2]! * side;
-        const oz = left[i * 2 + 1]! * side;
-        this.vertex(line[i * 2]! + ox * width / 2, y, line[i * 2 + 1]! + oz * width / 2, ny === 0 ? (flip ? -ox : ox) : 0, ny, ny === 0 ? (flip ? -oz : oz) : 0);
-      }
-      return first;
-    };
-    const strip = (p: number, q: number): void => {
-      for (let i = 0; i + 1 < n; i++) this.quad(p + i, p + i + 1, q + i + 1, q + i);
-    };
-    // Top (left edge then right edge), then each side from its foot to its top, winding outward.
-    const topL = edge(1, y1, 1, false);
-    const topR = edge(-1, y1, 1, false);
-    strip(topR, topL);
-    const footL = edge(1, y0, 0, false);
-    const headL = edge(1, y1, 0, false);
-    strip(headL, footL);
-    const footR = edge(-1, y0, 0, false);
-    const headR = edge(-1, y1, 0, false);
-    strip(footR, headR);
-    for (const [i, s] of [[0, -1], [n - 1, 1]] as const) {
-      const dx = (line[Math.min(n - 1, i + 1) * 2]! - line[Math.max(0, i - 1) * 2]!) * s;
-      const dz = (line[Math.min(n - 1, i + 1) * 2 + 1]! - line[Math.max(0, i - 1) * 2 + 1]!) * s;
-      const l = Math.hypot(dx, dz) || 1;
-      const v = [footL, headL, headR, footR].map((k) => {
-        const at = (k + i) * 3;
-        return this.vertex(this.pos[at]!, this.pos[at + 1]!, this.pos[at + 2]!, dx / l, 0, dz / l);
-      }) as [number, number, number, number];
-      if (s > 0) this.quad(v[0], v[1], v[2], v[3]);
-      else this.quad(v[0], v[3], v[2], v[1]);
-    }
+    const index = g.getIndex();
+    const count = index === null ? p.count : index.count;
+    for (let i = 0; i < count; i++) this.idx.push(first + (index === null ? i : index.getX(i)));
+    return this;
   }
 
   get empty(): boolean {
