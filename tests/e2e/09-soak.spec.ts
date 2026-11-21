@@ -57,6 +57,8 @@ test('flow 9 garden: five minutes of wandering on foot keeps heap and GPU memory
   expect(heap.length, 'heap samples').toBeGreaterThan(5);
   expect(mean(heap.slice(-third)), 'JS heap MB, last third vs first third').toBeLessThanOrEqual(mean(heap.slice(0, third)) * 1.1 + 2);
   const tthird = Math.max(1, Math.floor(tex.length / 3));
-  expect(mean(tex.slice(-tthird)), 'texture MB, last third vs first third').toBeLessThanOrEqual(mean(tex.slice(0, tthird)) * 1.05 + 1);
+  // Beds stream in and out around the visitor, so a sample may hold one or two beds: a leak shows as a rising floor.
+  const series = tex.map((t) => t.toFixed(0)).join(' ');
+  expect(Math.min(...tex.slice(-tthird)), `texture MB floor, last third vs first third [${series}]`).toBeLessThanOrEqual(Math.min(...tex.slice(0, tthird)) * 1.05 + 1);
   expect(await jardin.longTasksAfterReady(), 'long tasks over 100 ms after load').toEqual([]);
 });
