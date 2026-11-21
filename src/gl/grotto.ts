@@ -15,9 +15,15 @@ import { solidMaterial } from './solid.material.ts';
  * tested, so they stand among them. Load time only; the low tier builds the same room with fewer facets.
  */
 
-/** Damp stone in the night's violet blue, darker on the floor: the lantern lights the chamber, not the moon. */
-const ROCK = { tile: 'tile/paper', tint: [0.18, 0.18, 0.34] } as const;
-const FLOOR = { tile: 'tile/moss', tint: [0.24, 0.22, 0.38] } as const;
+/**
+ * Damp stone in the night's violet blue, the floor a shade darker, a little moss only where the floor rises into the
+ * dome's foot: the warm lantern pool lights the chamber, not the moon.
+ */
+const ROCK = { tile: 'tile/coping', tint: [0.3, 0.36, 0.64] } as const;
+const FLOOR = { tile: 'tile/coping', tint: [0.24, 0.29, 0.54] } as const;
+const MOSS = { tile: 'tile/moss', tint: [0.3, 0.34, 0.48] } as const;
+/** The floor turns to moss where it has risen this share of the way into the dome's foot. */
+const MOSS_FROM = 0.35;
 /** Facets per tier: the dome's azimuth and elevation steps, the floor's grid, the rocks' subdivision. */
 const DETAIL = { high: { az: 24, el: 8, floor: 26, rock: 1 }, low: { az: 14, el: 5, floor: 12, rock: 0 } } as const;
 /** The floor stands this far over the terrain so the closed ground under it never shows through. */
@@ -25,6 +31,11 @@ const FLOOR_LIFT = 0.012;
 /** How far the dome's facets push out (never in, so the chamber only grows) and the hollow's depth (m). */
 const BULGE = 0.34;
 const HOLLOW = 0.035;
+/**
+ * The shell's lowest ring (m): just under the floor's top, never deeper, since the closed ground draws no depth there and
+ * a shell edge under it would show through the lawn below the wall.
+ */
+const SHELL_FOOT = 0.06;
 
 const n = new Vector3();
 const e = new Vector3();
@@ -41,7 +52,7 @@ function facet(out: SolidBuilder, p: Vector3, q: Vector3, r: Vector3): void {
 /** The dome's grid point at azimuth step i and elevation step j, pushed out by its own bulge, squashed onto `front`. */
 function domePoint(i: number, j: number, az: number, el: number, bulge: Float32Array, out: Vector3): Vector3 {
   const phi = (i / az) * Math.PI * 2;
-  const lo = Math.asin(-0.25);
+  const lo = Math.asin((SHELL_FOOT - DOME.y) / DOME.ry);
   const theta = lo + (j / el) * (Math.PI / 2 - lo);
   const k = 1 + (j === el ? 0 : bulge[(i % az) * (el + 1) + j]!);
   out.set(DOME.x + DOME.rx * k * Math.cos(theta) * Math.sin(phi), DOME.y + DOME.ry * Math.sin(theta) * (j === el ? 1 : k), DOME.z + DOME.rz * k * Math.cos(theta) * Math.cos(phi));
@@ -70,19 +81,24 @@ function dome(out: SolidBuilder, az: number, el: number): void {
   }
 }
 
-/** The floor's height at (x, z): the terrain, rising into the dome's foot, dipping into the puddle's hollow. */
-function floorY(x: number, z: number, jitter: number): number {
+/** How far (x, z) has risen into the dome's foot, 0 on the open floor to 1 at the wall. */
+function footOf(x: number, z: number): number {
   const u = (x - DOME.x) / DOME.rx;
   const w = (z - DOME.z) / DOME.rz;
-  const q = Math.sqrt(u * u + w * w);
-  const t = Math.min(1, Math.max(0, (q - 0.8) / 0.25));
+  return Math.min(1, Math.max(0, (Math.sqrt(u * u + w * w) - 0.8) / 0.25));
+}
+
+/** The floor's height at (x, z): the terrain, rising into the dome's foot, dipping into the puddle's hollow. */
+function floorY(x: number, z: number, jitter: number): number {
+  const t = footOf(x, z);
   const p = GROTTO.puddle;
   const d = Math.hypot(x - p.x, (z - p.z) * 1.25) / p.r;
   const hollow = d < 1.4 ? HOLLOW * (1 - Math.min(1, d) ** 2) : 0;
   return terrainY(x, z) + FLOOR_LIFT + t * t * (0.16 + jitter * 0.08) + jitter * 0.012 * t - hollow;
 }
 
-function floor(out: SolidBuilder, cells: number): void {
+/** The floor's facets: stone on the open floor, moss at the dome's foot. */
+function floor(stone: SolidBuilder, moss: SolidBuilder, cells: number): void {
   const f = GROTTO.floor;
   const nx = cells;
   const nz = Math.round((cells * (f.z1 - f.z0)) / (f.x1 - f.x0));
@@ -103,6 +119,7 @@ function floor(out: SolidBuilder, cells: number): void {
       at(i + 1, j, q);
       at(i + 1, j + 1, r);
       at(i, j + 1, s);
+      const out = footOf((p.x + r.x) / 2, (p.z + r.z) / 2) >= MOSS_FROM ? moss : stone;
       facet(out, p, s, r);
       facet(out, p, r, q);
     }
@@ -156,9 +173,15 @@ export function grottoMeshes(low: boolean, backOrder: number, rockOrder: number)
   const shell = new SolidBuilder();
   dome(shell, d.az, d.el);
   const ground = new SolidBuilder();
-  floor(ground, d.floor);
+  const moss = new SolidBuilder();
+  floor(ground, moss, d.floor);
   const stone = new SolidBuilder();
   rocks(stone, low, d.rock);
   const rock = solidMaterial(ROCK.tile, ROCK.tint);
-  return [solidMesh(shell, rock, backOrder), solidMesh(ground, solidMaterial(FLOOR.tile, FLOOR.tint), backOrder), solidMesh(stone, rock, rockOrder)];
+  return [
+    solidMesh(shell, rock, backOrder),
+    solidMesh(ground, solidMaterial(FLOOR.tile, FLOOR.tint), backOrder),
+    solidMesh(moss, solidMaterial(MOSS.tile, MOSS.tint), backOrder),
+    solidMesh(stone, rock, rockOrder),
+  ];
 }

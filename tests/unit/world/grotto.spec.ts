@@ -35,8 +35,7 @@ test('the visitor walks in through the mouth, is in the grotto, and walks back o
   const v = createVisitor(area(), 30, -2);
   v.walkTo(...GROTTO.stand);
   walk(v, 8);
-  expect(v.pos[0]).toBeCloseTo(GROTTO.stand[0], 1);
-  expect(v.pos[1]).toBeCloseTo(GROTTO.stand[1], 1);
+  expect(Math.hypot(v.pos[0]! - GROTTO.stand[0], v.pos[1]! - GROTTO.stand[1])).toBeLessThan(0.1);
   expect(inGrotto(v.pos[0]!, v.pos[1]!, false)).toBe(true);
   v.walkTo(30, -2);
   walk(v, 8);

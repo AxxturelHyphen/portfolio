@@ -11,8 +11,8 @@ import { PORTRAIT_ASPECT } from './follow.ts';
  * this one while the grotto is the bed. Pure math on caller-owned objects: no allocation per frame.
  */
 export const GROTTO_EYE = {
-  /** The eye in the mouth (m): under the lintel (2.3), between the jambs, its slide along the mouth either side. */
-  x: 33.5, y: 1.8, z: -6.32, side: 0.24,
+  /** The eye in the mouth (m): under the lintel (2.55), between the jambs, its slide along the mouth either side. */
+  x: 33.5, y: 2.35, z: -6.32, side: 0.24,
   /**
    * The view aims at the visitor as if it stood at least `near` north of the eye (m), at its middle (`mid` over its
    * ground point) while it is near, rising over `rise` metres farther in to `lookY`: higher on a phone, so the visitor
@@ -26,7 +26,7 @@ export const GROTTO_EYE = {
    */
   lean: 0.3, maxYawDeg: 65, edgeDeg: 88,
   /** Vertical lens (degrees) for landscape and portrait at zoom 1, and the range the zoom may take it over. */
-  fov: { landscape: 52, portrait: 68 }, minFov: 36, maxFov: 74,
+  fov: { landscape: 66, portrait: 76 }, minFov: 44, maxFov: 80,
   /** The look point follows the visitor on a critically damped spring (s). */
   tauS: 0.15,
 } as const;

@@ -173,7 +173,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "sway": 0.02
+          "sway": 0.02,
+          "only": "rail"
         },
         {
           "sprite": "sh/ivy",
@@ -194,7 +195,7 @@
         },
         {
           "sprite": "sh/ivy",
-          "x": 33.1,
+          "x": 32.15,
           "y": 0.15,
           "z": -5.85,
           "scale": 1,
@@ -210,7 +211,7 @@
         },
         {
           "sprite": "sh/ivy",
-          "x": 34.2,
+          "x": 34.85,
           "y": 1.25,
           "z": -5.85,
           "scale": 1,
@@ -220,7 +221,7 @@
           "size": "medium",
           "group": "M",
           "foot": "none",
-          "shadow": true,
+          "shadow": false,
           "react": false,
           "only": "roam"
         },

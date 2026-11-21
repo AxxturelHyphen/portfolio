@@ -9,7 +9,7 @@ import { rng } from './groundplan.ts';
  */
 
 /** The dome's ellipsoid: centre and semi-axes; its faces south of `front` are dropped (they are buried in the wall). */
-export const DOME = { x: 33.5, y: -0.3, z: -7.1, rx: 2.5, ry: 2.6, rz: 3.9, front: -6.3 } as const;
+export const DOME = { x: 33.5, y: -0.3, z: -8.6, rx: 3.8, ry: 3.4, rz: 4.8, front: -6.3 } as const;
 
 export const GROTTO = {
   /** The gap in the back wall (garden.json enclosure.low). */
@@ -18,11 +18,11 @@ export const GROTTO = {
   wallZ: -6,
   thick: 0.45,
   /** The rock floor's rectangle: from the wall's face north past the dome. */
-  floor: { x0: 30.8, x1: 36.2, z0: -11.2, z1: -6 },
+  floor: { x0: 29.4, x1: 37.6, z0: -13.6, z1: -6 },
   /** Where an assisted walk or a deep link sets the visitor down in the grotto. */
-  stand: [33.5, -8.5],
+  stand: [32.6, -9.9],
   /** The puddle in its hollow of the floor (the bed's flat pool card lies in it): centre and radius. */
-  puddle: { x: 34.45, z: -9.05, r: 0.34 },
+  puddle: { x: 31.55, z: -8.3, r: 0.42 },
   /** The visitor is in the grotto north of `enter` and stays in it until south of `leave` (z). */
   enter: -6.8,
   leave: -6.2,
@@ -30,7 +30,7 @@ export const GROTTO = {
 
 /** The doorway through the mouth and the chamber the body may stand in (annex.ts): corridor, then chamber. */
 export const GROTTO_ANNEX: Annex = {
-  rooms: new Float32Array([32.95, -7.7, 34.05, -4.5, 31.8, -9.6, 35.2, -6.75]),
+  rooms: new Float32Array([32.95, -7.7, 34.05, -4.5, 30.6, -11, 36.4, -6.75]),
   door: { x: 33.5, z: -6.2, band: 0.2 },
   porchZ: -5,
   innerZ: -7.4,
@@ -40,7 +40,7 @@ export const GROTTO_ANNEX: Annex = {
  * Solid things on the grotto floor the visitor walks round, as prop boxes x0, z0, x1, z1 (occluders.ts propBlocks
  * layout): the flytrap's root.
  */
-export const GROTTO_BLOCKS = new Float32Array([33.8, -8.15, 34.12, -7.75]);
+export const GROTTO_BLOCKS = new Float32Array([34.85, -9.3, 35.17, -8.9]);
 
 /** True while the visitor at (x, z) is in the grotto; `was` keeps it in until it walks back out past the mouth. */
 export function inGrotto(x: number, z: number, was: boolean): boolean {
@@ -64,13 +64,13 @@ export interface Rock { kind: 'boulder' | 'stalactite'; x: number; y: number; z:
 function mouthRocks(out: Rock[]): void {
   const z = GROTTO.wallZ - GROTTO.thick / 2;
   const [x0, x1] = GROTTO.mouth;
-  const stack: readonly (readonly [number, number, number])[] = [[0.45, 0.42, 0.5], [1.25, 0.4, 0.45], [1.95, 0.38, 0.4]];
+  const stack: readonly (readonly [number, number, number])[] = [[0.45, 0.42, 0.5], [1.25, 0.4, 0.45], [1.95, 0.38, 0.4], [2.55, 0.36, 0.36]];
   for (const [side, x] of [[-1, x0 + 0.05], [1, x1 - 0.05]] as const) {
     for (const [y, sx, sy] of stack) out.push({ kind: 'boulder', x: x - side * 0.02, y, z, sx, sy, sz: 0.42, yaw: side * 0.4 + y });
   }
-  out.push({ kind: 'boulder', x: x0 + 0.35, y: 2.72, z, sx: 0.55, sy: 0.42, sz: 0.44, yaw: 0.3 });
-  out.push({ kind: 'boulder', x: (x0 + x1) / 2, y: 2.82, z, sx: 0.5, sy: 0.45, sz: 0.46, yaw: 1.2 });
-  out.push({ kind: 'boulder', x: x1 - 0.35, y: 2.7, z, sx: 0.55, sy: 0.43, sz: 0.44, yaw: 2.1 });
+  out.push({ kind: 'boulder', x: x0 + 0.35, y: 3.0, z, sx: 0.55, sy: 0.42, sz: 0.44, yaw: 0.3 });
+  out.push({ kind: 'boulder', x: (x0 + x1) / 2, y: 3.1, z, sx: 0.5, sy: 0.45, sz: 0.46, yaw: 1.2 });
+  out.push({ kind: 'boulder', x: x1 - 0.35, y: 2.98, z, sx: 0.55, sy: 0.43, sz: 0.44, yaw: 2.1 });
   // The wall's cut ends under the coping, buried in a rock either side that rises a little over the wall top.
   out.push({ kind: 'boulder', x: x0 - 0.05, y: 3.08, z, sx: 0.36, sy: 0.34, sz: 0.4, yaw: 0.8 });
   out.push({ kind: 'boulder', x: x1 + 0.05, y: 3.05, z, sx: 0.36, sy: 0.32, sz: 0.4, yaw: 2.6 });
@@ -95,8 +95,8 @@ function floorRocks(out: Rock[], count: number, seed: number): void {
 
 /** Stalactite roots (x, z) and lengths: under the low back of the dome and its sides, clear of the visitor's head. */
 const STALACTITES: readonly (readonly [number, number, number])[] = [
-  [33.6, -9.3, 0.42], [32.5, -9.7, 0.36], [34.6, -9.8, 0.4], [33.1, -10.3, 0.3], [34.1, -10.4, 0.26],
-  [31.9, -7.6, 0.3], [35.15, -7.9, 0.28], [32.3, -8.6, 0.24], [34.9, -8.6, 0.28],
+  [33.5, -10.6, 0.5], [32.1, -11.3, 0.42], [35, -11.2, 0.46], [33, -12.4, 0.36], [34.3, -12.6, 0.32],
+  [33.6, -8.8, 0.45], [30.9, -9, 0.34], [36.1, -9.2, 0.38], [31.6, -10.4, 0.3], [35.5, -10.3, 0.32],
 ];
 
 /** Every rock of the grotto; the low tier keeps fewer boulders at the foot and fewer stalactites. */
