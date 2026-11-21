@@ -2,7 +2,7 @@
  * The lantern round (ui/play.ts): top left, a hand-lettered card tag with the count and a round "?" tag beside it, in
  * the plant tag's card stock and the fixed tags' cut; a notebook slip under them for a bed all lit; low right on touch,
  * a round enamel Open button while something is in reach. They step aside while the first-visit plate or a panel is up
- * (the plate and #proxies come before them in the garden layer). Every control 44 px or more; press feedback by
+ * (read off the plate and #proxies, their siblings in the garden layer). Every control 44 px or more; press feedback by
  * transform; no motion under reduced motion. Contrast: --tag-ink on the card's darkest stop (#d2c8b5) above 10:1,
  * --enamel-ink on --enamel 12:1, --note-ink on --note 10.4:1, --enamel-rose on --stock-card 5.3:1.
  */
@@ -18,13 +18,15 @@
   max-width: calc(100vw - 2 * var(--edge));
   font-family: var(--font-display);
   font-synthesis: none;
-  transition: opacity var(--dur-ui) var(--ease-out);
+  /* Comes back only once the folding plate has faded, so the two never stand over each other. */
+  transition: opacity var(--dur-ui) var(--ease-out) var(--dur-ui-exit);
 }
 
-.wl:is([data-state="shown"], [data-intro], [data-held]) ~ .pq,
-#proxies:is([data-phase="intro"], [data-phase="opening"], [data-phase="inspect"], [data-phase="closing"]) ~ :is(.pq, .pq-note, .pq-open) {
+#world:has(> .wl:is([data-state="shown"], [data-intro], [data-held])) > .pq,
+#world:has(> #proxies:is([data-phase="intro"], [data-phase="opening"], [data-phase="inspect"], [data-phase="closing"])) > :is(.pq, .pq-note, .pq-open) {
   opacity: 0;
   visibility: hidden;
+  transition-delay: 0s;
 }
 
 .pq-tag,
@@ -127,6 +129,12 @@
 .pq-ask,
 .pq-open {
   transition: transform var(--dur-hover) var(--ease-out);
+}
+
+@media (hover: hover) {
+  :is(.pq-invite, .pq-ask):hover {
+    transform: translateY(-1px);
+  }
 }
 
 :is(.pq-invite, .pq-ask, .pq-open):active {

@@ -10,8 +10,9 @@ export interface GardenMemory {
   /** Marks a project visited; true when it was new. */
   visit(id: string): boolean;
   onVisit(fn: (id: string) => void): () => void;
-  /** Forgets every visit (start over); flowers already resting open close on the next load. */
+  /** Forgets every visit (start over) and tells onReset, so the flowers resting open close at once. */
   reset(): void;
+  onReset(fn: () => void): () => void;
 }
 
 export const MEMORY_KEY = 'jardin.visited';
@@ -37,6 +38,7 @@ export function createMemory(store: KeyValue | null = defaultStore()): GardenMem
     seen.clear();
   }
   const listeners = new Set<(id: string) => void>();
+  const resets = new Set<() => void>();
   function save(): void {
     try {
       store?.setItem(MEMORY_KEY, JSON.stringify([...seen]));
@@ -56,6 +58,11 @@ export function createMemory(store: KeyValue | null = defaultStore()): GardenMem
     reset() {
       seen.clear();
       save();
+      for (const fn of resets) fn();
+    },
+    onReset(fn) {
+      resets.add(fn);
+      return () => resets.delete(fn);
     },
     onVisit(fn) {
       listeners.add(fn);

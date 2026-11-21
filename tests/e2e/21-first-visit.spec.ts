@@ -4,7 +4,7 @@ import { expect, PROJECTS, test, type Jardin } from '../helpers/jardin.ts';
 import { enterRoam, roamAt } from '../helpers/roam.ts';
 
 // The first visit (ui/welcome.ts, ui/plan.ts): once the cold start settles a plate names the owner, says where and what
-// they do (gap-free sentences only) and how to move for the input at hand, clear of the visitor, the signposts, the top
+// they do (gap-free sentences only) and where the work is (in free roam the help card says how to move), clear of the visitor, the signposts, the top
 // tags and the plan corner; the hint goes after a few steps; the plate comes up once per session and never in a still.
 // The plan lists every project, and a project walks the visitor to its flower and hands it keyboard focus.
 
@@ -68,14 +68,14 @@ async function expectPlate(page: Page): Promise<void> {
   await expect(page.locator('.wl'), 'the plate comes up once the cold start settles').toHaveAttribute('data-state', 'shown', { timeout: 15000 });
 }
 
-test('first visit: the plate names the owner, place and gap-free line, and how to move, clear of everything it must not cover', async ({ page, jardin }, info) => {
+test('first visit: the plate names the owner, place and gap-free line, and where the work is, clear of everything it must not cover', async ({ page, jardin }, info) => {
   await enterRoam(jardin);
   await expectPlate(page);
   await expect(page.locator('.wl-name')).toHaveText(profile.name);
   await expect(page.locator('.wl-place')).toHaveText('Vigo, Spain');
   await expect(page.locator('.wl-line')).toHaveText(LINE.en);
   await expect(page.locator('.wl')).not.toContainText('[FILL');
-  await expect(page.locator('.wl-hint')).toContainText(isPhone(info.project.name) ? 'Tap the ground' : 'arrow keys');
+  await expect(page.locator('.wl-hint'), 'the help card owns how to move').not.toContainText(isPhone(info.project.name) ? 'Tap the ground' : 'arrow keys');
   await expect(page.locator('.wl-hint')).toContainText('Projects, bottom left');
   const before = await page.evaluate(() => {
     const plate = document.querySelector('.wl');
@@ -136,7 +136,8 @@ test('first visit in Spanish: the line, the hint, the plan and the way-out tag',
   await expectPlate(page);
   await expect(page.locator('.wl-place')).toHaveText('Vigo, España');
   await expect(page.locator('.wl-line')).toHaveText(LINE.es);
-  await expect(page.locator('.wl-hint')).toContainText(isPhone(info.project.name) ? 'Toca el suelo' : 'flechas');
+  await expect(page.locator('.wl-hint')).not.toContainText(isPhone(info.project.name) ? 'Toca el suelo' : 'flechas');
+  await expect(page.locator('.wl-hint')).toContainText('Proyectos');
   await expect(page.locator('#proxies .pl-tag')).toHaveText('Proyectos');
   await expect(page.locator('#toggles .tg-exit')).toHaveText('Álbum');
 });

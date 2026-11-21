@@ -11,6 +11,8 @@ import './styles/help.css';
  */
 
 export const HELP = {
+  /** The card's id: the "?" tag targets it and the first-visit plate (ui/welcome.ts) yields to it. */
+  id: 'hp',
   /** localStorage key: the card was dismissed once, it never comes up by itself again. */
   seenKey: 'jardin.help',
 } as const;
@@ -53,7 +55,7 @@ export function createHelp(parent: HTMLElement, d: HelpDeps): Help {
   const { machine, content } = d;
   const card = document.createElement('dialog');
   card.className = 'hp';
-  card.id = 'hp';
+  card.id = HELP.id;
   card.setAttribute('popover', 'auto');
   card.setAttribute('aria-labelledby', 'hp-title');
   const title = document.createElement('h2');

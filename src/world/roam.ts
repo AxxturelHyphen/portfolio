@@ -41,6 +41,8 @@ export interface Visitor {
   /** True while an assisted move (signpost, plan, history) carries the visitor. */
   readonly assisted: boolean;
   setHeld(bits: number): void;
+  /** Scales the walking speed and the push to it (a brisk walk, the stick pushed part way); 1 is ROAM.speed. */
+  setPace(k: number): void;
   /** The camera's yaw (radians, positive toward +x): up walks away from the camera, right to its right. */
   setYaw(yaw: number): void;
   walkTo(x: number, z: number): void;
@@ -112,6 +114,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   const pa = area.pond.rx + r;
   const pb = area.pond.rz + r;
   let held = 0;
+  let pace = 1;
   let cosYaw = 1;
   let sinYaw = 0;
   let hasTarget = false;
@@ -238,8 +241,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       const dz = (held & HOLD.down ? 1 : 0) - (held & HOLD.up ? 1 : 0);
       const d = Math.hypot(dx, dz);
       if (d > 0) {
-        want[0] = ((dx * cosYaw - dz * sinYaw) / d) * ROAM.speed;
-        want[1] = ((dx * sinYaw + dz * cosYaw) / d) * ROAM.speed;
+        want[0] = ((dx * cosYaw - dz * sinYaw) / d) * ROAM.speed * pace;
+        want[1] = ((dx * sinYaw + dz * cosYaw) / d) * ROAM.speed * pace;
       }
       return;
     }
@@ -254,7 +257,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
     const az = aim[1]! - pos[1]!;
     const d = Math.hypot(ax, az);
     if (d < 1e-6) return;
-    const speed = Math.min(ROAM.speed, Math.sqrt(2 * DECEL * left));
+    const speed = Math.min(ROAM.speed * pace, Math.sqrt(2 * DECEL * left));
     want[0] = (ax / d) * speed;
     want[1] = (az / d) * speed;
   }
@@ -263,7 +266,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
     const dx = want[0]! - vel[0]!;
     const dz = want[1]! - vel[1]!;
     const d = Math.hypot(dx, dz);
-    const max = (want[0] === 0 && want[1] === 0 ? DECEL : ACCEL) * h;
+    const max = (want[0] === 0 && want[1] === 0 ? DECEL : ACCEL * pace) * h;
     if (d <= max) {
       vel[0] = want[0]!;
       vel[1] = want[1]!;
@@ -288,6 +291,9 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
         hasTarget = false;
         assisting = false;
       }
+    },
+    setPace(k) {
+      pace = k;
     },
     setYaw(yaw) {
       cosYaw = Math.cos(yaw);

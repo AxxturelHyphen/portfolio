@@ -334,11 +334,11 @@ export class StreamBed implements Bed {
     return 0;
   }
 
-  /** Visited flowers rest open; called when the memory learns a new one. */
-  remember(id: string): void {
+  /** Visited flowers rest open: called when the memory learns a new one, and with `on` false when it forgets it. */
+  remember(id: string, on = true): void {
     for (let i = 0; i < this.flowers.length; i++) {
       const f = this.flowers[i];
-      if (f !== undefined && f.flower.slot.project?.id === id) f.flower.setVisited(true);
+      if (f !== undefined && f.flower.slot.project?.id === id) f.flower.setVisited(on);
     }
   }
 

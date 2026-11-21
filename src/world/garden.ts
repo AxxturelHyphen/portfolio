@@ -92,6 +92,7 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     beds.set(id, bed);
     list.push(bed);
   }
+  memory.onReset(() => content.projects.forEach((p) => list.forEach((bed) => bed.remember(p.id, false))));
   const residency = createResidency(beds, layout, machine, d.quality, gfx);
   const cards: OverviewCard[] = [];
   let origin: BedId | null = null;

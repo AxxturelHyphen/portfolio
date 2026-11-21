@@ -99,6 +99,8 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   isolation: isolate;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: var(--target);
   min-height: var(--target);
   margin: var(--drop) 0 0;
   padding: 17px 13px 7px;
@@ -185,6 +187,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
 
 .tg-lang {
   --tilt: -0.9deg;
+  gap: 10px;
   padding: 0 4px;
   cursor: auto;
 }
@@ -206,8 +209,16 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   text-underline-offset: 4px;
 }
 
+.tg-lang-link {
+  transition: translate var(--dur-hover) var(--ease-out);
+}
+
 .tg-lang-link:not([aria-current="true"]):hover {
-  color: var(--tg-ink);
+  translate: 0 -1px;
+}
+
+.tg-lang-link:active {
+  translate: 0 1px;
 }
 
 .tg-exit[aria-disabled="true"] {
@@ -281,6 +292,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   .tg-plate,
   .tg-cv,
   .tg-exit,
+  .tg-lang-link,
   .tg-note,
   .tg-hint {
     transition: none;
@@ -323,7 +335,7 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   }
 
   .tg {
-    gap: 8px;
+    gap: 10px;
   }
 
   .tg::before {
@@ -350,7 +362,8 @@ html:not([data-mode="garden"]) :is(#toggles, .pn-bar) {
   }
 
   .tg-lang {
-    padding: 0 2px;
+    gap: 10px;
+    padding: 0;
   }
 
   .tg-lang-link {

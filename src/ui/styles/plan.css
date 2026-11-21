@@ -149,11 +149,11 @@
   font-size: var(--text-sm);
   text-decoration: underline 1px rgb(27 26 25 / 0.35);
   text-underline-offset: 4px;
+  transition: translate var(--dur-hover) var(--ease-out);
 }
 
 .pl-credits:hover {
-  text-decoration-color: var(--enamel-rose);
-  text-decoration-thickness: 2px;
+  translate: 0 -1px;
 }
 
 .pl-title {
@@ -230,8 +230,7 @@
 }
 
 .pl-group button:hover {
-  text-decoration-color: var(--enamel-rose);
-  text-decoration-thickness: 2px;
+  translate: 2px 0;
 }
 
 /* The status at the row's end, clicks passing through to the project: ring idea, ring and dot in progress, filled shipped. */
@@ -392,6 +391,7 @@
   .pl,
   .pl-tag,
   .pl-sheet,
+  .pl-credits,
   .pl[data-open] .pl-sheet {
     transition: none;
   }

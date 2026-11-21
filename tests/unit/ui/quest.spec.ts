@@ -53,3 +53,17 @@ test('start over forgets the visits and the notes; broken or missing storage nev
   expect(bare.note('a')).toBeNull();
   expect(bare.complete()).toBe(true);
 });
+
+test('start over tells its listeners at once, so the flowers resting open close live', () => {
+  const memory = createMemory(fakeStore());
+  memory.visit('a');
+  let resets = 0;
+  const off = memory.onReset(() => {
+    resets++;
+    expect(memory.visited('a'), 'the visits are gone before the listeners hear').toBe(false);
+  });
+  memory.reset();
+  off();
+  memory.reset();
+  expect(resets).toBe(1);
+});

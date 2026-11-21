@@ -3,7 +3,7 @@ import { HOLD, type Visitor } from './roam.ts';
 /**
  * How the visitor's held input becomes a walk (garden/roam.drive.ts): walk keys pass through; the touch stick leads the
  * visitor by a walk target a little ahead in its direction (so props are walked round by the detour logic) and sets
- * the pace by how far it is pushed; Shift held is a brisk walk (the visitor's time runs faster, the same gait). Input
+ * the pace by how far it is pushed; Shift held is a brisk walk (roam.ts's pace: a faster walk, the gait advanced by the ground covered). Input
  * held while the body has barely moved for STRIDE.stuckS is a visitor wedged on a prop: a short rescue walks it toward
  * a point further along the held direction, round props, before the held input takes over again. No allocation.
  */
@@ -104,7 +104,8 @@ export function createStride(visitor: Visitor, steered: () => void): Stride {
       }
       const x0 = pos[0]!;
       const z0 = pos[1]!;
-      visitor.step(dt * (brisk ? STRIDE.brisk : 1) * (pace > 0 && !rescuing ? pace : 1));
+      visitor.setPace((brisk ? STRIDE.brisk : 1) * (pace > 0 && !rescuing ? pace : 1));
+      visitor.step(dt);
       const pushing = !rescuing && (held !== 0 || pace > 0);
       const crawl = dt > 0 && Math.hypot(pos[0]! - x0, pos[1]! - z0) / dt < STRIDE.stuckMps;
       stuckS = pushing && crawl ? stuckS + dt : 0;

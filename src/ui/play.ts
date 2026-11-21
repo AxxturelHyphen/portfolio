@@ -14,7 +14,8 @@ import './styles/play.css';
  * and when every flower is, a one-time card with the real ways on (Download CV, the owner's links) while the tag turns
  * into the invitation to walk to the Salida. On touch, the floating stick (ui/stick.ts) and a round Open button low
  * right that is there only while a flower or a pet is in reach (the same action as Enter). The tag and the "?" step
- * aside while the first-visit plate stands (play.css). Notes wait until no panel is up.
+ * aside while the first-visit plate stands (play.css), and the help card's first showing waits until it has folded, so
+ * the two take turns. Notes wait until no panel is up.
  */
 
 export interface PlayDeps {
@@ -92,12 +93,15 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
   const shut = el('button', 'hp-link');
   ways.append(cv, ...links.map((l) => l.a));
   done.append(doneTitle, doneLine, walk, ways, shut);
-  parent.append(hud, note, open, done);
+  /** The counter and "?" come before the world's controls in the Tab order: top tags, this tag, the world, the corner. */
+  parent.insertBefore(hud, d.proxies);
+  parent.append(note, open, done);
 
   const help = createHelp(parent, {
     machine, content, touch,
     home: d.home,
     restart() {
+      pending = null;
       memory.reset();
       quest.reset();
       paint();
@@ -108,6 +112,26 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
   let pending: QuestNote = null;
   let noteTimer = 0;
   let asked = help.seen || !d.firstRun;
+  /**
+   * The first-visit plate (ui/welcome.ts, made after this layer): the help card waits until it has folded. The loop
+   * may rest by then (a still garden draws no frames), so the fold itself is watched.
+   */
+  let plate: HTMLElement | null = null;
+  let waiting = false;
+  const plateUp = (): boolean => {
+    plate ??= parent.querySelector<HTMLElement>('.wl');
+    return plate !== null && plate.dataset.state !== 'folded';
+  };
+  const firstHelp = (): void => {
+    asked = true;
+    help.open();
+  };
+  const watchPlate = new MutationObserver(() => {
+    if (plateUp()) return;
+    watchPlate.disconnect();
+    waiting = false;
+    if (machine.state.mode === 'garden' && !panelUp(machine.state)) firstHelp();
+  });
 
   function paint(): void {
     const lang = machine.state.lang;
@@ -169,11 +193,15 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
     showNote();
   });
   d.loop.on('dom', () => {
-    if (asked) return;
+    if (asked || waiting) return;
     const s = machine.state;
     if (s.mode !== 'garden' || (s.phase !== 'bed' && s.phase !== 'focus') || !d.settled()) return;
-    asked = true;
-    help.open();
+    if (!plateUp() || plate === null) {
+      firstHelp();
+      return;
+    }
+    waiting = true;
+    watchPlate.observe(plate, { attributes: true, attributeFilter: ['data-state'] });
   });
   paint();
   reach(machine.state);

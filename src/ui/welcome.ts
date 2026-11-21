@@ -1,8 +1,9 @@
 import { UI } from '../core/motion.ts';
 import type { Content, Machine, State } from '../types.ts';
 import { uiText } from './copy.ts';
+import { HELP } from './help.ts';
 import './styles/welcome.css';
-import { gapFree, hintKeys, WELCOME } from './welcome.rules.ts';
+import { gapFree, slipKeys, WELCOME } from './welcome.rules.ts';
 
 /**
  * The first-visit plate, top left: a card tag hung on a nail with the owner's name, place and the gap-free sentences of
@@ -14,6 +15,9 @@ import { gapFree, hintKeys, WELCOME } from './welcome.rules.ts';
  * While the kaleidoscope intro plays, on every load, the card stands from its first frame with a slip under it saying
  * how to skip (any key or a tap), so the intro is never a nameless wait; the slip leaves with the intro. On a first
  * visit the card then stays through the cold start until the plate comes up, unless a project opens first.
+ * With the play layer on (ui/play.ts, its help card owns the controls) the slip only says where the work is, the plate
+ * folds after WELCOME.playCardMs so the help card can come up, and it folds at once when the help card opens: the two
+ * never stand together.
  */
 
 export interface WelcomeDeps {
@@ -76,6 +80,8 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
   root.append(card, skip, hint);
 
   const roam = d.visitor !== null;
+  const help = world.querySelector<HTMLElement>(`#${HELP.id}`);
+  const helpOpen = (): boolean => help !== null && help.matches(':popover-open');
   let stage: Stage = seen() ? 'folded' : 'wait';
   let x0 = 0;
   let z0 = 0;
@@ -91,8 +97,7 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     place.textContent = p.location[lang];
     line.textContent = gapFree(p.headline[lang]);
     line.hidden = line.textContent === '';
-    const [move, work] = hintKeys(isTouch(), roam);
-    hint.textContent = `${uiText(content.strings, lang, move)} ${uiText(content.strings, lang, work)}`;
+    hint.textContent = slipKeys(isTouch(), roam, help !== null).map((k) => uiText(content.strings, lang, k)).join(' ');
     skip.textContent = uiText(content.strings, lang, isTouch() ? 'intro.skipTouch' : 'intro.skipKeys');
   }
 
@@ -136,7 +141,7 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
     z0 = v === null ? 0 : v[1]!;
     root.dataset.state = 'shown';
     hintTimer = window.setTimeout(dropHint, WELCOME.hintMs);
-    cardTimer = window.setTimeout(fold, WELCOME.cardMs);
+    cardTimer = window.setTimeout(fold, help === null ? WELCOME.cardMs : WELCOME.playCardMs);
   }
 
   paint();
@@ -160,6 +165,9 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
   document.addEventListener('keydown', (e) => {
     if (e.key === 'm' || e.key === 'M') fold();
   });
+  help?.addEventListener('toggle', (e) => {
+    if ((e as ToggleEvent).newState === 'open') fold();
+  });
 
   return {
     frame() {
@@ -167,7 +175,7 @@ export function createWelcome(world: HTMLElement, before: HTMLElement, d: Welcom
       if (stage === 'wait') {
         const s = machine.state;
         const at = s.phase === 'bed' || s.phase === 'focus' || (!roam && s.phase === 'overview');
-        if (s.mode === 'garden' && at && d.settled()) show();
+        if (s.mode === 'garden' && at && d.settled() && !helpOpen()) show();
         return;
       }
       const v = d.visitor;

@@ -60,7 +60,7 @@ test('play: opening a project lights its flower, the bed note shows once, start 
 test('play: the help card comes up by itself once, then only from the "?" tag or the H key', async ({ page, jardin, isMobile }) => {
   await enterRoam(jardin, '#/', { help: '1' });
   const help = page.locator('#hp');
-  await expect(help, 'first visit: the card comes up once the gate is open').toBeVisible({ timeout: 10000 });
+  await expect(help, 'first visit: the card comes up once the gate is open').toBeVisible({ timeout: 16000 });
   await expect(help).toContainText(isMobile ? 'Drag a thumb' : 'WASD');
   await page.keyboard.press('Escape');
   await expect(help).toBeHidden();

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { gapFree, hasGap, hintKeys, sentencesOf } from '../../../src/ui/welcome.rules.ts';
+import { gapFree, hasGap, hintKeys, slipKeys, sentencesOf } from '../../../src/ui/welcome.rules.ts';
 
 // The first visit's rules: only sentences of the headline without an owner gap show, a filled gap brings its sentence
 // back by itself, and the movement hint follows the input and the way through the garden. Every key has both languages.
@@ -34,6 +34,12 @@ test('the hint follows the input: keys or click on desktop, tap or drag on touch
   expect(hintKeys(true, true)).toEqual(['welcome.touch', 'welcome.work']);
   expect(hintKeys(false, false)).toEqual(['welcome.railKeys', 'welcome.work']);
   expect(hintKeys(true, false)).toEqual(['welcome.railTouch', 'welcome.work']);
+});
+
+test('with the play layer on, the slip leaves how to move to the help card and only says where the work is', () => {
+  expect(slipKeys(true, true, true)).toEqual(['welcome.work']);
+  expect(slipKeys(false, true, true)).toEqual(['welcome.work']);
+  expect(slipKeys(false, true, false)).toEqual(['welcome.keys', 'welcome.work']);
 });
 
 test('every first-visit and plan string exists in both languages, plain: no exclamation mark (tests/unit/rules.spec.ts bans em dashes everywhere)', () => {

@@ -32,6 +32,18 @@ test('walk speed is capped at 3.2 m/s', () => {
   expect(max).toBeGreaterThan(ROAM.speed - 1e-4);
 });
 
+test('the pace scales the walk speed, in the same time to full speed (Shift, the stick pushed part way)', () => {
+  for (const pace of [1.45, 0.5]) {
+    const v = createVisitor(area, 0, 0);
+    v.setPace(pace);
+    v.setHeld(HOLD.right);
+    for (let i = 0; i < Math.round((ROAM.toSpeedS * 240) / 2); i++) v.step(1 / 240);
+    expect(speedOf(v)).toBeCloseTo((ROAM.speed * pace) / 2, 1);
+    for (let i = 0; i < 120; i++) v.step(1 / 240);
+    expect(speedOf(v)).toBeCloseTo(ROAM.speed * pace, 4);
+  }
+});
+
 test('full speed after 0.15 s, standing still 0.1 s after release', () => {
   const dt = 1 / 240;
   const v = createVisitor(area, 0, 0);

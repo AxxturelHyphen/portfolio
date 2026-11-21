@@ -10,6 +10,8 @@ export const WELCOME = {
   hintMs: 8000,
   /** The name card folds away this long (ms) after it came up, never before the hint went. */
   cardMs: 10000,
+  /** With the play layer on, the card folds sooner, for the help card to come up (ui/play.ts). */
+  playCardMs: 4000,
   /** sessionStorage key: the plate came up in this session. */
   seenKey: 'jardin.welcome',
 } as const;
@@ -47,4 +49,9 @@ export function gapFree(text: string): string {
 export function hintKeys(touch: boolean, roam: boolean): readonly [string, string] {
   const move = roam ? (touch ? 'welcome.touch' : 'welcome.keys') : touch ? 'welcome.railTouch' : 'welcome.railKeys';
   return [move, 'welcome.work'];
+}
+
+/** The slip's keys: with the play layer on, its help card says how to move, so the slip only says where the work is. */
+export function slipKeys(touch: boolean, roam: boolean, play: boolean): readonly string[] {
+  return play ? ['welcome.work'] : hintKeys(touch, roam);
 }

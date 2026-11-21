@@ -7,10 +7,12 @@
  */
 
 .hp {
+  /* Room kept above the card for the counter and the "?" (play.css), under the wire of fixed tags on phones. */
+  --hp-top: 128px;
   position: fixed;
   inset: auto 0 calc(env(safe-area-inset-bottom, 0px) + 112px);
   width: min(380px, calc(100vw - 2 * var(--edge)));
-  max-height: calc(100dvh - 96px);
+  max-height: calc(100dvh - 112px - var(--hp-top) - env(safe-area-inset-top, 0px));
   margin: 0 auto;
   padding: 20px 22px 14px;
   overflow: auto;
@@ -119,6 +121,14 @@
   text-underline-offset: 4px;
 }
 
+@media (hover: hover) {
+  .hp-ok:hover,
+  .hp-link:hover,
+  .pq-way:hover {
+    transform: translateY(-1px);
+  }
+}
+
 .hp-ok:active,
 .hp-link:active,
 .pq-way:active {
@@ -130,11 +140,11 @@
   outline-offset: 2px;
 }
 
-/* Held sideways, the card stands under the wire of fixed tags, clear of them and of the plan corner. */
-@media (max-height: 30rem) {
+/* Short screens: a tighter card, low enough to clear the plan corner and high enough to clear the counter. */
+@media (max-height: 40rem) {
   .hp {
-    inset-block: calc(max(5px, env(safe-area-inset-top, 0px)) + 58px) auto;
-    max-height: calc(100dvh - 70px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+    max-height: calc(100dvh - 100px - var(--hp-top) - env(safe-area-inset-top, 0px));
     padding: 14px 18px 10px;
   }
 
@@ -147,6 +157,14 @@
     gap: 2px;
     margin-bottom: 10px;
     font-size: var(--text-sm);
+  }
+}
+
+/* Held sideways, the card stands under the wire of fixed tags, between the counter and the tags, clear of the corner. */
+@media (max-height: 30rem) {
+  .hp {
+    inset-block: calc(max(5px, env(safe-area-inset-top, 0px)) + 58px) auto;
+    max-height: calc(100dvh - 70px);
   }
 }
 
