@@ -126,11 +126,19 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
     asked = true;
     help.open();
   };
+  /** The folded plate still fades for a moment: the help card comes up only once its slip is out of sight. */
+  const afterFold = (tries = 25): void => {
+    if (tries > 0 && plate?.querySelector<HTMLElement>('.wl-hint')?.checkVisibility({ opacityProperty: true }) === true) {
+      setTimeout(afterFold, 80, tries - 1);
+      return;
+    }
+    waiting = false;
+    if (machine.state.mode === 'garden' && !panelUp(machine.state)) firstHelp();
+  };
   const watchPlate = new MutationObserver(() => {
     if (plateUp()) return;
     watchPlate.disconnect();
-    waiting = false;
-    if (machine.state.mode === 'garden' && !panelUp(machine.state)) firstHelp();
+    afterFold();
   });
 
   function paint(): void {
