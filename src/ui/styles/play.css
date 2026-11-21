@@ -1,0 +1,164 @@
+/*
+ * The lantern round (ui/play.ts): top left, a hand-lettered card tag with the count and a round "?" tag beside it, in
+ * the plant tag's card stock and the fixed tags' cut; a notebook slip under them for a bed all lit; low right on touch,
+ * a round enamel Open button while something is in reach. They step aside while the first-visit plate or a panel is up
+ * (the plate and #proxies come before them in the garden layer). Every control 44 px or more; press feedback by
+ * transform; no motion under reduced motion. Contrast: --tag-ink on the card's darkest stop (#d2c8b5) above 10:1,
+ * --enamel-ink on --enamel 12:1, --note-ink on --note 10.4:1, --enamel-rose on --stock-card 5.3:1.
+ */
+
+.pq {
+  position: fixed;
+  z-index: 4;
+  top: calc(max(6px, env(safe-area-inset-top, 0px)) + 12px);
+  left: max(var(--edge), env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 2 * var(--edge));
+  font-family: var(--font-display);
+  font-synthesis: none;
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+
+.wl:is([data-state="shown"], [data-intro], [data-held]) ~ .pq,
+#proxies:is([data-phase="intro"], [data-phase="opening"], [data-phase="inspect"], [data-phase="closing"]) ~ :is(.pq, .pq-note, .pq-open) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.pq-tag,
+.pq-ask {
+  min-height: var(--target);
+  margin: 0;
+  color: var(--tag-ink);
+  background: var(--stock-card);
+  filter: var(--cast-paper) drop-shadow(0 2px 4px rgb(4 6 12 / 0.45));
+}
+
+.pq-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 14px 0;
+  border: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  font-weight: 500;
+  line-height: 1.2;
+  clip-path: polygon(9px 0, calc(100% - 10px) 1px, 100% 10px, calc(100% - 1px) 100%, 1px calc(100% - 1px), 0 9px);
+  rotate: -1deg;
+}
+
+.pq-tag[hidden] {
+  display: none;
+}
+
+.pq-invite {
+  color: var(--enamel-rose);
+  text-decoration: underline 1.5px;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.pq-ask {
+  width: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  font: inherit;
+  font-size: 1.375rem;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1.5px rgb(27 26 25 / 0.5);
+  cursor: pointer;
+}
+
+.pq-note {
+  position: fixed;
+  z-index: 4;
+  top: calc(max(6px, env(safe-area-inset-top, 0px)) + 66px);
+  left: max(var(--edge), env(safe-area-inset-left, 0px));
+  max-width: min(300px, calc(100vw - 2 * var(--edge)));
+  padding: 8px 12px;
+  color: var(--note-ink);
+  background: var(--note);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  box-shadow: 0 2px 6px rgb(4 6 12 / 0.45);
+  rotate: 0.6deg;
+  opacity: 0;
+  translate: 0 -6px;
+  pointer-events: none;
+  transition: opacity var(--dur-ui) var(--ease-out), translate var(--dur-ui) var(--ease-out);
+}
+
+.pq-note[data-on] {
+  opacity: 1;
+  translate: none;
+}
+
+.pq-note:empty {
+  display: none;
+}
+
+.pq-open {
+  position: fixed;
+  z-index: 4;
+  right: max(var(--edge), env(safe-area-inset-right, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--enamel-ink);
+  background: var(--enamel);
+  box-shadow: inset 0 0 0 4px var(--enamel), inset 0 0 0 5.5px var(--enamel-ink), 0 3px 8px rgb(4 6 12 / 0.5);
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--text-lg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pq-open[hidden] {
+  display: none;
+}
+
+.pq-tag,
+.pq-ask,
+.pq-open {
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+
+:is(.pq-invite, .pq-ask, .pq-open):active {
+  transform: translateY(1px) scale(0.96);
+}
+
+:is(.pq-invite, .pq-ask, .pq-open):focus-visible {
+  outline: 2px solid var(--zinc-ink);
+  outline-offset: 3px;
+}
+
+/* Phones upright: the tags sit under the wire of fixed tags, which takes the top edge. */
+@media (max-width: 44.99rem) {
+  .pq {
+    top: calc(max(5px, env(safe-area-inset-top, 0px)) + 64px);
+  }
+
+  .pq-note {
+    top: calc(max(5px, env(safe-area-inset-top, 0px)) + 116px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pq,
+  .pq-note,
+  .pq-tag,
+  .pq-ask,
+  .pq-open {
+    transition: none;
+  }
+
+  .pq-note {
+    translate: none;
+  }
+}

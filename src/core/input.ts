@@ -1,5 +1,6 @@
 import type { CameraRig, LightRig, Loop, Machine } from '../types.ts';
 import { createOrbitGesture, ORBIT_KEYS, type OrbitInput } from './orbit.gesture.ts';
+import { createStickGesture, type StickPad } from './stick.gesture.ts';
 
 /**
  * Unified input (spec section 7, cook/ARCH.md 2.1 and 2.5): pointer drag with inertia, wheel and pinch zoom, tap,
@@ -9,8 +10,9 @@ import { createOrbitGesture, ORBIT_KEYS, type OrbitInput } from './orbit.gesture
  * Free roam (the optional `roam` dep, the default): arrows and WASD hold walk directions instead of stepping beds, a
  * pointer down on the canvas walks there and a drag steers toward the pointer; no pan, fling or swipe. Q and E, a
  * right-button drag, a drag begun off the walkable ground and two fingers orbit the camera, the wheel and a pinch zoom
- * it (core/orbit.gesture.ts). Enter on the page or the canvas opens the focused flower (focused by walking up to it,
- * cook/ROAM_PLAN.md section 3).
+ * it (core/orbit.gesture.ts). Enter or Space on the page or the canvas opens the focused flower (focused by walking up
+ * to it, cook/ROAM_PLAN.md section 3); Shift held walks briskly. On touch, the optional `stick` dep makes a finger put
+ * down in its corner a floating stick (core/stick.gesture.ts); a tap there still walks, a second finger still orbits.
  */
 
 export const GESTURE = {
@@ -40,6 +42,10 @@ export interface RoamControl {
   walkable(xPx: number, yPx: number): boolean;
   /** Stops the walk toward a pointer (a second finger came down to orbit). */
   halt(): void;
+  /** The touch stick: x right, y down on screen, length 0..1; (0, 0) lets go. */
+  stick(x: number, y: number): void;
+  /** Shift held: a brisk walk. */
+  setBrisk(on: boolean): void;
 }
 
 /** Walk keys in free roam: arrows by key, WASD by physical position. */
@@ -52,7 +58,7 @@ export const OWN_KEYS = 'input, textarea, select, [contenteditable], dialog';
 /** Also keeps the walk keys: the plan's sheet (ui/plan.ts), inert while closed, so focus inside it means it is open. */
 export const OWN_WALK_KEYS = `${OWN_KEYS}, .pl-sheet`;
 
-export interface InputDeps { machine: Machine; rig: CameraRig; light: LightRig; loop: Loop; surface: HTMLElement; roam?: RoamControl }
+export interface InputDeps { machine: Machine; rig: CameraRig; light: LightRig; loop: Loop; surface: HTMLElement; roam?: RoamControl; stick?: StickPad }
 export interface Input { /** Stage 'input': applies this frame's pan and zoom to the rig. */ frame(): void; dispose(): void }
 
 const SAMPLES = 8;
@@ -80,6 +86,7 @@ export function createInput(d: InputDeps): Input {
   let steerY = 0;
   let turn = 0;
   const gesture = roam === null ? null : createOrbitGesture(roam.orbit, surface, GESTURE.tapPx);
+  const stick = roam === null || d.stick === undefined ? null : createStickGesture(d.stick, surface, GESTURE.tapPx, GESTURE.tapMs);
 
   const garden = (): boolean => machine.state.mode === 'garden';
   const phase = (): string => machine.state.phase;
@@ -158,9 +165,10 @@ export function createInput(d: InputDeps): Input {
         steerId = -1;
         roam.halt();
       }
+      if (stick?.cancel() === true) roam.stick(0, 0);
       return;
     }
-    if (steerId !== -1) return;
+    if (steerId !== -1 || stick?.down(e) === true) return;
     steerId = e.pointerId;
     steerX = downX = e.clientX;
     steerY = downY = e.clientY;
@@ -172,7 +180,11 @@ export function createInput(d: InputDeps): Input {
 
   function roamUp(e: PointerEvent): void {
     const orbited = gesture?.up(e) ?? 'miss';
-    if (orbited === 'tap') roam?.pointAt(e.clientX, e.clientY);
+    const stuck = stick?.up(e) ?? 'miss';
+    if (stuck === 'push') roam?.stick(0, 0);
+    if (orbited === 'tap' || stuck === 'tap') roam?.pointAt(e.clientX, e.clientY);
+    if (stuck === 'tap' && phase() === 'focus') machine.send({ type: 'BLUR' });
+    if (stuck !== 'miss') return;
     if (orbited !== 'miss' || e.pointerId !== steerId) return;
     steerId = -1;
     if (e.type === 'pointerup') roam?.pointAt(e.clientX, e.clientY);
@@ -183,7 +195,7 @@ export function createInput(d: InputDeps): Input {
   function onMove(e: PointerEvent): void {
     if (!garden()) return;
     if (roam !== null) {
-      if (gesture?.move(e) === true) loop.wake();
+      if (gesture?.move(e) === true || stick?.move(e) === true) loop.wake();
       if (e.pointerId !== steerId) return;
       loop.wake();
       steerX = e.clientX;
@@ -270,6 +282,7 @@ export function createInput(d: InputDeps): Input {
     if (t instanceof Element && t.closest(OWN_KEYS)) return;
     anyInput();
     const p = phase();
+    if (roam !== null && e.key === 'Shift') roam.setBrisk(true);
     if (roam !== null && roamKey(e, t)) return;
     switch (e.key) {
       case 'ArrowLeft':
@@ -282,8 +295,9 @@ export function createInput(d: InputDeps): Input {
         machine.send({ type: 'BACK' });
         return;
       case 'Enter':
+      case ' ':
         if (t !== document.body && t !== surface) return;
-        if (p === 'overview') {
+        if (p === 'overview' && e.key === 'Enter') {
           e.preventDefault();
           machine.send({ type: 'STEP_BED', dir: 1 });
         } else if (roam !== null && p === 'focus') {
@@ -326,6 +340,7 @@ export function createInput(d: InputDeps): Input {
   }
 
   function onKeyUp(e: KeyboardEvent): void {
+    if (e.key === 'Shift') roam?.setBrisk(false);
     const bit = WALK_KEYS[e.code] ?? WALK_KEYS[e.key];
     if (bit !== undefined) setHeld(held & ~bit);
     if (ORBIT_KEYS[e.code] === turn) setTurn(0);
@@ -345,6 +360,8 @@ export function createInput(d: InputDeps): Input {
     window.addEventListener('blur', () => {
       setHeld(0);
       setTurn(0);
+      roam.setBrisk(false);
+      if (stick?.cancel() === true) roam.stick(0, 0);
     }, { signal: ac.signal });
     surface.addEventListener('contextmenu', (e) => e.preventDefault(), { signal: ac.signal });
   }
@@ -352,6 +369,7 @@ export function createInput(d: InputDeps): Input {
   return {
     frame(): void {
       if (steerId !== -1) roam?.pointAt(steerX, steerY);
+      if (stick?.pushing === true) roam?.stick(stick.x, stick.y);
       if (panPx !== 0) {
         rig.panBy(panPx);
         panPx = 0;

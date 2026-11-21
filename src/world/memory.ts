@@ -1,7 +1,8 @@
 /**
  * The garden remembers which flowers were visited (a project opened), across visits, in localStorage. Storage can be
  * missing or throw (private windows, blocked site data): every access is wrapped and the garden then remembers for
- * this visit only. Read by the flowers (a visited flower rests open).
+ * this visit only. Read by the flowers (a visited flower rests open) and the lantern round (ui/play.ts counts the lit
+ * flowers and can start over).
  */
 
 export interface GardenMemory {
@@ -9,6 +10,8 @@ export interface GardenMemory {
   /** Marks a project visited; true when it was new. */
   visit(id: string): boolean;
   onVisit(fn: (id: string) => void): () => void;
+  /** Forgets every visit (start over); flowers already resting open close on the next load. */
+  reset(): void;
 }
 
 export const MEMORY_KEY = 'jardin.visited';
@@ -34,18 +37,25 @@ export function createMemory(store: KeyValue | null = defaultStore()): GardenMem
     seen.clear();
   }
   const listeners = new Set<(id: string) => void>();
+  function save(): void {
+    try {
+      store?.setItem(MEMORY_KEY, JSON.stringify([...seen]));
+    } catch {
+      /* storage full or blocked: remembered for this visit only */
+    }
+  }
   return {
     visited: (id) => seen.has(id),
     visit(id) {
       if (seen.has(id)) return false;
       seen.add(id);
-      try {
-        store?.setItem(MEMORY_KEY, JSON.stringify([...seen]));
-      } catch {
-        /* storage full or blocked: remembered for this visit only */
-      }
+      save();
       for (const fn of listeners) fn(id);
       return true;
+    },
+    reset() {
+      seen.clear();
+      save();
     },
     onVisit(fn) {
       listeners.add(fn);

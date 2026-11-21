@@ -16,6 +16,7 @@ import { ACTIVATE_EVENT, createProxies } from '../ui/proxies.ts';
 import { uiText } from '../ui/copy.ts';
 import { createLabel } from '../ui/label.ts';
 import { createModeLayers } from '../ui/mode.ts';
+import { createPlay } from '../ui/play.ts';
 import { heldMode } from '../world/exit.ts';
 import { WORK_EVENT } from '../ui/plan.ts';
 import { createWorkWalk } from '../ui/plan.walk.ts';
@@ -131,7 +132,8 @@ export function startGarden(host: GardenHost): GardenRuntime {
   if (roaming) raiseTerrain(closedGroundLayoutOf(world), world.ground.pond);
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
-  const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam }) });
+  const play = roam === null || q.shot !== undefined || q.t !== undefined ? null : createPlay(host.world, { machine, content, loop, memory: garden.memory, proxies: host.proxies, activate: () => roam.activate(), home: () => roam.home(), settled: () => channelsSettled(machine) && !roam.busy, firstRun: q.bench !== 1 || location.search.includes('help=1'), bedTitle: (b, l) => SCENES[b].title[l] });
+  const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam, ...(play === null ? {} : { stick: play.stick }) }) });
   if (roam !== null) setRoamWeight(1);
   setPaperEdge(quality.tier !== 'low');
   quality.onChange((qq) => setPaperEdge(qq.tier !== 'low'));
@@ -170,9 +172,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   });
   let entered: BedId | null = null;
   /** The first visit's plate: never in a still (?shot, ?t), so the stills stay as they were. */
-  const welcome = q.shot === undefined && q.t === undefined
-    ? createWelcome(host.world, host.proxies, { machine, content, visitor: roam?.pos ?? null, settled: () => channelsSettled(machine) && roam?.busy !== true })
-    : null;
+  const welcome = q.shot === undefined && q.t === undefined ? createWelcome(host.world, host.proxies, { machine, content, visitor: roam?.pos ?? null, settled: () => channelsSettled(machine) && roam?.busy !== true }) : null;
   const work = createWorkWalk({
     machine,
     bedOf: bedOfProject,

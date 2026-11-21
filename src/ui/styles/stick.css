@@ -1,0 +1,42 @@
+/*
+ * The floating stick (ui/stick.ts): a chalk ring on a dusk wash where the thumb landed, and a card knob in the
+ * fixed controls' stock that follows the push. It never takes events. Transform and opacity only; no fade under
+ * reduced motion. Ring 112 px, knob 56 px (above the 44 px target).
+ */
+
+.sk {
+  position: fixed;
+  z-index: 5;
+  top: -56px;
+  left: -56px;
+  width: 112px;
+  height: 112px;
+  border: 2px solid rgb(243 230 207 / 0.6);
+  border-radius: 50%;
+  background: rgb(31 23 19 / 0.34);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-hover) var(--ease-out);
+}
+
+.sk[data-on] {
+  opacity: 1;
+}
+
+.sk-knob {
+  position: absolute;
+  top: 26px;
+  left: 26px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--stock-card);
+  box-shadow: inset 0 0 0 1.5px rgb(27 26 25 / 0.55), inset 0 -3px 6px rgb(74 58 40 / 0.25);
+  filter: var(--cast-paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk {
+    transition: none;
+  }
+}

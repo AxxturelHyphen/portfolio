@@ -18,6 +18,7 @@ import { createOrbit, type OrbitMode } from '../world/orbit.ts';
 import { bossCamera } from '../world/boss.camera.ts';
 import { createProximity, PROXIMITY, reachDist } from '../world/proximity.ts';
 import { bedAhead, createVisitor, HEADING, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
+import { createStride } from '../world/stride.ts';
 import type { Arrival } from './arrival.ts';
 
 /**
@@ -33,7 +34,7 @@ import type { Arrival } from './arrival.ts';
  * The approach (world/approach.ts): while proximity focuses a slot, the camera eases toward a nearer framing as far as
  * the subject and the visitor's pool still fit the frame beside the plant tag (world/fit.ts), and back out when the
  * visitor walks on. The orbit (world/orbit.ts) turns the follow camera about the visitor; held walk keys turn with it,
- * and the bed it looks toward streams in early.
+ * and the bed it looks toward streams in early. Held input walks through world/stride.ts (stick, Shift, rescue).
  */
 
 export interface RoamDeps {
@@ -66,6 +67,7 @@ export interface RoamDrive extends RoamControl {
   readonly pos: Float32Array;
   /** Test hook: walk toward (x, z) as a click on the ground there would. */
   walkTo(x: number, z: number): void;
+  /** Back to the gate: travel to the first bed, or stand at its stand point when already there. */ home(): void;
   /** The slots of the entered bed, for proximity (empty while none is entered). */
   setSlots(slots: readonly SlotView[]): void;
   /** Test hook: hold the framing at k (0 walking, 1 near framing), or null to let the approach drive it again. */
@@ -134,6 +136,8 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   const first = intent.k === 'bed' ? intent.bed : intent.k === 'project' ? d.bedOfProject(intent.id) : null;
   const start = first ?? beds[0] ?? world.order[0]!;
   const visitor = createVisitor(area, d.spawn?.[0] ?? anchorOf(start), d.spawn?.[1] ?? standZ(start));
+  const gate = beds[0] ?? start;
+  const stride = createStride(visitor, () => (seeking = null));
   const orbit = createOrbit(d.orbit ?? 'free');
   const follower = createFollower(limits, orbit);
   const hit = new Float32Array(3);
@@ -302,10 +306,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
     get busy() {
       return visitor.busy || approach.busy || orbit.busy || ((startPending || d.arrival?.busy === true) && machine.state.mode === 'garden');
     },
-    setHeld(bits) {
-      if (bits !== 0) seeking = null;
-      visitor.setHeld(bits);
-    },
+    setHeld: stride.setHeld, stick: stride.stick, setBrisk: stride.setBrisk,
     pointAt(xPx, yPx) {
       if (!rig.groundAt(xPx, yPx, hit)) return;
       seeking = null;
@@ -318,9 +319,8 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       seeking = null;
       visitor.halt();
     },
-    walkTo(x, z) {
-      visitor.walkTo(x, z);
-    },
+    walkTo: (x, z) => visitor.walkTo(x, z),
+    home: () => (machine.state.bed === gate ? visitor.place(anchorOf(gate), standZ(gate)) : machine.send({ type: 'GOTO', place: { k: 'bed', bed: gate } })),
     activate() {
       const s = machine.state;
       if (s.phase === 'focus' && s.slot !== null) d.proxies.activate(s.slot);
@@ -347,16 +347,14 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       held = k;
       loop.wake();
     },
-    heading: () => ahead,
-    here: () => here,
-    arrived,
+    heading: () => ahead, here: () => here, arrived,
     frame(c) {
       if (walk.active && !visitor.assisted) walk.cancel();
       visitor.setYaw(orbit.yaw);
       if (visitor.assisted) {
         assisted(c);
       } else {
-        visitor.step(c.dt);
+        stride.step(c.dt, orbit.yaw);
         if (visitor.busy && seeking === null) armed = true;
       }
       keepBed();

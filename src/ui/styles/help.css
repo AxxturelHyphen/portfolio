@@ -1,0 +1,165 @@
+/*
+ * The how-to-play card (ui/help.ts) and the garden-complete card (ui/play.ts, .pq-done): a card tag of the plant tag's
+ * stock with a hand-cut edge, low in the middle of the screen, clear of the fixed tags and the plan corner. Title in
+ * the display serif, lines in the UI face. Light-dismiss popovers: no backdrop, the garden stays visible and live.
+ * Contrast: --tag-ink on the card's darkest stop (#d2c8b5) above 10:1, --enamel-ink on --enamel 12:1, rose 6:1.
+ * Opacity and transform only; nothing moves under reduced motion.
+ */
+
+.hp {
+  position: fixed;
+  inset: auto 0 calc(env(safe-area-inset-bottom, 0px) + 112px);
+  width: min(380px, calc(100vw - 2 * var(--edge)));
+  max-height: calc(100dvh - 96px);
+  margin: 0 auto;
+  padding: 20px 22px 14px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  color: var(--tag-ink);
+  background: none;
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.45;
+  isolation: isolate;
+  filter: drop-shadow(0 1px 1px rgb(6 8 16 / 0.6)) drop-shadow(3px 10px 10px rgb(4 6 12 / 0.4));
+  opacity: 0;
+  translate: 0 10px;
+  transition: opacity var(--dur-ui) var(--ease-out), translate var(--dur-ui) var(--ease-out), display var(--dur-ui) allow-discrete, overlay var(--dur-ui) allow-discrete;
+}
+
+/* The card itself, cut by hand; on a layer of its own so the drop shadow on .hp is not clipped with it. */
+.hp::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--stock-card);
+  box-shadow: inset 0 0 0 1px rgb(70 52 34 / 0.24), inset 0 0 18px -6px rgb(82 60 36 / 0.45);
+  clip-path: polygon(0 3px, 22% 0, 54% 2px, 80% 0, 100% 3px, calc(100% - 1px) 46%, 100% 100%, 61% calc(100% - 2px), 26% 100%, 1px calc(100% - 1px), 0 58%);
+}
+
+.hp:popover-open {
+  display: block;
+  opacity: 1;
+  translate: none;
+}
+
+@starting-style {
+  .hp:popover-open {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+
+.hp-title {
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--display-sm);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.hp-lines {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.hp-lines li {
+  padding-left: 14px;
+  background: radial-gradient(circle 2.5px at 3px 0.72em, var(--tag-ink-2) 2.4px, transparent 2.6px);
+}
+
+.hp-line {
+  margin-bottom: 14px;
+}
+
+.hp-ok,
+.hp-link,
+.pq-way {
+  min-height: var(--target);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+
+.hp-ok {
+  display: block;
+  width: 100%;
+  padding: 0 10px;
+  border: 8px solid transparent;
+  border-image: var(--plate-enamel) 8 fill / 8px;
+  color: var(--enamel-ink);
+  background: none;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-size: var(--text-lg);
+}
+
+.hp-more,
+.pq-ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 8px;
+}
+
+.hp-link,
+.pq-way {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2px;
+  border: 0;
+  color: var(--enamel-rose);
+  background: none;
+  text-decoration: underline 1px;
+  text-underline-offset: 4px;
+}
+
+.hp-ok:active,
+.hp-link:active,
+.pq-way:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.hp :focus-visible {
+  outline: 2px solid var(--tag-ink);
+  outline-offset: 2px;
+}
+
+/* Held sideways, the card stands under the wire of fixed tags, clear of them and of the plan corner. */
+@media (max-height: 30rem) {
+  .hp {
+    inset-block: calc(max(5px, env(safe-area-inset-top, 0px)) + 58px) auto;
+    max-height: calc(100dvh - 70px);
+    padding: 14px 18px 10px;
+  }
+
+  .hp-title {
+    margin-bottom: 4px;
+    font-size: var(--text-lg);
+  }
+
+  .hp-lines {
+    gap: 2px;
+    margin-bottom: 10px;
+    font-size: var(--text-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp,
+  .hp-ok,
+  .hp-link,
+  .pq-way {
+    transition: none;
+  }
+
+  .hp,
+  .hp:popover-open {
+    translate: none;
+  }
+}
