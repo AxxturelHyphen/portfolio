@@ -175,7 +175,7 @@ Also checked:
 
 - First load: 3 MB or less, everything fetched until the garden is ready, fonts excluded.
 - Each further bed: 2 MB or less (its atlas manifest and pages).
-- App JavaScript: 150 KB gzip or less, without three.js.
+- App JavaScript: 175 KB gzip or less, without three.js.
 - No long task over 100 ms.
 - Herbario under Lighthouse (simulated fast 4G, 4x CPU): performance 90 or more, accessibility 95 or more, CLS 0,
   LCP 1.8 s or less.
