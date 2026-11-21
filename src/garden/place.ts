@@ -3,11 +3,15 @@ import type { GroundLayout } from '../gl/ground.ts';
 import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
 import { createIronGate } from '../gl/irongate.ts';
+import { SolidBuilder, solidMesh } from '../gl/masonry.ts';
+import { bindSolidTiles, solidMaterial } from '../gl/solid.material.ts';
 import { setMoon, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
 import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
+import { enclosureRuns, masonryOf, STONES } from '../world/enclosure.ts';
 import { exitGate } from '../world/exit.ts';
+import type { StreamGarden } from '../world/garden.ts';
 import { ironGateOf } from '../world/irongate.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
 import { builtIn, type WorldMode } from '../world/mode.ts';
@@ -197,21 +201,26 @@ export function closedGroundLayoutOf(g: WorldLayout): GroundLayout {
   return { ...groundLayoutOf(g), x0: e.x[0] - CLOSED_MARGIN.side, x1: e.x[1] + CLOSED_MARGIN.side, z0: g.ground.wall.z - CLOSED_MARGIN.far };
 }
 
-/** The Salida's iron gate paints after the closed garden's wall (world/garden.ts CLOSED_ORDER) and before the beds. */
+/** The closed garden's solid walls paint after its crowns and hedge (world/garden.ts CLOSED_ORDER), then the Salida's iron gate, then the beds. */
+const WALL_ORDER = RENDER_ORDER.overview - 2;
 const GATE_ORDER = RENDER_ORDER.overview - 0.5;
 
 /**
  * Everything gl must have before warm() so no texture uploads or compiles on first draw: the ground layout and the pond,
- * once. Free roam clips the ground to the closed garden, hangs the iron gate in the Salida's doorway and reflects the
+ * once. Free roam clips the ground to the closed garden, raises its walls (their stone tiles bind once the shared atlas is up), hangs the iron gate in the Salida's doorway and reflects the
  * roam variants in the pond.
  */
-export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode): void {
+export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode,
+  garden: Pick<StreamGarden, 'ready' | 'sharedAtlas'>): void {
   const closed = mode === 'roam';
   gfx.ground.setLayout(closed ? closedGroundLayoutOf(g) : groundLayoutOf(g));
   const e = g.ground.enclosure;
   if (closed) {
     gfx.ground.enclose(e.x[0], g.ground.wall.z - CLOSED_MARGIN.shade, e.x[1], e.front);
     gfx.scene.add(createIronGate(ironGateOf(e.door, g.ground.wall.z), exitGate, GATE_ORDER));
+    const walls = masonryOf(enclosureRuns(e, g.ground.wall.z, g.ground.wall.h), e.baseH);
+    for (const k of ['stone', 'base', 'coping'] as const) gfx.scene.add(solidMesh(new SolidBuilder().blocks(walls[k]), solidMaterial(STONES[k].tile, STONES[k].tint), WALL_ORDER));
+    void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
   }
   const pond = pondOf(scenes.estanque, mode);
   if (pond === null) return;

@@ -15,7 +15,6 @@ import { writeClumps } from './clumps.ts';
 import { writeDressing } from './dressing.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 import { writeWall } from './wall.ts';
-import { enclosureRuns, writeEnclosure } from './enclosure.ts';
 import { writeCrowns, writeHedge } from './crowns.ts';
 import { ITEM_DEFAULTS, type BedScene3, type WorldLayout } from './layout.ts';
 import { createMemory, type GardenMemory } from './memory.ts';
@@ -68,8 +67,11 @@ const tint = new Float32Array(4);
 quad.tint = tint;
 quad.phase = packPhase(0, QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
 
-/** Free roam: the closed garden (crowns, hedge, base course, wall stone, coping) stands in place of the rail's wall. */
-const CLOSED_ORDER = { crowns: RENDER_ORDER.overview - 5, hedge: RENDER_ORDER.overview - 4, base: RENDER_ORDER.overview - 3, wall: RENDER_ORDER.overview - 2, coping: RENDER_ORDER.overview - 1 } as const;
+/**
+ * Free roam: the closed garden's crowns and hedge stand behind its solid walls (garden/place.ts, painted at
+ * RENDER_ORDER.overview - 2) in place of the rail's wall.
+ */
+const CLOSED_ORDER = { crowns: RENDER_ORDER.overview - 5, hedge: RENDER_ORDER.overview - 4 } as const;
 
 /** Free roam hands the garden the bed ahead of the walking visitor (cook/ROAM_PLAN.md section 3, Streaming). */
 export interface RoamStreaming { heading(): BedId | null; here(): BedId | null; readonly pos: Float32Array }
@@ -229,11 +231,6 @@ export function createGarden(d: GardenDeps & { kit: StreamKit; rig: GardenRig; r
     const g = layout.ground;
     addBatch(writeCrowns(g.enclosure, manifest, batchOn), CLOSED_ORDER.crowns);
     addBatch(writeHedge(g.enclosure, manifest, batchOn), CLOSED_ORDER.hedge);
-    const walls = writeEnclosure(enclosureRuns(g.enclosure, g.wall.z, g.wall.h, g.wall.flatW), g.enclosure.baseH, manifest, batchOn);
-    if (walls === null) return;
-    addBatch(walls.wall, CLOSED_ORDER.wall);
-    addBatch(walls.base, CLOSED_ORDER.base);
-    addBatch(walls.coping, CLOSED_ORDER.coping);
   }
 
   async function loadOverview(): Promise<void> {

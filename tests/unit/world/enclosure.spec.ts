@@ -3,7 +3,7 @@ import type { BedId } from '../../../src/types.ts';
 import { expect, test } from '@playwright/test';
 import { Vector3 } from 'three';
 import { ROAM } from '../../../src/core/motion.ts';
-import { DOOR_TOP, enclosureRuns } from '../../../src/world/enclosure.ts';
+import { BLOCK, DOOR_TOP, enclosureRuns, masonryOf } from '../../../src/world/enclosure.ts';
 import { followPose, framingFor, moonElevation, SIDE_SKY_DEG, viewLimitsOf, WALL_SHARE, wallShare, type Framing } from '../../../src/world/follow.ts';
 import puerta from '../../../content/beds/puerta.json' with { type: 'json' };
 import rosaleda from '../../../content/beds/rosaleda.json' with { type: 'json' };
@@ -102,14 +102,19 @@ test('the walk area sits inside the walls and the visitor reaches each of its ed
 });
 
 test('the enclosure runs close the garden: end walls, front kerb, a doorway under a lintel at the Salida path end', () => {
-  const runs = enclosureRuns(enc, ground.wall.z, ground.wall.h, ground.wall.flatW);
+  const runs = enclosureRuns(enc, ground.wall.z, ground.wall.h);
   const ends = runs.filter((u) => Math.abs(Math.abs(u.yaw) - Math.PI / 2) < 1e-6);
   expect(ends.map((u) => u.x).sort((a, b) => a - b)).toEqual([...enc.x]);
   for (const u of ends) expect(u.len).toBeCloseTo(enc.front - ground.wall.z, 6);
   expect(runs.some((u) => u.z === enc.front && !u.pier && u.h === enc.kerbH && u.len === enc.x[1] - enc.x[0])).toBe(true);
   const back = runs.filter((u) => !u.pier && u.from === 0 && u.z === ground.wall.z);
   const covers = (x: number): boolean => back.some((u) => x >= u.x && x <= u.x + u.len);
-  for (let x = enc.x[0]; x <= enc.x[1]; x += 0.05) expect(covers(x) || Math.min(Math.abs(x - enc.door[0]), Math.abs(x - enc.door[1])) < 0.02, `back wall at ${x.toFixed(2)}`).toBe(!(x > enc.door[0] + 0.02 && x < enc.door[1] - 0.02));
+  // Each stretch stops just inside its jamb pier, short of the doorway's edge.
+  for (let x = enc.x[0]; x <= enc.x[1]; x += 0.05) {
+    const open = x > enc.door[0] && x < enc.door[1];
+    const jamb = Math.min(Math.abs(x - enc.door[0]), Math.abs(x - enc.door[1])) < 0.06;
+    if (!jamb) expect(covers(x), `back wall at ${x.toFixed(2)}`).toBe(!open);
+  }
   expect((enc.door[0] + enc.door[1]) / 2).toBeCloseTo(ground.path.points.at(-1)?.[0] ?? 0, 1);
   const lintel = runs.filter((u) => u.from > 0);
   expect(lintel.length).toBe(1);
@@ -118,6 +123,55 @@ test('the enclosure runs close the garden: end walls, front kerb, a doorway unde
   expect(lintel[0]!.h).toBe(ground.wall.h);
   const hedged = enc.hedge.spans.some(([a, b]) => a <= enc.door[0] && b >= enc.door[1]);
   expect(hedged && enc.hedge.top >= DOOR_TOP, 'a hedge at least as high as the doorway stands behind it').toBe(true);
+});
+
+/** Axis-aligned bounds [x0, y0, z0, x1, y1, z1] of every block (all walls run along x or z). */
+function boxesOf(list: Float32Array): number[][] {
+  const out: number[][] = [];
+  for (let i = 0; i < list.length; i += BLOCK) {
+    const [x = 0, y = 0, z = 0, w = 0, h = 0, d = 0, yaw = 0] = list.subarray(i, i + BLOCK);
+    const turned = Math.abs(Math.sin(yaw)) > 0.5;
+    const hx = (turned ? d : w) / 2;
+    const hz = (turned ? w : d) / 2;
+    out.push([x - hx, y, z - hz, x + hx, y + h, z + hz]);
+  }
+  return out;
+}
+
+test('the solid walls show no two faces in one plane, keep the doorway open and stand in the ground', () => {
+  const m = masonryOf(enclosureRuns(enc, ground.wall.z, ground.wall.h), enc.baseH);
+  const boxes = [...boxesOf(m.stone), ...boxesOf(m.base), ...boxesOf(m.coping)];
+  const inside = (p: number[], skip: number[][]): boolean => boxes.some((b) => !skip.includes(b) && [0, 1, 2].every((k) => p[k]! > b[k]! && p[k]! < b[k + 3]!));
+  const fights: string[] = [];
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i]!;
+      const b = boxes[j]!;
+      for (let axis = 0; axis < 3; axis++) {
+        for (const side of [0, 3]) {
+          if (Math.abs(a[axis + side]! - b[axis + side]!) > 1e-4) continue;
+          const [u, v] = [0, 1, 2].filter((k) => k !== axis) as [number, number];
+          const lo = [Math.max(a[u]!, b[u]!), Math.max(a[v]!, b[v]!)];
+          const hi = [Math.min(a[u + 3]!, b[u + 3]!), Math.min(a[v + 3]!, b[v + 3]!)];
+          if (hi[0]! - lo[0]! < 1e-3 || hi[1]! - lo[1]! < 1e-3) continue;
+          const p = [0, 0, 0];
+          p[axis] = a[axis + side]! + (side === 0 ? -1e-3 : 1e-3);
+          p[u] = (lo[0]! + hi[0]!) / 2;
+          p[v] = (lo[1]! + hi[1]!) / 2;
+          if (p[1]! > 0 && !inside(p, [a, b])) fights.push(`${a.map((n) => n.toFixed(2))} / ${b.map((n) => n.toFixed(2))} axis ${axis}`);
+        }
+      }
+    }
+  }
+  expect(fights, fights.slice(0, 4).join('\n')).toEqual([]);
+  const [d0, d1] = enc.door;
+  const z = ground.wall.z;
+  for (const b of boxes) {
+    const inDoor = b[0]! < d1 - 1e-4 && b[3]! > d0 + 1e-4 && b[1]! < DOOR_TOP - 1e-4 && b[2]! < z + 0.3 && b[5]! > z - 0.8;
+    expect(inDoor, `block ${b.map((n) => n.toFixed(2))} in the doorway`).toBe(false);
+  }
+  for (const x of [d0, d1]) expect(boxes.some((b) => Math.abs(b[0]! - x) < 1e-4 || Math.abs(b[3]! - x) < 1e-4), `a jamb at ${x}`).toBe(true);
+  for (const b of [...boxesOf(m.stone), ...boxesOf(m.base)]) expect(b[1]! <= 0 || b[1]! >= DOOR_TOP - 1e-6 || inside([b[0]! + 1e-3, b[1]! - 1e-3, b[2]! + 1e-3], []), 'every block stands in the ground or on stone').toBe(true);
 });
 
 /** Moon azimuth per place, read from src/garden/place.ts (PLACE_LIGHT), so the test follows any retune. */
