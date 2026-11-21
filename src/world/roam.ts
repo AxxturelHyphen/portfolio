@@ -29,8 +29,9 @@ export const HOLD = { left: 1, right: 2, up: 4, down: 8 } as const;
 
 /** Waypoints round the pond sit this far out, in units of the body-inflated semi-axes. */
 const ROUTE_MARGIN = 1.15;
-/** A walk target is given up once the body has crawled under `mps` for `s` seconds (a wall or a card in the way). */
-const STALL = { mps: 0.05, s: 0.3 } as const;
+/** A walk target is given up once the body has crawled under `mps` for `s` seconds (a wall or a card in the way), or
+ * once the walk outlasts `baseS` plus `slack` times its straight-line time (a route that keeps circling two props). */
+const STALL = { mps: 0.05, s: 0.3, baseS: 4, slack: 3 } as const;
 const ACCEL = ROAM.speed / ROAM.toSpeedS;
 const DECEL = ROAM.speed / ROAM.toStopS;
 
@@ -126,6 +127,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   /** Which way round the pond the current target goes: +1 or -1 in the angle of the pond's normalised frame. */
   let side = 1;
   let stalledS = 0;
+  let walkLeftS = 0;
   let assisting = false;
   let toX = 0;
   let toZ = 0;
@@ -321,6 +323,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       assisting = false;
       hasTarget = true;
       stalledS = 0;
+      walkLeftS = STALL.baseS + (STALL.slack * Math.hypot(x - pos[0]!, z - pos[1]!)) / ROAM.speed;
       tx = x;
       tz = z;
       settleTarget();
@@ -389,7 +392,7 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
       // The ground actually covered, not the velocity: wedged between the pond and a box corner, each push-out removes
       // only the speed into its own shape, so the body keeps a velocity while it stands still.
       stalledS = hasTarget && Math.hypot(pos[0]! - x0, pos[1]! - z0) / dt < STALL.mps ? stalledS + dt : 0;
-      if (stalledS > STALL.s) hasTarget = false;
+      if (stalledS > STALL.s || (hasTarget && (walkLeftS -= dt) < 0)) hasTarget = false;
     },
   };
 }

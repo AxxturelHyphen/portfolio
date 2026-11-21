@@ -160,8 +160,14 @@ export class Jardin {
   }
 
   /** api.settled: every channel at rest. */
-  settled(): Promise<void> {
-    return this.withApi((api) => api.settled());
+  async settled(): Promise<void> {
+    const stuck = await this.withApi((api) =>
+      Promise.race([
+        api.settled().then(() => null),
+        new Promise<string>((ok) => setTimeout(() => ok(`${JSON.stringify(api.state())} roam ${JSON.stringify(api.roam())} boss ${api.boss()}`), 90000)),
+      ]),
+    );
+    if (stuck !== null) throw new Error(`not settled after 90 s: ${stuck}`);
   }
 }
 
