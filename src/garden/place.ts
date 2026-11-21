@@ -2,6 +2,7 @@ import type { GlGfx } from '../gl/renderer.ts';
 import type { GroundLayout } from '../gl/ground.ts';
 import { Vector3 } from 'three';
 import { linearHex } from '../gl/colour.ts';
+import { grottoMeshes } from '../gl/grotto.ts';
 import { createIronGate } from '../gl/irongate.ts';
 import { SolidBuilder, solidMesh } from '../gl/masonry.ts';
 import { buildProps, PROP_LOOK, type PropBuilders } from '../gl/props.ts';
@@ -9,7 +10,7 @@ import { signWood } from '../gl/signwood.ts';
 import { bindSolidTiles, solidMaterial } from '../gl/solid.material.ts';
 import { setMoon, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
 import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflector } from '../gl/pond.ts';
-import type { BedId } from '../types.ts';
+import type { BedId, Tier } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import { enclosureRuns, masonryOf, STONES } from '../world/enclosure.ts';
 import { kerbStones, pondRim } from '../world/solids.ts';
@@ -52,7 +53,7 @@ const PLACE_LIGHT: Readonly<Record<BedId, PlaceLight>> = {
  * lead (the far lawn and wall about a third under the first dusk pass), and every sky gets a blue-violet band over the
  * wall, kept clear of rose so the film grade cannot turn it magenta; the shadows and moons stay the rail's. A later pass
  * lifted the ambients a step (still a blue hour, not a golden one) so the lawn and the flowers read between the
- * lanterns. The grotto keeps its own light.
+ * lanterns. The grotto's rock takes a dim night blue, so the carried lantern lights it.
  */
 const ROAM_SKY = { skyTop: '#141a46', skyHorizon: '#3f528a' } as const;
 const ROAM_DUSK: Readonly<Partial<Record<BedId, Pick<PlaceLight, 'skyTop' | 'skyHorizon' | 'ambient'>>>> = {
@@ -61,6 +62,7 @@ const ROAM_DUSK: Readonly<Partial<Record<BedId, Pick<PlaceLight, 'skyTop' | 'sky
   estanque: { ...ROAM_SKY, ambient: '#3b4051' },
   semillero: { ...ROAM_SKY, ambient: '#3d404e' },
   salida: { ...ROAM_SKY, ambient: '#3f4250' },
+  gruta: { ...ROAM_SKY, ambient: '#282a3c' },
 };
 /** The overview (S02): the moon right of centre over the pond, x 68, y 26 of the frame. */
 const OVERVIEW_MOON = [14.5, 10] as const;
@@ -208,6 +210,8 @@ export function closedGroundLayoutOf(g: WorldLayout): GroundLayout {
 /** The closed garden's solid walls paint after its crowns and hedge (world/garden.ts CLOSED_ORDER), then the Salida's iron gate, then the beds. */
 const WALL_ORDER = RENDER_ORDER.overview - 2;
 const GATE_ORDER = RENDER_ORDER.overview - 0.5;
+/** The grotto's rock shell and floor paint after the walls and before every card (gl/grotto.ts); its rocks with the ground stones. */
+const GROTTO_BACK_ORDER = RENDER_ORDER.overview - 1;
 /** The pond rim, the bank kerbs and the solid props paint after every bed card, depth tested, so they stand among the plants by depth. */
 const GROUND_STONE_ORDER = RENDER_ORDER.front + 40;
 const RIM_TINT = [0.78, 0.76, 0.7] as const;
@@ -216,12 +220,12 @@ const KERB_TILE = 'tile/kerb';
 
 /**
  * Everything gl must have before warm() so no texture uploads or compiles on first draw: the ground layout and the pond,
- * once. Free roam clips the ground to the closed garden, raises its walls, the pond rim, the bank kerbs and the solid
- * props with the signposts' timber (their tiles bind once the shared atlas is up), hangs the iron gate in the Salida's
- * doorway and reflects the roam variants in the pond.
+ * once. Free roam clips the ground to the closed garden, raises its walls, the grotto's rock chamber (fewer facets on the
+ * low tier), the pond rim, the bank kerbs and the solid props with the signposts' timber (their tiles bind once the
+ * shared atlas is up), hangs the iron gate in the Salida's doorway and reflects the roam variants in the pond.
  */
 export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode,
-  garden: Pick<StreamGarden, 'ready' | 'sharedAtlas'>): void {
+  garden: Pick<StreamGarden, 'ready' | 'sharedAtlas'>, tier: Tier): void {
   const closed = mode === 'roam';
   gfx.ground.setLayout(closed ? closedGroundLayoutOf(g) : groundLayoutOf(g));
   const e = g.ground.enclosure;
@@ -230,6 +234,7 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
     gfx.scene.add(createIronGate(ironGateOf(e.door, g.ground.wall.z), exitGate, GATE_ORDER));
     const walls = masonryOf(enclosureRuns(e, g.ground.wall.z, g.ground.wall.h), e.baseH);
     for (const k of ['stone', 'base', 'coping'] as const) gfx.scene.add(solidMesh(new SolidBuilder().blocks(walls[k]), solidMaterial(STONES[k].tile, STONES[k].tint), WALL_ORDER));
+    gfx.scene.add(...grottoMeshes(tier === 'low', GROTTO_BACK_ORDER, GROUND_STONE_ORDER));
     const rim = new SolidBuilder();
     for (const s of pondRim(g.ground.pond)) rim.prism(s.outline, s.y0, s.y1);
     gfx.scene.add(solidMesh(rim, solidMaterial(STONES.coping.tile, RIM_TINT), GROUND_STONE_ORDER));

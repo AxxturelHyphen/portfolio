@@ -40,7 +40,8 @@
           "group": "D",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/wall",
@@ -55,7 +56,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/wall",
@@ -70,7 +72,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/wall",
@@ -85,7 +88,8 @@
           "group": "D",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/wall",
@@ -100,7 +104,8 @@
           "group": "D",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/wall",
@@ -115,7 +120,8 @@
           "group": "D",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/wall",
@@ -130,7 +136,8 @@
           "group": "D",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/shell-1",
@@ -146,7 +153,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "rot": -24
+          "rot": -24,
+          "only": "rail"
         },
         {
           "sprite": "gr/shell-2",
@@ -162,7 +170,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "rot": 21
+          "rot": 21,
+          "only": "rail"
         },
         {
           "sprite": "gr/shell-3",
@@ -177,7 +186,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/seafan",
@@ -192,7 +202,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/coral-1",
@@ -207,7 +218,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/crystal-2",
@@ -222,7 +234,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/azurite",
@@ -237,7 +250,8 @@
           "group": "M",
           "foot": "none",
           "shadow": false,
-          "react": false
+          "react": false,
+          "only": "rail"
         }
       ]
     },
@@ -260,7 +274,8 @@
           "group": "M",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/agate-1",
@@ -277,7 +292,8 @@
           "shadow": false,
           "react": false,
           "flat": true,
-          "rot": 20
+          "rot": 20,
+          "only": "rail"
         },
         {
           "sprite": "gr/ball",
@@ -292,22 +308,28 @@
           "group": "L",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/car",
-          "x": 33.3,
+          "x": 32.75,
           "y": 0,
-          "z": -8.6,
+          "z": -9.35,
           "scale": 1,
-          "w": 0.5,
+          "w": 0.7,
           "hinge": 0,
           "lean": 0,
           "size": "medium",
           "group": "M",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "block": [
+            0.38,
+            0.38,
+            0.32
+          ]
         },
         {
           "sprite": "gr/fern-a",
@@ -322,7 +344,8 @@
           "group": "D",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
         },
         {
           "sprite": "gr/fern-b",
@@ -337,7 +360,203 @@
           "group": "D",
           "foot": "none",
           "shadow": true,
-          "react": false
+          "react": false,
+          "only": "rail"
+        },
+        {
+          "sprite": "gr/ball",
+          "x": 33.1,
+          "y": 0,
+          "z": -9.25,
+          "scale": 1,
+          "w": 0.16,
+          "lean": 8,
+          "group": "L",
+          "hinge": 0,
+          "size": "small",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/agate-1",
+          "x": 34.45,
+          "y": -0.02,
+          "z": -9.05,
+          "scale": 1,
+          "w": 0.62,
+          "lean": 0,
+          "flat": true,
+          "rot": 20,
+          "shadow": false,
+          "hinge": 0,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/fern-b",
+          "x": 31.95,
+          "y": 0,
+          "z": -8.2,
+          "scale": 1,
+          "h": 0.6,
+          "hinge": 0,
+          "group": "D",
+          "lean": 8,
+          "size": "small",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/fern-b",
+          "x": 35.05,
+          "y": 0,
+          "z": -8.3,
+          "scale": 1,
+          "h": 0.5,
+          "hinge": 0,
+          "group": "D",
+          "lean": 8,
+          "size": "small",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/fern-b",
+          "x": 32.45,
+          "y": 0,
+          "z": -9.85,
+          "scale": 1,
+          "h": 0.48,
+          "hinge": 0,
+          "flip": true,
+          "group": "D",
+          "lean": 8,
+          "size": "small",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/fern-b",
+          "x": 34.9,
+          "y": 0,
+          "z": -9.7,
+          "scale": 1,
+          "h": 0.42,
+          "hinge": 0,
+          "group": "D",
+          "lean": 8,
+          "size": "small",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/fern-b",
+          "x": 31.75,
+          "y": 0,
+          "z": -7.15,
+          "scale": 1,
+          "h": 0.6,
+          "hinge": 0,
+          "group": "D",
+          "lean": 8,
+          "size": "small",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/frond-pair",
+          "x": 35.3,
+          "y": 0,
+          "z": -7.2,
+          "scale": 1,
+          "h": 1.1,
+          "hinge": 0,
+          "group": "D",
+          "lean": 8,
+          "size": "medium",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/seafan",
+          "x": 35.0,
+          "y": 0,
+          "z": -9.95,
+          "scale": 1,
+          "h": 0.8,
+          "hinge": 0,
+          "lean": 8,
+          "size": "medium",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/coral-1",
+          "x": 32.1,
+          "y": 0,
+          "z": -10.0,
+          "scale": 1,
+          "h": 0.45,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/crystal-1",
+          "x": 35.05,
+          "y": 0,
+          "z": -9.05,
+          "scale": 1,
+          "w": 0.3,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
+        },
+        {
+          "sprite": "gr/crystal-2",
+          "x": 31.95,
+          "y": 0,
+          "z": -9.2,
+          "scale": 1,
+          "w": 0.25,
+          "hinge": 0,
+          "lean": 8,
+          "size": "small",
+          "group": "M",
+          "foot": "none",
+          "shadow": true,
+          "react": false,
+          "only": "roam"
         }
       ]
     },
@@ -361,7 +580,8 @@
           "foot": "none",
           "shadow": false,
           "react": false,
-          "wing": true
+          "wing": true,
+          "only": "rail"
         },
         {
           "sprite": "gr/frond",
@@ -378,7 +598,8 @@
           "shadow": false,
           "react": false,
           "wing": true,
-          "rot": 165
+          "rot": 165,
+          "only": "rail"
         }
       ]
     }
@@ -388,14 +609,14 @@
       "id": "coupe",
       "kind": "prop",
       "ref": "coupe",
-      "x": 33.3,
-      "y": 0.08,
-      "z": -8.6,
+      "x": 32.75,
+      "y": 0.1,
+      "z": -9.35,
       "scale": 0.3,
       "hinge": 0,
       "hit": [
-        0.35,
-        0.2
+        0.55,
+        0.3
       ],
       "label": "right",
       "alt": {

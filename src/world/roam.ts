@@ -8,6 +8,7 @@
  */
 import type { BedId } from '../types.ts';
 import { ROAM } from '../core/motion.ts';
+import { annexAim, clampToAreas, type Annex } from './annex.ts';
 import { detour, reachOf } from './detour.ts';
 
 /** Where the visitor may stand: the rectangle its body stays inside, the pond it never enters, the path (x, z) by x. */
@@ -19,6 +20,8 @@ export interface WalkArea {
   blocks?: Float32Array;
   /** Solid props' boxes (occluders.ts propBlocks), same layout: the body stays out and walk targets steer round them. */
   props?: Float32Array;
+  /** A room off the rectangle (the grotto) the body may also walk into through its doorway. */
+  annex?: Annex;
 }
 
 /** Held direction bits, on screen: turned by the camera's orbit yaw into the world (setYaw). */
@@ -130,6 +133,9 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   let pathOff1 = 0;
   const aim = new Float32Array(2);
   const want = new Float32Array(2);
+  /** A walk target being settled into the area, and the zero velocity its clamp reads. */
+  const spot = new Float32Array(2);
+  const still = new Float32Array(2);
   const pathOf = (x: number): number => pathZ(area.path, x);
 
   const nx = (x: number): number => (x - area.pond.x) / pa;
@@ -161,14 +167,17 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
   /** Pushes the body inside the rectangle and out of the pond and the blocked boxes, removing velocity into each. */
   function collide(): void {
     for (let pass = 0; pass < ROAM.passes; pass++) {
-      const lx = area.minX + r;
-      const hx = area.maxX - r;
-      const lz = area.minZ + r;
-      const hz = area.maxZ - r;
-      if (pos[0]! < lx) { pos[0] = lx; if (vel[0]! < 0) vel[0] = 0; }
-      if (pos[0]! > hx) { pos[0] = hx; if (vel[0]! > 0) vel[0] = 0; }
-      if (pos[1]! < lz) { pos[1] = lz; if (vel[1]! < 0) vel[1] = 0; }
-      if (pos[1]! > hz) { pos[1] = hz; if (vel[1]! > 0) vel[1] = 0; }
+      if (area.annex !== undefined) clampToAreas(area, area.annex, r, pos, vel);
+      else {
+        const lx = area.minX + r;
+        const hx = area.maxX - r;
+        const lz = area.minZ + r;
+        const hz = area.maxZ - r;
+        if (pos[0]! < lx) { pos[0] = lx; if (vel[0]! < 0) vel[0] = 0; }
+        if (pos[0]! > hx) { pos[0] = hx; if (vel[0]! > 0) vel[0] = 0; }
+        if (pos[1]! < lz) { pos[1] = lz; if (vel[1]! < 0) vel[1] = 0; }
+        if (pos[1]! > hz) { pos[1] = hz; if (vel[1]! > 0) vel[1] = 0; }
+      }
       pushOutOf(area.blocks);
       pushOutOf(area.props);
       const qx = nx(pos[0]!);
@@ -192,8 +201,16 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
 
   /** Puts a walk target where the body can stand: inside the rectangle, outside the pond. */
   function settleTarget(): void {
-    tx = Math.min(area.maxX - r, Math.max(area.minX + r, tx));
-    tz = Math.min(area.maxZ - r, Math.max(area.minZ + r, tz));
+    if (area.annex === undefined) {
+      tx = Math.min(area.maxX - r, Math.max(area.minX + r, tx));
+      tz = Math.min(area.maxZ - r, Math.max(area.minZ + r, tz));
+    } else {
+      spot[0] = tx;
+      spot[1] = tz;
+      clampToAreas(area, area.annex, r, spot, still);
+      tx = spot[0]!;
+      tz = spot[1]!;
+    }
     const qx = nx(tx);
     const qz = nz(tz);
     const q = Math.hypot(qx, qz);
@@ -221,7 +238,8 @@ export function createVisitor(area: WalkArea, x0: number, z0: number): Visitor {
     if (!crossesPond()) {
       aim[0] = tx;
       aim[1] = tz;
-      if (area.props !== undefined) detour(area.props, r, area, pos[0]!, pos[1]!, tx, tz, aim);
+      if (area.annex !== undefined) annexAim(area.annex, pos[0]!, pos[1]!, tz, aim);
+      if (area.props !== undefined) detour(area.props, r, area, pos[0]!, pos[1]!, aim[0]!, aim[1]!, aim);
       return;
     }
     const px = nx(pos[0]!);

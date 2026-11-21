@@ -19,7 +19,9 @@ import { bossCamera } from '../world/boss.camera.ts';
 import { createProximity, PROXIMITY, reachDist } from '../world/proximity.ts';
 import { bedAhead, createVisitor, HEADING, nearestBed, pathZ, type WalkArea } from '../world/roam.ts';
 import { createStride } from '../world/stride.ts';
+import { GROTTO, GROTTO_ANNEX, GROTTO_BLOCKS } from '../world/grotto.ts';
 import type { Arrival } from './arrival.ts';
+import { createGrottoDrive, GRUTA } from './grotto.drive.ts';
 
 /**
  * Free roam, the default way through the garden (cook/ROAM_PLAN.md P1 to P7): owns the visitor and its follow camera
@@ -125,17 +127,18 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   const { machine, rig, light, loop, world } = d;
   const ground = world.ground;
   const blocks = occluderBlocks(ground.enclosure, SCENES);
-  const props = propBlocks(SCENES);
-  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks, props };
+  const props = new Float32Array([...propBlocks(SCENES), ...GROTTO_BLOCKS]);
+  const area: WalkArea = { ...ground.enclosure.walk, pond: ground.pond, path: ground.path.points, blocks, props, annex: GROTTO_ANNEX };
   const limits = viewLimitsOf(ground.enclosure, ground.wall.z);
   const beds = world.rail.keys.flatMap((k) => (k.bed === undefined ? [] : [k.bed]));
   const anchorOf = (b: BedId): number => world.anchors[b];
-  const standZ = (b: BedId): number => pathZ(area.path, anchorOf(b));
+  const standOf = (b: BedId): readonly [number, number] => (b === GRUTA ? GROTTO.stand : [anchorOf(b), pathZ(area.path, anchorOf(b))]);
 
   const intent = machine.state.intent;
   const first = intent.k === 'bed' ? intent.bed : intent.k === 'project' ? d.bedOfProject(intent.id) : null;
   const start = first ?? beds[0] ?? world.order[0]!;
-  const visitor = createVisitor(area, d.spawn?.[0] ?? anchorOf(start), d.spawn?.[1] ?? standZ(start));
+  const visitor = createVisitor(area, ...(d.spawn ?? standOf(start)));
+  const grotto = createGrottoDrive(visitor, rig);
   const gate = beds[0] ?? start;
   const stride = createStride(visitor, () => (seeking = null));
   const orbit = createOrbit(d.orbit ?? 'free');
@@ -197,11 +200,13 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
     armed = false;
     endSeek();
     walk.cancel();
+    const into = s.bed === GRUTA && !s.reduced && s.mode !== 'herbario';
+    grotto.expect(into);
     if (s.reduced || s.mode === 'herbario') {
-      visitor.place(anchorOf(s.bed), standZ(s.bed));
+      visitor.place(...standOf(s.bed));
       return;
     }
-    visitor.assist(anchorOf(s.bed), standZ(s.bed));
+    visitor.assist(...(into ? grotto.porch : standOf(s.bed)));
     walk.start(visitor.pos[0]!, anchorOf(s.bed), hopsFrom(world.order, anchorOf, visitor.pos[0]!, s.bed));
     loop.wake();
   });
@@ -216,7 +221,9 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
     walk.step(c.frozen ? Infinity : c.dt);
     cut = cut || walk.jumped;
     visitor.assistAt(walk.x, walk.u, c.dt, walk.jumped);
-    if (!visitor.assisted) d.refresh();
+    if (visitor.assisted) return;
+    grotto.landed();
+    d.refresh();
   }
 
   /** The Tab-reached slot is focused once the visitor stands at it, or has stopped short of it (the walk stalled). */
@@ -270,7 +277,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
 
   function arrived(b: BedId): boolean {
     if (machine.state.mode === 'herbario') return true;
-    if (visitor.assisted) return false;
+    if (visitor.assisted || (b === GRUTA && !grotto.inside)) return false;
     const [x0, x1] = boundsOf(b);
     const x = visitor.pos[0]!;
     return (x >= x0 && x <= x1) || b === nearBed;
@@ -287,8 +294,8 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
   /** Sends GOTO for the nearest bed when the walking visitor changed it (or once, to come down from the overview). */
   function keepBed(): void {
     const s = machine.state;
-    if (s.mode !== 'garden' || s.phase === 'intro' || s.intent.k === 'project' || visitor.assisted) return;
-    nearBed = nearestBed(visitor.pos[0]!, nearBed, beds, anchorOf);
+    if (s.mode !== 'garden' || s.phase === 'intro' || s.intent.k === 'project' || visitor.assisted || grotto.walkingIn) return;
+    nearBed = grotto.inside ? GRUTA : nearestBed(visitor.pos[0]!, nearBed, beds, anchorOf);
     const want = s.intent.k === 'bed' ? s.intent.bed : null;
     if (nearBed === null || nearBed === want || !(startPending || visitor.busy)) return;
     startPending = false;
@@ -313,14 +320,14 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       visitor.walkTo(hit[0]!, hit[2]!);
     },
     walkable(xPx, yPx) {
-      return rig.groundAt(xPx, yPx, hit) && hit[2]! >= limits.back && hit[0]! >= limits.minX && hit[0]! <= limits.maxX;
+      return rig.groundAt(xPx, yPx, hit) && ((hit[2]! >= limits.back && hit[0]! >= limits.minX && hit[0]! <= limits.maxX) || grotto.floorAt(hit[0]!, hit[2]!));
     },
     halt() {
       seeking = null;
       visitor.halt();
     },
     walkTo: (x, z) => visitor.walkTo(x, z),
-    home: () => (machine.state.bed === gate ? visitor.place(anchorOf(gate), standZ(gate)) : machine.send({ type: 'GOTO', place: { k: 'bed', bed: gate } })),
+    home: () => (machine.state.bed === gate ? visitor.place(...standOf(gate)) : machine.send({ type: 'GOTO', place: { k: 'bed', bed: gate } })),
     activate() {
       const s = machine.state;
       if (s.phase === 'focus' && s.slot !== null) d.proxies.activate(s.slot);
@@ -357,6 +364,7 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
         stride.step(c.dt, orbit.yaw);
         if (visitor.busy && seeking === null) armed = true;
       }
+      grotto.frame();
       keepBed();
       here = nearestBed(visitor.pos[0]!, here, beds, anchorOf);
       look();
@@ -375,15 +383,10 @@ export function createRoamDrive(d: RoamDeps): RoamDrive {
       orbit.step(c.dt, machine.state.reduced);
       follower.step(x, z, c.dt, c.frozen || machine.state.reduced || cut, held ?? approach.k * fit.k, fit.shift);
       cut = false;
-      const p = follower.pose;
-      framed.x = p.x;
-      framed.y = p.y;
-      framed.z = p.z;
-      framed.pitch = p.pitch;
-      framed.yaw = p.yaw;
-      framed.fov = p.fov;
+      Object.assign(framed, follower.pose);
       d.arrival?.shape(framed);
       bossCamera.shape(framed);
+      grotto.follow(orbit.yaw, orbit.zoom, viewW / viewH, c.dt, c.frozen || machine.state.reduced);
     },
     resize(w, h) {
       follower.resize(w, h);

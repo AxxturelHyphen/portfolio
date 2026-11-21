@@ -24,8 +24,8 @@ export interface GardenRig extends CameraRig {
   readonly height: number;
   /** Camera speed along the rail, m/s (smoothed): near wings fade on it. */
   readonly speed: number;
-  /** Replaces a bed's key (y, z, pitch in radians, fov); x stays the rail stop. Beds off the rail take the whole pose. */
-  setBedPose(bed: BedId, pose: Pose): void;
+  /** Replaces a bed's key (y, z, pitch in radians, fov); x stays the rail stop. Beds off the rail take the whole pose, yaw too if given. */
+  setBedPose(bed: BedId, pose: Pose | RigPose): void;
   setSlots(slots: readonly SlotView[]): void;
   viewHeightAt(planeZ: number): number;
   /** World X of the overview pan: where a leg from the overview starts. */
@@ -387,6 +387,7 @@ export function createRig(layout: GardenLayout): GardenRig {
       off.z = p.z;
       off.pitch = p.pitch;
       off.fov = p.fov;
+      if ('yaw' in p) off.yaw = p.yaw;
     },
     setSlots(v) {
       slots = v;

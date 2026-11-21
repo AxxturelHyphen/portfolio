@@ -109,9 +109,10 @@ test('the enclosure runs close the garden: end walls, front kerb, a doorway unde
   expect(runs.some((u) => u.z === enc.front && !u.pier && u.h === enc.kerbH && u.len === enc.x[1] - enc.x[0])).toBe(true);
   const back = runs.filter((u) => !u.pier && u.from === 0 && u.z === ground.wall.z);
   const covers = (x: number): boolean => back.some((u) => x >= u.x && x <= u.x + u.len);
-  // Each stretch stops just inside its jamb pier, short of the doorway's edge.
+  // Each stretch stops just inside its jamb pier, short of the doorway's edge; a stretch of height 0 is open (the grotto's mouth).
+  const gap = (x: number): boolean => enc.low.some(([a, b, h]) => h === 0 && x > a && x < b);
   for (let x = enc.x[0]; x <= enc.x[1]; x += 0.05) {
-    const open = x > enc.door[0] && x < enc.door[1];
+    const open = (x > enc.door[0] && x < enc.door[1]) || gap(x);
     const jamb = Math.min(Math.abs(x - enc.door[0]), Math.abs(x - enc.door[1])) < 0.06;
     if (!jamb) expect(covers(x), `back wall at ${x.toFixed(2)}`).toBe(!open);
   }

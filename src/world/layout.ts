@@ -42,7 +42,7 @@ export interface GroundData {
 export interface CrownSpot { sprite: string; x: number; z: number; h: number }
 
 /**
- * The closed garden: end walls at x[0] and x[1] (height endH), the back wall's low stretches [x0, x1, h] and the door
+ * The closed garden: end walls at x[0] and x[1] (height endH), the back wall's low stretches [x0, x1, h] (h 0: the grotto's mouth) and the door
  * gap [x0, x1] in it, piers (x on the back wall), a coped kerb at z front, the stone base course height, the flats' yaw
  * (degrees), the clipped hedge behind the door and the low stretches, the crowns over the wall, the visitor's walk rectangle and the
  * ground limit for the bottom of the follow frame.

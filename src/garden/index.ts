@@ -151,7 +151,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig, roam?.pos ?? null);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
-  prepareGl(gfx, world, SCENES, worldMode(), garden);
+  prepareGl(gfx, world, SCENES, worldMode(), garden, quality.tier);
   const placeLight = createPlaceLighting(worldMode());
   const posts = signPostsOf(world, SCENES, worldMode());
   proxies.setSigns(signAnchorsOf(posts, worldMode()));
