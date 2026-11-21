@@ -58,7 +58,7 @@ test('every lantern, the pot, the bench and the sign timber are built and face o
   }
 });
 
-test('the bench fills its collision box at the cat\'s seat, and the lantern by it stands on the seat', () => {
+test('the bench fills its collision box at the cat\'s seat; the tin lantern stands on the ground beside it, one resting by it on its seat', () => {
   const items = (rosaleda as unknown as BedScene3).layers.flatMap((l) => l.items);
   const bench = items.find((it) => it.sprite === 'v/bench' && builtIn(it, 'roam'))!;
   const cat = items.find((it) => it.sprite === 'v/cat' && builtIn(it, 'roam'))!;
@@ -76,7 +76,9 @@ test('the bench fills its collision box at the cat\'s seat, and the lantern by i
   expect(bb.max.z - bb.min.z).toBeLessThanOrEqual(spot!.depth);
   expect(bb.max.y).toBeCloseTo(BENCH_SEAT, 1);
   const tin = items.find((it) => it.sprite === 'sh/lantern-tin' && builtIn(it, 'roam'))!;
-  const rest = lanternRest(tin, items);
+  expect(lanternRest(tin, items)).toEqual({ x: tin.x, y: 0 });
+  expect(tin.x - tin.block![0], 'clear of the bench and the cat').toBeGreaterThan(spot!.x1);
+  const rest = lanternRest({ ...tin, x: spot!.x1 + 0.2, y: BENCH_SEAT, z: bench.z }, items);
   expect(rest.y).toBe(BENCH_SEAT);
   expect(rest.x).toBeLessThanOrEqual(spot!.x1);
   expect(rest.x).toBeGreaterThanOrEqual(spot!.x0);

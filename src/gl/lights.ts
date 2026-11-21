@@ -81,7 +81,7 @@ export const sharedUniforms = {
   uDepthCut: { value: 0 },
   uFill: { value: 0 },
   uLamp: { value: Array.from({ length: LAMP_LIGHTS }, () => new Vector4(0, 0, 0, 0)) },
-  uLampColor: { value: linearHex('#f7ad4a', new Vector3(), 5.0) },
+  uLampColor: { value: linearHex('#f8a946', new Vector3(), 5.8) },
   uInvite: { value: Array.from({ length: INVITE_LIGHTS }, () => new Vector4(0, 0, 0, 0)) },
   uInvites: { value: 0 },
   uInviteColor: { value: linearHex('#f5c584', new Vector3(), 5.0) },

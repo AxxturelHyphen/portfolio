@@ -1,4 +1,4 @@
-import { TERRAIN, type TerrainPond } from '../core/terrain.ts';
+import { TERRAIN, terrainField, terrainRect, type TerrainPond } from '../core/terrain.ts';
 import { hash01 } from './wall.ts';
 
 /**
@@ -67,12 +67,16 @@ export function pondRim(p: TerrainPond): RimStone[] {
 }
 
 /**
- * Bank kerb: sample step along the path (m), its width, depth into the ground; each stone's length (least, spread), the
- * joint between stones, the corner chamfer (least, spread), and the jitter of its width, top and outline (m).
+ * Bank kerb: sample step along the path (m), its width, depth into the ground and rise above the bank; each stone's length
+ * (least, spread), the joint between stones, the corner chamfer (least, spread), and the jitter of its width, top and
+ * outline (m). Stones keep `clear` metres off the slabs' reach, and a run shorter than `minRun` (m) is left out: a stub
+ * beside a bend reads as a box cut into the path, not as a kerb along a bank. The kerb lines only stretches of path that
+ * run along the bank front (`along`: the sine of the steepest heading off x kept): one beside a path heading into the
+ * bank, seen end on, reads as a rail.
  */
 const KERB = {
-  step: 0.25, width: TERRAIN.edging[1], sink: 0.08, length: [0.3, 0.15], joint: 0.012, chamfer: [0.01, 0.012],
-  widthJitter: 0.012, topJitter: 0.014, outlineJitter: 0.005,
+  step: 0.25, width: TERRAIN.edging[1], sink: 0.1, rise: 0.015, length: [0.3, 0.15], joint: 0.03, chamfer: [0.012, 0.014],
+  widthJitter: 0.012, topJitter: 0.01, outlineJitter: 0.006, clear: TERRAIN.edging[0] - 0.01, minRun: 1.2, along: 0.6,
 } as const;
 
 /** Distance from (x, z) to the polyline. */
@@ -87,6 +91,24 @@ function distTo(pts: readonly (readonly [number, number])[], x: number, z: numbe
     best = Math.min(best, Math.hypot(x - ax - dx * t, z - az - dz * t));
   }
   return best;
+}
+
+/** Metres per level of the baked path field (core/terrain.ts LEVEL_M). */
+const FIELD_LEVEL_M = 0.01;
+
+/**
+ * Distance from (x, z) to the nearest slab's centre line: the polyline's, or, once the ground has baked its path field
+ * (core/terrain.ts, with every spur), the field's nearest texel where that is nearer.
+ */
+function slabDist(path: readonly (readonly [number, number])[], x: number, z: number): number {
+  const line = distTo(path, x, z);
+  const f = terrainField();
+  if (f === null) return line;
+  const r = terrainRect();
+  const i = Math.floor(((x - r.x0) / (r.x1 - r.x0)) * f.w);
+  const j = Math.floor(((z - r.z0) / (r.z1 - r.z0)) * f.h);
+  if (i < 0 || j < 0 || i >= f.w || j >= f.h) return line;
+  return Math.min(line, (f.data[j * f.w + i] ?? 0) * FIELD_LEVEL_M);
 }
 
 function smooth(a: number, b: number, x: number): number {
@@ -106,7 +128,7 @@ function bankKeep(x: number, z: number, pond: TerrainPond | null): number {
 
 /**
  * The kerb's runs: centre lines (x, z pairs) along both sides of the path at the edging's middle, kept only where the
- * bank stands and no other stretch of the path comes nearer.
+ * bank stands, the path runs along the bank front and no other stretch of path comes nearer.
  */
 function bankKerbs(path: readonly (readonly [number, number])[], pond: TerrainPond | null): number[][] {
   const mid = TERRAIN.edging[0] + TERRAIN.edging[1] / 2;
@@ -120,19 +142,33 @@ function bankKerbs(path: readonly (readonly [number, number])[], pond: TerrainPo
       const nx = (-(bz - az) / len) * side;
       const nz = ((bx - ax) / len) * side;
       const steps = Math.max(1, Math.round(len / KERB.step));
+      const along = Math.abs(bz - az) <= KERB.along * len;
       for (let k = i === 0 ? 0 : 1; k <= steps; k++) {
         const x = ax + ((bx - ax) * k) / steps + nx * mid;
         const z = az + ((bz - az) * k) / steps + nz * mid;
-        if (bankKeep(x, z, pond) > BANK_KEPT && distTo(path, x, z) > mid - 0.02) run.push(x, z);
+        if (along && bankKeep(x, z, pond) > BANK_KEPT && slabDist(path, x, z) > mid - 0.02) run.push(x, z);
         else {
-          if (run.length >= 4) runs.push(run);
+          keepRun(runs, run);
           run = [];
         }
       }
     }
-    if (run.length >= 4) runs.push(run);
+    keepRun(runs, run);
   }
   return runs;
+}
+
+/** Adds the run to `runs` when it is at least KERB.minRun long. */
+function keepRun(runs: number[][], run: number[]): void {
+  let len = 0;
+  for (let i = 2; i < run.length; i += 2) len += Math.hypot(run[i]! - run[i - 2]!, run[i + 1]! - run[i - 1]!);
+  if (len >= KERB.minRun) runs.push(run);
+}
+
+/** Whether every corner of the outline keeps KERB.clear off every slab's centre line. */
+function clearOfPath(path: readonly (readonly [number, number])[], outline: readonly number[]): boolean {
+  for (let i = 0; i < outline.length; i += 2) if (slabDist(path, outline[i]!, outline[i + 1]!) < KERB.clear) return false;
+  return true;
 }
 
 /** The point at arc length s along a line (x, z pairs) whose cumulative lengths are `at`. */
@@ -144,9 +180,10 @@ function pointAt(line: readonly number[], at: readonly number[], s: number): [nu
 }
 
 /**
- * The kerb as stones laid end to end along each run: each a chamfered block of slightly varied length, width, top and
- * outline from a fixed hash, a thin joint between them. Its top is the bank's height there plus the kerb's rise, so
- * the kerb sinks with the bank where it gives out.
+ * The kerb as stones set end to end along each run: each a chamfered block of slightly varied length, width, top and
+ * outline from a fixed hash, an open joint between them. Its top is the bank's height there plus a low rise, so the
+ * kerb sinks with the bank where it gives out; a stone any corner of which reaches the slabs is left out, so no stone
+ * crosses the path at a bend.
  */
 export function kerbStones(path: readonly (readonly [number, number])[], pond: TerrainPond | null): RimStone[] {
   const out: RimStone[] = [];
@@ -177,9 +214,10 @@ export function kerbStones(path: readonly (readonly [number, number])[], pond: T
         const j = KERB.outlineJitter * (hash01(n * 8 + k, 0x19) - 0.5) * 2;
         outline.push(cx + ux * (u + j) - uz * v, cz + uz * (u + j) + ux * v);
       });
-      const top = TERRAIN.bank * bankKeep(cx, cz, pond) + TERRAIN.edging[2] + KERB.topJitter * (hash01(n, 0x58) - 0.5) * 2;
-      out.push({ outline: counterClockwise(outline), y0: -KERB.sink, y1: top });
       s0 = s1;
+      if (!clearOfPath(path, outline)) continue;
+      const top = TERRAIN.bank * bankKeep(cx, cz, pond) + KERB.rise + KERB.topJitter * (hash01(n, 0x58) - 0.5) * 2;
+      out.push({ outline: counterClockwise(outline), y0: -KERB.sink, y1: top });
     }
   }
   return out;

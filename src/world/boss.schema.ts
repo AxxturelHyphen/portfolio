@@ -41,6 +41,8 @@ export function validateBoss(raw: unknown, id: string): BossDef {
   e.num(b.scale, `${id}.scale`);
   e.tuple(b.tint, 4, `${id}.tint`, true);
   if (typeof b.scale === 'number' && b.scale <= 0) e.fail(`${id}.scale`, 'expected metres above 0');
+  e.num(b.camera, `${id}.camera`, true);
+  if (typeof b.camera === 'number' && (b.camera <= 0 || b.camera > 1)) e.fail(`${id}.camera`, 'expected a share above 0, at most 1');
   const motion = MOTIONS[typeof b.motion === 'string' ? b.motion : ''];
   if (motion === undefined) e.fail(`${id}.motion`, `expected one of ${Object.keys(MOTIONS).join(', ')}`);
   checkParts(e, b.parts, id, motion?.roles ?? []);

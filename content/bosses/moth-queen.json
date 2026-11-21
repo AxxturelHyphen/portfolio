@@ -8,6 +8,7 @@
   ],
   "scale": 1.5049,
   "tint": [1, 0.95, 0.88, 1],
+  "camera": 0.25,
   "parts": [
     {
       "role": "body",

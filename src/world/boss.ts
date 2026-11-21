@@ -17,8 +17,15 @@ import { MOTIONS, clamp01, createPose, type BossPose, type Motion } from './boss
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export interface BossPart { role: string; sprite: SpriteId; parent: string | null; pivot: [number, number]; offset: [number, number]; z: number; rest: number }
-/** tint: the plates' night colour (rgb multiplier, opacity; a luma under 0.75 reads as a shaded layer), white if absent. */
-export interface BossDef { id: string; bed: BedId; at: [number, number, number]; scale: number; tint?: [number, number, number, number]; parts: BossPart[]; motion: string }
+/**
+ * tint: the plates' night colour (rgb multiplier, opacity; a luma under 0.75 reads as a shaded layer), white if absent.
+ * camera: the share of the camera moment (world/boss.camera.ts) the show takes, 1 if absent: a boss on the back wall
+ * that the walking framing already shows needs little of it, so the visitor keeps its size.
+ */
+export interface BossDef {
+  id: string; bed: BedId; at: [number, number, number]; scale: number; tint?: [number, number, number, number]; camera?: number; parts: BossPart[];
+  motion: string;
+}
 export type BossPhase = 'wait' | 'play' | 'idle';
 
 export const BOSS = {
@@ -266,7 +273,7 @@ export function createBoss(k: BossKit): Boss | null {
       if (s.bed === k.def.bed) bossCamera.phase = run.phase;
       hear(run.phase === 'play');
       if (run.moment > 0 || camera) {
-        bossCamera.amount = run.moment;
+        bossCamera.amount = run.moment * (k.def.camera ?? 1);
         camera = run.moment > 0;
       }
       if (writer === null || chain === null || run.version === written) return;

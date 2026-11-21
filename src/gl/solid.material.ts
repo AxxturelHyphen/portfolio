@@ -33,6 +33,14 @@ interface Made { tile: string; material: RawShaderMaterial }
 const made: Made[] = [];
 
 type Rgb = readonly [number, number, number];
+
+/**
+ * A tile's own look on top of its caller's tint: a factor on the tint and how much its top faces lift (0 none). The
+ * kerb is pale grey garden stone set in the ground: its tops catch the lantern as the path slabs do.
+ */
+const TILE_LOOK: Readonly<Record<string, { pale: Rgb; top: number }>> = {
+  'tile/kerb': { pale: [1.42, 1.38, 1.4], top: 0.45 },
+};
 /** A material's extras: a warm light of its own (a lantern's glass), and instancing (pieces moved one by one). */
 export interface SolidOptions { glow?: Rgb; instanced?: boolean }
 
@@ -42,6 +50,7 @@ export interface SolidOptions { glow?: Rgb; instanced?: boolean }
  */
 export function solidMaterial(tile: string, tint: Rgb, options: SolidOptions = {}): RawShaderMaterial {
   const glow = options.glow ?? [0, 0, 0];
+  const look = TILE_LOOK[tile];
   const instanced = options.instanced === true;
   const key = `${tile}|${tint.join(',')}|${glow.join(',')}|${instanced ? 'i' : ''}`;
   const found = made.find((m) => m.material.name === key);
@@ -56,9 +65,9 @@ export function solidMaterial(tile: string, tint: Rgb, options: SolidOptions = {
       ...sharedUniforms,
       uColor: { value: standInColor },
       uNormal: { value: standInNormal },
-      uTile: { value: new Vector4(1, NORMAL_GAIN, INSET, 0) },
+      uTile: { value: new Vector4(1, NORMAL_GAIN, INSET, look?.top ?? 0) },
       uRect: { value: new Vector4(0, 0, 1, 1) },
-      uTint: { value: new Vector3(...tint) },
+      uTint: { value: new Vector3(...tint).multiply(new Vector3(...(look?.pale ?? [1, 1, 1]))) },
       uGlow: { value: new Vector3(...glow) },
     },
     transparent: true,

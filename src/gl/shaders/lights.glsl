@@ -71,10 +71,10 @@ vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
   return mix(keyLit(albedo, light), albedo * luma(light) * LEAF_KEY, leaf);
 }
 
-// A lantern's throw: a soft core windowed to zero at its reach (3.6 m round the carried one, shorter upward), with
+// A lantern's throw: a soft core windowed to zero at its reach (3.8 m round the carried one, shorter upward), with
 // the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc. Standing
 // lanterns throw smaller, dimmer pools (STAND_GAIN), so the carried one leads and the rest read as lamps along the beds.
-const vec3 LAMP_REACH = vec3(3.6, 2.1, 3.6);
+const vec3 LAMP_REACH = vec3(3.8, 2.1, 3.8);
 const vec3 STAND_REACH = vec3(2.4, 1.6, 2.4);
 const float STAND_GAIN = 0.7;
 const float LAMP_CORE = 1.5;
@@ -97,8 +97,8 @@ uniform mat4 uShadowVP;
 uniform highp sampler2DShadow uShadowMap;
 uniform float uShadowOn;
 const float SHADOW_LIFT = 0.05;
-const float SHADOW_SOFT = 2.2;
-const float SHADOW_KEEP = 0.42;
+const float SHADOW_SOFT = 2.6;
+const float SHADOW_KEEP = 0.56;
 float lampShadow(vec3 p, vec3 toLamp) {
   vec4 c = uShadowVP * vec4(p + normalize(toLamp) * SHADOW_LIFT, 1.0);
   vec3 s = c.xyz / c.w * 0.5 + 0.5;

@@ -67,3 +67,17 @@ test('the kerb is laid as stones end to end, each standing in the ground and no 
     expect(len, 'a stone, not a log').toBeLessThan(0.5);
   }
 });
+
+test('the kerb lines only path that runs along the bank front, never a stretch heading into the bank', () => {
+  for (const s of kerbStones(ground.path.points, ground.pond)) {
+    let dx = 0;
+    let dz = 0;
+    for (let i = 0; i < s.outline.length; i += 2) {
+      const j = (i + 2) % s.outline.length;
+      const ex = s.outline[j]! - s.outline[i]!;
+      const ez = s.outline[j + 1]! - s.outline[i + 1]!;
+      if (Math.hypot(ex, ez) > Math.hypot(dx, dz)) [dx, dz] = [ex, ez];
+    }
+    expect(Math.abs(dz) / Math.hypot(dx, dz), 'a kerb seen end on reads as a rail').toBeLessThan(0.75);
+  }
+});

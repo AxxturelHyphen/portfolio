@@ -4,7 +4,7 @@
 // away from the visitor, the haze, the layer air and the paper floor. Opaque.
 uniform sampler2D uColor;
 uniform sampler2D uNormal;
-uniform vec4 uTile;        // metres per tile, normal map gain, then the tile's uv inset (its outer texels fade)
+uniform vec4 uTile;        // metres per tile, normal map gain, the tile's uv inset (its outer texels fade), top-face lift
 uniform vec4 uRect;        // the tile's uv rect on its atlas page
 uniform vec3 uTint;
 uniform vec3 uGlow;        // a light of its own (a lantern's warm glass), under the paper's shoulder
@@ -47,7 +47,7 @@ void main() {
   vec2 uv = uRect.xy + (uRect.zw - uRect.xy) * uTile.z + fract(p) * span;
   vec2 dx = dFdx(p) * span;
   vec2 dy = dFdy(p) * span;
-  vec3 albedo = textureGrad(uColor, uv, dx, dy).rgb * uTint;
+  vec3 albedo = textureGrad(uColor, uv, dx, dy).rgb * uTint * (1.0 + uTile.w * smoothstep(0.6, 0.95, n.y));
   vec2 nxy = textureGrad(uNormal, uv, dx, dy).xy * 2.0 - 1.0;
   n = normalize(n + (t * nxy.x - b * nxy.y) * uTile.y);
 
