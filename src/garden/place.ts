@@ -10,6 +10,7 @@ import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflect
 import type { BedId } from '../types.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import { enclosureRuns, masonryOf, STONES } from '../world/enclosure.ts';
+import { bankKerbs, KERB_SHAPE, pondRim } from '../world/solids.ts';
 import { exitGate } from '../world/exit.ts';
 import type { StreamGarden } from '../world/garden.ts';
 import { ironGateOf } from '../world/irongate.ts';
@@ -204,6 +205,10 @@ export function closedGroundLayoutOf(g: WorldLayout): GroundLayout {
 /** The closed garden's solid walls paint after its crowns and hedge (world/garden.ts CLOSED_ORDER), then the Salida's iron gate, then the beds. */
 const WALL_ORDER = RENDER_ORDER.overview - 2;
 const GATE_ORDER = RENDER_ORDER.overview - 0.5;
+/** The pond rim and the bank kerbs paint after every bed card, depth tested, so they stand among the plants by depth. */
+const GROUND_STONE_ORDER = RENDER_ORDER.front + 40;
+const RIM_TINT = [0.78, 0.76, 0.7] as const;
+const KERB_TINT = [0.66, 0.56, 0.48] as const;
 
 /**
  * Everything gl must have before warm() so no texture uploads or compiles on first draw: the ground layout and the pond,
@@ -220,6 +225,12 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
     gfx.scene.add(createIronGate(ironGateOf(e.door, g.ground.wall.z), exitGate, GATE_ORDER));
     const walls = masonryOf(enclosureRuns(e, g.ground.wall.z, g.ground.wall.h), e.baseH);
     for (const k of ['stone', 'base', 'coping'] as const) gfx.scene.add(solidMesh(new SolidBuilder().blocks(walls[k]), solidMaterial(STONES[k].tile, STONES[k].tint), WALL_ORDER));
+    const rim = new SolidBuilder();
+    for (const s of pondRim(g.ground.pond)) rim.prism(s.outline, s.y0, s.y1);
+    gfx.scene.add(solidMesh(rim, solidMaterial(STONES.coping.tile, RIM_TINT), GROUND_STONE_ORDER));
+    const kerb = new SolidBuilder();
+    for (const line of bankKerbs(g.ground.path.points, g.ground.pond)) kerb.ribbon(line, KERB_SHAPE.width, KERB_SHAPE.bottom, KERB_SHAPE.top);
+    gfx.scene.add(solidMesh(kerb, solidMaterial(STONES.base.tile, KERB_TINT), GROUND_STONE_ORDER));
     void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
   }
   const pond = pondOf(scenes.estanque, mode);
