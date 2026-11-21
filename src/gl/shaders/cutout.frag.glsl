@@ -138,11 +138,11 @@ const vec2 FLAME_CORE_FROM = vec2(0.5, 0.92);         // share of the core glow 
 
 // Paper thickness (free roam, not on the low tier): through a pixel the face leaves open, the eye's ray goes on behind
 // the face across the card's thickness (vSide.w); the first of SIDE_TAPS taps inside the silhouette is the cut edge,
-// warm off-white, darker toward the back. Taps past the sprite's rect see no paper; a pixel past the rect beside a tile
+// a dim warm card, darker toward the back. Taps past the sprite's rect see no paper; a pixel past the rect beside a tile
 // that runs to its rect (wall, coping) takes no edge, so tiled flats never show one at their seams.
 const float SIDE_TAPS = 4.0;
 const float SIDE_SLOPE = 1.2;                         // THICK_PAD of the vertex stage: the room the grown quad leaves
-const vec3 PAPER_EDGE = vec3(0.55, 0.47, 0.35);       // #c4b6a0 warm off-white card core, linear
+const vec3 PAPER_EDGE = vec3(0.24, 0.21, 0.15);       // #87806b dim card core, linear: a thin stem or leaf keeps its own colour
 const float EDGE_BACK = 0.4;                          // the share of light the edge keeps at the back face
 const float EDGE_AMBIENT = 0.7;                       // the dusk fill on the edge: dimmer than on the face
 const float EDGE_LAMP = 0.6;                          // the lanterns graze the edge

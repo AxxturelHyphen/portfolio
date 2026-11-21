@@ -30,6 +30,8 @@ const RISE = { closed: 10, open: 100 } as const;
 const STAGGER_POSES = PLUMES / PEACOCK.featherStagger / 2;
 /** The boss's turn toward the camera, at most this far from the bird's own hinge (radians). */
 const TURN_MAX = 35 * DEG;
+/** Under free roam the bird stands before the garden wall: a smaller fan stays inside the wall, clear of the moon. */
+const ROAM_FAN = 0.7;
 
 export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const { actors, machine, scene, sprites, boss, rig, setReflector } = ctx;
@@ -51,7 +53,8 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const hinge = -(bodyAt?.hinge ?? 0) * DEG;
   /** The bird's height now, its share of the drawn height, and its turn (radians added to every facing). */
   let size = bodyH;
-  let fanScale = bodyH / BODY_H;
+  const fan = ctx.mode === 'roam' ? ROAM_FAN / BODY_H : 1 / BODY_H;
+  let fanScale = bodyH * fan;
   let turn = 0;
   let hidden = false;
   const bodyNow = { x: foot.x, y: foot.y, z: foot.z, h: bodyH, hinge: bodyAt?.hinge ?? 0 };
@@ -115,7 +118,7 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     if (boss === null) return;
     const p = boss.run.pose;
     size = bodyH + (boss.def.scale - bodyH) * p.grow;
-    fanScale = size / BODY_H;
+    fanScale = size * fan;
     rump.y = foot.y + RUMP.up * size;
     const toward = Math.atan2(rig.pose.x - foot.x, rig.pose.z - foot.z) - hinge;
     turn = p.turn * Math.max(-TURN_MAX, Math.min(TURN_MAX, toward));
