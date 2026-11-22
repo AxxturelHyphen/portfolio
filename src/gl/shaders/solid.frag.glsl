@@ -70,10 +70,10 @@ const float GRAZE_INK = 0.35;
 const float ROCK_DETAIL = 0.5;         // the share of the photo's own contrast kept
 const vec2 FACET_TONE = vec2(0.8, 1.16);
 const float STRATA_M = 0.42;          // height of one stratum
-const float STRATA_INK = 0.55;
+const float STRATA_INK = 0.4;
 const float STRATA_LINE = 0.08;       // the line's share of a stratum
 const float HATCH_PER_M = 7.0;
-const float HATCH_INK = 0.55;
+const float HATCH_INK = 0.14;
 const vec2 HATCH_DARK = vec2(0.012, 0.07);   // lit luma under which the hatching is full and over which it is gone
 // A path slab (vLook.w 2): its tile calmed to fine grain, and the lanterns on its own value, desaturated and rolled off,
 // so the tops read as the pale flagstones the ground painted, the brightest ground under the lantern.
