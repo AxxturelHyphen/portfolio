@@ -81,8 +81,8 @@ vec3 leafKeyLit(vec3 albedo, vec3 light, float leaf) {
 // the faint darker rays of the lantern's corner posts, so the pool reads as thrown light, never as a disc. Standing
 // lanterns throw smaller, dimmer pools (STAND_GAIN), so the carried one leads and the rest read as lamps along the beds.
 const vec3 LAMP_REACH = vec3(3.8, 2.1, 3.8);
-const vec3 STAND_REACH = vec3(2.4, 1.6, 2.4);
-const float STAND_GAIN = 0.7;
+const vec3 STAND_REACH = vec3(3.1, 1.8, 3.1);
+const float STAND_GAIN = 0.85;
 const float LAMP_CORE = 1.5;
 const float LAMP_POSTS = 0.22;
 float lampFall(vec3 d, vec3 reach) {
