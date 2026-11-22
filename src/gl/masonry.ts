@@ -150,6 +150,11 @@ export class SolidBuilder {
     return this.idx.length === 0;
   }
 
+  /** Vertices so far: the index the next piece's first vertex gets. */
+  get count(): number {
+    return this.pos.length / 3;
+  }
+
   geometry(): BufferGeometry {
     const g = new BufferGeometry();
     g.setAttribute('position', new BufferAttribute(new Float32Array(this.pos), 3));

@@ -6,6 +6,7 @@ import { linearHex } from '../gl/colour.ts';
 import { grottoSolids } from '../gl/grotto.ts';
 import { createIronGate } from '../gl/irongate.ts';
 import { SolidBuilder, solidMesh } from '../gl/masonry.ts';
+import { peacockHeadInto } from '../gl/peacock.head.ts';
 import { buildProps, propBuilders } from '../gl/props.ts';
 import { slabStones } from '../gl/slabs.ts';
 import { signWood } from '../gl/signwood.ts';
@@ -241,8 +242,8 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
     gfx.ground.enclose(e.x[0], g.ground.wall.z - CLOSED_MARGIN.shade, e.x[1], e.front);
     gfx.scene.add(createIronGate(ironGateOf(e.door, g.ground.wall.z), exitGate, GATE_ORDER));
     // Two draws for every static solid: the walls, the grotto's shell and floor and the path's slabs before the cards (the
-    // plants paint over the slabs as over the ground), the ground stones, the grotto's rocks and the props after them,
-    // casting the lantern's shadow (one more draw in its pass).
+    // plants paint over the slabs as over the ground), the ground stones, the grotto's rocks, the props and the peacock's
+    // moving head after them, casting the lantern's shadow (one more draw in its pass).
     const back = new SolidBuilder();
     const front = new SolidBuilder();
     const walls = masonryOf(enclosureRuns(e, g.ground.wall.z, g.ground.wall.h), e.baseH);
@@ -261,8 +262,10 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
       slabStones(back, pathSlabs(field, terrainRect()));
       gfx.ground.setSlabs(true);
     }
+    const head = peacockHeadInto(front);
     const stones = solidMesh(front, solidMaterial(), GROUND_STONE_ORDER);
     stones.layers.enable(SHADOW_LAYER);
+    head(stones);
     gfx.scene.add(solidMesh(back, solidMaterial(), WALL_ORDER), stones);
     void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
     if (chalk !== null) createChalkDrive(gfx, scenes, CHALK_ORDER, chalk);

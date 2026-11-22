@@ -9,13 +9,15 @@
  * display of the visit brings it to the boss's height, opens the fan on the boss's timeline and turns it slowly toward
  * the visitor's camera; from then on the boss draws the bird (the bed hides its own copy). On the garden wall the fan
  * spreads about three body widths and stays under the coping, and the plumes' tint pales from the rim to the centre,
- * so the pencil lines read as feathers rather than one flat colour.
+ * so the pencil lines read as feathers rather than one flat colour. Under free roam the bird's upright neck and head
+ * (world/peacock.head.ts) is placed with it on every write, at the size, foot and turn of the body drawn then.
  */
 import type { BedBehaviour, Clock, QuadParams, SpriteRect } from '../../types.ts';
 import { PEACOCK, STEP_FPS } from '../../core/motion.ts';
 import type { StreamBedCtx } from '../bed.ts';
 import type { BedScene3 } from '../layout.ts';
 import { builtIn } from '../mode.ts';
+import { peacockHead } from '../peacock.head.ts';
 import { QUAD_FLAG, packPhase } from '../quadflags.ts';
 
 const DEG = Math.PI / 180;
@@ -66,7 +68,8 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
 
   // The bird's own tint (free roam dusks the white plate; the boss file's when it is the boss), shared by the plumes so
   // fan and body stay one paper.
-  const tint = boss?.def.tint ?? [...(bodyAt?.tint ?? [1, 1, 1]), 1];
+  const plateTint = bodyAt?.tint ?? [1, 1, 1];
+  const tint = boss?.def.tint ?? [...plateTint, 1];
   const plumeTint = new Float32Array(4);
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: plumeA.uv, sway: 0, phase: 0, lift: 0, facing: 0, tint };
   const stillFlags = QUAD_FLAG.noLean | QUAD_FLAG.noShadow;
@@ -145,8 +148,14 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     hidden = drawn;
   }
 
+  /** The head on the body drawn now: the boss's copy once it shows, else the bed's own plate. */
+  function placeHead(): void {
+    peacockHead.draw?.(foot.x, foot.y, foot.z, size, hinge + turn, hidden ? tint : plateTint);
+  }
+
   function write(): void {
     grow();
+    placeHead();
     const k = pose / lastPose;
     let n = 0;
     if (pose > 0 || hidden) {
@@ -170,6 +179,7 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     version = boss?.run.version ?? 0;
   }
 
+  placeHead();
   return {
     update(c: Clock) {
       const s = machine.state;
@@ -188,6 +198,7 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
     },
     dispose() {
       actors.count = 0;
+      peacockHead.draw?.(0, 0, 0, 0, 0, tint);
     },
   };
 }

@@ -291,27 +291,6 @@
           "only": "rail"
         },
         {
-          "sprite": "es/peacock-crest",
-          "x": 19.81,
-          "y": 1.81,
-          "z": -5.29,
-          "scale": 1,
-          "w": 0.133,
-          "hinge": -6,
-          "lean": 0,
-          "size": "small",
-          "group": "M",
-          "foot": "none",
-          "shadow": false,
-          "react": false,
-          "only": "roam",
-          "tint": [
-            0.58,
-            0.56,
-            0.66
-          ]
-        },
-        {
           "sprite": "es/typha-blade-1",
           "x": 16.5,
           "y": 0,
