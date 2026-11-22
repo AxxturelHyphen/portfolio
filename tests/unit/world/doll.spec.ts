@@ -68,3 +68,31 @@ test('the body re-poses only on the ticks; the lantern swings every frame from t
   expect(d.flame[0]).toBeGreaterThan(still + 0.02);
   expect(d.flame[1]).toBeLessThan(d.grip[1]!);
 });
+
+/** The doll's largest turn (rad) from its resting heading over a nudge: `walkS` at `speed` m/s toward +x, then standing. */
+function turnOnNudge(walkS: number, speed: number): number {
+  const d = createDoll();
+  const g = createGait();
+  let x = 0;
+  for (let t = 1; t < 2; t += 1 / 60) {
+    stepGait(g, t, 1 / 60, 0, 0, false, false, 0);
+    d.pose(g, x, 0, 1, -1, 0, 0, false);
+  }
+  const rest = d.root.heading;
+  let most = 0;
+  for (let t = 2; t < 3.5; t += 1 / 60) {
+    const v = t < 2 + walkS ? speed : 0;
+    x += v / 60;
+    stepGait(g, t, 1 / 60, v, 0, false, false, 0);
+    d.pose(g, x, 0, 1, -1, 0, 0, false);
+    most = Math.max(most, Math.abs(Math.atan2(Math.sin(d.root.heading - rest), Math.cos(d.root.heading - rest))));
+  }
+  return most;
+}
+
+test('a nudge shorter than a step turns the doll by nothing; a real walk turns it to where it goes', () => {
+  expect(turnOnNudge(0.04, 1.6), 'a 40 ms key tap').toBeLessThan(0.05);
+  expect(turnOnNudge(0.1, 1.6), 'a tenth of a second').toBeLessThan(0.05);
+  expect(turnOnNudge(0.6, 1.6), 'a walk east turns it east').toBeGreaterThan(0.8);
+  expect(FIGURE.turnAfterM).toBeGreaterThan(0.15);
+});

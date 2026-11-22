@@ -101,3 +101,17 @@ test('heading: the bed ahead in the walking direction once within the lookahead'
   expect(bedAhead(20, 1, beds, of, w)).toBeNull();
   expect(bedAhead(15, -1, beds, of, w)).toBe('rosaleda');
 });
+
+test('standing between two neighbours, nudges of a few centimetres either way never swap the focus', () => {
+  const a = slot('rosaleda/rose-a', 'project', 0, 0);
+  const b = slot('rosaleda/rose-b', 'project', 1.2, 0);
+  const p = createProximity();
+  p.setSlots([a, b]);
+  p.update(0.59, 0.8);
+  const first = p.want;
+  expect(first).toBe(a.id);
+  for (let i = 0; i < 40; i++) {
+    p.update(0.6 + (i % 2 === 0 ? 0.03 : -0.03), 0.8);
+    expect(p.want, `nudge ${i}`).toBe(first);
+  }
+});

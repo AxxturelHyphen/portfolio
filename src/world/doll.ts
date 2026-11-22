@@ -4,7 +4,8 @@
  * geometry built once from lathes, boxes and tori in the doll's own frame (metres, ground point at the origin, facing
  * +z, its left at +x), every vertex tagged with its part. The gait (world/puppet.gait.ts) poses the parts on the 12 fps
  * tick: legs and arms swing opposite on the stride, the body leans and breathes, the head glances; the doll turns
- * toward where it walks and, standing, turns three quarters to the lens. The lantern hangs from the carrying hand and
+ * toward where it walks once it has gone a step from where it stood (a nudge shorter than that turns nothing) and,
+ * standing, turns three quarters to the lens. The lantern hangs from the carrying hand and
  * swings every frame. Posing writes into preallocated arrays: nothing is allocated per frame.
  */
 import { BoxGeometry, ConeGeometry, Euler, LatheGeometry, Matrix4, TorusGeometry, Vector2, Vector3, type BufferGeometry } from 'three';
@@ -24,6 +25,8 @@ export const FIGURE = {
   carryDeg: 34, carryOutDeg: 10, freeOutDeg: 20, idleTurn: 0.4,
   /** Share of the way to the wanted heading taken each tick: a turn shows as a few stepped poses, like stop motion. */
   turnK: 0.45,
+  /** The doll turns to its walk only once it has gone this far (m) from where it last stood (about a step); a still turns at once. */
+  turnAfterM: 0.25,
 } as const;
 
 /** Paint kinds (doll.frag.glsl): burlap, cotton thread, bright metal, button, lantern glass, contact shadow. */
@@ -267,6 +270,8 @@ export function createDoll(): Doll {
   /** The grip in the doll's frame, as last posed. */
   const gripAt = new Vector3();
   let walkHeading = Math.PI;
+  let restX = 0;
+  let restZ = 0;
   let tick = -1;
 
   /** out = T(p) R(x, y, z) T(-p): a turn about the pivot p. */
@@ -305,8 +310,13 @@ export function createDoll(): Doll {
       root.x = x;
       root.z = z;
       root.k = k * FIGURE.drawK;
-      if (g.speed > GAIT.viewFrom && !g.idle) walkHeading = Math.PI - g.heading;
-      const want = g.idle ? -yaw + carrySide * FIGURE.idleTurn : walkHeading;
+      if (g.idle) {
+        restX = x;
+        restZ = z;
+      }
+      const walking = !g.idle && (still || Math.hypot(x - restX, z - restZ) > FIGURE.turnAfterM);
+      if (walking && g.speed > GAIT.viewFrom) walkHeading = Math.PI - g.heading;
+      const want = walking ? walkHeading : -yaw + carrySide * FIGURE.idleTurn;
       const fresh = still || g.tick !== tick;
       if (still) root.heading = want;
       else if (fresh) root.heading = wrapPi(root.heading + wrapPi(want - root.heading) * FIGURE.turnK);

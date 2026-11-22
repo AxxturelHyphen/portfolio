@@ -3,7 +3,7 @@ import {
   RawShaderMaterial, Vector4,
 } from 'three';
 import { terrainY } from '../core/terrain.ts';
-import { MAX_MARKS, type ChalkMark } from '../world/chalk.ts';
+import { MAX_MARKS, rockZ, type ChalkMark } from '../world/chalk.ts';
 import { GRID } from '../world/chalk.glyphs.ts';
 import { INK_STRIDE, inkText, type Inked } from '../world/chalk.hand.ts';
 import { sharedUniforms } from './lights.ts';
@@ -15,11 +15,10 @@ import fragmentBody from './shaders/chalk.frag.glsl?raw';
 /**
  * Chalk on the gl side: every mark's strokes (world/chalk.hand.ts) drawn into one canvas atlas when the marks are built
  * or the language changes, never per frame (r: the chalk laid down, g: when, times r, for the chalking on; the hand's
- * pressure is in the stroke's width), and every mark a
- * flat decal on the ground (a grid that follows the terrain, a little above it) or on a wall's face, all merged into one
- * mesh: one draw for all the chalk. Depth tested against what the walls, the solids and the cards wrote, writing none,
- * nudged toward the lens so it never fights the surface it lies on. Every quad faces
- * up (or out of its wall), so one side is drawn in one pass.
+ * pressure is in the stroke's width), and every mark a decal on the ground (a grid that follows the terrain, a little
+ * above it) or bent over the grotto's rock, all merged into one mesh: one draw for all the chalk. Depth tested against
+ * what the walls, the solids and the cards wrote, writing none, nudged toward the lens so it never fights the surface
+ * it lies on. Every quad faces up (or out of the rock), so one side is drawn in one pass.
  */
 
 /** The atlas page, the hand's size on it (px per grid unit) and the gap between marks. */
@@ -76,7 +75,7 @@ export interface ChalkMesh {
   build(marks: readonly ChalkMark[]): void;
 }
 
-/** One quad grid per mark: ground marks follow the terrain, wall marks stand on the face. */
+/** One quad grid per mark: ground marks follow the terrain, rock marks bend over the grotto's dome. */
 function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | null)[], unit: number): BufferGeometry {
   const pos: number[] = [];
   const nrm: number[] = [];
@@ -90,11 +89,9 @@ function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | nu
     const metres = m.cap / CAP_UNITS / unit;
     const w = r.w * metres;
     const h = r.h * metres;
-    const bx = Math.cos(m.yaw);
-    const bz = -Math.sin(m.yaw);
     const ground = m.surface === 'ground';
-    const nx = ground ? Math.max(1, Math.ceil(w / CELL_M)) : 1;
-    const ny = ground ? Math.max(1, Math.ceil(h / CELL_M)) : 1;
+    const nx = Math.max(1, Math.ceil(w / CELL_M));
+    const ny = Math.max(1, Math.ceil(h / CELL_M));
     const first = pos.length / 3;
     for (let j = 0; j <= ny; j++) {
       for (let k = 0; k <= nx; k++) {
@@ -103,13 +100,13 @@ function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | nu
         const along = (u - 0.5) * w;
         const up = (v - 0.5) * h;
         if (ground) {
-          const x = m.x + bx * along + bz * up;
-          const z = m.z + bz * along - bx * up;
+          const x = m.x + along;
+          const z = m.z - up;
           pos.push(x, terrainY(x, z) + LIFT_M, z);
           nrm.push(0, 1, 0);
         } else {
-          pos.push(m.x + bx * along, m.y + up, m.z + bz * along);
-          nrm.push(-bz, 0, bx);
+          pos.push(m.x + along, m.y + up, rockZ(m.x + along, m.y + up));
+          nrm.push(0, 0, 1);
         }
         uv.push((r.x + u * r.w) / ATLAS.w, 1 - (r.y + (1 - v) * r.h) / ATLAS.h);
         mark.push(i);

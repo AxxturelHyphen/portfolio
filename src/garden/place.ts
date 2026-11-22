@@ -265,7 +265,7 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
     stones.layers.enable(SHADOW_LAYER);
     gfx.scene.add(solidMesh(back, solidMaterial(), WALL_ORDER), stones);
     void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
-    if (chalk !== null) createChalkDrive(gfx, g, scenes, CHALK_ORDER, chalk);
+    if (chalk !== null) createChalkDrive(gfx, scenes, CHALK_ORDER, chalk);
   }
   const pond = pondOf(scenes.estanque, mode);
   if (pond === null) return;

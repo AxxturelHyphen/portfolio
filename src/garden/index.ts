@@ -132,7 +132,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   if (roaming) raiseTerrain(closedGroundLayoutOf(world), world.ground.pond);
   const garden = createGarden({ gfx, machine, rig, light, quality, content, proxies, kit, ...(roam === null ? {} : { roam }) });
   const pace = paceStreaming(garden.residency, roam === null ? null : content.garden.order[0] ?? null, q.shot !== undefined);
-  const play = roam === null || q.shot !== undefined || q.t !== undefined ? null : createPlay(host.world, { machine, content, memory: garden.memory, proxies: host.proxies, activate: () => roam.activate(), home: () => roam.home(), bedTitle: (b, l) => SCENES[b].title[l] });
+  const play = roam === null || q.shot !== undefined || q.t !== undefined ? null : createPlay(host.world, { machine, content, loop, memory: garden.memory, proxies: host.proxies, activate: () => roam.activate(), home: () => roam.home(), settled: () => channelsSettled(machine) && !roam.busy, firstRun: q.bench !== 1 || location.search.includes('help=1'), bedTitle: (b, l) => SCENES[b].title[l] });
   const input = createInput({ machine, rig, light, loop, surface: host.canvas, ...(roam === null ? {} : { roam, ...(play === null ? {} : { stick: play.stick }) }) });
   if (roam !== null) setRoamWeight(1);
   setPaperEdge(quality.tier !== 'low');
@@ -151,7 +151,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const intro = createIntroDrive(gfx, quality.cfg.atlas);
   const labels = createLabelDrive(label, rig, roam?.pos ?? null);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
-  prepareGl(gfx, world, SCENES, worldMode(), garden, quality.tier, roam === null || q.shot !== undefined || q.t !== undefined ? null : { machine, loop, quality, content, visitor: roam.pos, test: testApiEnabled(q) });
+  prepareGl(gfx, world, SCENES, worldMode(), garden, quality.tier, roam === null || q.shot !== undefined || q.t !== undefined ? null : { machine, loop, visitor: roam.pos, test: testApiEnabled(q) });
   const placeLight = createPlaceLighting(worldMode());
   const posts = signPostsOf(world, SCENES, worldMode());
   proxies.setSigns(signAnchorsOf(posts, worldMode()));

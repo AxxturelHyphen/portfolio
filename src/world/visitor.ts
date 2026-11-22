@@ -31,11 +31,13 @@ export const LANTERN = {
 
 /**
  * The carrying crook (metres, at scale 1.4): shaft height, hook radius, line widths, its near-black tint, the lean per
- * m/s of walk and its clamp. Near the pond the hook turns to the bank side, so the lantern never hangs over the water.
+ * m/s of walk and its clamp. Near the pond the hook turns to the bank side, so the lantern never hangs over the water;
+ * the doll's carrying side changes only once the visitor is sideDead (in pond radii) past the edge it crossed.
  */
 export const CROOK = {
   heightM: 1.1, hookM: 0.075, shaftW: 0.024, hookW: 0.02, hookSegments: 4, hookSweep: 1.15,
   tint: [0.07, 0.05, 0.035], leanPerMS: 0.05, maxLean: 0.16, leanTauS: 0.25, pondNear: 1.6, sideTauS: 0.3,
+  sideDead: 0.08,
 } as const;
 /**
  * The lantern in the doll's hand: the ground velocity follower, the flame's ease from the planted crook to the hand
@@ -246,7 +248,7 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     const d = doll!;
     stepGait(gait, c.t, c.dt, groundVx, gaitVz, c.frozen, reduced, yaw);
     if (still || tick !== lastTick) {
-      figureSide = carrySide(x, z);
+      figureSide = carrySide(x, z, figureSide);
       const turn = (HELD.armFollow * pendulum.angle) / DEG;
       armSway = still ? 0 : Math.max(-HELD.armMaxDeg, Math.min(HELD.armMaxDeg, turn));
     }
@@ -262,10 +264,15 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
 
   /**
    * The figure's carrying side seen from behind: its left (-1), clear of the props the stand points put on the right
-   * (the watering can by the Rosaleda rose), or toward the bank when it skirts the pond.
+   * (the watering can by the Rosaleda rose), or toward the bank when it skirts the pond; `was` is kept while the
+   * visitor stands within sideDead of the near ring or of the pond's middle, so a nudge never swaps it.
    */
-  function carrySide(x: number, z: number): number {
-    return pond !== null && Math.hypot((x - pond.x) / pond.rx, (z - pond.z) / pond.rz) < CROOK.pondNear ? bankSide(x, z) : -1;
+  function carrySide(x: number, z: number, was: number): number {
+    if (pond === null) return -1;
+    const r = Math.hypot((x - pond.x) / pond.rx, (z - pond.z) / pond.rz);
+    const across = (x - pond.x) / pond.rx;
+    if (Math.abs(r - CROOK.pondNear) < CROOK.sideDead || (r < CROOK.pondNear && Math.abs(across) < CROOK.sideDead)) return was;
+    return r < CROOK.pondNear ? (across < 0 ? -1 : 1) : -1;
   }
 
   /** +1, or toward the bank (-1 west of the pond's centre) when the visitor skirts the pond. */

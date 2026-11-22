@@ -5,7 +5,7 @@ import { rng } from './groundplan.ts';
  * The chalk hand (pure, no canvas): lays a mark's text out in lines of single-stroke glyphs (world/chalk.glyphs.ts)
  * and turns every stroke into a wobbly polyline in pixels, as a hand would chalk it. Each letter sits a little off its
  * line, size and slant; every point is jittered, curves are rounded off, the line wanders slowly across its own path
- * and the pressure comes and goes along it. "[X]" draws X inside a rough box (a key cap). The time of each point
+ * and the pressure comes and goes along it. The time of each point
  * (0 to 1 over the whole mark, stroke by stroke) lets the mark chalk itself on. Seeded, so a mark is the same on every
  * visit and in every still.
  */
@@ -33,8 +33,6 @@ const THIN = 0.35;
 /** Pixels between resampled points; the pause between strokes, in points' time. */
 const STEP_PX = 1.6;
 const LIFT = 6;
-/** A key cap's box: margin each side, bottom and top on the line. */
-const BOX = [1.3, 0.7, 10.6] as const;
 
 /** A stable seed from a mark's text. */
 export function seedOf(text: string): number {
@@ -75,31 +73,12 @@ function placeGlyph(strokes: readonly GlyphStroke[], x0: number, y0: number, rnd
   }
 }
 
-/** A rough box round [x0, x1] on the line at y0: four strokes that overshoot their corners a little. */
-function placeBox(x0: number, x1: number, y0: number, rnd: () => number, out: Placed[]): void {
-  const j = (): number => (rnd() * 2 - 1) * JITTER * 2;
-  const [l, r, lo, hi] = [x0 - BOX[0], x1 + BOX[0], y0 + BOX[1], y0 + BOX[2]];
-  out.push({ pts: [l - 0.3 + j(), hi + j(), r + 0.4 + j(), hi + j()], curve: false });
-  out.push({ pts: [r + j(), hi + 0.3 + j(), r + j(), lo - 0.3 + j()], curve: false });
-  out.push({ pts: [r + 0.3 + j(), lo + j(), l - 0.4 + j(), lo + j()], curve: false });
-  out.push({ pts: [l + j(), lo - 0.2 + j(), l + j(), hi + 0.4 + j()], curve: false });
-}
-
 /** One line of text placed from x = 0 at height y0; returns its width. */
 function placeLine(line: string, y0: number, rnd: () => number, out: Placed[]): number {
   let x = 0;
-  const chars = [...line];
-  for (let i = 0; i < chars.length; i++) {
-    const ch = chars[i]!;
-    const boxed = ch === '[' && chars[i + 2] === ']';
-    const g = glyphOf(boxed ? chars[i + 1]! : ch);
-    if (boxed) {
-      const w = g?.width ?? SPACING.space;
-      if (g !== null) placeGlyph(g.strokes, x + BOX[0], y0, rnd, out);
-      placeBox(x + BOX[0], x + BOX[0] + w, y0, rnd, out);
-      x += w + 2 * BOX[0] + SPACING.gap;
-      i += 2;
-    } else if (g === null) {
+  for (const ch of line) {
+    const g = glyphOf(ch);
+    if (g === null) {
       x += SPACING.space;
     } else {
       placeGlyph(g.strokes, x, y0, rnd, out);

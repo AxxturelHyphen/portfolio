@@ -1,5 +1,5 @@
 import type { StickPad } from '../core/stick.gesture.ts';
-import type { BedId, Content, Lang, Machine, State } from '../types.ts';
+import type { BedId, Content, Lang, Loop, Machine, State } from '../types.ts';
 import type { GardenMemory } from '../world/memory.ts';
 import { createHelp } from './help.ts';
 import { playText } from './play.copy.ts';
@@ -14,19 +14,24 @@ import './styles/play.css';
  * and when every flower is, a one-time card with the real ways on (Download CV, the owner's links) while the tag turns
  * into the invitation to walk to the Salida. On touch, the floating stick (ui/stick.ts) and a round Open button low
  * right that is there only while a flower or a pet is in reach (the same action as Enter). The tag and the "?" step
- * aside while the first-visit plate stands (play.css). The help card never comes up by itself: the first visit's
- * controls are chalked at the gate (garden/chalk.drive.ts). Notes wait until no panel is up.
+ * aside while the first-visit plate stands (play.css), and the help card's first showing waits until it has folded, so
+ * the two take turns. Notes wait until no panel is up.
  */
 
 export interface PlayDeps {
   machine: Machine;
   content: Content;
+  loop: Loop;
   memory: GardenMemory;
   /** The flower slots' layer, where the focused one's name is read for the Open button. */
   proxies: HTMLElement;
   /** Opens the focused slot as Enter does. */
   activate(): void;
   home(): void;
+  /** The cold start and the gate's opening are over. */
+  settled(): boolean;
+  /** The help card may come up by itself (never in a bench run). */
+  firstRun: boolean;
   bedTitle(bed: BedId, lang: Lang): string;
 }
 
@@ -106,6 +111,35 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
 
   let pending: QuestNote = null;
   let noteTimer = 0;
+  let asked = help.seen || !d.firstRun;
+  /**
+   * The first-visit plate (ui/welcome.ts, made after this layer): the help card waits until it has folded. The loop
+   * may rest by then (a still garden draws no frames), so the fold itself is watched.
+   */
+  let plate: HTMLElement | null = null;
+  let waiting = false;
+  const plateUp = (): boolean => {
+    plate ??= parent.querySelector<HTMLElement>('.wl');
+    return plate !== null && plate.dataset.state !== 'folded';
+  };
+  const firstHelp = (): void => {
+    asked = true;
+    help.open();
+  };
+  /** The folded plate still fades for a moment: the help card comes up only once its slip is out of sight. */
+  const afterFold = (tries = 25): void => {
+    if (tries > 0 && plate?.querySelector<HTMLElement>('.wl-hint')?.checkVisibility({ opacityProperty: true }) === true) {
+      setTimeout(afterFold, 80, tries - 1);
+      return;
+    }
+    waiting = false;
+    if (machine.state.mode === 'garden' && !panelUp(machine.state)) firstHelp();
+  };
+  const watchPlate = new MutationObserver(() => {
+    if (plateUp()) return;
+    watchPlate.disconnect();
+    afterFold();
+  });
 
   function paint(): void {
     const lang = machine.state.lang;
@@ -165,6 +199,17 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
     if (s.mode !== 'garden' && done.matches(':popover-open')) done.hidePopover();
     reach(s);
     showNote();
+  });
+  d.loop.on('dom', () => {
+    if (asked || waiting) return;
+    const s = machine.state;
+    if (s.mode !== 'garden' || (s.phase !== 'bed' && s.phase !== 'focus') || !d.settled()) return;
+    if (!plateUp() || plate === null) {
+      firstHelp();
+      return;
+    }
+    waiting = true;
+    watchPlate.observe(plate, { attributes: true, attributeFilter: ['data-state'] });
   });
   paint();
   reach(machine.state);

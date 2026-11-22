@@ -13,12 +13,15 @@ import { createMover } from './xform.ts';
  * is nothing but a gap left out. The DOM is built once; show() only sets texts. place() and setProgress() run in stage 'dom' and write transform and
  * opacity through preallocated movers: no layout reads, no allocation. The tag's own size comes from a
  * ResizeObserver and the viewport size from 'resize' events, both outside the frame.
- * Placement: beside the flower on the asked side, clear of its hit ellipse; it flips when that side has no room,
- * and docks inside the viewport (whole pixels) when the flower nears or leaves an edge. Phones: a full-width strip
+ * Placement: beside the flower, clear of its hit ellipse, on the asked side when it is first placed after show() (the
+ * other side when the asked one has no room). The side is then kept while the tag stands, whatever the visitor or the
+ * pointer does: it changes only when more than half the tag would leave the screen on its side and the other side
+ * holds all of it, and the tag slides over to the new side instead of jumping. It docks inside the viewport (whole
+ * pixels) when the flower nears or leaves an edge. Phones: a full-width strip
  * above the bottom edge (CSS), so place() only fades it.
- * Only a project flower has a tag (show() passes over anything else). The tag is not interactive and is hidden from
- * assistive tech: the proxy button carries the name and points at it with aria-describedby, and a click on the flower
- * is the "View".
+ * A prop or a link shows its name only (garden/label.ts gives the cat none). The tag is not interactive and is hidden
+ * from assistive tech: the proxy button carries the name and points at it with aria-describedby, and a click on the
+ * flower is the "View".
  */
 
 export interface LabelText {
@@ -34,6 +37,11 @@ const EDGE_PX = 16;
 /** The fixed controls own the top band of the screen; the rod tip and the tie stand above the tag. */
 const TOP_PX = 96;
 const NARROW = '(max-width:44.99rem),(max-height:30rem)';
+/** A placed tag changes side only when less than this share of it has room on its side. */
+const KEEP_SHARE = 0.5;
+/** The slide to a new side eases out over this time constant (s); the gap between frames is clamped to MAX_DT_S. */
+const SLIDE_TAU_S = 0.12;
+const MAX_DT_S = 0.1;
 const SVG = 'http://www.w3.org/2000/svg';
 
 /**
@@ -77,12 +85,18 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   const anchor = createMover(el);
   const rise = createMover(card);
   const narrow = matchMedia(NARROW);
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
   let vw = innerWidth;
   let vh = innerHeight;
   let cw = 300;
   let chh = 180;
   let reach = 0;
   let side: 'left' | 'right' | null = null;
+  /** The tag's placed side since show() (null: not placed yet), its left edge then, and the slide still to ease out. */
+  let held: 'left' | 'right' | null = null;
+  let lastLeft = 0;
+  let slide = 0;
+  let lastT = 0;
 
   addEventListener('resize', () => {
     vw = innerWidth;
@@ -98,20 +112,23 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   return {
     show(v: SlotView): void {
       const p = v.project;
-      if (p === undefined) return;
-      title.textContent = p.title;
-      const line = text.tr(p.oneLiner);
+      title.textContent = p?.title ?? v.alt;
+      const line = p === undefined ? '' : text.tr(p.oneLiner);
       oneLiner.innerHTML = blank(line);
       oneLiner.hidden = line === '' || onlyFill(line);
-      const words = p.stack.filter((w) => !onlyFill(w)).slice(0, UI.chipsMax);
+      const words = p?.stack.filter((w) => !onlyFill(w)).slice(0, UI.chipsMax) ?? [];
       stack.innerHTML = words.map(blank).join(', ');
       stack.hidden = words.length === 0;
-      status.dataset.status = p.status;
-      status.textContent = text.t(`status.${p.status}`);
-      view.textContent = text.t('label.view');
+      status.hidden = p === undefined;
+      if (p !== undefined) status.dataset.status = p.status;
+      status.textContent = p === undefined ? '' : text.t(`status.${p.status}`);
+      view.textContent = v.kind === 'project' ? text.t('label.view') : '';
+      view.hidden = v.kind !== 'project';
       reach = Math.max(v.hit[0], v.hit[1]) / 2;
       el.dataset.kind = v.kind;
       el.dataset.shown = '';
+      held = null;
+      slide = 0;
     },
 
     place(pt: ScreenPt, asked: 'left' | 'right'): void {
@@ -122,9 +139,11 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
       const clear = reach * pt.scale + GAP_PX;
       const roomRight = vw - EDGE_PX - (pt.x + clear);
       const roomLeft = pt.x - clear - EDGE_PX;
-      let s = asked;
-      if (s === 'right' && roomRight < cw && roomLeft > roomRight) s = 'left';
-      else if (s === 'left' && roomLeft < cw && roomRight > roomLeft) s = 'right';
+      let s = held ?? asked;
+      const need = held === null ? cw : cw * KEEP_SHARE;
+      const room = s === 'right' ? roomRight : roomLeft;
+      const other = s === 'right' ? roomLeft : roomRight;
+      if (room < need && other > room && (held === null || other >= cw)) s = s === 'right' ? 'left' : 'right';
       if (s !== side) {
         side = s;
         el.dataset.side = s;
@@ -133,9 +152,16 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
       const y = pt.y - chh / 2;
       const maxX = vw - EDGE_PX - cw;
       const maxY = vh - EDGE_PX - chh;
-      const left = Math.round(x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x);
-      const top = Math.round(y < TOP_PX ? TOP_PX : y > maxY ? maxY : y);
-      anchor.move(left, top, 1);
+      const left = x < EDGE_PX ? EDGE_PX : x > maxX ? maxX : x;
+      const top = y < TOP_PX ? TOP_PX : y > maxY ? maxY : y;
+      const now = performance.now() / 1000;
+      if (held !== null && s !== held && !still.matches) slide += lastLeft - left;
+      else slide *= Math.exp(-Math.min(MAX_DT_S, now - lastT) / SLIDE_TAU_S);
+      if (Math.abs(slide) < 0.5) slide = 0;
+      held = s;
+      lastLeft = left;
+      lastT = now;
+      anchor.move(Math.round(left + slide), Math.round(top), 1);
     },
 
     setProgress(p: number): void {

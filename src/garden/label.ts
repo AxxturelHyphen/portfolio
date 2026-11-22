@@ -3,10 +3,10 @@ import type { Clock, LabelCard, ScreenPt, SlotView, State } from '../types.ts';
 import type { GardenRig } from '../world/camera.ts';
 
 /**
- * Drives the label card from the machine (spec section 7): shown for the focused project flower after the MOTION delay,
- * placed at the flower's screen point in stage 'dom' (transform only), hidden once it has faded out. Under frozen
- * time it is fully shown while focused. Nothing else ever gets a tag: the cat, the props and the links say what they are
- * in the world (the chalk, garden/chalk.drive.ts), and their proxy buttons keep their names.
+ * Drives the label card from the machine (spec section 7): shown for the focused slot after the MOTION delay, placed
+ * at the slot's screen point in stage 'dom' (transform only), hidden once it has faded out. Under frozen time it is
+ * fully shown while focused. The cat never gets a tag (its chalk note says what it is, garden/chalk.drive.ts); its
+ * proxy button keeps its name. The side asked for counts only for the tag's first placement (ui/label.ts keeps it).
  */
 
 export interface LabelDrive {
@@ -30,7 +30,7 @@ export function createLabelDrive(label: LabelCard, rig: GardenRig, visitor: Floa
   return {
     onState(s, prev, slots) {
       const found = s.phase === 'focus' && s.slot !== null ? slots.find((v) => v.id === s.slot) : undefined;
-      const want = found?.kind === 'project';
+      const want = found !== undefined && found.kind !== 'pet';
       if (want && (s.slot !== prev.slot || !focused)) {
         view = found;
         label.show(view);
