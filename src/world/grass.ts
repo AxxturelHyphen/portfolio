@@ -30,7 +30,7 @@ const FRONT = { z: [5.8, 7.4], keep: 0.25 } as const;
  * The nap grows in drifts: a smooth noise on a lattice of `m` metres keeps the tufts where it passes `from` and gathers
  * them where it reaches `full`, leaving `bare` of them between, so the grass reads as patches of a lawn, not a sprinkle.
  */
-const DRIFT = { m: 1.7, from: 0.32, full: 0.62, bare: 0.1 } as const;
+const DRIFT = { m: 1.7, from: 0.34, full: 0.6, bare: 0.05 } as const;
 /** A prop's box grows by this much (m) on every side. */
 const PROP_MARGIN = 0.06;
 /** The share of the tufts each tier keeps: the low tier about a third, in the same draw. */

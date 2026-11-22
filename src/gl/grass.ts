@@ -16,8 +16,8 @@ import type { SolidPaint } from './solid.paint.ts';
  */
 
 const BLADES = { min: 3, max: 7 } as const;
-/** A tuft's blade height (m) and each blade's share of it, clamped to the nap's 7 to 24 cm. */
-const TALL = { min: 0.1, max: 0.19, jitter: [0.7, 1.25], clamp: [0.07, 0.24] } as const;
+/** A tuft's blade height (m) and each blade's share of it, clamped to the nap's 5 to 25 cm. */
+const TALL = { min: 0.07, max: 0.2, jitter: [0.6, 1.3], clamp: [0.05, 0.25] } as const;
 /**
  * Blade width at the root (m), the bend's share of the height, the bend's offset left of the axis as a share of the
  * root's half width, and how far the root sinks.
@@ -28,10 +28,10 @@ const POSE = { turn: 0.55, fan: 1.3, jitter: 0.25, splay: [0.12, 0.42], bend: [0
 /** The face's share in the normal next to the sky's. */
 const FACE = 0.35;
 /** The tufts' tones: muted olive to sage under the shared paper tile, the root's darker share and a jitter of value. */
-const OLIVE = [1.35, 1.75, 1.05] as const;
-const SAGE = [1.2, 1.75, 1.45] as const;
+const OLIVE = [0.95, 1.6, 0.8] as const;
+const SAGE = [0.78, 1.5, 1.12] as const;
 const ROOT = 0.55;
-const VALUE = 0.14;
+const VALUE = 0.28;
 const SALT = { blades: 0xb1, turn: 0xb2, leanA: 0xb3, leanM: 0xb4, tall: 0xb5, hue: 0xb6, value: 0xb7 } as const;
 const BLADE_SALT = { yaw: 0xc1, at: 0xc2, off: 0xc3, tall: 0xc4, splay: 0xc5, bend: 0xc6, w: 0xc7 } as const;
 
