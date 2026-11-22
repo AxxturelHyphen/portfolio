@@ -3,9 +3,11 @@
  * slot within reach of the visitor is the one to focus. A held slot is kept until the visitor is more than the
  * hysteresis past the reach, or another slot is nearer by more than the hysteresis. When anything else chooses the
  * focus (hover, keyboard, a tap, Esc), proximity yields until the visitor has walked a metre from where that happened.
- * Distances are in the ground plane (x, z), to a slot's stand point where it has one. No allocation per frame.
+ * Distances are in the ground plane (x, z), to a slot's stand point where it has one. The cat on its leash (world/pet.leash.ts)
+ * walks at the visitor's heel and never takes the focus. No allocation per frame.
  */
 import type { SlotId, SlotView } from '../types.ts';
+import { catLeash } from './pet.leash.ts';
 
 export const PROXIMITY = { reachM: 2.2, hysteresisM: 0.4, yieldM: 1 } as const;
 
@@ -60,6 +62,7 @@ export function createProximity(): Proximity {
       let bestD = Infinity;
       for (let i = 0; i < slots.length; i++) {
         const v = slots[i]!;
+        if (v.kind === 'pet' && catLeash.on) continue;
         const d = reachDist(v, x, z);
         if (d < bestD) {
           bestD = d;

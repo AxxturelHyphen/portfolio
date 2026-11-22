@@ -1,6 +1,7 @@
 import type { AtlasManifest, BedId, BedState, Clock, GardenLayout, Gfx, Machine, Quality, Residency } from '../types.ts';
 import { STREAM } from '../core/motion.ts';
 import type { Slicer, StreamBed } from './bed.ts';
+import { catLeash } from './pet.leash.ts';
 
 /**
  * Streaming policy (cook/ARCH.md 2.6, spec section 9). Resident: the bed being travelled to, the bed being left,
@@ -15,6 +16,9 @@ import type { Slicer, StreamBed } from './bed.ts';
  */
 
 export type StreamReach = 'none' | 'own' | 'all';
+
+/** The bed whose batch holds the cat (world/pet.ts). */
+const CAT_BED: BedId = 'rosaleda';
 
 export interface StreamResidency extends Residency, Slicer {
   readonly order: readonly BedId[];
@@ -59,6 +63,12 @@ export function createResidency(beds: ReadonlyMap<BedId, StreamBed>, g: GardenLa
   let serial = 0;
   let deadline = 0;
   let uploadsLeft = 0;
+
+  /** A bed's GPU bytes by its manifest (0 until it is fetched). */
+  const sizeOf = (b: BedId): number => {
+    const m = beds.get(b)?.manifest ?? null;
+    return m === null ? 0 : estimateBytes(m);
+  };
 
   /** The visible beds skip the hidden grotto; the grotto itself neighbours its host and the next visible bed after it. */
   const neighbours = (b: BedId, out: BedId[]): void => {
@@ -188,6 +198,12 @@ export function createResidency(beds: ReadonlyMap<BedId, StreamBed>, g: GardenLa
       if (reach === 'all' && heading !== null) neighbours(heading, around);
       if (reach === 'all' && active !== null) neighbours(active, around);
       for (const b of around) add(b);
+      // The cat on its leash is a cutout of its own bed: that bed stays while the tier's budget holds it with the rest.
+      if (reach !== 'none' && catLeash.on && !wanted.includes(CAT_BED)) {
+        let need = bytes.shared + bytes.targets + sizeOf(CAT_BED);
+        for (const b of wanted) need += sizeOf(b);
+        if (need <= bytes.budget) add(CAT_BED);
+      }
       if (hover !== null && reach !== 'none') lastHover = hover;
       for (const [b, bed] of beds) {
         if (wanted.includes(b)) continue;
