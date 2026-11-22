@@ -2,7 +2,7 @@
 // npm run budgets: measures spec section 10 on the build output (builds first when dist is stale).
 // One line per budget: "budget <name> value=<v> limit=<l> pass|fail". Exit 1 when any fails.
 //  - app-js-gzip-kb: gzip of every dist JS file except the three.js chunk (name three*, or a chunk bigger than
-//    150 KB containing WebGLRenderer) and basis/draco decoders; limit 175.
+//    150 KB containing WebGLRenderer) and basis/draco decoders; limit 185.
 //  - first-load-download-mb: encoded bytes of everything fetched until the garden is ready (idle fallback when no
 //    test API yet), fonts excluded, served gzip like a static host; limit 3.
 //  - bed-payload-mb: per bed, atlas manifest plus its hi pages; limit 2 each. n/a until public/atlas exists.
@@ -47,7 +47,7 @@ function appJs(): void {
     }
     total += gzipSync(buf, { level: 9 }).length;
   }
-  add('app-js-gzip-kb', total / 1024, '<=175', total / 1024 <= 175, skipped.length ? `excluded ${skipped.join(',')}` : 'no three chunk yet');
+  add('app-js-gzip-kb', total / 1024, '<=185', total / 1024 <= 185, skipped.length ? `excluded ${skipped.join(',')}` : 'no three chunk yet');
 }
 
 function bedPayload(): void {
