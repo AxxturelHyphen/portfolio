@@ -13,9 +13,14 @@ const ROUTE = garden.ground.path.points.filter(([x, z]) => x > 1 && x < 45 && z 
 
 type Residency = Record<string, string>;
 
-test('transition budget roam: a walk from the gate to the Salida with streaming', async ({ page, jardin, tierOpt }) => {
+/**
+ * At night (the bench's pinned hour), and at midday with the cat on its leash: the shadow map is then drawn from the sun
+ * over a wider frame and the cat's bed stays resident.
+ */
+for (const hour of ['', '13']) test(`transition budget roam${hour && ' by day'}: a walk from the gate to the Salida with streaming`, async ({ page, jardin, tierOpt }) => {
   test.setTimeout(150_000);
-  await enterRoam(jardin);
+  if (hour) await page.addInitScript(() => sessionStorage.setItem('jardin.cat', '1'));
+  await enterRoam(jardin, '#/', hour ? { hour } : {});
   const stats = await recordFrames(page, 'roam gate to salida', () => jardin.withApi(async (api, route: [number, number][]) => {
     const log: { x: number; bed: string | null; resident: string[] }[] = [];
     const frame = (): Promise<number> => new Promise((r) => requestAnimationFrame(r));
@@ -42,7 +47,7 @@ test('transition budget roam: a walk from the gate to the Salida with streaming'
   const end = await jardin.withApi((api) => ({ at: api.roam(), bed: api.state().bed }));
   const log = await page.evaluate(() => (window as unknown as { __streamLog: { x: number; bed: string | null; resident: string[] }[] }).__streamLog);
   const longTasks = await jardin.longTasksAfterReady();
-  const name = test.info().project.name;
+  const name = `${test.info().project.name}${hour && ' day'}`;
   mkdirSync('test-results', { recursive: true });
   appendFileSync('test-results/roam-budget.txt', `${name} frames ${stats.frames} over25 ${stats.over25} over50 ${stats.over50} max ${stats.max.toFixed(1)} ms callsP95 ${stats.app?.callsP95 ?? -1} longTasks ${longTasks.length}\n`);
   let seen = '';
@@ -54,6 +59,13 @@ test('transition budget roam: a walk from the gate to the Salida with streaming'
   }
   expect(end.at?.x ?? 0, 'walked into the Salida').toBeGreaterThan(38.5);
   expect(end.bed).toBe('salida');
+  if (hour) {
+    const gap = (): Promise<number> => page.evaluate(([x, z]) => {
+      const cat = window.__cat?.at() ?? null;
+      return cat === null ? Infinity : Math.hypot(cat.x - x!, cat.z - z!);
+    }, [end.at?.x ?? 0, end.at?.z ?? 0]);
+    await expect.poll(gap, { message: 'the cat came along to the Salida', timeout: 15000 }).toBeLessThan(4);
+  }
   expect(stats.frames, 'frames recorded').toBeGreaterThan(300);
   expect(checkBudget(stats, 'travel', isLow(tierOpt)), JSON.stringify(stats)).toBeNull();
   expect(stats.app?.callsP95 ?? 0, 'draw calls p95').toBeLessThanOrEqual(isLow(tierOpt) ? 40 : 80);
