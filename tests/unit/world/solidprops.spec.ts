@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { BedId } from '../../../src/types.ts';
 import { SolidBuilder } from '../../../src/gl/masonry.ts';
-import { buildProps, type PropBuilders } from '../../../src/gl/props.ts';
+import { buildProps, propBuilders } from '../../../src/gl/props.ts';
 import { signWood } from '../../../src/gl/signwood.ts';
 import type { BedScene3 } from '../../../src/world/layout.ts';
 import { builtIn } from '../../../src/world/mode.ts';
@@ -18,9 +18,6 @@ import salida from '../../../content/beds/salida.json' with { type: 'json' };
 
 const scenes = { puerta, rosaleda, estanque, semillero, salida } as unknown as Record<BedId, BedScene3>;
 
-function builders(): PropBuilders {
-  return { iron: new SolidBuilder(), glass: new SolidBuilder(), clay: new SolidBuilder(), wood: new SolidBuilder() };
-}
 
 /** Share of triangles whose winding disagrees with their normals (culled from the side they face). */
 function invertedShare(b: SolidBuilder): number {
@@ -43,13 +40,15 @@ function invertedShare(b: SolidBuilder): number {
   return bad / Math.max(1, all);
 }
 
-test('every lantern, the pot, the bench and the sign timber are built and face outward', () => {
+test('every lantern, the pot, the bench, the gates, the obelisk and the sign timber are built and face outward', () => {
   const props = solidProps(scenes);
   const roamLanterns = Object.values(scenes).flatMap((s) => s.layers.flatMap((l) => l.items)).filter((it) => it.sprite.startsWith('sh/lantern') && builtIn(it, 'roam'));
   expect(props.lanterns.length).toBe(roamLanterns.length);
   expect(props.pots.length).toBe(1);
   expect(props.benches.length).toBe(1);
-  const b = builders();
+  expect(props.gates.map((g) => g.side).sort()).toEqual([-1, 1]);
+  expect(props.trellises.length).toBe(1);
+  const b = propBuilders();
   buildProps(props, b);
   signWood(b.wood, [{ x: 3, z: -1, dir: 1 }, { x: 8, z: -1, dir: -1 }]);
   for (const [kind, builder] of Object.entries(b)) {
@@ -66,8 +65,8 @@ test('the bench fills its collision box at the cat\'s seat; the tin lantern stan
   const [spot] = solidProps(scenes).benches;
   expect(spot!.x0).toBeCloseTo(bench.x - bench.block![0], 6);
   expect(spot!.x1).toBeCloseTo(bench.x + bench.block![1], 6);
-  const b = builders();
-  buildProps({ lanterns: [], pots: [], benches: [spot!] }, b);
+  const b = propBuilders();
+  buildProps({ lanterns: [], pots: [], benches: [spot!], gates: [], trellises: [] }, b);
   const box = b.wood.geometry();
   box.computeBoundingBox();
   const bb = box.boundingBox!;
@@ -84,7 +83,7 @@ test('the bench fills its collision box at the cat\'s seat; the tin lantern stan
   expect(rest.x).toBeGreaterThanOrEqual(spot!.x0);
 });
 
-test('free roam leaves the solid props\' cards out; the plants and the cat stay cards', () => {
-  for (const s of ['sh/lantern-cage', 'sh/lantern-tin', 'sh/pot-a', 'v/bench']) expect(isSolidProp(s), s).toBe(true);
-  for (const s of ['ro/hero-a', 'v/cat', 'v/can', 'sh/board']) expect(isSolidProp(s), s).toBe(false);
+test('free roam leaves the solid props\' cards out; the plants, the climbing roses and the cat stay cards', () => {
+  for (const s of ['sh/lantern-cage', 'sh/lantern-tin', 'sh/pot-a', 'v/bench', 'pu/leaf-l', 'pu/leaf-r', 'v/trestle']) expect(isSolidProp(s), s).toBe(true);
+  for (const s of ['ro/hero-a', 'ro/climb-multi', 'v/cat', 'v/can', 'sh/board']) expect(isSolidProp(s), s).toBe(false);
 });

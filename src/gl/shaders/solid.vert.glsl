@@ -7,7 +7,7 @@ uniform vec4 uFocusBack;
 in vec3 position;
 in vec3 normal;
 in vec3 aTint;
-in vec4 aLook;     // tile slot, tile scale, top-face lift, rock (1: the grotto's marks)
+in vec4 aLook;     // tile slot, tile scale, top-face lift, kind (1: the grotto's marks, 2: a path slab)
 in vec3 aGlow;
 #ifdef INSTANCED
 in mat4 instanceMatrix;

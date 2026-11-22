@@ -5,10 +5,13 @@ import { SHADOW_LAYER, sharedUniforms } from './lights.ts';
 
 /**
  * The carried lantern's shadow (free roam, not on the low tier): one depth map seen straight down from its flame, of
- * the cutout batches only (their alpha-tested silhouettes, the visitor among the actors; decals, flats and the hung
- * lantern itself cast none), so plants and the figure throw long shadows away from the lantern as it moves. The same
- * cutout programs draw it with the lantern's view in uViewProj (no program of its own, nothing compiled on first use);
- * the ground and the cutouts read it in lights.glsl lampShadow.
+ * what sits on SHADOW_LAYER: the cutout batches (their alpha-tested silhouettes, the visitor among the actors; decals,
+ * flats and the hung lantern itself cast none), the iron gate and the one draw of ground stones and solid props (bench,
+ * pot, lanterns, signposts, kerbs, rim stones, the Puerta's gates and the trellis), so plants, props and the figure throw
+ * long shadows away from the lantern as it moves. The scene's own programs draw it with the lantern's view in uViewProj
+ * (no program of its own, nothing compiled on first use). The view is mirrored, so closed solids leave their far faces
+ * in the map (no acne on the faces that receive). The ground, the walls, the solids and the cutouts read it in
+ * lights.glsl lampShadow.
  */
 const SIZE = 512;
 /** Half the downward field of view: tan 75 degrees reaches 3.4 m round a flame at hand height, the carried pool's reach. */

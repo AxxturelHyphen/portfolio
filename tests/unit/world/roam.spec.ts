@@ -181,6 +181,18 @@ test('a walk target behind a prop steers round it; one walled off by a prop acro
   expect(w.pos[0]).toBeCloseTo(11 - r, 2);
 });
 
+test('a walk round props standing together reaches a target in the gap behind them instead of circling', () => {
+  // The Rosaleda's bench, the lantern beside it and the can behind: the target lies in the gap the can leaves, so the
+  // bench is walked round alone, and the corner between it and the lantern (no way through) is no route.
+  const props = new Float32Array([5.49, -0.65, 6.66, 0.25, 7.13, -0.4, 7.47, -0.1, 6.84, -1.11, 6.98, -0.99]);
+  const v = createVisitor({ ...area, props }, 6.96, 0.5);
+  v.walkTo(5.6, -1.4);
+  let t = 0;
+  for (; t < 6 && v.busy; t += 1 / 60) v.step(1 / 60);
+  expect(Math.hypot(v.pos[0]! - 5.6, v.pos[1]! + 1.4), 'at the target').toBeLessThan(0.1);
+  expect(t, 'without circling').toBeLessThan(3);
+});
+
 test('a walk target past the wedge between the pond and a box corner is given up, and the visitor comes to rest', () => {
   // The Estanque's west lantern box and the pond: each push-out keeps the speed along its own shape, so the wedged body
   // keeps a velocity while it stands still (the 5-minute soak hung on it).

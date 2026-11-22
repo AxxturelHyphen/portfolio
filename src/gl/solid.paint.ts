@@ -20,11 +20,12 @@ const TILE_LOOK: Readonly<Partial<Record<SolidTile, { pale: Rgb; top: number }>>
 /**
  * How a solid is painted: an atlas tile under a tint; glow, a warm light of its own (a lantern's glass); rock, the tile
  * laid this many times its real size with the grotto's hand-made marks (solid.frag.glsl: strata, facet tones, pencil
- * hatching in the shade).
+ * hatching in the shade); path, a path slab: pale stone of fine grain whose tops take the lanterns as the painted
+ * flagstones did, on their own value (solid.frag.glsl).
  */
-export interface SolidPaint { tile: SolidTile; tint: Rgb; glow?: Rgb; rock?: number }
+export interface SolidPaint { tile: SolidTile; tint: Rgb; glow?: Rgb; rock?: number; path?: boolean }
 
-/** One vertex's paint as attributes: aTint (rgb), aLook (slot, tile scale, top lift, rock), aGlow (rgb). */
+/** One vertex's paint as attributes: aTint (rgb), aLook (slot, tile scale, top lift, kind: 1 rock, 2 path), aGlow (rgb). */
 export interface PaintAttributes { tint: [number, number, number]; look: [number, number, number, number]; glow: [number, number, number] }
 
 export function solidPaint(p: SolidPaint): PaintAttributes {
@@ -33,7 +34,7 @@ export function solidPaint(p: SolidPaint): PaintAttributes {
   const rock = p.rock ?? 0;
   return {
     tint: [p.tint[0] * pale[0], p.tint[1] * pale[1], p.tint[2] * pale[2]],
-    look: [SOLID_TILES.indexOf(p.tile), rock > 0 ? rock : 1, look?.top ?? 0, rock > 0 ? 1 : 0],
+    look: [SOLID_TILES.indexOf(p.tile), rock > 0 ? rock : 1, look?.top ?? 0, rock > 0 ? 1 : p.path === true ? 2 : 0],
     glow: [...(p.glow ?? [0, 0, 0])],
   };
 }

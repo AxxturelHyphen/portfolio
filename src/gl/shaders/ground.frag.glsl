@@ -39,6 +39,7 @@ const float PATCH_CONTRAST = 0.25;
 uniform float uWallZ;                                 // content/garden.json ground.wall.z
 uniform vec4 uEnclose;                                // free roam: the closed garden x0, z0, x1, z1; x1 < x0 on the rail
 uniform float uMarch;                                 // the relief march through the slabs: 1, or 0 on the low tier
+uniform float uSlabSolid;                             // 1: the slabs are real stones (gl/slabs.ts) and the path here is their mortar
 const vec3 HEDGE_FOOT = vec3(0.008, 0.017, 0.013);    // #22352e in deep shade: the ground beyond the walls
 const float WALL_FADE = 0.4;                          // soft dark join where the ground meets the wall
 const vec2 WALL_AO = vec2(0.45, 0.6);                 // free roam: occlusion along the end walls and the kerb, depth and reach (m)
@@ -65,6 +66,7 @@ const float SLAB_BEVEL = 0.022;                       // their soft rounded rim 
 const int RELIEF_STEPS = 6;                           // parallax march through the slabs
 const float RELIEF_REACH = 0.3;                       // how far past the slabs the march still runs (m)
 const float CUT_SHADE = 0.6;                          // a slab's cut face against its top
+const float MORTAR_DARK = 0.65;                       // under real slabs: the joints stay dark in a lantern's pool
 const float PITCH = 0.012;                            // line screen on the ground: 12 mm
 const float LINE_CONTRAST = 0.22;
 const float GLINT_AZ = 0.1047;                        // 6 degrees
@@ -139,7 +141,7 @@ void main() {
   vec3 view = normalize(vWorld - uCamPos);
   // Free roam, above the low tier: march the view ray down through the hard detail; p becomes the point it meets, cut 1 on a side face.
   float cut = 0.0;
-  if (uRelief * uMarch > 0.0 && pathDist(p) < STONE_REACH + RELIEF_REACH) {
+  if (uRelief * uMarch * (1.0 - uSlabSolid) > 0.0 && pathDist(p) < STONE_REACH + RELIEF_REACH) {
     float top = max(uEdging.w + 0.005 - vWorld.y, 0.005);
     vec2 run = view.xz / min(view.y, -0.05);
     float stepH = top / float(RELIEF_STEPS);
@@ -188,10 +190,11 @@ void main() {
   float moss = smoothstep(-4.6, -5.8, z) * smoothstep(0.45, 0.62, fbm3(p * 2.3 + 5.0));
   base = mix(base, mix(MOSS_SHADE, MOSS_MID, grain), moss * 0.85);
 
-  // Flagstones.
+  // Flagstones: painted, or under real stones (uSlabSolid) the dark mortar between them.
   vec4 v = flagstone(p);
   vec2 centre = (v.zw + 0.5) * CELL;
   float onPath = onPathOf(v, p);
+  float mortar = onPath * uSlabSolid;
   float border = v.y * CELL;
   float stoneMask = onPath * smoothstep(0.005, 0.014, border);
   if (onPath > 0.0) {
@@ -205,10 +208,10 @@ void main() {
     vec2 bevel = normalize(vec2(dFdx(border), dFdy(border)) + 1e-5) * (1.0 - smoothstep(0.03, 0.07, border)) * 0.35;
     vec3 nm = uStoneOn > 0.5 ? texture(uStoneN, sp).xyz * 2.0 - 1.0 : vec3(0.0, 0.0, 1.0);
     vec3 sn = normalize(vec3(nm.x * 0.6 + bevel.x, 1.0, nm.y * 0.6 + bevel.y));
-    float joint = 1.0 - stoneMask;
+    float joint = mix(1.0 - stoneMask, 1.0, uSlabSolid);
     vec3 jointCol = mix(base * mix(0.45, 0.25, uRelief), GRASS * 0.5, smoothstep(0.45, 0.75, grain));
     base = mix(base, mix(stone, jointCol, joint), onPath);
-    n = normalize(mix(n, sn, stoneMask));
+    n = normalize(mix(n, sn, stoneMask * (1.0 - uSlabSolid)));
   }
 
   if (cut > 0.0) {
@@ -253,6 +256,7 @@ void main() {
   // Under roam the near fill loses most of its cool cast, so the lawn reads as grass at dusk, not teal felt.
   vec3 fill = mix(neutralise(uAmbient), vec3(luma(uAmbient)), ROAM_FILL_GREY * uEye.z) * GROUND_FILL * fillAt(vDepth);
   col += mix(fill, albedo * luma(fill) * ROAM_FILL_LIT, uEye.z) * night;
+  col *= 1.0 - MORTAR_DARK * mortar;
 
   if (wet > 0.0) {
     vec2 toC = p - uCursor.xz;

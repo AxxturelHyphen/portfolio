@@ -65,6 +65,12 @@ function taken(boxes: Float32Array, r: number, x: number, z: number, skip: numbe
   return false;
 }
 
+/** True when the segment a to b enters a box (inflated by r) other than `skip`: a side leg there runs into a neighbour. */
+function crosses(boxes: Float32Array, r: number, ax: number, az: number, bx: number, bz: number, skip: number): boolean {
+  for (let i = 0; i + 3 < boxes.length; i += 4) if (i !== skip && entryOf(boxes, i, r, ax, az, bx, bz) >= 0) return true;
+  return false;
+}
+
 const within = (b: Bounds, r: number, x: number, z: number): boolean => x >= b.minX + r && x <= b.maxX - r && z >= b.minZ + r && z <= b.maxZ - r;
 const cornerX = (boxes: Float32Array, i: number, r: number, k: number): number =>
   k === 0 || k === 3 ? boxes[i]! - r - CORNER_M : boxes[i + 2]! + r + CORNER_M;
@@ -91,7 +97,8 @@ const inGroup = (r: number, x: number, z: number): boolean => x > group[0]! - r 
 /**
  * Writes into out where a walk from p to t heads now: t itself when no box is in the way, else the corner of the first
  * box in the way that starts the shortest route round it, one or two corners long. Props standing too close for the
- * body to pass between count as one box, unless p or t lies in the gap. Corners outside `bounds` or inside another
+ * body to pass between count as one box, unless p or t lies in the gap: then a second corner inside a neighbour, or a
+ * side leg into one, is no route either (two props standing together). Corners outside `bounds` or inside another
  * box are no route; with none left it heads straight at t and the stall give-up ends the walk.
  */
 export function detour(boxes: Float32Array, r: number, bounds: Bounds, px: number, pz: number, tx: number, tz: number, out: Float32Array): void {
@@ -122,7 +129,9 @@ export function detour(boxes: Float32Array, r: number, bounds: Bounds, px: numbe
       const n = (k + j) % 4;
       const nx = cornerX(from, at, r, n);
       const nz = cornerZ(from, at, r, n);
-      if (within(bounds, r, nx, nz) && entryOf(from, at, r, nx, nz, tx, tz) < 0) rest = Math.min(rest, Math.hypot(nx - cx, nz - cz) + Math.hypot(tx - nx, tz - nz));
+      if (!within(bounds, r, nx, nz) || entryOf(from, at, r, nx, nz, tx, tz) >= 0) continue;
+      if (!joined && (taken(boxes, r, nx, nz, box) || crosses(boxes, r, cx, cz, nx, nz, box))) continue;
+      rest = Math.min(rest, Math.hypot(nx - cx, nz - cz) + Math.hypot(tx - nx, tz - nz));
     }
     if (lead + rest < best) {
       best = lead + rest;

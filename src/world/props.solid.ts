@@ -4,12 +4,15 @@ import { builtIn } from './mode.ts';
 
 /**
  * Free roam's props built as real geometry (gl/props.ts) in place of their cutout cards (world/bed.build.ts leaves the
- * cards out): the standing lanterns, the terracotta pot under the potted rose and the bench the cat sits on. Pure data
+ * cards out): the standing lanterns, the terracotta pot under the potted rose, the bench the cat sits on, the Puerta's
+ * two gilt iron gate leaves and the Rosaleda's ladder obelisk against the wall (its climbing roses stay cards). Pure data
  * from the beds' placements: where each stands, how tall and how turned. Their collision boxes stay the items' own
  * `block` (world/occluders.ts propBlocks), which the solids fill. Load time only.
  */
 
-export const SOLID_PROP = { lantern: 'sh/lantern', pot: 'sh/pot-a', bench: 'v/bench' } as const;
+export const SOLID_PROP = { lantern: 'sh/lantern', pot: 'sh/pot-a', bench: 'v/bench', gateL: 'pu/leaf-l', gateR: 'pu/leaf-r', trellis: 'v/trestle' } as const;
+/** The sprites free roam builds whole (the lanterns go by their prefix). */
+const WHOLE = new Set<string>([SOLID_PROP.pot, SOLID_PROP.bench, SOLID_PROP.gateL, SOLID_PROP.gateR, SOLID_PROP.trellis]);
 
 /** The bench's seat height (m): the cat's y on it in the bed file. */
 export const BENCH_SEAT = 0.47;
@@ -24,11 +27,15 @@ const DEFAULT_H = 0.4;
 
 /** Whether free roam builds this sprite as a solid instead of a card. */
 export function isSolidProp(sprite: string): boolean {
-  return sprite.startsWith(SOLID_PROP.lantern) || sprite === SOLID_PROP.pot || sprite === SOLID_PROP.bench;
+  return sprite.startsWith(SOLID_PROP.lantern) || WHOLE.has(sprite);
 }
 
 /** A standing prop: its foot (y above the ground there), height and yaw (radians, from the card's hinge). */
 export interface PropSpot { x: number; y: number; z: number; h: number; yaw: number }
+/** A gate leaf: where it stands, and which way its hinge edge lies along the leaf (-1 left, 1 right). */
+export interface GateSpot extends PropSpot { side: -1 | 1 }
+/** The obelisk: its foot centred under its collision box, which is `w` wide and `d` deep. */
+export interface TrellisSpot extends PropSpot { w: number; d: number }
 /** A bench filling its collision box: x from x0 to x1, centred on z, `depth` deep. */
 export interface BenchSpot { x0: number; x1: number; z: number; depth: number }
 
@@ -50,17 +57,22 @@ export function lanternRest(it: Placement3, items: readonly Placement3[]): { x: 
   return { x: it.x, y: it.y };
 }
 
-export interface SolidProps { lanterns: PropSpot[]; pots: PropSpot[]; benches: BenchSpot[] }
+export interface SolidProps { lanterns: PropSpot[]; pots: PropSpot[]; benches: BenchSpot[]; gates: GateSpot[]; trellises: TrellisSpot[] }
 
 /** Every solid prop free roam builds in the beds. */
 export function solidProps(scenes: Readonly<Partial<Record<BedId, BedScene3>>>): SolidProps {
-  const out: SolidProps = { lanterns: [], pots: [], benches: [] };
+  const out: SolidProps = { lanterns: [], pots: [], benches: [], gates: [], trellises: [] };
   for (const scene of Object.values(scenes)) {
     const items = scene.layers.flatMap((l) => l.items).filter((it) => builtIn(it, 'roam'));
     for (const it of items) {
       const spot = { x: it.x, y: it.y, z: it.z, h: (it.h ?? DEFAULT_H) * it.scale, yaw: -it.hinge * DEG };
       if (it.sprite.startsWith(SOLID_PROP.lantern)) out.lanterns.push({ ...spot, ...lanternRest(it, items) });
       else if (it.sprite === SOLID_PROP.pot) out.pots.push(spot);
+      else if (it.sprite === SOLID_PROP.gateL || it.sprite === SOLID_PROP.gateR) out.gates.push({ ...spot, side: it.sprite === SOLID_PROP.gateL ? -1 : 1 });
+      else if (it.sprite === SOLID_PROP.trellis && it.block !== undefined) {
+        const [left, right, depth] = it.block;
+        out.trellises.push({ ...spot, x: it.x + (right - left) / 2, w: left + right, d: depth });
+      }
       else if (it.sprite === SOLID_PROP.bench) {
         const b = benchOf(it);
         if (b !== null) out.benches.push(b);

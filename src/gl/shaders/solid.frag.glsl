@@ -1,7 +1,8 @@
 // Solid built things (src/gl/solid.material.ts), after common.glsl and lights.glsl: the stone tile laid on every face at
 // its real scale in world space, so blocks that meet run on over the same stones, tinted and lit as the stone cutouts
 // are (cutout.frag.glsl): the dusk ambient, the moon key and rim, the lanterns with the carried one's shadow, the night
-// away from the visitor, the haze, the layer air and the paper floor. Opaque. Each piece carries its paint (vTint, vLook,
+// away from the visitor, the haze, the layer air and the paper floor. Opaque; the ground stones' and props' draw also
+// sits on the shadow layer, so they cast the carried lantern's shadow too (gl/shadow.ts: depth only here). Each piece carries its paint (vTint, vLook,
 // vGlow): which of the TILES it is laid with, at what scale, its top faces' lift, the grotto rock's marks and a light of
 // its own (a lantern's warm glass, under the paper's shoulder).
 uniform sampler2D uColor[TILES];
@@ -11,6 +12,7 @@ uniform vec4 uRect[TILES];     // the tile's uv rect on its atlas page
 uniform vec4 uTile;            // y: normal map gain, z: the tile's uv inset (its outer texels fade)
 uniform vec3 uCamPos;
 uniform vec4 uHaze;        // haze rgb, density per metre past ROAM_HAZE_START
+uniform float uShadowPass; // 1 while the ground stones and props draw the lantern's shadow map: depth only
 
 in vec3 vWorld;
 in vec3 vNormal;
@@ -73,6 +75,11 @@ const float STRATA_LINE = 0.08;       // the line's share of a stratum
 const float HATCH_PER_M = 7.0;
 const float HATCH_INK = 0.55;
 const vec2 HATCH_DARK = vec2(0.012, 0.07);   // lit luma under which the hatching is full and over which it is gone
+// A path slab (vLook.w 2): its tile calmed to fine grain, and the lanterns on its own value, desaturated and rolled off,
+// so the tops read as the pale flagstones the ground painted, the brightest ground under the lantern.
+const float PATH_DETAIL = 0.45;
+const float PATH_HUE = 0.3;                    // the share of the tile's own (paper) hue kept: the slab's tint sets its colour
+const vec3 PATH_LAMP = vec3(2.4, 0.45, 0.5);   // gain, the luma it rolls off toward, the share of the lamp's hue kept
 // Level faces (the floor) keep one tone: their facets only tilt a little and would flicker as a chequer.
 float facetTone(vec3 p) {
   vec3 g = normalize(cross(dFdx(p), dFdy(p)));
@@ -99,13 +106,16 @@ vec3 paperShoulder(vec3 c) {
 }
 
 void main() {
+  outColor = vec4(0.0);
+  if (uShadowPass > 0.5) return;
   vec3 n = normalize(vNormal);
   vec3 a = abs(n);
   // The face's own plane: tops take x, z; sides take their run and height. t, b: the tile's u and v in world space.
   vec3 t = a.y > max(a.x, a.z) ? vec3(1.0, 0.0, 0.0) : normalize(vec3(n.z, 0.0, -n.x));
   vec3 b = a.y > max(a.x, a.z) ? vec3(0.0, 0.0, 1.0) : vec3(0.0, -1.0, 0.0);
   int slot = int(vLook.x + 0.5);
-  float rock = vLook.w;
+  float rock = step(0.5, vLook.w) * step(vLook.w, 1.5);
+  float path = step(1.5, vLook.w);
   float metres = uTileM[slot] * vLook.y;
   vec4 rect = uRect[slot];
   vec2 p = vec2(dot(vWorld, t), dot(vWorld, b)) / metres;
@@ -119,6 +129,10 @@ void main() {
   float tone = facetTone(vWorld);
   float layered = strata(vWorld, 1.0 - smoothstep(0.6, 0.9, a.y));
   if (rock > 0.5) tex = mix(tileMean(slot), tex, ROCK_DETAIL) * tone * layered;
+  if (path > 0.5) {
+    tex = mix(tileMean(slot), tex, PATH_DETAIL);
+    tex = mix(vec3(luma(tex)), tex, PATH_HUE);
+  }
   vec3 albedo = tex * vTint * (1.0 + vLook.z * smoothstep(0.6, 0.95, n.y));
   vec2 nxy = tileNormal(slot, uv, dx, dy) * 2.0 - 1.0;
   n = normalize(n + (t * nxy.x - b * nxy.y) * uTile.y);
@@ -128,7 +142,13 @@ void main() {
   vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n) + inviteLights(vWorld, n);
-  vec3 lit = paperShoulder(albedo * (ambient + key + rim) * night + keyLit(albedo, hand) + vGlow);
+  vec3 handLit = keyLit(albedo, hand);
+  if (path > 0.5) {
+    vec3 l = vec3(luma(albedo)) * hand * PATH_LAMP.x;
+    l = mix(vec3(luma(l)), l, PATH_LAMP.z);
+    handLit = l / (1.0 + luma(l) / PATH_LAMP.y);
+  }
+  vec3 lit = paperShoulder(albedo * (ambient + key + rim) * night + handLit + vGlow);
   lit *= 1.0 - FOOT_SHADE.y * uEye.z * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
   vec3 hatched = hatch(lit, p * metres);
   if (rock > 0.5) lit = hatched;

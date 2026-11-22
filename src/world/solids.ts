@@ -179,9 +179,24 @@ function pointAt(line: readonly number[], at: readonly number[], s: number): [nu
   return [line[i * 2]! + (line[i * 2 + 2]! - line[i * 2]!) * f, line[i * 2 + 1]! + (line[i * 2 + 3]! - line[i * 2 + 1]!) * f];
 }
 
+/** Corner bearings of a run's end stone's rounded nose, from its outer side round to its inner one. */
+const NOSE = [Math.PI * 0.75, Math.PI, Math.PI * 1.25] as const;
+
+/**
+ * A kerb stone's corners (along, across) about its centre, counter-clockwise: a chamfered block, its run's first or last
+ * stone with a rounded nose at the run's end, so the end turns its faces to the light instead of one dark slab.
+ */
+function stoneCorners(half: number, w: number, c: number, start: boolean, end: boolean): [number, number][] {
+  const tail: [number, number][] = start ? NOSE.map((t) => [-half + w + w * Math.cos(t), w * Math.sin(t)]) : [[-half, w - c], [-half, -w + c]];
+  const head: [number, number][] = end ? NOSE.map((t) => [half - w - w * Math.cos(t), -w * Math.sin(t)]) : [[half, -w + c], [half, w - c]];
+  const inStart = start ? w : c;
+  const inEnd = end ? w : c;
+  return [[-half + inStart, -w], [half - inEnd, -w], ...head, [half - inEnd, w], [-half + inStart, w], ...tail];
+}
+
 /**
  * The kerb as stones set end to end along each run: each a chamfered block of slightly varied length, width, top and
- * outline from a fixed hash, an open joint between them. Its top is the bank's height there plus a low rise, so the
+ * outline from a fixed hash, an open joint between them, a run's end stones rounded at its ends. Its top is the bank's height there plus a low rise, so the
  * kerb sinks with the bank where it gives out; a stone any corner of which reaches the slabs is left out, so no stone
  * crosses the path at a bend.
  */
@@ -206,7 +221,7 @@ export function kerbStones(path: readonly (readonly [number, number])[], pond: T
       const half = len / 2;
       const w = (KERB.width + KERB.widthJitter * (hash01(n, 0x2c) - 0.5) * 2) / 2;
       const c = KERB.chamfer[0] + KERB.chamfer[1] * hash01(n, 0x6e);
-      const corners = [[-half + c, -w], [half - c, -w], [half, -w + c], [half, w - c], [half - c, w], [-half + c, w], [-half, w - c], [-half, -w + c]] as const;
+      const corners = stoneCorners(half, w, c, s0 === 0, s1 >= total);
       const cx = (ax + bx) / 2;
       const cz = (az + bz) / 2;
       const outline: number[] = [];

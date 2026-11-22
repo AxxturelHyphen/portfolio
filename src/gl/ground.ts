@@ -16,7 +16,8 @@ export { ART_LAYOUT } from './ground.layout.ts';
 /**
  * The ground for the world builder: one draw (earth, moss, flagstone path, puddles, line screen), drawn right after the
  * sky and before every cutout. Under free roam it takes core/terrain.ts's relief: a grid raised into the planted bank,
- * painted far to near (the ground has no depth), with the slabs and the edging added by parallax in the fragment. Puddle radii are fixed here (cook/ART.md: elliptical masks in the joints).
+ * painted far to near (the ground has no depth), with the slabs added by parallax in the fragment, or, once they stand as
+ * real stones (setSlabs), only their mortar. Puddle radii are fixed here (cook/ART.md: elliptical masks in the joints).
  */
 export interface Ground {
   readonly mesh: Mesh;
@@ -28,6 +29,8 @@ export interface Ground {
   setStone(color: Texture | null, normal: Texture | null): void;
   /** The parallax march through the slabs and the edging, on or off (off on the low tier); the relief itself stays. */
   setMarch(on: boolean): void;
+  /** Free roam: the slabs stand as real stones (gl/slabs.ts), so the path paints only their mortar and marches nothing. */
+  setSlabs(solid: boolean): void;
   /** Textures the warm-up must upload before first use. */
   readonly textures: readonly Texture[];
   dispose(): void;
@@ -84,6 +87,7 @@ export function createGround(moonBody: Vector3): Ground {
     uMoonBody: { value: moonBody },
     uRelief: { value: 0 },
     uMarch: { value: 1 },
+    uSlabSolid: { value: 0 },
     uBank: { value: new Vector4(TERRAIN.bankFront[0], TERRAIN.bankFront[1], TERRAIN.bank, TERRAIN.ramp) },
     uEdging: { value: new Vector4(TERRAIN.edging[0], TERRAIN.edging[1], TERRAIN.edging[2], TERRAIN.slab) },
     uPond: { value: new Vector4() },
@@ -137,6 +141,9 @@ export function createGround(moonBody: Vector3): Ground {
     },
     setMarch(on) {
       uniforms.uMarch.value = on ? 1 : 0;
+    },
+    setSlabs(solid) {
+      uniforms.uSlabSolid.value = solid ? 1 : 0;
     },
     setStone(color, normal) {
       for (const t of [color, normal]) if (t !== null) t.wrapS = t.wrapT = RepeatWrapping;

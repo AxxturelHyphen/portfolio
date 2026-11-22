@@ -4,6 +4,7 @@ import { terrainY } from '../core/terrain.ts';
 import type { BenchSpot, PropSpot, SolidProps } from '../world/props.solid.ts';
 import { BENCH_SEAT } from '../world/props.solid.ts';
 import { hash01 } from '../world/wall.ts';
+import { buildIronwork } from './ironwork.ts';
 import { SolidBuilder } from './masonry.ts';
 import type { SolidPaint } from './solid.paint.ts';
 
@@ -15,19 +16,28 @@ import type { SolidPaint } from './solid.paint.ts';
  * replace, so the flame (world/lamps.ts, at LAMPS.flameOfHeight) stays inside the glass. Load time only.
  */
 
-export type PropKind = 'iron' | 'glass' | 'clay' | 'wood';
+export type PropKind = 'iron' | 'glass' | 'clay' | 'wood' | 'gilt' | 'painted';
 export type PropBuilders = Record<PropKind, SolidBuilder>;
 
 /**
  * Each kind's tile of the shared atlas and tint (gl/solid.material.ts): blackened iron, the glass warm with a light of
- * its own matching the lantern cards' lit panes, red-brown fired clay, and weathered brown painted wood.
+ * its own matching the lantern cards' lit panes, red-brown fired clay, weathered brown painted wood, the Puerta gates'
+ * old gilt iron and the obelisk's ink-blue painted timber (gl/ironwork.ts).
  */
 export const PROP_LOOK: Readonly<Record<PropKind, SolidPaint>> = {
   iron: { tile: 'tile/rim', tint: [0.4, 0.37, 0.35] },
   glass: { tile: 'tile/paper', tint: [1, 0.82, 0.55], glow: [0.5, 0.28, 0.09] },
   clay: { tile: 'tile/paper', tint: [0.8, 0.45, 0.32] },
   wood: { tile: 'tile/paper', tint: [0.52, 0.4, 0.3] },
+  gilt: { tile: 'tile/rim', tint: [0.66, 0.53, 0.3] },
+  painted: { tile: 'tile/paper', tint: [0.2, 0.22, 0.28] },
 };
+
+/** One builder per kind, each holding its paint. */
+export function propBuilders(): PropBuilders {
+  const kinds = Object.keys(PROP_LOOK) as PropKind[];
+  return Object.fromEntries(kinds.map((k) => [k, new SolidBuilder().paint(PROP_LOOK[k])])) as PropBuilders;
+}
 
 /** Lantern sizes (m) for a card 0.45 m tall: foot top, housing side and top, plate, bar and pane thickness, cap and ring. */
 const LANTERN = { ref: 0.45, foot: 0.135, side: 0.16, top: 0.36, plate: 0.014, bar: 0.016, cross: 0.008, pane: 0.004, cap: 0.07, ring: [0.022, 0.005] } as const;
@@ -125,4 +135,5 @@ export function buildProps(props: SolidProps, p: PropBuilders): void {
     g.dispose();
   }
   props.benches.forEach((b, n) => bench(p, b, n));
+  buildIronwork(props.gates, props.trellises, p.gilt, p.painted);
 }
