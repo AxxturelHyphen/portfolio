@@ -3,7 +3,7 @@ import { expect, test } from '../helpers/jardin.ts';
 import { enterRoam, roamAt, untilStill } from '../helpers/roam.ts';
 
 // The garden as a game (ui/play.ts): the touch stick walks the visitor, the lantern round counts a project opened and
-// starts over from the help card, the help card comes up by itself once only, and Shift is a brisk walk.
+// starts over from the help card, the help card opens only from the "?" tag or the H key, and Shift is a brisk walk.
 
 const visited = (page: Page): Promise<string | null> => page.evaluate(() => localStorage.getItem('jardin.visited'));
 
@@ -57,21 +57,19 @@ test('play: opening a project lights its flower, the bed note shows once, start 
   expect(await visited(page)).toBe('[]');
 });
 
-test('play: the help card comes up by itself once, then only from the "?" tag or the H key', async ({ page, jardin, isMobile }) => {
+test('play: the help card never comes up by itself, only from the "?" tag or the H key', async ({ page, jardin, isMobile }) => {
   await enterRoam(jardin, '#/', { help: '1' });
   const help = page.locator('#hp');
-  await expect(help, 'first visit: the card comes up once the gate is open').toBeVisible({ timeout: 16000 });
+  await page.waitForTimeout(4000);
+  await expect(help, 'first visit: the controls are chalked at the gate, no card').toBeHidden();
+  if (isMobile) await page.locator('.pq-ask').tap();
+  else await page.keyboard.press('h');
+  await expect(help).toBeVisible();
   await expect(help).toContainText(isMobile ? 'Drag a thumb' : 'WASD');
   await page.keyboard.press('Escape');
   await expect(help).toBeHidden();
   expect(await jardin.withApi((api) => api.state().phase), 'Escape closed the card only').not.toBe('overview');
-  expect(await page.evaluate(() => localStorage.getItem('jardin.help'))).toBe('1');
-
-  await enterRoam(jardin, '#/b/puerta', { help: '1' });
-  await page.waitForTimeout(1500);
-  await expect(help, 'never by itself again').toBeHidden();
-  if (isMobile) await page.locator('.pq-ask').tap();
-  else await page.keyboard.press('h');
+  await page.locator('.pq-ask').click();
   await expect(help).toBeVisible();
   await help.getByRole('button', { name: 'Got it' }).click();
   await expect(help).toBeHidden();

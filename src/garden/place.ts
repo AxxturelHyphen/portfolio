@@ -10,6 +10,7 @@ import { buildProps, propBuilders } from '../gl/props.ts';
 import { slabStones } from '../gl/slabs.ts';
 import { signWood } from '../gl/signwood.ts';
 import { bindSolidTiles, solidMaterial } from '../gl/solid.material.ts';
+import { createChalkDrive, type ChalkDeps } from './chalk.drive.ts';
 import { setMoon, SHADOW_LAYER, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
 import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId, Tier } from '../types.ts';
@@ -215,6 +216,11 @@ const WALL_ORDER = RENDER_ORDER.overview - 2;
 const GATE_ORDER = RENDER_ORDER.overview - 0.5;
 /** The pond rim, the bank kerbs and the solid props paint after every bed card, depth tested, so they stand among the plants by depth. */
 const GROUND_STONE_ORDER = RENDER_ORDER.front + 40;
+/**
+ * The chalk paints after every card and solid, depth tested against the depth they wrote, so a plant or a stone standing
+ * nearer the lens covers it while the flat path stones and the soil take it; before the visitor and the actors.
+ */
+const CHALK_ORDER = RENDER_ORDER.front + 45;
 const RIM_TINT = [0.78, 0.76, 0.7] as const;
 /** The kerb's own stone tile under the wall base course's tint, so it lights as the wall's foot does. */
 const KERB_TILE = 'tile/kerb';
@@ -223,10 +229,11 @@ const KERB_TILE = 'tile/kerb';
  * Everything gl must have before warm() so no texture uploads or compiles on first draw: the ground layout and the pond,
  * once. Free roam clips the ground to the closed garden, raises its walls, the grotto's rock chamber (fewer facets on the
  * low tier), the path's slabs, the pond rim, the bank kerbs and the solid props with the signposts' timber (their tiles
- * bind once the shared atlas is up), hangs the iron gate in the Salida's doorway and reflects the roam variants in the pond.
+ * bind once the shared atlas is up), hangs the iron gate in the Salida's doorway, chalks its marks (`chalk`, free roam
+ * outside stills) and reflects the roam variants in the pond.
  */
 export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<BedId, BedScene3>>, mode: WorldMode,
-  garden: Pick<StreamGarden, 'ready' | 'sharedAtlas'>, tier: Tier): void {
+  garden: Pick<StreamGarden, 'ready' | 'sharedAtlas'>, tier: Tier, chalk: ChalkDeps | null): void {
   const closed = mode === 'roam';
   gfx.ground.setLayout(closed ? closedGroundLayoutOf(g) : groundLayoutOf(g));
   const e = g.ground.enclosure;
@@ -258,6 +265,7 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
     stones.layers.enable(SHADOW_LAYER);
     gfx.scene.add(solidMesh(back, solidMaterial(), WALL_ORDER), stones);
     void garden.ready.then(() => bindSolidTiles(garden.sharedAtlas()));
+    if (chalk !== null) createChalkDrive(gfx, g, scenes, CHALK_ORDER, chalk);
   }
   const pond = pondOf(scenes.estanque, mode);
   if (pond === null) return;

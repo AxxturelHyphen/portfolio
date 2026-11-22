@@ -6,15 +6,13 @@ import './styles/help.css';
  * The "how to play" card (ui/play.ts opens it): a paper card with three lines for the device in hand (keys and mouse,
  * or the stick and gestures on touch), a "Got it" button, and two quiet entries under them: back to the gate, start
  * over. A light-dismiss popover dialog, so Escape, a click outside or the button close it and the garden stays live.
- * It comes up once by itself on a first visit, after the gate has opened (HELP.seenKey remembers it was dismissed),
- * and from the "?" tag or the H and ? keys after that.
+ * It never comes up by itself (the first visit's controls are chalked at the gate, garden/chalk.drive.ts): only from
+ * the "?" tag or the H and ? keys.
  */
 
 export const HELP = {
   /** The card's id: the "?" tag targets it and the first-visit plate (ui/welcome.ts) yields to it. */
   id: 'hp',
-  /** localStorage key: the card was dismissed once, it never comes up by itself again. */
-  seenKey: 'jardin.help',
 } as const;
 
 export interface HelpDeps {
@@ -27,22 +25,11 @@ export interface HelpDeps {
 
 export interface Help {
   readonly el: HTMLElement;
-  /** True once the card was dismissed on this browser. */
-  readonly seen: boolean;
-  open(): void;
 }
 
 /** Fields keep the H and ? keys. */
 const TYPING = 'input, textarea, select, [contenteditable]';
 const panelUp = (s: State): boolean => s.phase === 'opening' || s.phase === 'inspect' || s.phase === 'closing';
-
-function readSeen(): boolean {
-  try {
-    return localStorage.getItem(HELP.seenKey) === '1';
-  } catch {
-    return false;
-  }
-}
 
 function button(cls: string): HTMLButtonElement {
   const b = document.createElement('button');
@@ -75,7 +62,6 @@ export function createHelp(parent: HTMLElement, d: HelpDeps): Help {
   card.append(title, lines, ok, more);
   parent.append(card);
 
-  let seen = readSeen();
   const text = (key: string): string => playText(content.strings, machine.state.lang, key);
 
   function paint(): void {
@@ -99,15 +85,6 @@ export function createHelp(parent: HTMLElement, d: HelpDeps): Help {
     card.showPopover();
   }
 
-  card.addEventListener('toggle', (e) => {
-    if ((e as ToggleEvent).newState !== 'closed' || seen) return;
-    seen = true;
-    try {
-      localStorage.setItem(HELP.seenKey, '1');
-    } catch {
-      /* storage blocked: the card may come up by itself again on the next visit */
-    }
-  });
   ok.addEventListener('click', close);
   home.addEventListener('click', () => {
     close();
@@ -137,11 +114,5 @@ export function createHelp(parent: HTMLElement, d: HelpDeps): Help {
   });
   paint();
 
-  return {
-    el: card,
-    get seen() {
-      return seen;
-    },
-    open,
-  };
+  return { el: card };
 }

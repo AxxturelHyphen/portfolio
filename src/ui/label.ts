@@ -16,8 +16,9 @@ import { createMover } from './xform.ts';
  * Placement: beside the flower on the asked side, clear of its hit ellipse; it flips when that side has no room,
  * and docks inside the viewport (whole pixels) when the flower nears or leaves an edge. Phones: a full-width strip
  * above the bottom edge (CSS), so place() only fades it.
- * The tag is not interactive and is hidden from assistive tech: the proxy button carries the name and points at it
- * with aria-describedby, and a click on the flower is the "View".
+ * Only a project flower has a tag (show() passes over anything else). The tag is not interactive and is hidden from
+ * assistive tech: the proxy button carries the name and points at it with aria-describedby, and a click on the flower
+ * is the "View".
  */
 
 export interface LabelText {
@@ -97,18 +98,17 @@ export function createLabel(el: HTMLElement, text: LabelText): LabelCard {
   return {
     show(v: SlotView): void {
       const p = v.project;
-      title.textContent = p?.title ?? v.alt;
-      const line = p === undefined ? '' : text.tr(p.oneLiner);
+      if (p === undefined) return;
+      title.textContent = p.title;
+      const line = text.tr(p.oneLiner);
       oneLiner.innerHTML = blank(line);
       oneLiner.hidden = line === '' || onlyFill(line);
-      const words = p?.stack.filter((w) => !onlyFill(w)).slice(0, UI.chipsMax) ?? [];
+      const words = p.stack.filter((w) => !onlyFill(w)).slice(0, UI.chipsMax);
       stack.innerHTML = words.map(blank).join(', ');
       stack.hidden = words.length === 0;
-      status.hidden = p === undefined;
-      if (p !== undefined) status.dataset.status = p.status;
-      status.textContent = p === undefined ? '' : text.t(`status.${p.status}`);
-      view.textContent = v.kind === 'project' ? text.t('label.view') : '';
-      view.hidden = v.kind !== 'project';
+      status.dataset.status = p.status;
+      status.textContent = text.t(`status.${p.status}`);
+      view.textContent = text.t('label.view');
       reach = Math.max(v.hit[0], v.hit[1]) / 2;
       el.dataset.kind = v.kind;
       el.dataset.shown = '';

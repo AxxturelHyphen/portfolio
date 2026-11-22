@@ -6,7 +6,7 @@ import { enterRoam } from '../helpers/roam.ts';
 // plate, help card) never overlap or leave the screen at six sizes, touch targets are 44 px and 8 px apart, keyboard
 // focus shows a ring that nothing covers, Tab runs top tags, world, plan corner, Escape hands focus back to what opened
 // the layer, every control and dialog has a name, the page language follows EN/ES, start over closes the lit flowers,
-// and the help card and the first-visit slip never stand together.
+// and the help card never comes up by itself next to the first-visit slip.
 
 type Box = { x: number; y: number; w: number; h: number; what: string };
 
@@ -100,7 +100,7 @@ test('hud: on touch every target is 44 px and 8 px from the next, with or withou
   }
 });
 
-test('hud: first visit, the name card and the help card take turns and never overlap the counter or the "?"', async ({ page, jardin, isMobile }) => {
+test('hud: first visit, the name card comes up alone and never overlaps the counter or the "?"; the help card stays behind the "?"', async ({ page, jardin, isMobile }) => {
   test.slow();
   await page.addInitScript(() => {
     sessionStorage.clear();
@@ -111,19 +111,17 @@ test('hud: first visit, the name card and the help card take turns and never ove
     await page.setViewportSize({ width, height });
     await enterRoam(jardin, '#/', { help: '1', size: where });
     let sawPlate = false;
-    for (let i = 0; i < 80 && !(await page.locator('#hp').isVisible()); i++) {
-      const both = await page.evaluate(() => document.querySelector('#hp:popover-open') !== null
-        && (document.querySelector<HTMLElement>('.wl-hint')?.checkVisibility({ opacityProperty: true }) ?? false));
-      expect(both, `${where}: the help card and the welcome slip never together`).toBe(false);
+    for (let i = 0; i < 40; i++) {
+      expect(await page.locator('#hp').isVisible(), `${where}: the help card never comes up by itself`).toBe(false);
       sawPlate ||= await page.locator('.wl[data-state="shown"]').count() > 0;
       await expectLaidOut(page, `${where} plate`);
       await page.waitForTimeout(200);
     }
-    expect(sawPlate, `${where}: the name card came up first`).toBe(true);
-    await expect(page.locator('#hp'), `${where}: then the help card`).toBeVisible();
-    await expect(page.locator('.wl-hint')).toBeHidden();
-    await page.waitForTimeout(450);
+    expect(sawPlate, `${where}: the name card came up`).toBe(true);
+    await openHelp(page, isMobile);
     await expectLaidOut(page, `${where} help`);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#hp')).toBeHidden();
   }
 });
 
