@@ -52,6 +52,7 @@ const float LAMP_GREEN_FADE = 0.8;                    // how far the moss under 
 const float LAMP_GRAIN = 0.35;
 const float INVITE_POOL = 2.0;                        // a project flower's pool on the ground at its foot
 const float LAMP_LAWN = 0.08;                         // the darkest value a lantern sees on the lawn: light on grass, no smudge
+const float GROUND_DAY = 2.4;                         // the ground's ramp under daylight, as a gain on its night colours
 const float GROUND_FILL = 0.4;                        // the near fill on the ground, as a share of the place ambient                        // how much the ground's own grain breaks up a lantern pool
 uniform float uHandThrow;                             // 0 until a pointer arrives: a hand at rest throws no pool
 const vec3 STONE = vec3(0.060, 0.055, 0.052);
@@ -231,7 +232,8 @@ void main() {
     if (w > wet) { wet = w; q0 = q.xy; }
   }
 
-  // The ramp colours are the ground as seen under the place's ambient; the key adds relief, the hand its warm pool.
+  // The ramp colours are the ground as seen under the place's ambient; the key adds relief, the hand its warm pool. By
+  // day the same colours take the sky's fill and the sun with its shadow (GROUND_DAY: the night ramp to daylight).
   float key = luma(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.3);
   vec3 hand = handLights(vWorld, n);
   // The hand's throw on the ground: off the light's foot, stretched along the line from the lens through the light and
@@ -246,7 +248,8 @@ void main() {
   // Moss and earth under the hand go nearly grey first: the amber light, not the moss, sets the pool's hue.
   vec3 grey = mix(albedo, vec3(luma(albedo)), POOL_GREY);
   vec3 night = nightOf(vWorld);
-  vec3 col = base * (0.5 + 1.6 * key) * night + keyLit(grey, hand * uHandThrow);
+  vec3 sunlit = base * GROUND_DAY * (skyFill(n) + keyLight(vWorld, n, 0.3));
+  vec3 col = mix(base * (0.5 + 1.6 * key) * night, sunlit, uDay.x) + keyLit(grey, hand * uHandThrow);
   // The lanterns' pools on the ground's own value (fully grey: amber on moss must not turn olive), broken by its grain
   // and rolled off toward LAMP_CEIL so lit stone keeps its edges.
   vec3 lamp = vec3(max(luma(albedo), LAMP_LAWN)) * (lampLightsGain(vWorld, n, CARRIED_POOL) + inviteLights(vWorld, n) * INVITE_POOL) * (1.0 - LAMP_GRAIN + LAMP_GRAIN * 2.0 * fbm3(p * 1.7));
@@ -255,7 +258,7 @@ void main() {
   col += lamp / (1.0 + luma(lamp) / LAMP_CEIL);
   // Under roam the near fill loses most of its cool cast, so the lawn reads as grass at dusk, not teal felt.
   vec3 fill = mix(neutralise(uAmbient), vec3(luma(uAmbient)), ROAM_FILL_GREY * uEye.z) * GROUND_FILL * fillAt(vDepth);
-  col += mix(fill, albedo * luma(fill) * ROAM_FILL_LIT, uEye.z) * night;
+  col += mix(fill, albedo * luma(fill) * ROAM_FILL_LIT, uEye.z) * night * (1.0 - uDay.x);
   col *= 1.0 - MORTAR_DARK * mortar;
 
   if (wet > 0.0) {
@@ -270,7 +273,7 @@ void main() {
     float near = step(abs(atan(view.x, -view.z) - atan(uMoonBack.x, -uMoonBack.z)), GLINT_AZ);
     float dashes = smoothstep(0.45, 0.6, valueNoise(vec2(q0.x * 3.0, (p.y + ring * 0.05) * 9.0)));
     float glint = near * exp(-sq(dAz / 0.012)) * dashes;
-    mirror += uMoonBody / max(luma(uMoonBody), 1e-3) * glint * GLINT;
+    mirror += uMoonBody / max(luma(uMoonBody), 1e-3) * glint * GLINT * uDay.z;
     vec3 toLight = normalize(uCursor.xyz - vWorld);
     mirror += uCursorColor * pow(max(dot(refl, toLight), 0.0), 24.0) * handReach(vWorld) * 0.35;
     col = mix(col, min(mirror, vec3(WET_CEILING)), wet);

@@ -9,6 +9,8 @@ export function parseDebug(search: URLSearchParams): DebugParams {
   if (shot !== null && /^S\d\d$/.test(shot)) q.shot = shot;
   const t = Number.parseFloat(search.get('t') ?? '');
   if (Number.isFinite(t) && t >= 0) q.t = t;
+  const hour = Number.parseFloat(search.get('hour') ?? '');
+  if (Number.isFinite(hour)) q.hour = hour;
   const tier = search.get('tier');
   if (tier === 'high' || tier === 'mid' || tier === 'low') q.tier = tier;
   const lang = search.get('lang');

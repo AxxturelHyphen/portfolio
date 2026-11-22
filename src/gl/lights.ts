@@ -1,4 +1,5 @@
 import { Matrix4, Vector2, Vector3, Vector4 } from 'three';
+import type { DayPalette, Rgb } from '../world/daytime.ts';
 import type { Texture } from 'three';
 import { linearHex } from './colour.ts';
 
@@ -27,8 +28,11 @@ import { linearHex } from './colour.ts';
  * - uFill: a near-foreground lift under free roam (0 on the rail).
  * - uDepthCut: cutout fragments under this alpha are discarded so their soft edges write no depth (free roam: the scene
  *   target has a depth buffer); 0 on the rail, where nothing is discarded.
- * - uShadowVP / uShadowMap / uShadowOn: the carried lantern's shadow map (gl/shadow.ts), seen straight down from its
- *   flame; uShadowPass is 1 while the cutouts draw into it.
+ * - uShadowVP / uShadowMap / uShadowOn: the one shadow map (gl/shadow.ts): at night the carried lantern's, seen straight
+ *   down from its flame, by day the sun's; uShadowOn holds their strengths (lantern, sun); uShadowPass is 1 while the
+ *   cutouts draw into it.
+ * - uDay / uBounce / uDayAir / uSun: the garden's day (world/daytime.ts, writeDaylight): daylight, the lanterns' pools
+ *   the night sky and the afterglow; the ground's warm bounce; the far air by day; the sun disc's direction and strength.
  */
 export const FLY_LIGHTS = 4;
 /** Lanterns with their own amber light (a fixed count in the shader, world/lamps.ts LAMPS.count): the carried one and five standing props. */
@@ -72,6 +76,10 @@ export const sharedUniforms = {
   uSkyTop: { value: linearHex('#181634', new Vector3()) },
   uSkyHorizon: { value: linearHex('#5e506d', new Vector3()) },
   uAmbient: { value: linearHex('#3a3550', new Vector3()) },
+  uBounce: { value: linearHex('#3a3550', new Vector3(), 0.8) },
+  uDay: { value: new Vector4(0, 1, 1, 0) },
+  uDayAir: { value: new Vector3() },
+  uSun: { value: new Vector4(0, 0, -1, 0) },
   uShadowColor: { value: linearHex('#261e3d', new Vector3()) },
   uShadowDir: { value: new Vector4(SHADOW_DECAL.x, SHADOW_DECAL.z, SHADOW_DECAL.lengthPerHeight, SHADOW_DECAL.opacity) },
   uHaze: { value: hazeOf(HAZE.colour, HAZE.density) },
@@ -88,7 +96,7 @@ export const sharedUniforms = {
   uActorRim: { value: 0 },
   uShadowVP: { value: new Matrix4() },
   uShadowMap: { value: null as Texture | null },
-  uShadowOn: { value: 0 },
+  uShadowOn: { value: new Vector2(0, 0) },
   uShadowPass: { value: 0 },
 };
 /** The camera layer the cutout batches also sit on: the lantern's shadow pass draws only them. */
@@ -110,6 +118,21 @@ export function setRoamWeight(weight: number): void {
 }
 
 /**
+ * The mode's own night (the rail's or free roam's key, rim and haze) and the gains the day scales. writeDaylight
+ * blends each palette colour with it by the palette's `place` weight, so at night the old light comes back exactly.
+ */
+const night = {
+  key: sharedUniforms.uMoonColor.value.clone(),
+  rim: sharedUniforms.uRimColor.value.clone(),
+  haze: sharedUniforms.uHaze.value.clone(),
+  invite: sharedUniforms.uInviteColor.value.clone(),
+  fly: sharedUniforms.uFlyColor.value.clone(),
+};
+let shadowSideNow = -1;
+/** The far air by day as a share of the day's haze: a touch deeper, so far beds keep their colour. */
+const DAY_AIR = 0.8;
+
+/**
  * Free roam's light: the scene target has a depth buffer and the cutouts' faint edges must not write it, and the hand
  * light hands its pool to the carried lantern (lamp 0): one light, not two stacked. uCursor keeps moving with the
  * visitor for what follows it (edges, bent leaves, the moth).
@@ -124,9 +147,40 @@ export function setRoamLight(): void {
   sharedUniforms.uDepthCut.value = DEPTH_CUT;
   sharedUniforms.uFill.value = ROAM_FILL;
   sharedUniforms.uHandOn.value = 0;
-  linearHex(ROAM_MOON.colour, sharedUniforms.uMoonColor.value, ROAM_MOON.strength);
-  linearHex(ROAM_RIM.colour, sharedUniforms.uRimColor.value, ROAM_RIM.strength);
-  hazeOf(ROAM_HAZE.colour, ROAM_HAZE.density, sharedUniforms.uHaze.value);
+  linearHex(ROAM_MOON.colour, night.key, ROAM_MOON.strength);
+  linearHex(ROAM_RIM.colour, night.rim, ROAM_RIM.strength);
+  hazeOf(ROAM_HAZE.colour, ROAM_HAZE.density, night.haze);
+  sharedUniforms.uMoonColor.value.copy(night.key);
+  sharedUniforms.uRimColor.value.copy(night.rim);
+  sharedUniforms.uHaze.value.copy(night.haze);
+}
+
+function mixInto(out: Vector3, day: Rgb, kept: Vector3, place: number): void {
+  out.set(day[0] + (kept.x - day[0]) * place, day[1] + (kept.y - day[1]) * place, day[2] + (kept.z - day[2]) * place);
+}
+
+/** Writes the day's light (world/daytime.ts) into the shared uniforms. No allocation. */
+export function writeDaylight(p: DayPalette): void {
+  const u = sharedUniforms;
+  mixInto(u.uMoonColor.value, p.key, night.key, p.place);
+  mixInto(u.uRimColor.value, p.rim, night.rim, p.place);
+  const haze = u.uHaze.value;
+  haze.set(p.haze[0] + (night.haze.x - p.haze[0]) * p.place, p.haze[1] + (night.haze.y - p.haze[1]) * p.place,
+    p.haze[2] + (night.haze.z - p.haze[2]) * p.place, p.hazeDensity + (night.haze.w - p.hazeDensity) * p.place);
+  u.uMoonDir.value.set(p.keyDir[0], p.keyDir[1], p.keyDir[2]);
+  u.uDay.value.set(p.day, p.lampPool, p.nightSky, p.glow);
+  u.uDayAir.value.set(p.haze[0], p.haze[1], p.haze[2]).multiplyScalar(DAY_AIR);
+  u.uInviteColor.value.copy(night.invite).multiplyScalar(p.invite);
+  u.uFlyColor.value.copy(night.fly).multiplyScalar(p.fireflies);
+  const el = Math.asin(u.uMoonBack.value.y) * p.sunEl;
+  const az = p.sunAz * DEG;
+  u.uSun.value.set(Math.cos(el) * Math.sin(az), Math.sin(el), -Math.cos(el) * Math.cos(az), p.sunDisc);
+  shadowSideNow = p.shadowSide;
+}
+
+/** The shadow map's side and strength for gl/shadow.ts: above 0 the sun's, below 0 the carried lantern's. */
+export function shadowSide(): number {
+  return shadowSideNow;
 }
 
 /** Copies the lamp list (LAMP_LIGHTS vec4s: flame xyz, strength) into uLamp. No allocation. */

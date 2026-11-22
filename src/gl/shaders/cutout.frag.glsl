@@ -49,7 +49,8 @@ const float ROAM_TINT_FLOOR = 0.5;                    // free roam's dusk lets a
 const float SHADED_FROM = 0.75;                       // tints darker than this luma count as a shaded layer
 const float SILHOUETTE_HAZE = 0.3;                    // how far a shaded layer turns toward the haze hue
 const vec3 COOL_RIM = vec3(0.30, 0.36, 0.46);         // moonlit rim on the shaded layers
-const float AMBIENT_GAIN = 1.6;                       // the moonlit dusk fill: midground paper reads, blacks stay
+const float AMBIENT_GAIN = 1.6;
+const vec2 KEY_WRAP = vec2(0.4, 0.25);                 // the key's wrap through the paper: the moon's soft, the sun's firmer                       // the moonlit dusk fill: midground paper reads, blacks stay
 const float LEAF_MIP_BIAS = 3.0;                      // the leaf weight reads the plate at about 8 px
 // Lit paper keeps its hue: the brightest channel rolls off from KNEE toward CEIL (linear), the others follow it, so a
 // lit crimson stays crimson instead of washing to coral and no paper passes about luma 215 after the grade.
@@ -288,8 +289,8 @@ void main() {
   n = vOrient.w > 0.5 ? vec3(n.x, n.z, -n.y) : n;
   n = normalize(vec3(n.x * vOrient.x + n.z * vOrient.y, n.y, -n.x * vOrient.y + n.z * vOrient.x));
 
-  vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5) * (1.0 + CUTOUT_FILL * fillAt(vDepth));
-  vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
+  vec3 ambient = skyFill(n) * AMBIENT_GAIN * (1.0 + CUTOUT_FILL * fillAt(vDepth));
+  vec3 key = keyLight(vWorld, n, mix(KEY_WRAP.x, KEY_WRAP.y, uDay.x));
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n) + inviteLights(vWorld, n);
   vec3 night = nightOf(vWorld);
@@ -306,7 +307,7 @@ void main() {
   vec3 sideLit = vec3(0.0);
   if (side.x > 1e-3) {
     vec3 sn = normalize(vSideN + vec3(0.0, 1e-4, 0.0));
-    vec3 sideLight = (neutralise(uAmbient) * EDGE_AMBIENT + neutralise(uMoonColor) * wrapLight(dot(sn, uMoonDir), 0.2)) * night
+    vec3 sideLight = (neutralise(uAmbient) * EDGE_AMBIENT + keyLight(vWorld, sn, 0.2)) * night
       + uRimColor * EDGE_RIM * sq(sq(max(dot(sn, uMoonDir), 0.0))) * night + (handLights(vWorld, sn) + lampLights(vWorld, sn)) * EDGE_LAMP;
     float fibre = mix(EDGE_FIBRE.x, 1.0, valueNoise(vUV * vec2(textureSize(uColor, 0)) / EDGE_FIBRE.y));
     sideLit = paperShoulder(PAPER_EDGE * mix(1.0, EDGE_BACK, side.y) * fibre * sideLight) * foot;

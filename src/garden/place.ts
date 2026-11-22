@@ -16,6 +16,7 @@ import { createChalkDrive, type ChalkDeps } from './chalk.drive.ts';
 import { setMoon, SHADOW_LAYER, sharedUniforms, type PlaceLight } from '../gl/lights.ts';
 import { MAX_PADS, MAX_REFLECTORS, type PondPad, type PondRect, type PondReflector } from '../gl/pond.ts';
 import type { BedId, Tier } from '../types.ts';
+import type { DayPalette, Rgb } from '../world/daytime.ts';
 import type { SignAnchor } from '../ui/signposts.ts';
 import { enclosureRuns, masonryOf, STONES } from '../world/enclosure.ts';
 import { pathSlabs } from '../world/slabs.ts';
@@ -90,6 +91,8 @@ export function groundLayoutOf(g: WorldLayout): GroundLayout {
 
 /** Seconds for the light to settle on a new place: about one walk, so the sky turns while the camera moves. */
 const LIGHT_TAU_S = 0.5;
+/** A place's night bounce on faces turned down, as a share of its ambient (the old 0.8 to 1.25 hemisphere). */
+const BOUNCE_OF_AMBIENT = 0.8;
 
 interface LinearLight { skyTop: Vector3; skyHorizon: Vector3; ambient: Vector3; shadow: Vector3; shadowLength: number; moon: readonly [number, number] }
 
@@ -98,8 +101,11 @@ export interface PlaceLighting {
   set(bed: BedId | null): void;
   /** Free roam: hangs the moon at this elevation (degrees) over every bed, in the follow frame's sky; null lets go. */
   holdMoon(elevationDeg: number | null): void;
-  /** Stage 'world': eases the shared light uniforms toward the place; `snap` (frozen time) lands on it. No allocation. */
-  frame(dt: number, snap: boolean): void;
+  /**
+   * Stage 'world': eases the place's own light toward the place (`snap`, frozen time, lands on it) and writes it under
+   * the day's palette: the place's colours by its `place` weight, the day's for the rest. No allocation.
+   */
+  frame(dt: number, snap: boolean, day: DayPalette): void;
 }
 
 /** Place lights parsed once at load (free roam's dusk over the rail's table), then eased per frame so a walk never pops the sky. */
@@ -123,6 +129,10 @@ export function createPlaceLighting(mode: WorldMode): PlaceLighting {
   let az = OVERVIEW_MOON[0];
   let el = OVERVIEW_MOON[1];
   let first = true;
+  const own = { skyTop: new Vector3(), skyHorizon: new Vector3(), ambient: new Vector3(), shadow: new Vector3() };
+  const under = (out: Vector3, kept: Vector3, day: Rgb, w: number): void => {
+    out.set(day[0] + (kept.x - day[0]) * w, day[1] + (kept.y - day[1]) * w, day[2] + (kept.z - day[2]) * w);
+  };
   return {
     set(bed) {
       goal = parsed.get(bed ?? 'rosaleda') ?? goal;
@@ -131,13 +141,20 @@ export function createPlaceLighting(mode: WorldMode): PlaceLighting {
     holdMoon(elevationDeg) {
       held = elevationDeg;
     },
-    frame(dt, snap) {
+    frame(dt, snap, day) {
       const k = first || snap ? 1 : 1 - Math.exp(-dt / LIGHT_TAU_S);
       first = false;
-      u.uSkyTop.value.lerp(goal.skyTop, k);
-      u.uSkyHorizon.value.lerp(goal.skyHorizon, k);
-      u.uAmbient.value.lerp(goal.ambient, k);
-      u.uShadowColor.value.lerp(goal.shadow, k);
+      own.skyTop.lerp(goal.skyTop, k);
+      own.skyHorizon.lerp(goal.skyHorizon, k);
+      own.ambient.lerp(goal.ambient, k);
+      own.shadow.lerp(goal.shadow, k);
+      const w = day.place;
+      under(u.uSkyTop.value, own.skyTop, day.skyTop, w);
+      under(u.uSkyHorizon.value, own.skyHorizon, day.skyHorizon, w);
+      under(u.uAmbient.value, own.ambient, day.ambient, w);
+      under(u.uShadowColor.value, own.shadow, day.shadow, w);
+      u.uBounce.value.copy(own.ambient).multiplyScalar(BOUNCE_OF_AMBIENT);
+      under(u.uBounce.value, u.uBounce.value, day.bounce, w);
       u.uShadowDir.value.z += (goal.shadowLength - u.uShadowDir.value.z) * k;
       const moon = atBed ? goal.moon : OVERVIEW_MOON;
       az += (moon[0] - az) * k;

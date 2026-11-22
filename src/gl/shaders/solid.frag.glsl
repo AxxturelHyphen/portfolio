@@ -54,6 +54,7 @@ vec3 tileMean(int s) {
 
 const float ROAM_HAZE_START = 7.0;
 const float AMBIENT_GAIN = 1.6;
+const vec2 KEY_WRAP = vec2(0.4, 0.15);   // the key's wrap past the terminator: soft moonlight, a firmer sun that models the stone
 const float FILL = 0.6;
 const float KNEE = 0.22;
 const float CEIL = 0.36;
@@ -142,8 +143,8 @@ void main() {
   n = normalize(n + (t * nxy.x - b * nxy.y) * uTile.y);
 
   vec3 night = nightOf(vWorld);
-  vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5) * (1.0 + FILL * fillAt(vDepth.x));
-  vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
+  vec3 ambient = skyFill(n) * AMBIENT_GAIN * (1.0 + FILL * fillAt(vDepth.x));
+  vec3 key = keyLight(vWorld, n, mix(KEY_WRAP.x, KEY_WRAP.y, uDay.x));
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLights(vWorld, n) + inviteLights(vWorld, n);
   vec3 handLit = keyLit(albedo, hand);

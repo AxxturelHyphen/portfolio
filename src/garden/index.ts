@@ -32,6 +32,7 @@ import { createMoth } from '../world/moth.ts';
 import { setWorldMode, worldMode, worldModeOf } from '../world/mode.ts';
 import { createVisitorLantern } from '../world/visitor.ts';
 import { createArrival, driveArrival } from './arrival.ts';
+import { createDaylight } from './daylight.ts';
 import { createFilmDrive } from './film.ts';
 import { createIntroDrive } from './intro.ts';
 import { createMothDrive } from './moth.ts';
@@ -152,7 +153,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
   const labels = createLabelDrive(label, rig, roam?.pos ?? null);
   if (q.film === 0) gfx.film.uniforms.uFilmOn.value = 0;
   prepareGl(gfx, world, SCENES, worldMode(), garden, quality.tier, roam === null || q.shot !== undefined || q.t !== undefined ? null : { machine, loop, visitor: roam.pos, test: testApiEnabled(q) });
-  const placeLight = createPlaceLighting(worldMode());
+  const daylight = createDaylight(q, q.bench === 1, createPlaceLighting(worldMode()));
   const posts = signPostsOf(world, SCENES, worldMode());
   proxies.setSigns(signAnchorsOf(posts, worldMode()));
   if (roam !== null) proxies.setVisitor(roam.pos, content.garden.anchors, (slot, off) => roam.seek(slot, off));
@@ -198,7 +199,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     }
   };
   bindBed(machine.state.bed);
-  placeLight.set(machine.state.bed);
+  daylight.place.set(machine.state.bed);
 
   /** Resize only bumps the Gfx counter; the 'input' stage applies it (cook/ARCH.md section 6, risk 6). */
   let seenResizes = -1;
@@ -231,7 +232,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
       lantern?.resize(w, h);
       if (roam !== null) {
         roam.resize(w, h);
-        placeLight.holdMoon(roam.moonElevation());
+        daylight.place.holdMoon(roam.moonElevation());
       }
       for (const b of content.garden.order) rig.setBedPose(b, bedPose(SCENES[b].pose, w / Math.max(1, h)));
     }
@@ -269,13 +270,12 @@ export function startGarden(host: GardenHost): GardenRuntime {
       roam?.setSlots(now === null ? NO_SLOTS : slots);
       host.refresh();
     }
-    if (roam !== null) placeLight.holdMoon(roam.moonElevation());
-    placeLight.frame(c.dt, c.frozen);
+    if (roam !== null) daylight.place.holdMoon(roam.moonElevation());
+    daylight.frame(c, machine.state.reduced);
     sharedUniforms.uCursor.value.fromArray(light.cursor);
     sharedUniforms.uGather.value.fromArray(light.gather);
     sharedUniforms.uFocusBack.value.fromArray(light.back);
     sharedUniforms.uHandThrow.value = light.handThrow;
-    sharedUniforms.uMoonDir.value.fromArray(light.moonDir);
     if (lantern !== null) {
       writeLamps(arrival.carried(light.lamps));
       writeInvites(light.invites);
@@ -322,7 +322,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
     if (s.project !== null) arrival.skip();
     if (s.bed !== prev.bed) {
       bindBed(s.bed);
-      placeLight.set(s.bed);
+      daylight.place.set(s.bed);
     }
     if (s.phase === 'focus' && prev.phase !== 'closing' && (s.slot !== prev.slot || prev.phase !== 'focus')) {
       const project = slots.find((v) => v.id === s.slot)?.project;
@@ -392,7 +392,7 @@ export function startGarden(host: GardenHost): GardenRuntime {
 
   if (testApiEnabled(q)) {
     installTestApi({ machine, loop, quality, rig, content, residency: garden.residency, ready, info: (out) => gfx.info(out), roam, figure: () => lantern?.figure === true,
-      strip: () => gfx.film.uniforms.uStrip.value.w,
+      strip: () => gfx.film.uniforms.uStrip.value.w, hour: () => daylight.hour,
       unfurl: () => (machine.state.bed === null ? 0 : garden.beds.get(machine.state.bed)?.unfurl() ?? 0), boss: () => bossCamera.phase });
   }
   return { quality, ready };

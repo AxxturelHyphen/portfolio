@@ -4,7 +4,7 @@
  * pointer no longer moves it, and the lamps (world/lamps.ts) burn: the carried lantern's flame and the standing lanterns
  * nearest the visitor on screen, and the project flowers round the visitor stand in their own warm pools (world/invites.ts).
  * The gather light rises on the focused flower. Output is world space, read by the cutout material (uCursor, uGather,
- * uFocusBack, uMoonDir, uLamp, uInvite).
+ * uFocusBack, uLamp, uInvite); the key light's direction comes with the day (world/daytime.ts).
  */
 import type { CameraRig, Clock, LightRig, Machine, ScreenPt, SlotId, SlotView, State } from '../types.ts';
 import { LIGHT, follow } from '../core/motion.ts';
@@ -23,7 +23,6 @@ const GEOM = {
   planeZ: 0,
   restX: 0.5,
   restY: 0.42,
-  moon: [-0.35, 0.8, 0.5],
   /** In a bed at rest the far layers fall back behind the flowers by this share of a focus (an 85 mm close shot). Under
    * free roam the plane is the visitor and the bed's own flowers stand behind it: they only darken a little (roamRestBack)
    * and never soften (cutout.frag.glsl). */
@@ -62,11 +61,6 @@ export function createLight(): GardenLight {
   const cursor = new Float32Array(4);
   const gather = new Float32Array(4);
   const back = new Float32Array(4);
-  const moonDir = new Float32Array(3);
-  const ml = Math.hypot(GEOM.moon[0], GEOM.moon[1], GEOM.moon[2]);
-  moonDir[0] = GEOM.moon[0] / ml;
-  moonDir[1] = GEOM.moon[1] / ml;
-  moonDir[2] = GEOM.moon[2] / ml;
 
   const hit = new Float32Array(3);
   let width = 1280;
@@ -159,7 +153,6 @@ export function createLight(): GardenLight {
     cursor,
     gather,
     back,
-    moonDir,
     get handThrow() {
       return handThrow;
     },

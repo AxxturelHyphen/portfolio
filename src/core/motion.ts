@@ -339,6 +339,12 @@ export const bloomAt = (i: number): number => BLOOM_POSES[i < 0 ? 0 : i >= BLOOM
 export const LIGHT = { cursorTauS: 0.08, gatherInS: 0.4, gatherOutTauS: 0.35, swellSpeedPxS: 800, swell: 0.06, swellRelaxS: 0.4, idleDriftPeriodS: 20, idleDriftAmp: 0.03 } as const;
 export const MOTH = { tauS: 0.45, lead: 0.12, flapsPerS: 3, glideFlapsPerS: 1.5, posesPerFlap: 4, landAfterS: 1.2, landOpenPoses: 6, avoidPx: 96, introS: 0.5 } as const;
 export const FIREFLY = { inS: 0.4, outS: 1.1 } as const;
+/**
+ * The garden's day (world/daytime.ts): one whole day in cycleS real seconds (2.4 garden hours a minute: about 4 min
+ * of daylight, 1 of dusk, 4 of night, 1 of dawn). A visit starts in the golden afternoon, about 1.5 min before dusk
+ * begins at 16.8 h; under the test API or a frozen clock the hour is pinned to night (`?hour` pins it anywhere).
+ */
+export const DAY = { cycleS: 600, startHour: 13.2, pinnedHour: 0 } as const;
 
 // Intro (2 s): fade up, kaleidoscope turn, iris-out, moth
 

@@ -19,6 +19,7 @@ in vec3 vWorld;
 in vec2 vLocal;
 out vec4 outColor;
 
+const float DAY_MIRROR = 0.4;          // the bright day sky mirrors at this share of the night's gain: water, not enamel
 const vec3 DEEP = vec3(0.0060, 0.0072, 0.0110);       // still water in shade: near black, a little blue-green
 const vec3 MOON_WATER = vec3(0.72, 0.66, 0.60);       // #ddd4cb on the water, held under the moon core
 const float SKY_MIRROR = 0.32;
@@ -178,20 +179,20 @@ void main() {
   float drift = valueNoise(p * 1.7 + vec2(ts * 0.11, -ts * 0.07));
   float glint = valueNoise(p * 11.0 + vec2(-ts * 0.3, ts * 0.21)) * valueNoise(p * 7.0 + slope * 40.0 - ts * 0.17);
   float shimmer = 1.0 + SHIMMER * ((drift - 0.5) * 2.0 + 4.0 * smoothstep(0.45, 0.8, glint));
-  vec3 col = DEEP + neutralise(sky) * mix(SKY_MIRROR, ROAM_SKY_MIRROR, uEye.z) * (0.4 + 0.6 * pow(1.0 - sat(-view.y), 3.0)) * shimmer
+  vec3 col = DEEP + neutralise(sky) * mix(SKY_MIRROR, ROAM_SKY_MIRROR, uEye.z) * mix(1.0, DAY_MIRROR, uDay.x) * (0.4 + 0.6 * pow(1.0 - sat(-view.y), 3.0)) * shimmer
     + neutralise(uAmbient) * ROAM_WATER_FILL * uEye.z
     + neutralise(uSkyHorizon) * SKY_MIRROR * (stir.z + pads.w);
 
-  // The moon: a long column at its azimuth, its elevation ignored, broken into dashes by the ripples.
+  // The moon: a long column at its azimuth, its elevation ignored, broken into dashes by the ripples; gone by day.
   float dAz = atan(refl.x, -refl.z) - atan(uMoonBack.x, -uMoonBack.z);
   float column = exp(-dAz * dAz / (STREAK_AZ * STREAK_AZ));
   float dashes = smoothstep(0.35, 0.75, valueNoise(vec2(p.x * 3.0, p.y * 14.0 - uTime * 0.5)));
-  col += MOON_WATER * column * (0.1 + 0.4 * dashes) * smoothstep(0.0, 0.05, refl.y);
+  col += MOON_WATER * column * (0.1 + 0.4 * dashes) * smoothstep(0.0, 0.05, refl.y) * uDay.z;
 
   vec4 mirrored = reflections(p, slope);
   col = mix(col, mirrored.rgb / max(mirrored.a, 1e-3) * REFL_LEVEL + DEEP, sat(mirrored.a) * REFL_STRENGTH);
 
-  col += lampColumns(p, slope);
+  col += lampColumns(p, slope) * uDay.y;
 
   // The hand light glints on the rings, small and warm.
   vec3 toHand = normalize(uCursor.xyz - vWorld);

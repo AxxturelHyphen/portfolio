@@ -66,7 +66,7 @@ export interface CameraRig {
   update(c: Clock, s: State, ch: Machine['ch']): void; setShot(id: ShotId): void; resize(w: number, h: number): void;
 }
 export interface LightRig {
-  readonly cursor: Float32Array; readonly gather: Float32Array; readonly back: Float32Array; readonly moonDir: Float32Array; readonly handThrow: number;
+  readonly cursor: Float32Array; readonly gather: Float32Array; readonly back: Float32Array; readonly handThrow: number;
   setPointer(xPx: number, yPx: number, kind: 'mouse' | 'touch' | 'key'): void; update(c: Clock, s: State, ch: Machine['ch'], rig: CameraRig): void;
 }
 
@@ -176,13 +176,13 @@ export interface Toggles { setMode(m: Mode, pending: boolean): void; setLang(l: 
 export interface ModeLayers { setProgress(p: number): void; settle(m: Mode): void }
 
 // 2.11 Debug params, test API (the sound contract lives in src/audio/)
-export interface DebugParams { mode?: Mode; shot?: ShotId; t?: number; tier?: Tier; film?: 0 | 1; stats?: 0 | 1; bench?: 0 | 1; lang?: Lang }
+export interface DebugParams { mode?: Mode; shot?: ShotId; t?: number; tier?: Tier; film?: 0 | 1; stats?: 0 | 1; bench?: 0 | 1; lang?: Lang; hour?: number }
 export interface InfoSnapshot { calls: number; triangles: number; textures: number; geometries: number; programs: number; texBytes: number; targetBytes: number }
 export interface PerfLine { tier: Tier; drawCallsP95: number; textureMB: number; heapMB: number; frameAvg: number; frameP95: number; longTasks: number }
 export interface JardinTestAPI {
   ready: Promise<void>; state(): State; channels(): Record<ChannelName, { value: number; target: number; settled: boolean }>;
   goto(hash: string, o?: { instant?: boolean }): Promise<void>;
-  send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; roam(): { x: number; z: number } | null; figure(): boolean; strip(): number; unfurl(): number; boss(): string; walkTo(x: number, z: number): void; holdKeys(bits: number): void; holdApproach(k: number | null): void; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
+  send(ev: Ev): void; settled(): Promise<void>; camera(): Pose; roam(): { x: number; z: number } | null; figure(): boolean; strip(): number; unfurl(): number; hour(): number; boss(): string; walkTo(x: number, z: number): void; holdKeys(bits: number): void; holdApproach(k: number | null): void; info(): InfoSnapshot; residency(): Record<BedId, BedState>; heapMB(): number | null; errors(): string[]; setT(t: number): void;
   rec: { start(label: string): void; stop(): FrameReport }; tour(): Promise<PerfLine>;
 }
 

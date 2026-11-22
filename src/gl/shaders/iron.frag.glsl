@@ -21,7 +21,7 @@ void main() {
   n *= sign(dot(n, v));        // the face's own normal, turned to the eye
   // Blooms about 3 cm across, heaviest under 8 cm and gone past 55 cm.
   float rust = smoothstep(0.5, 0.78, fbm3(vWorld.xy * 34.0) + 0.3 - 0.3 * smoothstep(0.08, 0.55, vWorld.y));
-  vec3 lit = mix(IRON, RUST, rust * 0.7) * (neutralise(uAmbient + uMoonColor * wrapLight(dot(n, uMoonDir), 0.2)) * nightOf(vWorld) + lampLights(vWorld, n));
+  vec3 lit = mix(IRON, RUST, rust * 0.7) * ((neutralise(uAmbient) + keyLight(vWorld, n, 0.2)) * nightOf(vWorld) + lampLights(vWorld, n));
   float hazed = 1.0 - exp(-max(vDepth.x - 7.0, 0.0) * uHaze.w);
   lit = layerAir(mix(lit, neutralise(uHaze.rgb), hazed), vDepth.x - vDepth.y, 0.0);
   outColor = vec4(mix(lit, GRAPHITE, 0.7 * (1.0 - smoothstep(0.08, 0.5, abs(dot(n, v)))) * (1.0 - hazed)), 1.0);

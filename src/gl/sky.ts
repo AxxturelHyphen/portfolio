@@ -6,7 +6,7 @@ import vertexBody from './shaders/sky.vert.glsl?raw';
 import fragmentBody from './shaders/sky.frag.glsl?raw';
 
 /**
- * The night sky: drawn first into the scene target, at the far plane. It shares the sky colours and the real moon
+ * The sky, by night and by day (world/daytime.ts): drawn first into the scene target, at the far plane. It shares the sky colours and the real moon
  * with the cutouts and the ground (lights.ts), so everything is lit by the sky it stands under.
  * Moon body #ddd4cb (cook/SHOTS.md B: moon white, never #ffffff); the film grade lifts its core to luma 236 to 240.
  */
@@ -14,6 +14,8 @@ export type SkyUniforms = {
   uSkyTop: typeof sharedUniforms.uSkyTop;
   uSkyHorizon: typeof sharedUniforms.uSkyHorizon;
   uMoonBack: typeof sharedUniforms.uMoonBack;
+  uDay: typeof sharedUniforms.uDay;
+  uSun: typeof sharedUniforms.uSun;
   uCamPos: typeof sharedUniforms.uCamPos;
   uInvViewProj: { value: Matrix4 };
   uMoonBody: { value: Vector3 };
@@ -35,6 +37,8 @@ export function createSky(): Sky {
     uSkyTop: sharedUniforms.uSkyTop,
     uSkyHorizon: sharedUniforms.uSkyHorizon,
     uMoonBack: sharedUniforms.uMoonBack,
+    uDay: sharedUniforms.uDay,
+    uSun: sharedUniforms.uSun,
     uCamPos: sharedUniforms.uCamPos,
     uInvViewProj: { value: new Matrix4() },
     uMoonBody: { value: linearHex('#ddd4cb', new Vector3(), MOON_BODY_GAIN) },

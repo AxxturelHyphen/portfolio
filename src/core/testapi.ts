@@ -36,6 +36,8 @@ export interface TestApiDeps {
   strip(): number;
   /** How far the entered project's flower has unfurled in its bed, 0..1. */
   unfurl(): number;
+  /** The garden's hour of day (garden/daylight.ts). */
+  hour(): number;
   /** The phase of the archive boss of the bed the visitor was last in ('wait', 'play', 'idle'), '' before any. */
   boss(): string;
 }
@@ -134,6 +136,7 @@ export function installTestApi(d: TestApiDeps): JardinTestAPI {
     figure: () => d.figure(),
     strip: () => d.strip(),
     unfurl: () => d.unfurl(),
+    hour: () => d.hour(),
     boss: () => d.boss(),
     walkTo(x, z) {
       d.roam?.walkTo(x, z);

@@ -1,6 +1,7 @@
 // Shared light chunk (src/gl/lights.ts): the hand light, the focus gather, up to 4 fireflies, 6 lanterns and the 6
-// project flowers' own pools, all with a soft falloff to zero at their reach, and the night that closes in away from the
-// roaming visitor. Linear colours.
+// project flowers' own pools, all with a soft falloff to zero at their reach, the night that closes in away from the
+// roaming visitor, and the day (world/daytime.ts): the key is the sun by day and the moon by night, the sky fills from
+// above, the ground bounces warm light up, and by day the shadow map is the sun's. Linear colours.
 uniform vec4 uCursor;      // xyz, radius
 uniform vec3 uCursorColor;
 uniform float uHandOn;     // 1: the hand light shines; 0 under free roam, where the carried lantern (uLamp[0]) does
@@ -19,16 +20,24 @@ uniform vec3 uMoonDir;     // the soft key on the faces (upper left front)
 uniform vec3 uMoonColor;
 uniform vec3 uMoonBack;    // the real moon, low behind the garden: rim and glints
 uniform vec3 uRimColor;
-uniform vec3 uAmbient;
+uniform vec3 uAmbient;     // the sky's fill from above
+uniform vec3 uBounce;      // the ground's bounce on faces turned down (0.8 of the ambient at night)
 uniform vec3 uShadowColor;
 uniform vec3 uEye;         // z: 0 on the rail, 1 under free roam (the roam air below)
+uniform vec4 uDay;         // x: daylight (0 at night, 1 by day), y: the lanterns' pools (1 at night), z: stars and moon, w: afterglow
+uniform vec3 uDayAir;      // the far air by day: the day's haze
 
 const float FLY_RADIUS = 0.9;
-// Place colours tint the sky; on paper, ground and haze they keep only a trace of their hue, so each plate keeps its
-// own colour: a cool neutral leaning blue-green in the shade instead of one violet wash over everything.
+// Place colours tint the sky; on paper, ground and haze they keep only a trace of their hue at night, so each plate
+// keeps its own colour: a cool neutral leaning blue-green in the shade instead of one violet wash over everything. By
+// day the light keeps most of its hue: warm sun, blue shade, warm bounce.
 const vec3 COOL_NEUTRAL = vec3(0.86, 1.0, 1.04);
 const float PLACE_HUE_KEPT = 0.2;
-vec3 neutralise(vec3 c) { return mix(luma(c) * COOL_NEUTRAL / luma(COOL_NEUTRAL), c, PLACE_HUE_KEPT); }
+const float DAY_HUE_KEPT = 0.85;
+vec3 neutralise(vec3 c) { return mix(luma(c) * COOL_NEUTRAL / luma(COOL_NEUTRAL), c, mix(PLACE_HUE_KEPT, DAY_HUE_KEPT, uDay.x)); }
+
+// The fill on a face with normal n: the bounce from below, the sky from above (at night 0.8 to 1.25 of the ambient).
+vec3 skyFill(vec3 n) { return neutralise(mix(uBounce, uAmbient * 1.25, n.y * 0.5 + 0.5)); }
 
 float falloff(vec3 d, float r) { float k = sat(1.0 - dot(d, d) / (r * r)); return k * k * k; }
 // The hand light's spill past its pool: a soft inverse-square tail, so paper beside the pool catches some of it.
@@ -99,21 +108,37 @@ const float LAMP_FOOT_DARK = 0.9;
 // receiver steps SHADOW_LIFT metres toward the flame (no acne on the paper that casts), four bilinear compares about
 // SHADOW_SOFT texels apart give a soft edge, and the shade keeps SHADOW_KEEP of the light (paper glows through): enough
 // that a spiky plant's long shadow reads as a soft shade on the ground, never as black spikes.
+// By day the same map is the sun's (an orthographic frame round the visitor): it shades the key only, so the shade
+// keeps the sky's blue fill and the bounce, never a grey; it thins out toward the frame's edge. uShadowOn holds the
+// lantern's and the sun's strengths; one of them is 0, and both pass through 0 at dusk and dawn.
 uniform mat4 uShadowVP;
 uniform highp sampler2DShadow uShadowMap;
-uniform float uShadowOn;
+uniform vec2 uShadowOn;
 const float SHADOW_LIFT = 0.05;
 const float SHADOW_SOFT = 2.6;
 const float SHADOW_KEEP = 0.56;
+const float SUN_LIFT = 0.1;
+const vec2 SUN_EDGE = vec2(0.36, 0.5);
+float shadowTaps(vec3 s) {
+  vec2 t = SHADOW_SOFT / vec2(textureSize(uShadowMap, 0));
+  return 0.25 * (texture(uShadowMap, vec3(s.xy + t * vec2(-1.0, -0.4), s.z)) + texture(uShadowMap, vec3(s.xy + t * vec2(0.4, -1.0), s.z))
+    + texture(uShadowMap, vec3(s.xy + t * vec2(1.0, 0.4), s.z)) + texture(uShadowMap, vec3(s.xy + t * vec2(-0.4, 1.0), s.z)));
+}
 float lampShadow(vec3 p, vec3 toLamp) {
   vec4 c = uShadowVP * vec4(p + normalize(toLamp) * SHADOW_LIFT, 1.0);
   vec3 s = c.xyz / c.w * 0.5 + 0.5;
-  if (uShadowOn < 0.5 || c.w <= 0.0 || max(abs(s.x - 0.5), abs(s.y - 0.5)) > 0.5) return 1.0;
-  vec2 t = SHADOW_SOFT / vec2(textureSize(uShadowMap, 0));
-  float lit = texture(uShadowMap, vec3(s.xy + t * vec2(-1.0, -0.4), s.z)) + texture(uShadowMap, vec3(s.xy + t * vec2(0.4, -1.0), s.z))
-    + texture(uShadowMap, vec3(s.xy + t * vec2(1.0, 0.4), s.z)) + texture(uShadowMap, vec3(s.xy + t * vec2(-0.4, 1.0), s.z));
-  return mix(SHADOW_KEEP, 1.0, lit * 0.25);
+  if (uShadowOn.x <= 0.0 || c.w <= 0.0 || max(abs(s.x - 0.5), abs(s.y - 0.5)) > 0.5) return 1.0;
+  return mix(1.0, mix(SHADOW_KEEP, 1.0, shadowTaps(s)), uShadowOn.x);
 }
+float sunShadow(vec3 p) {
+  if (uShadowOn.y <= 0.0) return 1.0;
+  vec3 s = (uShadowVP * vec4(p + uMoonDir * SUN_LIFT, 1.0)).xyz * 0.5 + 0.5;
+  float edge = max(abs(s.x - 0.5), abs(s.y - 0.5));
+  if (edge > SUN_EDGE.y || s.z > 1.0) return 1.0;
+  return mix(1.0, shadowTaps(s), uShadowOn.y * (1.0 - smoothstep(SUN_EDGE.x, SUN_EDGE.y, edge)));
+}
+// The key on a face with normal n at p: the moon's soft light at night, the sun's with its shadow by day.
+vec3 keyLight(vec3 p, vec3 n, float wrap) { return neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), wrap) * sunShadow(p); }
 vec3 lampLightsGain(vec3 p, vec3 n, float carried) {
   float c = 0.0;
   for (int i = 0; i < 6; i++) {
@@ -126,7 +151,7 @@ vec3 lampLightsGain(vec3 p, vec3 n, float carried) {
     if (i == 0) l *= (1.0 - LAMP_FOOT_DARK * (1.0 - smoothstep(LAMP_FOOT.y, LAMP_FOOT.x, length(dl.xz))) * step(0.3, dl.y)) * lampShadow(p, dl);
     c += l;
   }
-  return uLampColor * c;
+  return uLampColor * c * uDay.y;
 }
 vec3 lampLights(vec3 p, vec3 n) { return lampLightsGain(p, n, 1.0); }
 
@@ -148,11 +173,11 @@ vec3 inviteLights(vec3 p, vec3 n) {
 
 // Free roam: the visitor's lantern is the key light and the night closes in away from the visitor. The moon and the fill
 // keep NIGHT of their light past NIGHT_REACH.y metres (darker and bluer, never black: the haze, the far air and the
-// paper floor still lift it), all of it within NIGHT_REACH.x. 0 on the rail.
+// paper floor still lift it), all of it within NIGHT_REACH.x. 0 on the rail and by day.
 const vec2 NIGHT_REACH = vec2(1.5, 7.0);
 const vec3 NIGHT = vec3(0.33, 0.38, 0.55);
 vec3 nightOf(vec3 p) {
-  return mix(vec3(1.0), NIGHT, uEye.z * smoothstep(NIGHT_REACH.x, NIGHT_REACH.y, length(p.xz - uVisitor)));
+  return mix(vec3(1.0), NIGHT, uEye.z * (1.0 - uDay.x) * smoothstep(NIGHT_REACH.x, NIGHT_REACH.y, length(p.xz - uVisitor)));
 }
 
 // The near-foreground fill under free roam: full nearer than FILL_NEAR metres from the lens, gone past FILL_FAR.
@@ -162,7 +187,8 @@ float fillAt(float depth) { return uFill * (1.0 - smoothstep(FILL_DEPTH.x, FILL_
 // Air between the layers, banded by depth against the hand's plane (+ behind it, - in front): far layers sit lifted
 // and cooler in the dusk air, near layers darker and richer. `back` is the fall-off behind a focused flower (0..1).
 // Under free roam the hand's plane is the visitor, so the whole bed behind the figure counts as far: there the far band
-// starts later and mixes less air (uEye.z), so the beds behind the visitor keep their colour.
+// starts later and mixes less air (uEye.z), so the beds behind the visitor keep their colour. By day the far air is the
+// day's own pale haze, not the night slate.
 const vec3 FAR_AIR = vec3(0.027, 0.030, 0.058);    // #2d3044, a cool slate, not violet
 const vec3 FAR_HUE = vec3(0.92, 0.99, 1.15);         // the cool lean of far paper at its own value
 const float FAR_AIR_MIX = 0.42;
@@ -170,6 +196,7 @@ const float ROAM_FAR_AIR_MIX = 0.18;
 const vec2 FAR_BAND = vec2(0.5, 3.0);                // metres behind the hand's plane where the far air starts and is full
 const vec2 ROAM_FAR_BAND = vec2(3.0, 8.0);
 const float FAR_COOL = 0.45;
+const float DAY_FAR_WARM = 0.7;                     // by day far paper keeps most of its own colour
 const float NEAR_DARK = 0.6;
 const float ROAM_NEAR_DARK = 0.85;                   // free roam walks on that near ground: it stays readable
 const float NEAR_RICH = 0.15;
@@ -178,8 +205,8 @@ vec3 layerAir(vec3 c, float rel, float back) {
   vec2 band = mix(FAR_BAND, ROAM_FAR_BAND, uEye.z);
   float far = smoothstep(band.x, band.y, rel);
   float near = smoothstep(0.3, 1.5, -rel);
-  c = mix(c, luma(c) * FAR_HUE, far * FAR_COOL);
-  c = mix(c, FAR_AIR, far * mix(FAR_AIR_MIX, ROAM_FAR_AIR_MIX, uEye.z));
+  c = mix(c, luma(c) * FAR_HUE, far * FAR_COOL * (1.0 - DAY_FAR_WARM * uDay.x));
+  c = mix(c, mix(FAR_AIR, neutralise(uDayAir), uDay.x), far * mix(FAR_AIR_MIX, ROAM_FAR_AIR_MIX, uEye.z));
   c *= mix(1.0, mix(NEAR_DARK, ROAM_NEAR_DARK, uEye.z), near);
   c = max(mix(vec3(luma(c)), c, 1.0 + NEAR_RICH * near), 0.0);
   return c * (1.0 - FOCUS_DARK * back);
