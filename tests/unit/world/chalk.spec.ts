@@ -63,7 +63,38 @@ test('the hand inks inside its mark, the same way every time, stroke by stroke i
   expect(inkText('cat', 5).strokes.length, 'c, a (two), t (two)').toBe(5);
 });
 
-test('chalk is only for the cat and the grotto room; the cat note lies straight before the bench, its arrow up at the cat', () => {
+test('a thin hand: strokes about 0.85 of a grid unit, thinned by light pressure, never thicker', () => {
+  const unit = 6;
+  for (const s of inkText('un gol hace', unit).strokes) {
+    for (let o = 0; o < s.length; o += INK_STRIDE) {
+      expect(s[o + 2]!).toBeLessThanOrEqual(unit * 0.85 + 1e-6);
+      expect(s[o + 2]!).toBeGreaterThan(unit * 0.85 * 0.6);
+    }
+  }
+});
+
+test('the looping arrow: inked after the word, a long stroke that loops back over itself and ends at its tip under the word', () => {
+  const unit = 6;
+  const plain = inkText('cat', unit);
+  const left = inkText('cat', unit, -1);
+  const right = inkText('cat', unit, 1);
+  expect(plain.tip).toBeNull();
+  expect(left.strokes.length, 'the word, the shaft and two barbs').toBe(plain.strokes.length + 3);
+  const shaft = left.strokes[plain.strokes.length]!;
+  const xs: number[] = [];
+  for (let o = 0; o < shaft.length; o += INK_STRIDE) xs.push(shaft[o]!);
+  let turns = 0;
+  for (let i = 2; i < xs.length; i++) if (Math.sign(xs[i]! - xs[i - 1]!) !== Math.sign(xs[i - 1]! - xs[i - 2]!) && Math.abs(xs[i]! - xs[i - 1]!) > 0.05) turns++;
+  expect(turns, 'it runs back on itself round the loop').toBeGreaterThanOrEqual(2);
+  const [tx, ty] = left.tip!;
+  expect(tx, 'the tip lies right of the word (-1)').toBeGreaterThan(left.w * 0.6);
+  expect(ty, 'and well below it').toBeGreaterThan(left.h * 0.8);
+  expect(right.tip![0], 'or left of it (1)').toBeLessThan(right.w * 0.4);
+  const last = left.strokes[left.strokes.length - 1]!;
+  expect(Math.hypot(last[0]! - tx, last[1]! - ty), 'the last barb starts at the tip').toBeLessThan(unit * 0.8);
+});
+
+test('chalk is only for the cat and the grotto room; the cat note floats upright just over the cat, its arrow on its back', () => {
   for (const lang of ['en', 'es'] as const) {
     for (const device of ['keys', 'touch'] as const) {
       const all = marks(lang, device);
@@ -74,11 +105,15 @@ test('chalk is only for the cat and the grotto room; the cat note lies straight 
   }
   const cat = scenes.rosaleda.slots.find((s) => s.id === 'cat')!;
   const note = marks('en').find((m) => m.id === 'cat')!;
-  expect(note.text).toBe('↑\ncat');
-  expect(marks('es').find((m) => m.id === 'cat')!.text).toBe('↑\ngato');
-  expect(note.surface).toBe('ground');
-  expect(Math.abs(note.x - cat.x), 'straight before the cat, so the up arrow points at it').toBeLessThan(0.4);
-  expect(note.z - cat.z, 'past the path, toward the lens').toBeGreaterThan(1.8);
+  expect(note.text).toBe('cat');
+  expect(marks('es').find((m) => m.id === 'cat')!.text).toBe('gato');
+  expect(note.surface).toBe('air');
+  expect(note.arrow).not.toBe(0);
+  expect(Math.abs(note.x - cat.x), 'the tip over the cat').toBeLessThan(0.2);
+  expect(note.y - cat.y, 'just over its back').toBeGreaterThan(0.1);
+  expect(note.y - cat.y).toBeLessThan(0.6);
+  expect(Math.abs(note.z - cat.z), "on the cat's own side of the path, a hair in front of its card").toBeLessThan(0.15);
+  expect(note.z).toBeGreaterThan(cat.z);
   expect(marks('en', 'touch').find((m) => m.id === 'cat'), 'the same on every device').toEqual(note);
 });
 

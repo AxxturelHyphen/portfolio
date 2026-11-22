@@ -16,13 +16,14 @@ import fragmentBody from './shaders/chalk.frag.glsl?raw';
  * Chalk on the gl side: every mark's strokes (world/chalk.hand.ts) drawn into one canvas atlas when the marks are built
  * or the language changes, never per frame (r: the chalk laid down, g: when, times r, for the chalking on; the hand's
  * pressure is in the stroke's width), and every mark a decal on the ground (a grid that follows the terrain, a little
- * above it) or bent over the grotto's rock, all merged into one mesh: one draw for all the chalk. Depth tested against
- * what the walls, the solids and the cards wrote, writing none, nudged toward the lens so it never fights the surface
- * it lies on. Every quad faces up (or out of the rock), so one side is drawn in one pass.
+ * above it), bent over the grotto's rock or standing upright in the air (one quad placed by its arrow's tip), all
+ * merged into one mesh: one draw for all the chalk. Depth tested against what the walls, the solids and the cards
+ * wrote, writing none, nudged toward the lens so it never fights the surface it lies on. Every quad faces up, out of
+ * the rock or south, so one side is drawn in one pass.
  */
 
 /** The atlas page, the hand's size on it (px per grid unit) and the gap between marks. */
-const ATLAS = { w: 1024, h: 512, unit: 5, gap: 8 } as const;
+const ATLAS = { w: 1024, h: 512, unit: 6, gap: 8 } as const;
 /** Ground grid cell (m) and lift over the soil (m): above the path slabs, which stand up to 4 cm proud of it. */
 const CELL_M = 0.3;
 const LIFT_M = 0.045;
@@ -69,14 +70,17 @@ function drawInked(ctx: CanvasRenderingContext2D, ink: Inked, at: ChalkRect): vo
 export interface ChalkMesh {
   readonly mesh: Mesh;
   readonly texture: CanvasTexture;
-  /** Per mark: x how far it has chalked itself on, y its opacity. Written in place, read by the shader. */
+  /**
+   * Per mark: x how far it has chalked itself on, y its opacity, z how far it is rubbed out (the smear), w its float
+   * clock (s; 0 holds a floating mark still). Written in place, read by the shader.
+   */
   readonly state: readonly Vector4[];
   /** Draws these marks into the atlas and rebuilds the mesh (load and a language switch only). */
   build(marks: readonly ChalkMark[]): void;
 }
 
-/** One quad grid per mark: ground marks follow the terrain, rock marks bend over the grotto's dome. */
-function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | null)[], unit: number): BufferGeometry {
+/** One quad grid per mark: ground marks follow the terrain, rock marks bend over the grotto's dome, air marks stand upright. */
+function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | null)[], inks: readonly Inked[], unit: number): BufferGeometry {
   const pos: number[] = [];
   const nrm: number[] = [];
   const uv: number[] = [];
@@ -90,8 +94,13 @@ function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | nu
     const w = r.w * metres;
     const h = r.h * metres;
     const ground = m.surface === 'ground';
-    const nx = Math.max(1, Math.ceil(w / CELL_M));
-    const ny = Math.max(1, Math.ceil(h / CELL_M));
+    const air = m.surface === 'air';
+    const nx = air ? 1 : Math.max(1, Math.ceil(w / CELL_M));
+    const ny = air ? 1 : Math.max(1, Math.ceil(h / CELL_M));
+    /** An air mark hangs by its arrow's tip at (m.x, m.y): the quad's left and top edges (m). */
+    const tip = inks[i]?.tip ?? [r.w / 2, r.h / 2];
+    const left = m.x - tip[0] * metres;
+    const top = m.y + tip[1] * metres;
     const first = pos.length / 3;
     for (let j = 0; j <= ny; j++) {
       for (let k = 0; k <= nx; k++) {
@@ -99,7 +108,10 @@ function geometryOf(marks: readonly ChalkMark[], rects: readonly (ChalkRect | nu
         const v = j / ny;
         const along = (u - 0.5) * w;
         const up = (v - 0.5) * h;
-        if (ground) {
+        if (air) {
+          pos.push(left + u * w, top - (1 - v) * h, m.z);
+          nrm.push(0, 0, 1);
+        } else if (ground) {
           const x = m.x + along;
           const z = m.z - up;
           pos.push(x, terrainY(x, z) + LIFT_M, z);
@@ -169,7 +181,7 @@ export function createChalkMesh(order: number, anisotropy: number): ChalkMesh {
     state,
     build(marks) {
       const list = marks.slice(0, MAX_MARKS);
-      const inks = list.map((m) => inkText(m.text, ATLAS.unit));
+      const inks = list.map((m) => inkText(m.text, ATLAS.unit, m.arrow ?? 0));
       const rects = packMarks(inks, ATLAS.w, ATLAS.h, ATLAS.gap);
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, ATLAS.w, ATLAS.h);
@@ -181,7 +193,7 @@ export function createChalkMesh(order: number, anisotropy: number): ChalkMesh {
       });
       texture.needsUpdate = true;
       mesh.geometry.dispose();
-      mesh.geometry = geometryOf(list, rects, ATLAS.unit);
+      mesh.geometry = geometryOf(list, rects, inks, ATLAS.unit);
     },
   };
 }

@@ -1,3 +1,4 @@
+import { arrowAfter } from './chalk.arrow.ts';
 import { GRID, SPACING, glyphOf, type GlyphStroke } from './chalk.glyphs.ts';
 import { rng } from './groundplan.ts';
 
@@ -6,8 +7,8 @@ import { rng } from './groundplan.ts';
  * and turns every stroke into a wobbly polyline in pixels, as a hand would chalk it. Each letter sits a little off its
  * line, size and slant; every point is jittered, curves are rounded off, the line wanders slowly across its own path
  * and the pressure comes and goes along it. The time of each point
- * (0 to 1 over the whole mark, stroke by stroke) lets the mark chalk itself on. Seeded, so a mark is the same on every
- * visit and in every still.
+ * (0 to 1 over the whole mark, stroke by stroke) lets the mark chalk itself on. A one-line mark may end in the cat's
+ * looping arrow (world/chalk.arrow.ts), inked last. Seeded, so a mark is the same on every visit and in every still.
  */
 
 /** Floats per point of an inked stroke: x, y (px, y down), width (px), pressure (0..1), time (0..1). */
@@ -18,6 +19,8 @@ export interface Inked {
   readonly strokes: readonly Float32Array[];
   readonly w: number;
   readonly h: number;
+  /** The arrow's tip (px), or null without one. */
+  readonly tip: readonly [number, number] | null;
 }
 
 /** The hand's habits, in grid units: line height, point jitter, a letter's size, rise and slant, the line's wander. */
@@ -27,12 +30,14 @@ const SCALE = 0.06;
 const RISE = 0.35;
 const SLANT = 0.06;
 const WANDER = 0.14;
-/** Stroke width as a share of a grid unit, and how much light pressure thins it. */
-const WIDTH = 1.5;
+/** Stroke width as a share of a grid unit (a thin stick), and how much light pressure thins it. */
+const WIDTH = 0.85;
 const THIN = 0.35;
 /** Pixels between resampled points; the pause between strokes, in points' time. */
 const STEP_PX = 1.6;
 const LIFT = 6;
+/** The arrow's point jitter (grid units): its points lie far apart, a little less than a letter's. */
+const ARROW_JITTER = 0.12;
 
 /** A stable seed from a mark's text. */
 export function seedOf(text: string): number {
@@ -114,8 +119,11 @@ function ink(pts: number[], unit: number, rnd: () => number): { xy: number[]; p:
   return { xy, p };
 }
 
-/** Lays out and inks a mark's text at `unit` px per grid unit. Lines apart by "\n", centred on each other. */
-export function inkText(text: string, unit: number): Inked {
+/**
+ * Lays out and inks a mark's text at `unit` px per grid unit. Lines apart by "\n", centred on each other. `arrow` -1 or
+ * 1 adds the looping arrow after a one-line text, its tip to the word's right (-1) or left (1).
+ */
+export function inkText(text: string, unit: number, arrow: -1 | 0 | 1 = 0): Inked {
   const rnd = rng(seedOf(text));
   const lines = text.split('\n');
   const placedLines = lines.map((line, row) => {
@@ -128,6 +136,10 @@ export function inkText(text: string, unit: number): Inked {
   for (const l of placedLines) {
     const dx = (widest - l.w) / 2;
     for (const s of l.out) placed.push({ curve: s.curve, pts: s.pts.map((v, i) => (i % 2 === 0 ? v + dx : v)) });
+  }
+  const swoop = arrow === 0 ? null : arrowAfter(widest, arrow);
+  if (swoop !== null) {
+    for (const s of swoop.strokes) placed.push({ curve: s.curve, pts: s.pts.map((v) => v + (rnd() * 2 - 1) * ARROW_JITTER) });
   }
   let minX = Infinity;
   let maxX = -Infinity;
@@ -165,5 +177,6 @@ export function inkText(text: string, unit: number): Inked {
     clock += lengths[si]! + LIFT;
     return out;
   });
-  return { strokes, w: Math.ceil((maxX - minX + 2 * pad) * unit), h: Math.ceil((maxY - minY + 2 * pad) * unit) };
+  const tip = swoop === null ? null : ([(swoop.tip[0] - minX + pad) * unit, (maxY - swoop.tip[1] + pad) * unit] as const);
+  return { strokes, w: Math.ceil((maxX - minX + 2 * pad) * unit), h: Math.ceil((maxY - minY + 2 * pad) * unit), tip };
 }
