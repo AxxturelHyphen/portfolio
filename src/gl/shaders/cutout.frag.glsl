@@ -39,7 +39,7 @@ const float ROAM_HAZE_START = 7.0;                   // free roam sees the wall 
 const float DECAL_SOFT_BIAS = 3.5;                    // alpha from about mip 3: 30 to 70 px soft
 const float DECAL_COVERAGE = 3.0;                     // sparse plants still cast a readable patch
 const float CONTACT = 0.55;                           // the darker line where the paper meets the ground
-const vec2 FOOT_AO = vec2(0.4, 0.14);                 // free roam: occlusion round the foot, depth and reach (share of the decal)
+const vec3 FOOT_AO = vec3(0.75, 0.28, 0.7);            // free roam: occlusion round the foot, depth, reach (share of the decal), the soft patch across the plant's width
 const float EDGE_LIGHT = 0.55;
 const float EDGE_DARK = 0.38;
 const vec3 PAPER_RIM = vec3(0.815, 0.716, 0.597);    // #e9dccb pale paper edge, linear
@@ -226,7 +226,9 @@ vec4 decal() {
   float a = 0.25 * (rectAlpha(vUV + vec2(-spread, 0.0), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(spread, 0.0), DECAL_SOFT_BIAS)
     + rectAlpha(vUV + vec2(0.0, -spread), DECAL_SOFT_BIAS) + rectAlpha(vUV + vec2(0.0, spread), DECAL_SOFT_BIAS));
   float foot = rectAlpha(vec2(vUV.x, vRect.y + size.y * 0.02), 1.0 + uEye.z);
-  float contact = foot * (CONTACT * (1.0 - smoothstep(0.0, 0.06, abs(vDecal))) + FOOT_AO.x * uEye.z * exp(-sq(vDecal / FOOT_AO.y)));
+  float mid = (vUV.x - vRect.x) / max(size.x, 1e-5) * 2.0 - 1.0;
+  float under = max(foot, FOOT_AO.z * sat(1.0 - mid * mid));
+  float contact = foot * CONTACT * (1.0 - smoothstep(0.0, 0.06, abs(vDecal))) + under * FOOT_AO.x * uEye.z * exp(-sq(vDecal / FOOT_AO.y));
   float op = (uShadowDir.w * sat(a * DECAL_COVERAGE) * pow(1.0 - vDecal, 1.4) + contact) * vTint.a * uReveal;
   return vec4(neutralise(uShadowColor) * 0.5 * op, op);
 }
