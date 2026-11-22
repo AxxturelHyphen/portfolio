@@ -17,7 +17,7 @@ export function fitPixels(cssW: number, cssH: number, dpr: number, pixelCap: num
 }
 
 /**
- * The scene target: allocated once per resize at dprMax under pixelCap. DPR changes and the panel scale only move the
+ * The scene target: allocated once per resize at the display's ratio, up to dprMax and under pixelCap. DPR changes and the panel scale only move the
  * viewport sub-rect (`setScale`), never reallocate. Colour is SRGB8_ALPHA8: shaders write linear, blending happens in
  * linear, and the film pass samples linear values back (it must encode to sRGB for the canvas). A depth buffer only
  * under free roam (`depth`): cutouts keep their paint order but write depth, so actors that move between them (the

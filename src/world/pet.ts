@@ -4,10 +4,10 @@ import { DEG } from './layout.ts';
 
 /**
  * A pet (a slot of kind 'pet', the Rosaleda cat): one cutout of its bed batch that moves by transforms of its own quad
- * only, on the 12 fps clock. Activated, it wakes: a squash, a long stretch, its head side turned toward the visitor
+ * only, every frame (on the 12 fps step under reduced motion). Activated, it wakes: a squash, a long stretch, its head side turned toward the visitor
  * (the card turns over when the visitor stands on its tail side, else the head lifts) and a tail-flick wobble. With a
  * visitor about it then hops down in front of its bench (an arc, a squash on landing), trots beside the visitor for
- * LIFE.trotS (a stepped bob, the card turned to face its way, never past the bed's edge and never in front of the
+ * LIFE.trotS (a two-height bob, the card turned to face its way, never past the bed's edge and never in front of the
  * visitor), trots back, hops up and curls to sleep. A visitor walking up within PET.nearM twitches its ears once (a
  * small lift), again only after walking away past PET.rearmM. Reduced motion keeps the wake alone (no flick, no hop);
  * frozen time keeps it asleep. Its proxy's world point moves with it. Nothing allocates per frame.
