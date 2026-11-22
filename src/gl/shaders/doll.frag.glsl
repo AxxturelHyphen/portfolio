@@ -65,8 +65,8 @@ void main() {
     albedo *= groove * (0.3 + 0.7 * hole) * (0.92 + 0.08 * valueNoise(vWorld.xy * 400.0));
   }
   vec3 night = nightOf(vWorld);
-  vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5) * (1.0 + 0.6 * fillAt(vDepth.x));
-  vec3 key = neutralise(uMoonColor) * wrapLight(dot(n, uMoonDir), 0.4);
+  vec3 ambient = skyFill(n) * AMBIENT_GAIN * (1.0 + 0.6 * fillAt(vDepth.x));
+  vec3 key = keyLight(vWorld, n, 0.4);
   vec3 rim = uRimColor * sq(max(dot(n, uMoonBack), 0.0)) * 2.0;
   vec3 hand = handLights(vWorld, n) + lampLightsGain(vWorld, n, CARRIED) + inviteLights(vWorld, n);
   vec3 lit = albedo * (ambient + key + rim) * night + keyLit(albedo, hand);
