@@ -31,7 +31,7 @@ const RISE = 0.35;
 const SLANT = 0.06;
 const WANDER = 0.14;
 /** Stroke width as a share of a grid unit (a thin stick), and how much light pressure thins it. */
-const WIDTH = 0.85;
+const WIDTH = 0.68;
 const THIN = 0.35;
 /** Pixels between resampled points; the pause between strokes, in points' time. */
 const STEP_PX = 1.6;

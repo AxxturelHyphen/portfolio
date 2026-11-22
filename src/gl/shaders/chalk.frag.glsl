@@ -34,6 +34,7 @@ const float NIB = 0.015;
 // The under-stroke: how much coarser its mip, its strength and its colour (linear).
 const float UNDER_BIAS = 2.2;
 const float UNDER = 0.45;
+const float UNDER_DAY = 1.8;                    // by day the dark under-stroke carries the chalk over pale stone
 const vec3 UNDER_TINT = vec3(0.02, 0.018, 0.016);
 // The boil: steps per second and how far the line shifts (texels); the smear's reach (texels).
 const float BOIL_FPS = 8.0;
@@ -57,7 +58,7 @@ void main() {
   float dust = cover * smoothstep(SKIP.x, SKIP.y, fine * 0.6 + coarse * 0.4) * mix(0.7, 1.0, coarse);
   float a = dust * drawnAt(t) * vMark.y * OPACITY;
   vec4 halo = texture(uChalk, uv, UNDER_BIAS);
-  float under = min(1.0, halo.r * GAIN * 2.0) * drawnAt(halo) * vMark.y * (1.0 - vMark.z) * UNDER;
+  float under = min(1.0, halo.r * GAIN * 2.0) * drawnAt(halo) * vMark.y * (1.0 - vMark.z) * UNDER * mix(1.0, UNDER_DAY, uDay.x);
   if (a + under < 0.004) discard;
 
   vec3 n = normalize(vNormal);
