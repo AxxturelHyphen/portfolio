@@ -20,7 +20,7 @@ export const coarsePointer = (): boolean => typeof matchMedia === 'function' && 
 /** Tier table (spec sections 9 and 10; cook/ARCH.md section 4 budget map). Budgets are the section 10 gates. */
 export const TIERS: Readonly<Record<Tier, TierConfig>> = {
   high: { tier: 'high', dprMin: 1, dprMax: 1.5, pixelCap: 3_200_000, halation: true, filmScale: 1, maxLayers: 8, fireflies: 64, atlas: 'hi', texBudgetMB: 128, drawBudget: 80 },
-  mid: { tier: 'mid', dprMin: 0.75, dprMax: 1.25, pixelCap: 2_100_000, halation: true, filmScale: 1, maxLayers: 6, fireflies: 40, atlas: 'hi', texBudgetMB: 96, drawBudget: 60 },
+  mid: { tier: 'mid', dprMin: 0.75, dprMax: 1.5, pixelCap: 2_100_000, halation: true, filmScale: 1, maxLayers: 6, fireflies: 40, atlas: 'hi', texBudgetMB: 96, drawBudget: 60 },
   low: { tier: 'low', dprMin: 0.75, dprMax: 1, pixelCap: 1_000_000, halation: false, filmScale: 0.5, maxLayers: 4, fireflies: 16, atlas: 'lo', texBudgetMB: 48, drawBudget: 40 },
 };
 const ORDER: readonly Tier[] = ['low', 'mid', 'high'];

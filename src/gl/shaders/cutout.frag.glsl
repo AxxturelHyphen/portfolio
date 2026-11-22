@@ -164,6 +164,7 @@ float stoneHeight(vec2 uv, float mean) { return smoothstep(RELIEF_LUMA.x, RELIEF
 const float BOIL_FPS = 12.0;
 const float BOIL_POSES = 3.0;
 const float BOIL_PX = 1.5;
+const float ROAM_BOIL = 0.5;                          // free roam: half the wobble, held on one pose so nothing crawls
 const float BOIL_TEXELS = 32.0;                       // texels per wobble cell
 const float BOIL_BAND_BIAS = 3.0;                     // the band near the edge that moves, from about mip 3 of the alpha
 // A pencil contour about a pixel wide just inside the cut, of varying pressure and broken in places. Its gaps hold
@@ -175,13 +176,13 @@ const float INK_PRESSURE = 0.45;                      // the lightest stroke as 
 const float INK = 0.75;
 const vec3 GRAPHITE = vec3(0.011, 0.010, 0.012);      // #1b1a1c soft pencil, linear
 
-float boilPose() { return mod(floor(uTime * BOIL_FPS), BOIL_POSES) * uBoil.y; }
+float boilPose() { return mod(floor(uTime * BOIL_FPS), BOIL_POSES) * uBoil.y * (1.0 - uEye.z); }
 
 vec2 boilOffset(float pose) {
   vec2 p = vUV * vec2(textureSize(uColor, 0)) / BOIL_TEXELS + pose * vec2(7.31, 3.17);
   vec2 wobble = vec2(valueNoise(p), valueNoise(p + 19.7)) * 2.0 - 1.0;
   float band = 1.0 - sq(2.0 * texture(uColor, vUV, BOIL_BAND_BIAS).a - 1.0);
-  return wobble * BOIL_PX * fwidth(vUV) * band * uBoil.x;
+  return wobble * BOIL_PX * mix(1.0, ROAM_BOIL, uEye.z) * fwidth(vUV) * band * uBoil.x;
 }
 
 // How much pencil this pixel takes: `a` is the plate's alpha before the rect clip, so tiles never ink their seams.

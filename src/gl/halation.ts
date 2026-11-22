@@ -6,6 +6,8 @@ import blurShader from './shaders/halation.blur.frag.glsl?raw';
 
 /** Source threshold: luma 0.72 in display terms (cook/SHOTS.md B), about 0.48 in the linear scene target. */
 const THRESHOLD_LINEAR = 0.48;
+/** Free roam: only the lamp flames and their brightest glass pass, so the glow stays at the lamps. */
+const ROAM_THRESHOLD_LINEAR = 0.7;
 /** RGBA half float: 8 bytes per pixel. */
 const BYTES_PER_PX = 8;
 
@@ -42,7 +44,7 @@ function target(): WebGLRenderTarget {
   });
 }
 
-export function createHalation(renderer: WebGLRenderer, geometry: BufferGeometry, camera: Camera): Halation {
+export function createHalation(renderer: WebGLRenderer, geometry: BufferGeometry, camera: Camera, roam = false): Halation {
   const a = target();
   const b = target();
   let w = 0;
@@ -50,7 +52,7 @@ export function createHalation(renderer: WebGLRenderer, geometry: BufferGeometry
 
   const down = new RawShaderMaterial({
     glslVersion: GLSL3, vertexShader, fragmentShader: downShader, depthTest: false, depthWrite: false,
-    uniforms: { uScene: { value: null }, uScale: { value: 1 }, uThreshold: { value: THRESHOLD_LINEAR } },
+    uniforms: { uScene: { value: null }, uScale: { value: 1 }, uThreshold: { value: roam ? ROAM_THRESHOLD_LINEAR : THRESHOLD_LINEAR } },
   });
   const blur = new RawShaderMaterial({
     glslVersion: GLSL3, vertexShader, fragmentShader: blurShader, depthTest: false, depthWrite: false,

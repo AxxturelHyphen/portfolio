@@ -81,7 +81,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
   const pond = createPond();
   scene.add(sky.mesh, ground.mesh, pond.mesh, fireflies.mesh);
   const target = createSceneTarget(depth);
-  const film = createFilmPass(renderer, quality);
+  const film = createFilmPass(renderer, quality, depth);
   const shadow = createLanternShadow(renderer, scene, camera);
 
   const size: PixelSize = { w: 0, h: 0 };
@@ -122,11 +122,18 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
     loop.resume('context-lost');
   });
 
+  /**
+   * The canvas and scene target match the display's own pixels up to the tier's dprMax: a buffer above the display ratio
+   * was rendered at a fraction of it and resampled twice (up by the film pass, down by the compositor), softening every
+   * edge. The scene sub-rect then fills the target 1:1 at full DPR and only shrinks when the adaptive DPR steps down.
+   */
+  const baseDpr = (): number => Math.min(dprMax, Math.max(quality.cfg.dprMin, window.devicePixelRatio || 1));
+
   function applySize(): void {
     dirty = false;
     const prevW = size.w;
     const prevH = size.h;
-    fitPixels(cssW, cssH, dprMax, pixelCap, size);
+    fitPixels(cssW, cssH, baseDpr(), pixelCap, size);
     if (size.w !== prevW || size.h !== prevH) renderer.setSize(size.w, size.h, false);
     target.resize(size.w, size.h);
     film.resize(size.w, size.h, quality.cfg.pixelCap);
@@ -151,7 +158,7 @@ export function createGfx(canvas: HTMLCanvasElement, quality: Quality, loop: Loo
 
   function renderScene(c: Clock): void {
     if (dirty) applySize();
-    target.setScale(quality.scale);
+    target.setScale((quality.scale * dprMax) / baseDpr());
     film.uniforms.uScale.value = target.scale;
     sharedUniforms.uTime.value = c.t;
     fireflies.update(c);

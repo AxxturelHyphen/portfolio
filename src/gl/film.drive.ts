@@ -12,8 +12,10 @@ export interface FilmExtras { uScratch: { value: Vector3 }; uHalGain: { value: n
 /** Std of the smoothstep-interpolated knot noise, used to turn an rms target into an amplitude. */
 const KNOT_NOISE_STD = 0.45;
 const SEED_FPS = 24;
-/** Halation gain at rest (cook/SHOTS.md B: +0.17 at the edge over a mid ground). */
-export const HALATION_GAIN = 2.0;
+/** Halation gain at rest (cook/SHOTS.md B: +0.17 at the edge over a mid ground); free roam keeps a small glow at lamps. */
+const HALATION_GAIN = 2.0;
+const ROAM_HALATION_GAIN = 0.8;
+export const halationGain = (roam: boolean): number => (roam ? ROAM_HALATION_GAIN : HALATION_GAIN);
 /** A scratch, once the 6 s gap has passed, starts on a tick with this chance: about one every 9 s. */
 const SCRATCH_CHANCE = 1 / (3 * STEP_FPS);
 const SCRATCH_OPACITY = 0.32;
@@ -41,7 +43,12 @@ const clampAbs = (v: number, limit: number): number => (v > limit ? limit : v < 
 
 export interface FilmDrive { tick(c: Clock, reduced: boolean, exposure: number): void }
 
-export function createFilmDrive(u: FilmUniforms, x: FilmExtras): FilmDrive {
+/**
+ * `roam`: free roam runs the film still, as under reduced motion: no gate weave (a sub-pixel weave resamples, so
+ * softens, every frame), no flicker or scratch, grain held in place, so nothing crawls while the walker moves.
+ */
+export function createFilmDrive(u: FilmUniforms, x: FilmExtras, roam: boolean): FilmDrive {
+  const halGain = halationGain(roam);
   let lagged = 0;
   let lastNow = -1;
   let scratchTick = -1e9;
@@ -83,13 +90,14 @@ export function createFilmDrive(u: FilmUniforms, x: FilmExtras): FilmDrive {
     tick(c, reduced, exposure) {
       u.uTime.value = c.t;
       u.uSeed.value = Math.floor(c.t * SEED_FPS);
-      u.uStatic.value = reduced ? 1 : 0;
+      const still = reduced || roam;
+      u.uStatic.value = still ? 1 : 0;
       const weave = u.uWeave.value;
-      if (reduced) {
+      if (still) {
         weave.set(0, 0);
         u.uFlicker.value = exposure - 1;
         x.uScratch.value.y = 0;
-        x.uHalGain.value = HALATION_GAIN;
+        x.uHalGain.value = halGain;
         return;
       }
       const res = u.uRes.value;
@@ -104,7 +112,7 @@ export function createFilmDrive(u: FilmUniforms, x: FilmExtras): FilmDrive {
       const dt = lastNow < 0 ? 0 : Math.min(0.1, (c.now - lastNow) / 1000);
       lastNow = c.now;
       lagged += (flicker - lagged) * (dt > 0 ? 1 - Math.exp(-dt / FILM.halationLagS) : 1);
-      x.uHalGain.value = HALATION_GAIN * (1 + lagged * 2);
+      x.uHalGain.value = halGain * (1 + lagged * 2);
       scratch(c.t);
       breathe(c.t);
     },

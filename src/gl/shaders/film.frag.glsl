@@ -27,6 +27,9 @@ uniform float uFilmOn;
 uniform vec3 uScratch;     // x (0..1), opacity, wobble phase
 uniform float uHalGain;    // halation strength, trailing the flicker by 100 ms
 uniform vec3 uHighlight;   // warm highlight tint (#f3e6cf), display
+uniform float uFringe;     // red/blue fringe at the corners, px at 1080p
+uniform vec2 uGrainShape;  // grain cell in px at 1080p, std of the slow mottle
+uniform float uDarkPull;   // the lows pulled toward the black point: mortar and leaf shade read as dark ground
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -36,13 +39,10 @@ const vec3 HALATION_TINT = vec3(0.604, 0.114, 0.059);   // #cc5f45, linear
 const float HAL_COOL_SLOPE = 4.0;     // how fast a blue-leaning pixel (relative to its blue) counts as cool sky
 const float HAL_COOL_CUT = 0.9;       // share of the halation removed over the cool sky
 const float HAL_SKY_GAIN = 1.6;       // the blurred sky map counts as fully cool from about 60 %, right under the sky
-const float GRAIN_PX_1080 = 1.5;
 const float GRAIN_NORM = 1.0 / 0.105;     // measured std of the smoothed noise after the 1.5 px interpolation
 const float MOTTLE_PX_1080 = 14.0;
-const float MOTTLE_LEVELS = 1.1 / 255.0;
-const float FRINGE_PX_1080 = 0.8;
 const float SOFT_PX_1080 = 1.6;
-const float FRINGE_ONSET = 0.12;      // under a tenth of a pixel of fringe: one tap
+const float FRINGE_ONSET_PX = 0.096;  // under a tenth of a pixel of fringe: one tap
 const float SOFT_ONSET = 0.3;         // the lens stays sharp over the middle of the frame
 const float SHOULDER = 0.80;          // display value where highlights start to roll off
 const float WHITE = 0.955;            // shoulder asymptote: the moon core measures luma 236 to 240, nothing else gets near
@@ -59,7 +59,6 @@ const float VIVID_TO = 0.65;          // and where it is gone: the hero rose kee
 const vec3 DEEP = vec3(0.9, 0.9, 1.0);    // the hue the darks sink into: a cool neutral, stone recedes by value, not by hue
 const float DEEP_AMOUNT = 0.3;        // share of the deep hue in the lows; mids and highlights keep the plate hue
 const float DEEP_TOP = 0.32;          // display luma where the deep shadow hue has faded out
-const float DARK_PULL = 0.42;         // the lows pulled toward the black point: mortar and leaf shade read as dark ground
 const vec3 BAR_COLOR = vec3(0.090, 0.071, 0.055);
 const vec3 BAR_EDGE = vec3(0.545, 0.400, 0.227);
 const float GATE_JUMP = 0.004;
@@ -117,7 +116,7 @@ vec3 tint(vec3 c) {
   c = max(vec3(y) + (c - y) * mix(1.0, CHROMA, plain), 0.0);
   float low = 1.0 - smoothstep(0.0, DEEP_TOP, y);
   c = mix(c, y * DEEP / luma(DEEP), low * DEEP_AMOUNT * plain);
-  return c * (1.0 - DARK_PULL * low);
+  return c * (1.0 - uDarkPull * low);
 }
 
 vec2 clampUV(sampler2D tex, vec2 uv) {
@@ -138,8 +137,8 @@ vec3 lens(vec2 uv, float k1080) {
   float edge = dot(fromC, fromC) * 2.0;
   vec2 px = 1.0 / uRes;
   vec3 c = tap(uv);
-  if (edge > FRINGE_ONSET) {
-    vec2 fringe = normalize(fromC + 1e-5) * px * FRINGE_PX_1080 * k1080 * edge;
+  if (edge * uFringe > FRINGE_ONSET_PX) {
+    vec2 fringe = normalize(fromC + 1e-5) * px * uFringe * k1080 * edge;
     c = vec3(tap(uv + fringe).r, c.g, tap(uv - fringe).b);
   }
   float soft = uSoft * sat((edge - SOFT_ONSET) / (1.0 - SOFT_ONSET));
@@ -262,8 +261,8 @@ void main() {
 
   float l = luma(col);
   float weight = mix(0.3, 1.0, 4.0 * l * (1.0 - l));
-  float g = grainNoise(film / (GRAIN_PX_1080 * k1080), seed) * GRAIN_NORM * uGrain;
-  g += grainNoise(film / (MOTTLE_PX_1080 * k1080), seed / 4u + 977u) * GRAIN_NORM * MOTTLE_LEVELS;
+  float g = grainNoise(film / (uGrainShape.x * k1080), seed) * GRAIN_NORM * uGrain;
+  if (uGrainShape.y > 0.0) g += grainNoise(film / (MOTTLE_PX_1080 * k1080), seed / 4u + 977u) * GRAIN_NORM * uGrainShape.y;
   g *= weight;
   fragColor = vec4(col + g, 1.0);
 }
