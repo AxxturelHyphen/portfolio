@@ -63,6 +63,10 @@ const float ROAM_FLOOR = 0.014;
 const float ROAM_FLOOR_KNEE = 0.035;
 // Edges seen edge-on darken toward the pencil, so a block's outline reads drawn, as the iron's bars do.
 const vec3 GRAPHITE = vec3(0.011, 0.010, 0.012);
+// Free roam: the moon's edge on the wall's coping and the pier caps: the heights (m) it grows over, its linear value on a
+// top face and the share a side face of the coping keeps.
+const vec2 MOON_EDGE_Y = vec2(3.08, 3.14);
+const vec2 MOON_EDGE = vec2(0.055, 0.75);
 const vec2 GRAZE = vec2(0.05, 0.3);
 const float GRAZE_INK = 0.35;
 // The grotto's rock, drawn by hand: every facet its own tone of the stone (a cut-paper facet), thin darker strata
@@ -150,6 +154,9 @@ void main() {
   }
   vec3 lit = paperShoulder(albedo * (ambient + key + rim) * night + handLit + vGlow);
   lit *= 1.0 - FOOT_SHADE.y * uEye.z * (1.0 - smoothstep(0.0, FOOT_SHADE.x, vWorld.y));
+  float edge = (1.0 - rock) * (1.0 - path) * uEye.z * smoothstep(MOON_EDGE_Y.x, MOON_EDGE_Y.y, vWorld.y) * mix(MOON_EDGE.y, 1.0, smoothstep(0.6, 0.95, normalize(vNormal).y));
+  vec3 moon = neutralise(uMoonColor);
+  lit += moon / max(luma(moon), 1e-3) * MOON_EDGE.x * edge;
   vec3 hatched = hatch(lit, p * metres);
   if (rock > 0.5) lit = hatched;
 
