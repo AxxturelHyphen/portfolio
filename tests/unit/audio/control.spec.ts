@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { createSoundControl, FADE_IN_S, type ContextLike } from '../../../src/audio/control.ts';
 import type { SoundEngine } from '../../../src/audio/engine.ts';
 
-// The sound control (src/audio/control.ts): no context before a gesture, one context made inside the first gesture in
+// The sound control (src/audio/control.ts): no context before a gesture, one context made right after the first gesture in
 // the garden with sound on, a fade in on start; mute, the Herbario and a hidden tab fade out and suspend; coming back
 // resumes. The sound tag's own clicks are not gestures.
 
@@ -72,9 +72,11 @@ test('start: no context before a gesture; the first gesture in the garden makes 
   r.control.hear(18, 1);
   expect(r.made).toHaveLength(0);
   r.gesture('keydown');
+  expect(r.made, 'the context is made in a task of its own, not in the handler').toHaveLength(0);
+  r.gesture();
+  await settle();
   expect(r.made).toHaveLength(1);
   expect(r.made[0]?.state).toBe('running');
-  await settle();
   expect(r.fades.at(-1)).toEqual([1, FADE_IN_S]);
   expect(r.heard.at(-1), 'the engine hears where the visitor already stands').toEqual([18, 1]);
   r.gesture();
@@ -91,7 +93,14 @@ test('start: no context in the Herbario, with sound off, or from the sound tag i
   off.gesture();
   expect(off.made).toHaveLength(0);
   off.control.setOn(true);
+  await settle();
   expect(off.made, 'turning sound on is itself the gesture').toHaveLength(1);
+  const quick = rig(false);
+  quick.control.setGarden(true);
+  quick.control.setOn(true);
+  quick.control.setOn(false);
+  await settle();
+  expect(quick.made, 'sound turned off again before the context was made').toHaveLength(0);
 
   const tag = rig();
   tag.control.setGarden(true);

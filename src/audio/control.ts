@@ -3,7 +3,7 @@ import type { SoundEngine } from './engine.ts';
 /**
  * When the garden may sound (no Web Audio in here, so it is cheap to load and easy to test). Browsers let sound start
  * only from a gesture, so nothing is made before one: the first walk, tap or key in the garden, with sound on and the
- * tab shown, makes the one AudioContext inside that gesture and loads the engine, which fades in over FADE_IN_S.
+ * tab shown, makes the one AudioContext right after that gesture and loads the engine, which fades in over FADE_IN_S.
  * Turning sound off, leaving for the Herbario or hiding the tab fades the mix out and suspends the context, so it
  * costs nothing; coming back resumes it (a browser that wants a fresh gesture for that gets one from the next tap).
  * The sound tag's own clicks are not gestures here: the tag decides with SOUND_EVENT (audio/pref.ts).
@@ -46,11 +46,23 @@ export interface SoundControl {
 
 const GESTURES = ['pointerup', 'keydown'] as const;
 
+/**
+ * Making a context can hold the main thread for 10 to 15 ms (it waits on the audio device), so it runs in an idle task
+ * of its own soon after the gesture instead of inside the click or tap that asked for sound. The page has had its
+ * gesture by then, so the context starts running; a browser that wants the handler itself gets it from the next tap,
+ * which resumes the context.
+ */
+function later(fn: () => void): void {
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(fn, { timeout: 100 });
+  else setTimeout(fn, 0);
+}
+
 export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): SoundControl {
   let on = d.on;
   let garden = false;
   let duck = false;
   let ctx: C | null = null;
+  let making = false;
   let engine: SoundEngine | null = null;
   let purrWanted = false;
   let x = Number.NaN;
@@ -84,6 +96,16 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
   function start(): void {
     if (ctx !== null) {
       wake(ctx);
+      return;
+    }
+    if (making) return;
+    making = true;
+    later(make);
+  }
+
+  function make(): void {
+    if (!wanted()) {
+      making = false;
       return;
     }
     const c = d.makeContext();
