@@ -1,7 +1,7 @@
 import { expect, test } from '../helpers/jardin.ts';
 
-// The visitor is the paper figure from the first frame after ready: at a cold start and placed by URL at a bed
-// (?roam=1 with a stand, also under frozen time), never the lantern on its crook while its page is on its way.
+// The visitor is the burlap doll from the first frame after ready: at a cold start and placed by URL at a bed
+// (?roam=1 with a stand, also under frozen time), never the lantern on its crook for more than a step.
 
 const FIRST_SECOND_MS = 1000;
 

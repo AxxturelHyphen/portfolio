@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { APPROACH_FIT } from '../../../src/core/motion.ts';
 import { blendFraming, followPose, moonElevation, paramsFor, viewLimitsOf, type Framing, type FramingParams } from '../../../src/world/follow.ts';
-import { FIGURE } from '../../../src/world/puppet.ts';
+import { FIGURE } from '../../../src/world/doll.ts';
 import type { RigPose } from '../../../src/world/rail.ts';
 import { traceLayout } from '../world/rig.trace.ts';
 

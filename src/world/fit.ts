@@ -10,7 +10,7 @@
 import { APPROACH_FIT } from '../core/motion.ts';
 import { DEG } from './layout.ts';
 import { blendFraming, followPose, paramsFor, type Framing, type FramingParams, type ViewLimits } from './follow.ts';
-import { FIGURE } from './puppet.ts';
+import { FIGURE } from './doll.ts';
 import type { RigPose } from './rail.ts';
 
 /** The visitor's figure as the fit keeps it clear of the tag: half its body's width and its height to the hat (m). */

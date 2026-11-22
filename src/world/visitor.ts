@@ -1,15 +1,15 @@
 /**
  * The visitor (cook/ROAM_PLAN.md 3, P5; cook/FIGURE_BUILD.md 4). Until the roam atlas is in, the lantern they carry:
  * an archival lantern cutout hanging from the hook of a thin dark carrying crook planted at the visitor's ground point.
- * Once it is in, on a step, the paper figure of world/puppet.ts takes its place and carries the lantern by a short
- * handle in its fist. Either way the lantern swings like a pendulum, bobs on twos while walking and casts a soft shadow
- * straight below; its flame is lamp 0 (world/lamps.ts). One actor batch drawn after every cutout with a depth test,
- * so the visitor passes behind what stands nearer the lens, laid on a card facing the camera as it orbits. The crook
- * and handle are a solid patch tinted near black: no new program. Nothing is allocated per frame.
+ * Once the burlap doll of world/doll.ts is attached, on a step, it takes the crook's place and carries its own tin
+ * lantern, and the crook's batch is hidden. Either way the lantern swings like a pendulum across the screen; its flame
+ * is lamp 0 (world/lamps.ts). The crook's actor batch is drawn after every cutout with a depth test, laid on a card
+ * facing the camera as it orbits; the crook is a solid patch tinted near black. Nothing is allocated per frame.
  */
 import type { Clock, InstanceWriter, QuadParams, SpriteRect } from '../types.ts';
 import { ROAM, follow } from '../core/motion.ts';
-import { createGait, createPuppet, FIGURE, mirrorOf, SLOT, stepGait, type FigureRects, type Puppet } from './puppet.ts';
+import { FIGURE, type Doll } from './doll.ts';
+import { createGait, stepGait } from './puppet.gait.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
 
 export const LANTERN = {
@@ -38,17 +38,15 @@ export const CROOK = {
   tint: [0.07, 0.05, 0.035], leanPerMS: 0.05, maxLean: 0.16, leanTauS: 0.25, pondNear: 1.6, sideTauS: 0.3,
 } as const;
 /**
- * The lantern in the figure's hand, held at the hip: its bail from the fingers to the ring (m at figure scale 1: the
- * hand holds the ring, so hand and lantern read as one held object), its plate scale on landscape
- * and portrait screens, the ground velocity follower, the flame's ease from the planted crook to the hand when the
- * figure first appears, and how far the carrying arm follows the lantern's swing (a share of its angle, clamped in
- * degrees), taken on the figure's ticks. `carriedLight` is the share of the lantern's own light the actor batch takes,
+ * The lantern in the doll's hand: the ground velocity follower, the flame's ease from the planted crook to the hand
+ * when the doll first appears, and how far the carrying arm follows the lantern's swing (a share of its angle, clamped
+ * in degrees), taken on the doll's ticks. `carriedLight` is the share of the lantern's own light the actor batch takes,
  * so the figure sits level with the lit plants beside it; `glow` scales the lantern's own glow and its halo on that
  * batch (the batch divides every lamp's strength by it, so the light on the figure is unchanged): the glass burns
  * near white-yellow at the flame while the cap and foot, away from it, stay dark tin. `rim` is the batch's extra moon rim,
  * so the figure keeps a gentle edge of light against the night as the story's protagonist.
  */
-export const HELD = { handleM: 0.03, scaleWide: 0.7, scaleTall: 0.52, velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
+export const HELD = { velTauS: 0.08, flameTauS: 0.3, armFollow: 0.3, armMaxDeg: 4,
   carriedLight: 0.3, glow: 0.8, rim: 0.22 } as const;
 /** The solid patch of the lantern plate the crook is cut from (shares of the sprite's uv rect). */
 const PATCH = [0.47, 0.3, 0.53, 0.36] as const;
@@ -101,25 +99,24 @@ export interface VisitorLantern {
   /** Flame xyz in world space, read by the light rig as lamp 0. */
   readonly flame: Float32Array;
   readonly pendulum: Pendulum;
-  /** True once the figure is drawn (it appears on the first step after attachFigure). */
+  /** True once the doll is drawn (it appears on the first step after attachFigure). */
   readonly figure: boolean;
-  /** The figure's footfalls so far (Gait.steps): a change is a foot set down. */
+  /** The doll's footfalls so far (Gait.steps): a change is a foot set down. */
   readonly steps: number;
   /** The batch and lantern sprite to draw into, once the shared atlas is in (until then only the flame moves). */
   attach(writer: InstanceWriter, rect: SpriteRect): void;
   /**
-   * The roam atlas is in: on the next step the figure replaces the planted crook. `show` runs on that frame, before
-   * the batch is written, to point the batch at the roam page. Ignored before attach().
+   * On the next step the doll replaces the planted crook: `show` runs on that frame (to hide the crook's batch);
+   * `update` after every doll frame, true when its body was re-posed. Ignored before attach().
    */
-  attachFigure(rects: FigureRects, lantern: SpriteRect, handle: SpriteRect, show: () => void): void;
-  /** The viewport (CSS px): portrait screens get the smaller lantern and figure. */
+  attachFigure(doll: Doll, show: () => void, update: (body: boolean) => void): void;
+  /** The viewport (CSS px): portrait screens get the smaller lantern and doll. */
   resize(w: number, h: number): void;
   /** Stage 'camera', before the light: follows the visitor at `pos` [x, z], seen from a camera at `yaw` (radians). */
   frame(c: Clock, reduced: boolean, yaw?: number): void;
 }
 
-/** Instances in the actor batch with the figure (shadow, body, handle, lantern), and before it: shaft, hook, lantern. */
-export const VISITOR_QUADS = SLOT.count;
+/** Instances in the crook's actor batch: shaft, hook, lantern. */
 export const CROOK_QUADS = 1 + CROOK.hookSegments + 1;
 const DEG = Math.PI / 180;
 
@@ -134,12 +131,11 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   const stick: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0, uv: patch, sway: 0, lift: 0, facing: 0, tint: crookTint, phase: 0 };
   const shaftPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette);
   const hookPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.silhouette | QUAD_FLAG.noShadow);
-  /** In the hand the lantern casts no patch of its own: the one shadow on the ground is the figure's, under the soles. */
-  const heldPhase = packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.hung | QUAD_FLAG.noShadow);
   const gait = createGait();
   const flameEase = new Float32Array(3);
   let writer: InstanceWriter | null = null;
-  let puppet: Puppet | null = null;
+  let doll: Doll | null = null;
+  let update: (body: boolean) => void = () => undefined;
   let show: (() => void) | null = null;
   let shown = false;
   let plateW = 0.16;
@@ -163,7 +159,6 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
   let yaw = 0;
   let cosY = 1;
   let sinY = 0;
-  let flameCardX = 0;
 
   /** Lays a quad written on the card (its x as world x under an unturned camera, at the ground z) toward the camera. */
   function lay(q: QuadParams): void {
@@ -199,10 +194,10 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     const s = Math.sin(pendulum.angle);
     const co = Math.cos(pendulum.angle);
     const below = 1 - LANTERN.flameOfHeight;
-    flameCardX = hx + s * height * below;
-    flame[0] = groundX + cosY * (flameCardX - groundX);
+    const fx = hx + s * height * below;
+    flame[0] = groundX + cosY * (fx - groundX);
     flame[1] = hy - co * height * below;
-    flame[2] = z + sinY * (flameCardX - groundX);
+    flame[2] = z + sinY * (fx - groundX);
     if (writer === null) return;
     lamp.w = plateW * scale;
     lamp.h = height;
@@ -246,33 +241,23 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
     writer.commit(0, CROOK_QUADS);
   }
 
-  /** The figure carrying the lantern by a short handle from its fist: the handle and lantern swing about the hand. */
+  /** The doll carrying its lantern: posed on the ticks, the lantern swinging from its hand every frame. */
   function figureFrame(c: Clock, reduced: boolean, still: boolean, x: number, z: number, tick: number): void {
-    const p = puppet!;
+    const d = doll!;
     stepGait(gait, c.t, c.dt, groundVx, gaitVz, c.frozen, reduced, yaw);
     if (still || tick !== lastTick) {
       figureSide = carrySide(x, z);
       const turn = (HELD.armFollow * pendulum.angle) / DEG;
       armSway = still ? 0 : Math.max(-HELD.armMaxDeg, Math.min(HELD.armMaxDeg, turn));
     }
-    const k = wide ? 1 : FIGURE.portraitK;
-    p.place(gait, x, z, k, mirrorOf(gait, figureSide), armSway, yaw);
-    const gx = p.grip[0]!;
-    const gy = p.grip[1]!;
-    stepPendulum(pendulum, gx, c.dt, still);
-    const handle = HELD.handleM * k;
-    const hx = gx + Math.sin(pendulum.angle) * handle;
-    const hy = gy - Math.cos(pendulum.angle) * handle;
-    const w = writer!;
-    piece(SLOT.handle, gx, gy, hx, hy, CROOK.hookW * (scale / LANTERN.scaleWide), z, hookPhase);
-    hang(SLOT.lantern, hx, hy, z);
-    p.halo(flameCardX, flame[1]!);
-    p.write(w);
+    const body = d.pose(gait, x, z, wide ? 1 : FIGURE.portraitK, figureSide, armSway, yaw, still);
+    stepPendulum(pendulum, d.grip[0]! * cosY + d.grip[2]! * sinY, c.dt, still);
+    d.hang(pendulum.angle, yaw);
     for (let i = 0; i < 3; i++) {
       flameEase[i] = still ? 0 : follow(flameEase[i]!, 0, HELD.flameTauS, c.dt);
-      flame[i]! += flameEase[i]!;
+      flame[i] = d.flame[i]! + flameEase[i]!;
     }
-    w.commit(0, VISITOR_QUADS);
+    update(body);
   }
 
   /**
@@ -308,26 +293,15 @@ export function createVisitorLantern(pos: Float32Array, pond: PondShape | null):
       patch[3] = v0 + (v1 - v0) * PATCH[3];
       w.count = CROOK_QUADS;
     },
-    attachFigure(rects, lantern, handle, onShow) {
-      if (writer === null || puppet !== null) return;
-      puppet = createPuppet(rects);
-      show = () => {
-        onShow();
-        plateW = lantern.size[0];
-        plateH = lantern.size[1];
-        lamp.px = lantern.pivot[0];
-        lamp.py = lantern.pivot[1];
-        lamp.uv = lantern.uv;
-        lamp.phase = heldPhase;
-        patch.set(handle.uv);
-        scale = wide ? HELD.scaleWide : HELD.scaleTall;
-        writer!.count = VISITOR_QUADS;
-      };
+    attachFigure(d, onShow, onUpdate) {
+      if (writer === null || doll !== null) return;
+      doll = d;
+      update = onUpdate;
+      show = onShow;
     },
     resize(w, h) {
       wide = w >= h;
-      const held = shown ? HELD : LANTERN;
-      scale = wide ? held.scaleWide : held.scaleTall;
+      scale = wide ? LANTERN.scaleWide : LANTERN.scaleTall;
     },
     frame(c, reduced, cameraYaw = 0) {
       const x = pos[0]!;

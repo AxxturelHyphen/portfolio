@@ -30,7 +30,7 @@ export interface TestApiDeps {
   info(out: InfoSnapshot): InfoSnapshot;
   /** The visitor under free roam (the default), else null. */
   roam: TestRoam | null;
-  /** True once the visitor is drawn as the paper figure (not the lantern on its crook). */
+  /** True once the visitor is drawn as the burlap doll (not the lantern on its crook). */
   figure(): boolean;
   /** The film strip's enable (uStrip.w): 1 while it runs. */
   strip(): number;
