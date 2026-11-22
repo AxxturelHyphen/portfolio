@@ -1,6 +1,7 @@
 import { GESTURE } from '../core/input.ts';
 import { coarsePointer } from '../core/quality.ts';
 import type { BedId, CameraRig, Machine, ProxyLayer, ScreenPt, SlotId, SlotView } from '../types.ts';
+import { catLeash } from '../world/pet.leash.ts';
 import { LABEL_ID } from './label.ts';
 import { createPlan } from './plan.ts';
 import { createSignposts, type BedSign, type SignAnchor } from './signposts.ts';
@@ -15,7 +16,8 @@ import { createMover, type Mover } from './xform.ts';
  * rig's projection in stage 'dom', only when the rig or a slot's world point moved, never under TOUCH_MIN_PX on a touch screen. Mouse hover and keyboard focus send FOCUS, leaving sends
  * BLUR, click or Enter sends OPEN. Touch: the first tap focuses, the second one opens.
  * Props and pets have no route: activating one dispatches `jardin:activate` (detail: the slot id); a prop travels to its
- * bed, a pet wakes and purrs. Neither opens the panel.
+ * bed, a pet wakes and meows. Neither opens the panel. A cat on its leash (world/pet.leash.ts) keeps its button, after
+ * the bed's own, in every bed it follows the visitor into.
  * One polite live region announces the bed the visitor arrives in and, in free roam, the flower the visitor walks up to.
  * Free roam: Tab onto a flower off screen or out of reach walks the visitor to it (the seek hook) instead of focusing
  * it at once; it is focused on arrival. A plank that names the visitor's bed is folded away in the world
@@ -67,6 +69,8 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
   let nodes: HTMLElement[] = [];
   let movers: Mover[] = [];
   let views: readonly SlotView[] = [];
+  /** The pets' slots as last mounted with their beds: a cat on its leash keeps its button in every bed it follows the visitor into. */
+  const pets = new Map<SlotId, SlotView>();
   /** The world points the proxies were last placed at; a slot whose point moved (a pet walking) is placed again. */
   let world = new Float64Array(0);
   /** Per slot, the smallest scale its proxy takes (touch screens only, else 0). */
@@ -252,7 +256,9 @@ export function createProxies(el: HTMLElement, m: Machine): GardenProxies {
       nodes.find((n) => n.dataset.slot === id)?.click();
     },
 
-    mountSlots(bed: BedId, slots: readonly SlotView[]): void {
+    mountSlots(bed: BedId, own: readonly SlotView[]): void {
+      for (const v of own) if (v.kind === 'pet') pets.set(v.id, v);
+      const slots = catLeash.on ? [...own, ...[...pets.values()].filter((v) => !own.includes(v))] : own;
       nodes = slots.map(slotNode);
       movers = nodes.map(createMover);
       off = nodes.map(() => false);

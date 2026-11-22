@@ -36,13 +36,13 @@ function rig(on = true) {
   const made: FakeContext[] = [];
   const fades: Array<[number, number]> = [];
   const heard: Array<[number, number]> = [];
-  let purrs = 0;
+  const calls: string[] = [];
   const steps: Array<[boolean, number]> = [];
   let onTag = false;
   const engine: SoundEngine = {
     fade: (to, s) => void fades.push([to, s]),
     hear: (x, z) => void heard.push([x, z]),
-    purr: () => void purrs++,
+    cat: (c) => void calls.push(c),
     step: (stone, n) => void steps.push([stone, n]),
   };
   const control = createSoundControl<FakeContext>({
@@ -61,7 +61,7 @@ function rig(on = true) {
     onTag = tag;
     target.dispatchEvent(new Event(type));
   };
-  return { control, doc, made, fades, heard, steps, gesture, purrs: () => purrs };
+  return { control, doc, made, fades, heard, steps, gesture, calls };
 }
 
 const settle = (ms = 0): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -149,17 +149,19 @@ test('hidden tab: suspends at once and resumes on return; the Herbario goes quie
   expect(ctx.state).toBe('running');
 });
 
-test('purr: asked before the engine is in, it plays once the engine is; never while muted', async () => {
+test('cat: a meow asked before the engine is in plays once the engine is; never while muted', async () => {
   const r = rig();
   r.control.setGarden(true);
-  r.control.purr();
+  r.control.cat('meow');
   r.gesture();
-  expect(r.purrs()).toBe(0);
+  expect(r.calls).toEqual([]);
   await settle();
-  expect(r.purrs()).toBe(1);
+  expect(r.calls).toEqual(['meow']);
+  r.control.cat('chirp');
+  expect(r.calls).toEqual(['meow', 'chirp']);
   r.control.setOn(false);
-  r.control.purr();
-  expect(r.purrs()).toBe(1);
+  r.control.cat('meow');
+  expect(r.calls).toEqual(['meow', 'chirp']);
 });
 
 test('duck: an open project brings the mix down, closing brings it back', async () => {

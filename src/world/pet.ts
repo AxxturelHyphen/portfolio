@@ -1,26 +1,31 @@
 import type { Clock, CutoutBatch, QuadParams, SlotId } from '../types.ts';
 import { PET, STEP_FPS } from '../core/motion.ts';
 import { DEG } from './layout.ts';
+import { createFollow } from './pet.follow.ts';
+import { catLeash, type Leash } from './pet.leash.ts';
 
 /**
  * A pet (a slot of kind 'pet', the Rosaleda cat): one cutout of its bed batch that moves by transforms of its own quad
- * only, every frame (on the 12 fps step under reduced motion). Activated, it wakes: a squash, a long stretch, its head side turned toward the visitor
- * (the card turns over when the visitor stands on its tail side, else the head lifts) and a tail-flick wobble. With a
- * visitor about it then hops down in front of its bench (an arc, a squash on landing), trots beside the visitor for
- * LIFE.trotS (a two-height bob, the card turned to face its way, never past the bed's edge and never in front of the
- * visitor), trots back, hops up and curls to sleep. A visitor walking up within PET.nearM twitches its ears once (a
- * small lift), again only after walking away past PET.rearmM. Reduced motion keeps the wake alone (no flick, no hop);
- * frozen time keeps it asleep. Its proxy's world point moves with it. Nothing allocates per frame.
+ * only, every frame (on the 12 fps step under reduced motion). Activated, it wakes: a squash, a long stretch, its head
+ * side turned toward the visitor (the card turns over when the visitor stands on its tail side, else the head lifts)
+ * and a tail-flick wobble. Activated in free roam it is tied for good (world/pet.leash.ts): it hops down in front of its
+ * bench (an arc, a squash on landing) and follows the visitor across the garden (world/pet.follow.ts steers it),
+ * trotting with a two-height bob, its card turned to its way of travel only after a clear stretch of it, standing when
+ * they stop and after a while sitting with one flick of its tail. A reload keeps it following (it starts from its
+ * landing spot); start over lets it go back to sleep on its bench. A visitor walking up to it asleep twitches its ears
+ * once (a small lift), again only after walking away past PET.rearmM. Reduced motion follows without the bob, the hop
+ * or the flick (the rail keeps the wake alone); frozen time keeps it asleep. Its proxy's world point moves with it.
+ * Nothing allocates per frame.
  */
 
 export interface PetRef { slot: SlotId; batch: CutoutBatch; at: number; quad: QuadParams }
 
-/** Where a pet may roam: the bed's x range (it stops at either edge) and its proxy's world point, moved with it. */
+/** The pet's bed: its x range (the hop down lands inside it) and its proxy's world point, moved with it. */
 export interface PetRange { edge: readonly [number, number]; anchor: [number, number, number] | null }
 
 export interface Pet {
   readonly slot: SlotId;
-  /** True from waking until it lies asleep again. */
+  /** True while it moves on the frame clock: waking, hopping, trotting or flicking its tail. */
   readonly busy: boolean;
   wake(): void;
   /** `visitor`: its [x, z] (free roam), else null. */
@@ -55,9 +60,8 @@ const TWITCH: readonly Key[] = [
   [PET.twitchS, 1, 1, 0, 0],
 ];
 
-/** After a hop, from its end: the squash of the landing (down) or of curling up on the bench (up). */
+/** After the hop down, from its end: the squash of the landing. */
 const LAND: readonly Key[] = [[0, 1.18, 0.78, 0, 0], [0.17, 0.94, 1.06, 0, 0], [0.34, 1, 1, 0, 0]];
-const CURL: readonly Key[] = [[0, 1.1, 0.85, 0, 0], [0.25, 1.04, 0.92, 0, 0], [0.6, 1, 1, 0, 0]];
 
 /** Tail flick: rotation about the pivot, its amplitude and rate. Head lift when the card does not turn over. */
 const FLICK = { deg: 3, hz: 3 } as const;
@@ -65,15 +69,15 @@ const LIFT_DEG = 4;
 
 /**
  * The walk: hop length (s), its arc's height (m) and the stretch in the air; the landing spot off the bench (m, toward
- * the visitor and to the front); trot time (s), pace (m/s), the stand-off beside the visitor and behind it (m), the
- * reach that counts as arrived (m) and the stepped bob (m, and the width and height scales of its two steps).
+ * the visitor and to the front); the stepped bob of the trot (m, and the width and height scales of its two steps);
+ * seconds standing before it sits, the sitting pose (width and height scales) and its one tail flick (s).
  */
 const LIFE = {
-  hopS: 0.5, hopM: 0.2, air: [0.94, 1.08], landSideM: 0.3, landFrontM: 0.45,
-  trotS: 4, trotMps: 1.8, besideM: 0.85, behindM: 0.15, arriveM: 0.05, bobM: 0.03, bob: [0.97, 1.04, 1.03, 0.97],
+  hopS: 0.5, hopM: 0.2, air: [0.94, 1.08], landSideM: 0.3, landFrontM: 0.45, bobM: 0.03, bob: [0.97, 1.04, 1.03, 0.97],
+  sitS: 3, sit: [1.06, 0.88], flickS: 0.7,
 } as const;
 
-type Phase = 'sleep' | 'twitch' | 'wake' | 'rise' | 'down' | 'trot' | 'back' | 'up';
+type Phase = 'sleep' | 'twitch' | 'wake' | 'rise' | 'down' | 'follow';
 
 const pose = { sx: 1, sy: 1, turn: 0, wobble: 0 };
 
@@ -92,7 +96,7 @@ function sample(keys: readonly Key[], s: number): void {
 
 const endOf = (keys: readonly Key[]): number => keys[keys.length - 1]![0];
 
-export function createPet(ref: PetRef, range: PetRange): Pet {
+export function createPet(ref: PetRef, range: PetRange, leash: Leash = catLeash): Pet {
   const { batch, at, quad } = ref;
   const { anchor } = range;
   const base = { x: quad.x, y: quad.y, z: quad.z, w: quad.w, h: quad.h, rot: quad.rot };
@@ -101,24 +105,24 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
   const mid = 0.5 - quad.px;
   /** The side its head faces at rest (+1 toward +x). */
   const head = base.w > 0 ? -1 : 1;
+  const follow = createFollow(leash);
   let phase: Phase = 'sleep';
   let start = Number.NaN;
   let shown = -1;
   let flip = false;
   let armed = true;
   let woken = false;
-  /** Where it stands on the ground (pivot, as if not turned over), the way it faces (1 as at rest) and its trot steps. */
-  let gx = base.x;
-  let gz = base.z;
+  /** Following the visitor (until start over lets it go). */
+  let tied = false;
+  /** The way it faces (1 as at rest), its trot steps and the standing pose last written (0 stand, 1 sit, -1 none). */
   let face = 1;
   let strides = 0;
-  /** The landing spot in front of the bench and the x range it trots within. */
+  let posed = -1;
+  /** The landing spot in front of the bench. */
   let lx = base.x;
   let lz = base.z;
-  let minX = base.x;
-  let maxX = base.x;
 
-  const faceOf = (dx: number): number => (Math.abs(dx) < 0.01 ? face : Math.sign(dx) === head ? 1 : -1);
+  const faceOf = (dx: number): number => (Math.sign(dx) === head ? 1 : -1);
 
   function write(x: number, y: number, z: number, sign: number, sx: number, sy: number, rot: number): void {
     quad.w = base.w * sign * sx;
@@ -145,8 +149,8 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
     phase = 'sleep';
     shown = -1;
     face = 1;
-    gx = base.x;
-    gz = base.z;
+    leash.moving = false;
+    leash.at.fill(Number.NaN);
     write(base.x, base.y, base.z, 1, 1, 1, 0);
   }
 
@@ -158,47 +162,58 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
     write(base.x, base.y, base.z, sign, pose.sx, pose.sy, (flip ? 0 : pose.turn * LIFT_DEG * DEG) + flick);
   }
 
-  /** A hop between the bench and the ground, k of the way (0..1), from (ax, ay, az) to (bx, by, bz). */
-  function hop(k: number, ax: number, ay: number, az: number, bx: number, by: number, bz: number): void {
-    const y = ay + (by - ay) * k + LIFE.hopM * 4 * k * (1 - k);
-    write(ax + (bx - ax) * k, y, az + (bz - az) * k, face, LIFE.air[0], LIFE.air[1], 0);
+  /** A hop off the bench, k of the way (0..1), to the landing spot. */
+  function hop(k: number): void {
+    const y = base.y * (1 - k) + LIFE.hopM * 4 * k * (1 - k);
+    write(base.x + (lx - base.x) * k, y, base.z + (lz - base.z) * k, face, LIFE.air[0], LIFE.air[1], 0);
   }
 
-  /** n trot steps toward (tx, tz); true once there. Standing, it faces the visitor at vx. */
-  function trot(n: number, tx: number, tz: number, vx: number): boolean {
-    const dx = tx - gx;
-    const dz = tz - gz;
-    const d = Math.hypot(dx, dz);
-    if (d <= LIFE.arriveM) {
-      face = Number.isNaN(vx) ? face : faceOf(vx - gx);
-      write(gx, 0, gz, face, 1, 1, 0);
-      return true;
-    }
-    const k = Math.min(1, (LIFE.trotMps * n) / (STEP_FPS * d));
-    gx += dx * k;
-    gz += dz * k;
-    face = faceOf(dx);
-    strides += n;
-    const odd = Math.floor(strides) % 2;
-    write(gx, odd * LIFE.bobM, gz, face, LIFE.bob[odd * 2]!, LIFE.bob[odd * 2 + 1]!, 0);
-    return false;
-  }
-
-  /** Leaves the bench toward the visitor at vx: the landing spot and the x range follow from it. */
-  function hopDown(vx: number, t: number): void {
+  /** The landing spot toward the visitor at vx, inside the bed's edge; the card turns that way. */
+  function land(vx: number): void {
     const toward = vx >= base.x ? 1 : -1;
-    lx = base.x + LIFE.landSideM * toward;
+    lx = Math.min(range.edge[1], Math.max(range.edge[0], base.x + LIFE.landSideM * toward));
     lz = base.z + LIFE.landFrontM;
-    minX = Math.min(range.edge[0], lx);
-    maxX = Math.max(range.edge[1], lx);
     face = faceOf(toward);
-    begin('down', t);
+  }
+
+  /** Follows the visitor at (vx, vz) from the landing spot. */
+  function tie(vx: number, vz: number, t: number): void {
+    follow.start(lx, lz, face * head, vx, vz);
+    tied = true;
+    posed = -1;
+    begin('follow', t);
+  }
+
+  /** One following step of n frames of the 12 fps step: trots (a two-height bob, none under reduced motion) or stands, then sits and flicks its tail once. */
+  function walk(n: number, vx: number, vz: number, t: number, reduced: boolean): void {
+    const moved = follow.step(vx, vz, n / STEP_FPS, t);
+    leash.moving = follow.moving;
+    leash.at[0] = follow.x;
+    leash.at[1] = follow.z;
+    const turned = follow.dir * head;
+    if (moved > 0) {
+      face = turned;
+      posed = -1;
+      strides += n;
+      const odd = reduced ? 0 : Math.floor(strides) % 2;
+      const bob = reduced ? 1 : 0;
+      write(follow.x, odd * LIFE.bobM, follow.z, face, bob || LIFE.bob[odd * 2]!, bob || LIFE.bob[odd * 2 + 1]!, 0);
+      return;
+    }
+    const sat = follow.still > LIFE.sitS ? 1 : 0;
+    const flicking = sat === 1 && !reduced && follow.still < LIFE.sitS + LIFE.flickS;
+    if (!flicking && posed === sat && face === turned) return;
+    face = turned;
+    posed = sat;
+    const flick = flicking ? FLICK.deg * DEG * Math.sin(2 * Math.PI * FLICK.hz * (follow.still - LIFE.sitS)) : 0;
+    write(follow.x, 0, follow.z, face, sat === 1 ? LIFE.sit[0] : 1, sat === 1 ? LIFE.sit[1] : 1, flick);
   }
 
   return {
     slot: ref.slot,
     get busy() {
-      return phase !== 'sleep';
+      if (phase !== 'follow') return phase !== 'sleep';
+      return follow.moving || (follow.still > LIFE.sitS && follow.still < LIFE.sitS + LIFE.flickS);
     },
     wake() {
       woken = true;
@@ -207,19 +222,34 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
       const vx = visitor?.[0] ?? Number.NaN;
       const vz = visitor?.[1] ?? Number.NaN;
       const d = visitor === null ? Infinity : Math.hypot(vx - base.x, vz - base.z);
+      if (tied && !leash.on) {
+        tied = false;
+        rest();
+      }
+      if (woken && visitor !== null) leash.tie();
       let next: Phase | null = null;
       if (woken && (phase === 'sleep' || phase === 'twitch')) next = reduced || visitor === null ? 'wake' : 'rise';
-      else if (armed && d < PET.nearM && phase === 'sleep' && !reduced) next = 'twitch';
+      else if (armed && d < PET.nearM && phase === 'sleep' && !reduced && !leash.on) next = 'twitch';
       woken = false;
       if (d < PET.nearM) armed = false;
       else if (d > PET.rearmM) armed = true;
-      if (next !== null && !c.frozen) {
+      if (c.frozen) {
+        if (phase !== 'sleep') rest();
+        return;
+      }
+      if (next !== null) {
         begin(next, c.t);
         flip = (vx > base.x) === (base.w > 0);
+      } else if (phase === 'sleep' && leash.on && visitor !== null) {
+        land(vx);
+        tie(vx, vz, c.t);
       }
       if (phase === 'sleep') return;
-      if (c.frozen || (reduced && phase !== 'wake')) {
-        rest();
+      if (reduced && (phase === 'twitch' || phase === 'rise' || phase === 'down')) {
+        if (leash.on && visitor !== null) {
+          land(vx);
+          tie(vx, vz, c.t);
+        } else rest();
         return;
       }
       const raw = (c.t - start) * STEP_FPS;
@@ -232,48 +262,35 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
         case 'twitch':
         case 'wake': {
           const keys = phase === 'wake' ? WAKE : TWITCH;
-          if (s >= endOf(keys)) rest();
-          else onBench(keys, s, reduced);
+          if (s < endOf(keys)) onBench(keys, s, reduced);
+          else if (phase === 'wake' && leash.on && visitor !== null) {
+            land(vx);
+            tie(vx, vz, c.t);
+          } else rest();
           return;
         }
         case 'rise':
           if (s < endOf(RISE)) onBench(RISE, s, false);
           else if (visitor === null) begin('wake', c.t - endOf(RISE));
-          else hopDown(vx, c.t);
+          else {
+            land(vx);
+            begin('down', c.t);
+          }
           return;
         case 'down':
           if (s < LIFE.hopS) {
-            hop(s / LIFE.hopS, base.x, base.y, base.z, lx, 0, lz);
+            hop(s / LIFE.hopS);
             return;
           }
-          gx = lx;
-          gz = lz;
           sample(LAND, s - LIFE.hopS);
-          write(gx, 0, gz, face, pose.sx, pose.sy, 0);
-          if (s - LIFE.hopS >= endOf(LAND)) begin('trot', c.t);
+          write(lx, 0, lz, face, pose.sx, pose.sy, 0);
+          if (s - LIFE.hopS < endOf(LAND)) return;
+          if (leash.on && visitor !== null) tie(vx, vz, c.t);
+          else rest();
           return;
-        case 'trot': {
-          if (visitor === null || s >= LIFE.trotS) {
-            begin('back', c.t);
-            return;
-          }
-          const side = Math.abs(gx - vx) > 0.2 ? Math.sign(gx - vx) : -face * head;
-          const tx = Math.min(maxX, Math.max(minX, vx + side * LIFE.besideM));
-          trot(n, tx, Math.max(lz, vz - LIFE.behindM), vx);
-          return;
-        }
-        case 'back':
-          if (trot(n, lx, lz, Number.NaN)) {
-            face = faceOf(base.x - gx);
-            begin('up', c.t);
-          }
-          return;
-        case 'up':
-          if (s < LIFE.hopS) hop(s / LIFE.hopS, gx, 0, gz, base.x, base.y, base.z);
-          else if (s - LIFE.hopS < endOf(CURL)) {
-            sample(CURL, s - LIFE.hopS);
-            write(base.x, base.y, base.z, 1, pose.sx, pose.sy, 0);
-          } else rest();
+        case 'follow':
+          if (visitor === null) rest();
+          else walk(n, vx, vz, c.t, reduced);
           return;
       }
     },

@@ -1,6 +1,7 @@
 import type { StickPad } from '../core/stick.gesture.ts';
 import type { BedId, Content, Lang, Loop, Machine, State } from '../types.ts';
 import type { GardenMemory } from '../world/memory.ts';
+import { catLeash } from '../world/pet.leash.ts';
 import { createHelp } from './help.ts';
 import { playText } from './play.copy.ts';
 import { createQuest, type QuestNote } from './quest.ts';
@@ -15,7 +16,8 @@ import './styles/play.css';
  * into the invitation to walk to the Salida. On touch, the floating stick (ui/stick.ts) and a round Open button low
  * right that is there only while a flower or a pet is in reach (the same action as Enter). The tag and the "?" step
  * aside while the first-visit plate stands (play.css), and the help card's first showing waits until it has folded, so
- * the two take turns. Notes wait until no panel is up.
+ * the two take turns. Notes wait until no panel is up. Start over (in the help card) forgets the visited flowers, the
+ * round and the cat's leash.
  */
 
 export interface PlayDeps {
@@ -104,6 +106,7 @@ export function createPlay(parent: HTMLElement, d: PlayDeps): Play {
       pending = null;
       memory.reset();
       quest.reset();
+      catLeash.release();
       paint();
     },
   });

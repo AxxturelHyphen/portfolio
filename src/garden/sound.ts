@@ -6,13 +6,15 @@ import type { BedId, DebugParams, Machine, Tier } from '../types.ts';
 import { ACTIVATE_EVENT } from '../ui/proxies.ts';
 import { pathDistance } from '../world/groundplan.ts';
 import type { BedScene3, GroundData, WorldLayout } from '../world/layout.ts';
+import { catLeash } from '../world/pet.leash.ts';
 
 /**
  * The garden's sound, wired to the world (audio/control.ts decides when, audio/engine.ts plays). Started once the
  * garden is interactive; never in a still (?shot, ?t) or a test run (?bench=1), so those stay silent and repeatable.
  * The music box is the Estanque's sundial (its clockwork armillary): walking up to it plays it. A pet (the Rosaleda
- * cat) purrs when activated. The visitor's footsteps sound on each foot set down: stone within the path's width
- * (garden.json ground.path), soil and grass off it.
+ * cat) meows and purrs each time it is activated, and chirps when, following the visitor, it catches up after falling
+ * well behind (world/pet.leash.ts counts those). The visitor's footsteps sound on each foot set down: stone within the
+ * path's width (garden.json ground.path), soil and grass off it.
  */
 
 const BOX_BED: BedId = 'estanque';
@@ -44,7 +46,7 @@ export interface SoundHost {
   q: DebugParams;
   tier: Tier;
   map: SoundMap;
-  /** Ids (bed/slot) of the pet slots: activating one purrs. */
+  /** Ids (bed/slot) of the pet slots: activating one meows. */
   pets: ReadonlySet<string>;
   /** Free roam: the visitor's [x, z], where the garden is heard from. */
   visitor: Float32Array | null;
@@ -88,12 +90,17 @@ export function startSound(h: SoundHost): void {
   h.machine.subscribe(follow);
   window.addEventListener(SOUND_EVENT, (e) => control.setOn((e as CustomEvent<boolean>).detail));
   h.proxies.addEventListener(ACTIVATE_EVENT, (e) => {
-    if (h.pets.has((e as CustomEvent<string>).detail)) control.purr();
+    if (h.pets.has((e as CustomEvent<string>).detail)) control.cat('meow');
   });
   const v = h.visitor;
   const kerb = h.path.width / 2;
   let stepped = h.steps();
+  let chirps = catLeash.chirps;
   h.loop.on('dom', () => {
+    if (catLeash.chirps !== chirps) {
+      chirps = catLeash.chirps;
+      control.cat('chirp');
+    }
     if (v === null) {
       control.hear(h.cameraX(), RAIL_EAR_Z);
       return;

@@ -104,3 +104,34 @@ test('sound: silent in a still (?shot) and in a test run (?bench=1)', async ({ p
   expect(await contexts(page), 'no context under ?bench=1').toBe(0);
   expect(jardin.errors).toEqual([]);
 });
+
+test('sound: a click on the cat meows once, every time', async ({ page, jardin }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __saws: number };
+    w.__saws = 0;
+    const type = Object.getOwnPropertyDescriptor(OscillatorNode.prototype, 'type')!;
+    Object.defineProperty(OscillatorNode.prototype, 'type', {
+      configurable: true,
+      get() {
+        return type.get!.call(this);
+      },
+      set(v: OscillatorType) {
+        if (v === 'sawtooth') w.__saws += 1;
+        type.set!.call(this, v);
+      },
+    });
+  });
+  const saws = (): Promise<number> => page.evaluate(() => (window as unknown as { __saws: number }).__saws);
+  await page.goto('./?mode=garden#/b/rosaleda');
+  await gardenReady(page);
+  await tap(page);
+  const cat = page.locator('#proxies [data-slot="rosaleda/cat"]');
+  await expect(cat).toHaveCount(1, { timeout: 20000 });
+  await cat.dispatchEvent('click');
+  await expect.poll(saws, { message: 'one meow once the sound is in' }).toBe(1);
+  await page.waitForTimeout(1500);
+  expect(await saws(), 'only one').toBe(1);
+  await cat.dispatchEvent('click');
+  await expect.poll(saws, { message: 'a later click meows again' }).toBe(2);
+  expect(jardin.errors).toEqual([]);
+});

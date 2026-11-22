@@ -1,3 +1,4 @@
+import { catCall, type CatCall } from './meow.ts';
 import { purr } from './purr.ts';
 import { footstep } from './steps.ts';
 import { SOUNDS, clipsOf, fileOf, loopLength, type SoundId } from './sounds.ts';
@@ -17,8 +18,8 @@ export interface SoundEngine {
   fade(to: number, seconds: number): void;
   /** The visitor stands at (x, z). Allocates nothing. */
   hear(x: number, z: number): void;
-  /** The cat purrs once (audio/purr.ts). */
-  purr(): void;
+  /** The cat calls (audio/meow.ts); after a meow it purrs once (audio/purr.ts). */
+  cat(call: CatCall): void;
   /** Footstep number n, on the stone path or on soil and grass (audio/steps.ts). */
   step(stone: boolean, n: number): void;
 }
@@ -210,8 +211,9 @@ export function createEngine(ctx: AudioContext, o: EngineOptions): SoundEngine {
       if (!boxOn && boxArmed && d < BOX.start) playBox();
       else if (!boxOn && !boxArmed && d > BOX.rearm && now - boxQuietAt > BOX.rest) boxArmed = true;
     },
-    purr() {
-      purr(ctx, master);
+    cat(call) {
+      const s = catCall(ctx, master, call);
+      if (call === 'meow') setTimeout(() => purr(ctx, master), s * 1000);
     },
     step(stone, n) {
       if (ctx.state === 'running') footstep(ctx, master, stone, n);

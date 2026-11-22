@@ -1,4 +1,5 @@
 import type { SoundEngine } from './engine.ts';
+import type { CatCall } from './meow.ts';
 
 /**
  * When the garden may sound (no Web Audio in here, so it is cheap to load and easy to test). Browsers let sound start
@@ -38,8 +39,8 @@ export interface SoundControl {
   setDuck(duck: boolean): void;
   /** The visitor stands at (x, z). */
   hear(x: number, z: number): void;
-  /** The cat was activated. */
-  purr(): void;
+  /** The cat calls: a meow when activated, a chirp when it catches up with the visitor. */
+  cat(call: CatCall): void;
   /** The visitor set footstep n down, on stone or on soil; dropped until the engine is in and sound is wanted. */
   step(stone: boolean, n: number): void;
 }
@@ -64,7 +65,8 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
   let ctx: C | null = null;
   let making = false;
   let engine: SoundEngine | null = null;
-  let purrWanted = false;
+  /** A call asked for before the engine was in: played once it is. */
+  let callWanted: CatCall | null = null;
   let x = Number.NaN;
   let z = Number.NaN;
   let sleep: ReturnType<typeof setTimeout> | undefined;
@@ -117,8 +119,8 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
         engine = e;
         if (!Number.isNaN(x)) e.hear(x, z);
         apply(FADE_IN_S);
-        if (purrWanted) e.purr();
-        purrWanted = false;
+        if (callWanted !== null) e.cat(callWanted);
+        callWanted = null;
       },
       () => undefined,
     );
@@ -151,10 +153,10 @@ export function createSoundControl<C extends ContextLike>(d: SoundDeps<C>): Soun
       z = atZ;
       if (engine !== null && wanted()) engine.hear(atX, atZ);
     },
-    purr() {
+    cat(call) {
       if (!wanted()) return;
-      if (engine !== null) engine.purr();
-      else purrWanted = true;
+      if (engine !== null) engine.cat(call);
+      else callWanted = call;
     },
     step(stone, n) {
       if (engine !== null && wanted()) engine.step(stone, n);
