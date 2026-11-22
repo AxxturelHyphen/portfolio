@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { Vector3 } from 'three';
 import { createDoll, FIGURE, KIND, type Doll } from '../../../src/world/doll.ts';
+import { HEAD, headPoint } from '../../../src/world/doll.head.ts';
 import { createGait, stepGait, type Gait } from '../../../src/world/puppet.gait.ts';
 
 // The burlap doll (world/doll.ts): real geometry posed by the gait on the 12 fps tick.
@@ -95,4 +97,36 @@ test('a nudge shorter than a step turns the doll by nothing; a real walk turns i
   expect(turnOnNudge(0.1, 1.6), 'a tenth of a second').toBeLessThan(0.05);
   expect(turnOnNudge(0.6, 1.6), 'a walk east turns it east').toBeGreaterThan(0.8);
   expect(FIGURE.turnAfterM).toBeGreaterThan(0.15);
+});
+
+/** The head's outline seen along an axis: its widest half width across (`across` x or z) and that near the crown. */
+function outline(across: 'x' | 'z'): { widest: number; crown: number; cheek: number; brow: number } {
+  const p = new Vector3();
+  const pts: [number, number][] = [];
+  for (let i = 0; i < 180; i++) {
+    for (let j = 0; j <= 90; j++) {
+      headPoint((i * Math.PI) / 90, -Math.PI / 2 + (j * Math.PI) / 90, p);
+      pts.push([Math.abs(p[across]), p.y - HEAD.y]);
+    }
+  }
+  const top = Math.max(...pts.map(([, y]) => y));
+  const band = (lo: number, hi: number): number => Math.max(...pts.filter(([, y]) => y >= lo && y <= hi).map(([w]) => w));
+  return { widest: band(-1, 1), crown: band(0.85 * top, top), cheek: band(-0.12, 0), brow: band(0.05, 0.15) };
+}
+
+test('the head is a stuffed sack, not a ball: a flat crown from the front and the side, cheeks full low', () => {
+  // An ellipse is 0.53 of its width at 85% of its height: the sack's crown stays far wider.
+  for (const across of ['x', 'z'] as const) {
+    const o = outline(across);
+    expect(o.crown / o.widest, `crown seen across ${across}`).toBeGreaterThan(0.7);
+  }
+  const front = outline('x');
+  expect(front.cheek).toBeGreaterThan(front.brow);
+  expect(front.widest).toBeGreaterThan(HEAD.top * 1.2);
+});
+
+test('the sewn detail stays within the doll\'s triangle budget', () => {
+  const d = createDoll();
+  expect(d.index.length / 3).toBeLessThan(6500);
+  expect(d.lanternFrom).toBeLessThan(d.position.length / 3);
 });

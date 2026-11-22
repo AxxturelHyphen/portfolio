@@ -7,7 +7,7 @@ uniform vec4 uFocusBack;
 in vec3 position;
 in vec3 normal;
 in vec4 aPaint;   // rgb, kind
-in vec2 aFab;     // the weave's coordinates (m), or the shadow's radius share
+in vec2 aFab;     // the weave's coordinates (m), a thread's share along and round its stitch, or the shadow's radius share
 out vec3 vWorld;
 out vec3 vNormal;
 out vec3 vDepth;

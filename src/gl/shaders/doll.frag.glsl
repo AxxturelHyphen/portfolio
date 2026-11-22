@@ -22,6 +22,7 @@ const vec3 GRAPHITE = vec3(0.011, 0.010, 0.012);
 const vec2 GRAZE = vec2(0.08, 0.5);
 const float GRAZE_INK = 0.75;
 const float HATCH_PER_M = 60.0;
+const float TWIST = 4.0;         // turns of the thread's ply over one stitch
 const vec2 HATCH_DARK = vec2(0.01, 0.06);
 
 vec3 paperShoulder(vec3 c) {
@@ -56,7 +57,12 @@ void main() {
     float slub = valueNoise(vec2(vFab.x * 18.0, vFab.y * 140.0)) * valueNoise(vec2(vFab.x * 140.0, vFab.y * 18.0));
     albedo *= (0.62 + 0.55 * weave(q)) * (0.82 + 0.36 * fbm3(vFab * 60.0)) * (1.0 - 0.35 * slub);
   } else if (kind == 1) {
-    albedo *= 0.9 + 0.1 * valueNoise(vWorld.xy * 400.0);
+    // Thread (world/doll.sew.ts): vFab is the share along the stitch and round it. The ply twists round, darker in its
+    // grooves (evened out when too fine to see), and the strand goes dark where it dips into the hole at each end.
+    float ply = vFab.x * TWIST + vFab.y;
+    float groove = mix(0.6 + 0.4 * sin(fract(ply) * 3.14159), 0.85, smoothstep(0.3, 0.7, fwidth(ply)));
+    float hole = smoothstep(0.03, 0.17, min(vFab.x, 1.0 - vFab.x));
+    albedo *= groove * (0.3 + 0.7 * hole) * (0.92 + 0.08 * valueNoise(vWorld.xy * 400.0));
   }
   vec3 night = nightOf(vWorld);
   vec3 ambient = neutralise(uAmbient) * AMBIENT_GAIN * mix(0.8, 1.25, n.y * 0.5 + 0.5) * (1.0 + 0.6 * fillAt(vDepth.x));

@@ -1,14 +1,16 @@
 /**
- * The visitor: a small burlap doll with a big head, sewn together with thick white thread, a metal zip down its chest
- * and two shiny black button eyes, carrying a tin lantern (gl/doll.ts draws it, one mesh for doll and lantern). Real
- * geometry built once from lathes, boxes and tori in the doll's own frame (metres, ground point at the origin, facing
- * +z, its left at +x), every vertex tagged with its part. The gait (world/puppet.gait.ts) poses the parts on the 12 fps
+ * The visitor: a small burlap doll with a big sack of a head (world/doll.head.ts), sewn together with thick off-white
+ * thread (world/doll.sew.ts), a metal zip down its chest and two shiny black button eyes, carrying a tin lantern
+ * (gl/doll.ts draws it, one mesh for doll and lantern). Real geometry built once in the doll's own frame (metres,
+ * ground point at the origin, facing +z, its left at +x), every vertex tagged with its part. The gait (world/puppet.gait.ts) poses the parts on the 12 fps
  * tick: legs and arms swing opposite on the stride, the body leans and breathes, the head glances; the doll turns
  * toward where it walks once it has gone a step from where it stood (a nudge shorter than that turns nothing) and,
  * standing, turns three quarters to the lens. The lantern hangs from the carrying hand and
  * swings every frame. Posing writes into preallocated arrays: nothing is allocated per frame.
  */
-import { BoxGeometry, ConeGeometry, Euler, LatheGeometry, Matrix4, TorusGeometry, Vector2, Vector3, type BufferGeometry } from 'three';
+import { BoxGeometry, ConeGeometry, Euler, Matrix4, TorusGeometry, Vector3, type BufferGeometry } from 'three';
+import { buildHead } from './doll.head.ts';
+import { add, at, BURLAP, DARK_THREAD, jitter, KIND, lathe, stitch, THREAD, type Built } from './doll.sew.ts';
 import { GAIT, LIFE, type Gait } from './puppet.gait.ts';
 import { ANTICIPATE, IDLE, SETTLE, SIDE_POSES, type Pose } from './puppet.poses.ts';
 
@@ -29,14 +31,9 @@ export const FIGURE = {
   turnAfterM: 0.25,
 } as const;
 
-/** Paint kinds (doll.frag.glsl): burlap, cotton thread, bright metal, button, lantern glass, contact shadow. */
-export const KIND = { burlap: 0, thread: 1, metal: 2, button: 3, glass: 4, shadow: 5 } as const;
-const BURLAP = [0.37, 0.26, 0.16] as const;
-const THREAD = [0.86, 0.83, 0.75] as const;
-const DARK_THREAD = [0.07, 0.045, 0.03] as const;
+export { KIND } from './doll.sew.ts';
 const STEEL = [0.62, 0.62, 0.64] as const;
 const TIN = [0.24, 0.22, 0.2] as const;
-const BUTTON = [0.012, 0.011, 0.013] as const;
 const GLASS = [1, 0.66, 0.3] as const;
 const INK = [0.02, 0.018, 0.03] as const;
 
@@ -48,11 +45,11 @@ const LEG_M = 0.22;
 const SHOULDER = [0.15, 0.49] as const;
 const ARM_M = 0.25;
 const NECK = 0.56;
-const HEAD = { y: 0.78, rx: 0.25, ry: 0.225 } as const;
 /** The lantern below the grip (m before LANTERN_K): bail, cap, glass, base; the flame at flameY. */
 const LANTERN_K = 1.3;
 const FLAME_Y = -0.108 * LANTERN_K;
 const DEG = Math.PI / 180;
+const UP = new Vector3(0, 1, 0);
 
 const BODY = [[0, 0.17], [0.09, 0.18], [0.145, 0.22], [0.168, 0.29], [0.162, 0.37], [0.14, 0.45], [0.105, 0.52], [0.07, 0.56], [0, 0.575]] as const;
 const LIMB = (len: number, r: number): number[][] => [[0, -len], [r * 0.55, -len + 0.005], [r * 0.9, -len + 0.022], [r, -len + 0.06], [r * 0.97, -0.03],
@@ -63,7 +60,7 @@ export interface Doll {
   readonly normal: Float32Array;
   /** rgb and kind per vertex. */
   readonly paint: Float32Array;
-  /** The burlap's weave coordinates (m), or the shadow's radius share. */
+  /** The burlap's weave coordinates (m), a thread's share along and round its stitch, or the shadow's radius share. */
   readonly fab: Float32Array;
   readonly index: Uint16Array;
   /** First vertex of the lantern: a frame that only swings it re-poses from here. */
@@ -82,45 +79,6 @@ export interface Doll {
   hang(angle: number, yaw: number): void;
 }
 
-interface Built { pos: number[]; nor: number[]; paint: number[]; fab: number[]; index: number[]; part: number[] }
-const frame = new Matrix4();
-const ax = new Vector3();
-const ay = new Vector3();
-const az = new Vector3();
-
-/** Appends `geo` placed by `m` as part `part`, painted `rgb` of `kind`; `fab` gives each placed vertex its weave coordinates. */
-function add(b: Built, geo: BufferGeometry, m: Matrix4, part: number, rgb: readonly number[], kind: number, fab?: (p: Vector3) => [number, number]): void {
-  geo.applyMatrix4(m);
-  const pos = geo.getAttribute('position');
-  const nor = geo.getAttribute('normal');
-  const base = b.pos.length / 3;
-  const p = new Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    p.fromBufferAttribute(pos, i);
-    b.pos.push(p.x, p.y, p.z);
-    b.nor.push(nor.getX(i), nor.getY(i), nor.getZ(i));
-    b.paint.push(rgb[0]!, rgb[1]!, rgb[2]!, kind);
-    b.fab.push(...(fab === undefined ? [0, 0] : fab(p)));
-    b.part.push(part);
-  }
-  const idx = geo.getIndex();
-  if (idx !== null) for (let i = 0; i < idx.count; i++) b.index.push(base + idx.getX(i));
-  else for (let i = 0; i < pos.count; i++) b.index.push(base + i);
-  geo.dispose();
-}
-
-/** A frame at `p` whose local y runs along `y` and local z as near `hint` as it can. */
-function at(p: Vector3, y: Vector3, hint: Vector3): Matrix4 {
-  ay.copy(y).normalize();
-  az.copy(hint).addScaledVector(ay, -hint.dot(ay)).normalize();
-  ax.crossVectors(ay, az);
-  return frame.makeBasis(ax, ay, az).setPosition(p);
-}
-
-const lathe = (pts: readonly (readonly number[])[], segs: number): LatheGeometry => new LatheGeometry(pts.map(([r, y]) => new Vector2(r, y)), segs);
-/** A half ellipse turned about y: a sphere (rx = ry), an egg, or a dome when it only sweeps `to` of the half turn. */
-const dome = (rx: number, ry: number, segs: number, rings: number, to = 1): LatheGeometry =>
-  lathe(Array.from({ length: rings + 1 }, (_, i) => [rx * Math.sin((Math.PI * i * to) / rings), -ry * Math.cos((Math.PI * i * to) / rings)]), segs);
 /** Weave coordinates on a part turned about the vertical through (cx, cz): its girth at radius r, and height. */
 const cyl = (cx: number, cz: number, r: number) => (p: Vector3): [number, number] => [Math.atan2(p.x - cx, p.z - cz) * r, p.y];
 
@@ -140,58 +98,36 @@ function build(): Built {
   const p = new Vector3();
   const n = new Vector3();
   const t = new Vector3();
-  const up = new Vector3(0, 1, 0);
-  const bar = (part: number, rgb: readonly number[] = THREAD, len = 0.028): void =>
-    add(b, new BoxGeometry(0.009, len, 0.009), at(p.addScaledVector(n, 0.002), t, n), part, rgb, KIND.thread);
+  const q = new Vector3();
 
   // The contact shadow first in the index, so the doll draws over it.
-  add(b, lathe([[0.26, 0.003], [0, 0.003]], 18), m.identity(), P.ground, INK, KIND.shadow, (q) => [Math.hypot(q.x, q.z) / 0.26, 0]);
+  add(b, lathe([[0.26, 0.003], [0, 0.003]], 18), m.identity(), P.ground, INK, KIND.shadow, (v) => [Math.hypot(v.x, v.z) / 0.26, 0]);
   add(b, lathe(BODY, 20), m.identity(), P.body, BURLAP, KIND.burlap, cyl(0, 0, 0.16));
-  add(b, dome(HEAD.rx, HEAD.ry, 22, 14), m.makeTranslation(0, HEAD.y, 0), P.head, BURLAP, KIND.burlap, cyl(0, 0, HEAD.rx));
-  for (const [part, sx] of [[P.armL, 1], [P.armR, -1]] as const) {
-    add(b, lathe(LIMB(ARM_M, 0.048), 12), m.makeTranslation(sx * SHOULDER[0], SHOULDER[1], 0), part, BURLAP, KIND.burlap, cyl(sx * SHOULDER[0], 0, 0.048));
-  }
-  for (const [part, sx] of [[P.legL, 1], [P.legR, -1]] as const) {
-    add(b, lathe(LIMB(LEG_M, 0.064), 12), m.makeTranslation(sx * LEG_X, HIP, 0), part, BURLAP, KIND.burlap, cyl(sx * LEG_X, 0, 0.064));
-  }
-
-  /** A point on the head at azimuth a (from the face toward +x) and elevation e, its normal, and its tangent along e. */
-  const headAt = (a: number, e: number): void => {
-    p.set(HEAD.rx * Math.cos(e) * Math.sin(a), HEAD.y + HEAD.ry * Math.sin(e), HEAD.rx * Math.cos(e) * Math.cos(a));
-    n.set((p.x / HEAD.rx) / HEAD.rx, ((p.y - HEAD.y) / HEAD.ry) / HEAD.ry, (p.z / HEAD.rx) / HEAD.rx).normalize();
-    t.set(-HEAD.rx * Math.sin(e) * Math.sin(a), HEAD.ry * Math.cos(e), -HEAD.rx * Math.sin(e) * Math.cos(a));
-  };
-  // The seam over the crown from ear to ear, the neck seam, and the seams down the body's sides and back.
-  for (let i = 0; i < 17; i++) {
-    const s = -1.35 + (2.7 * i) / 16;
-    p.set(HEAD.rx * Math.sin(s), HEAD.y + HEAD.ry * Math.cos(s), 0);
-    n.set(Math.sin(s) / HEAD.rx, Math.cos(s) / HEAD.ry, 0).normalize();
-    t.set(0, 0, 1);
-    bar(P.head);
-  }
-  for (let i = 0; i < 12; i++) {
-    headAt((2 * Math.PI * i) / 12, -1.1);
-    bar(P.head);
-  }
+  buildHead(b, P.head);
+  // The seams down the body's sides and back, crossed by uneven stitches.
+  let k = 0;
   for (const a of [Math.PI / 2, -Math.PI / 2, Math.PI]) {
     for (let i = 0; i < 7; i++) {
-      const y = 0.25 + (0.26 * i) / 6;
+      const y = 0.25 + (0.26 * i) / 6 + 0.008 * jitter(k++);
       const [r, dr] = bodyAt(y);
-      p.set(r * Math.sin(a), y, r * Math.cos(a));
-      n.set(Math.sin(a), -dr, Math.cos(a)).normalize();
-      t.set(Math.cos(a), 0, -Math.sin(a));
-      bar(P.body);
+      const half = (0.016 + 0.004 * jitter(k++)) / r;
+      const tilt = 0.006 * jitter(k++);
+      p.set(r * Math.sin(a - half), y - tilt, r * Math.cos(a - half));
+      q.set(r * Math.sin(a + half), y + tilt, r * Math.cos(a + half));
+      stitch(b, P.body, p, q, n.set(Math.sin(a), -dr, Math.cos(a)).normalize(), THREAD);
     }
   }
-  // The cuff seams at the wrists and ankles.
-  for (const [part, sx, sy, d, r] of [[P.armL, SHOULDER[0], SHOULDER[1], 0.19, 0.048], [P.armR, -SHOULDER[0], SHOULDER[1], 0.19, 0.048],
-    [P.legL, LEG_X, HIP, 0.15, 0.064], [P.legR, -LEG_X, HIP, 0.15, 0.064]] as const) {
-    for (let i = 0; i < 7; i++) {
-      const a = (2 * Math.PI * (i + 0.5)) / 7;
-      n.set(Math.sin(a), 0, Math.cos(a));
-      p.set(sx + r * n.x, sy - d, r * n.z);
-      t.copy(up);
-      bar(part);
+  // The arms and legs, each sewn on with a ring of stitches across the join, `sewn` (m) below its pivot.
+  for (const [part, sx, sy, len, r, sewn] of [[P.armL, SHOULDER[0], SHOULDER[1], ARM_M, 0.048, 0.03], [P.armR, -SHOULDER[0], SHOULDER[1], ARM_M, 0.048, 0.03],
+    [P.legL, LEG_X, HIP, LEG_M, 0.064, 0.07], [P.legR, -LEG_X, HIP, LEG_M, 0.064, 0.07]] as const) {
+    add(b, lathe(LIMB(len, r), 12), m.makeTranslation(sx, sy, 0), part, BURLAP, KIND.burlap, cyl(sx, 0, r));
+    for (let i = 0; i < 8; i++) {
+      const a = (2 * Math.PI * (i + 0.5)) / 8;
+      const tilt = 0.12 * jitter(k++);
+      const half = 0.015 + 0.004 * jitter(k++);
+      p.set(sx + 0.97 * r * Math.sin(a + tilt), sy - sewn - half, 0.97 * r * Math.cos(a + tilt));
+      q.set(sx + 0.97 * r * Math.sin(a - tilt), sy - sewn + half, 0.97 * r * Math.cos(a - tilt));
+      stitch(b, part, p, q, n.set(Math.sin(a), 0, Math.cos(a)), THREAD);
     }
   }
   // The zip down the chest: dark tape, steel teeth either side in turn, the slider and its pull at the top.
@@ -214,18 +150,6 @@ function build(): Built {
     add(b, new BoxGeometry(0.022, 0.022, 0.01), at(p, t, n), P.body, STEEL, KIND.metal);
     p.addScaledVector(t, -0.026).addScaledVector(n, 0.006);
     add(b, new BoxGeometry(0.013, 0.036, 0.004), at(p, t, n), P.body, STEEL, KIND.metal);
-  }
-  // Two black buttons for eyes, each in its rim, and a small stitched smile.
-  for (const a of [0.42, -0.42]) {
-    headAt(a, 0.04);
-    add(b, dome(0.046, 0.022, 16, 6, 0.5), at(p.addScaledVector(n, 0.006), t.copy(n).negate(), up), P.head, BUTTON, KIND.button);
-    add(b, new TorusGeometry(0.043, 0.007, 6, 18), at(p.addScaledVector(n, -0.004), up, n), P.head, BUTTON, KIND.button);
-  }
-  for (let i = 0; i < 5; i++) {
-    const s = (i - 2) / 2;
-    headAt(s * 0.3, -0.36 + 0.09 * s * s);
-    t.set(Math.cos(s * 0.3), 0.3 * s, -Math.sin(s * 0.3));
-    bar(P.head, DARK_THREAD, 0.022);
   }
   // The tin lantern under the grip: its bail, cap, glass between four bars, and base.
   const L = new Matrix4().makeScale(LANTERN_K, LANTERN_K, LANTERN_K);
@@ -358,7 +282,7 @@ export function createDoll(): Doll {
     },
     hang(angle, yaw) {
       // The lens's axis in the doll's frame: the pendulum swings across the screen.
-      axis.set(-Math.sin(yaw), 0, Math.cos(yaw)).applyAxisAngle(ay.set(0, 1, 0), -root.heading);
+      axis.set(-Math.sin(yaw), 0, Math.cos(yaw)).applyAxisAngle(UP, -root.heading);
       M[P.lantern]!.makeRotationAxis(axis, angle).setPosition(gripAt);
       write(lanternFrom, part.length);
       toWorld(flame, v.set(0, FLAME_Y, 0).applyMatrix4(M[P.lantern]!));
