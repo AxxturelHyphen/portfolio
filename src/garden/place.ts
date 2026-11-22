@@ -4,6 +4,7 @@ import { Vector3 } from 'three';
 import { terrainField, terrainRect } from '../core/terrain.ts';
 import { linearHex } from '../gl/colour.ts';
 import { grottoSolids } from '../gl/grotto.ts';
+import { grassInto } from '../gl/grass.ts';
 import { createIronGate } from '../gl/irongate.ts';
 import { SolidBuilder, solidMesh } from '../gl/masonry.ts';
 import { peacockHeadInto } from '../gl/peacock.head.ts';
@@ -21,6 +22,8 @@ import { pathSlabs } from '../world/slabs.ts';
 import { kerbStones, pondRim } from '../world/solids.ts';
 import { solidProps } from '../world/props.solid.ts';
 import { exitGate } from '../world/exit.ts';
+import { grassTufts } from '../world/grass.ts';
+import { propBlocks } from '../world/occluders.ts';
 import type { StreamGarden } from '../world/garden.ts';
 import { ironGateOf } from '../world/irongate.ts';
 import type { BedScene3, WorldLayout } from '../world/layout.ts';
@@ -229,7 +232,7 @@ const KERB_TILE = 'tile/kerb';
 /**
  * Everything gl must have before warm() so no texture uploads or compiles on first draw: the ground layout and the pond,
  * once. Free roam clips the ground to the closed garden, raises its walls, the grotto's rock chamber (fewer facets on the
- * low tier), the path's slabs, the pond rim, the bank kerbs and the solid props with the signposts' timber (their tiles
+ * low tier), the path's slabs, the lawn's grass (sparser on the low tier), the pond rim, the bank kerbs and the solid props with the signposts' timber (their tiles
  * bind once the shared atlas is up), hangs the iron gate in the Salida's doorway, chalks its marks (`chalk`, free roam
  * outside stills) and reflects the roam variants in the pond.
  */
@@ -241,8 +244,8 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
   if (closed) {
     gfx.ground.enclose(e.x[0], g.ground.wall.z - CLOSED_MARGIN.shade, e.x[1], e.front);
     gfx.scene.add(createIronGate(ironGateOf(e.door, g.ground.wall.z), exitGate, GATE_ORDER));
-    // Two draws for every static solid: the walls, the grotto's shell and floor and the path's slabs before the cards (the
-    // plants paint over the slabs as over the ground), the ground stones, the grotto's rocks, the props and the peacock's
+    // Two draws for every static solid: the walls, the grotto's shell and floor, the path's slabs and the lawn's grass
+    // before the cards (the plants paint over them as over the ground), the ground stones, the grotto's rocks, the props and the peacock's
     // moving head after them, casting the lantern's shadow (one more draw in its pass).
     const back = new SolidBuilder();
     const front = new SolidBuilder();
@@ -262,6 +265,7 @@ export function prepareGl(gfx: GlGfx, g: WorldLayout, scenes: Readonly<Record<Be
       slabStones(back, pathSlabs(field, terrainRect()));
       gfx.ground.setSlabs(true);
     }
+    grassInto(back, grassTufts(g.ground, propBlocks(scenes), tier));
     const head = peacockHeadInto(front);
     const stones = solidMesh(front, solidMaterial(), GROUND_STONE_ORDER);
     stones.layers.enable(SHADOW_LAYER);
