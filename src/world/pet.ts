@@ -179,7 +179,7 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
     gz += dz * k;
     face = faceOf(dx);
     strides += n;
-    const odd = strides % 2;
+    const odd = Math.floor(strides) % 2;
     write(gx, odd * LIFE.bobM, gz, face, LIFE.bob[odd * 2]!, LIFE.bob[odd * 2 + 1]!, 0);
     return false;
   }
@@ -222,7 +222,8 @@ export function createPet(ref: PetRef, range: PetRange): Pet {
         rest();
         return;
       }
-      const step = Math.floor((c.t - start) * STEP_FPS);
+      const raw = (c.t - start) * STEP_FPS;
+      const step = reduced ? Math.floor(raw) : raw;
       if (step === shown) return;
       const n = shown < 0 ? 1 : step - shown;
       shown = step;

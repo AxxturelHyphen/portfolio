@@ -51,11 +51,14 @@ test('woken by a visitor standing near, it hops down, trots beside it facing its
     if (writes.length > n) anchors.push([anchor[0], anchor[1], anchor[2]]);
   }
   expect(t, 'back asleep within a walk').toBeLessThan(14);
-  const ground = writes.filter((w) => w.y < 0.05);
+  // On the ground: the two heights of the trot's bob, not the last instants of a hop passing through.
+  const heights = new Map<number, number>();
+  for (const w of writes) if (w.y < 0.05) heights.set(w.y, (heights.get(w.y) ?? 0) + 1);
+  const ground = writes.filter((w) => (heights.get(w.y) ?? 0) >= 3);
   expect(ground.length, 'down on the ground').toBeGreaterThan(20);
   expect(Math.max(...writes.map((w) => w.y)), 'an arc above the bench').toBeGreaterThan(0.47);
   expect(Math.min(...ground.map((w) => w.h)), 'squash on landing').toBeLessThan(0.42 * 0.85);
-  expect(new Set(ground.map((w) => w.y)).size, 'a stepped bob').toBe(2);
+  expect(new Set(ground.map((w) => w.y)).size, 'a two-height bob').toBe(2);
   expect(Math.max(...writes.map((w) => w.x)), 'beside the visitor, never on it').toBeLessThan(7.5 - 0.5 + 0.6);
   expect(Math.max(...writes.map((w) => w.x)), 'trots toward it').toBeGreaterThan(6);
   expect(Math.min(...ground.map((w) => w.z)), 'in front of its bench').toBeGreaterThanOrEqual(-0.45 + 0.44);
