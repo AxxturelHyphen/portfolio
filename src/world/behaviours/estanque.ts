@@ -1,7 +1,7 @@
 /**
  * Estanque behaviour: the white peacock's pop-up fan (cook/ART.md section 3.3, MOTION B20). While the visitor stands at
  * the Estanque (its key, or anything nearer, as a project focus), 24 single plumes hinged at the rump rise and spread
- * in stepped poses on the 12 fps clock, staggered one pose per 4 plumes from the centre out; scrubbing away closes
+ * smoothly at 12 poses a second, staggered one pose per 4 plumes from the centre out; scrubbing away closes
  * them in fewer poses. A plume's rise is a rotation in depth, so its seen length is the sine of the rise angle (no
  * other scaling). The actor batch samples the hero page (scene.actorSprite): plumes first, then a copy of the body
  * and crest over their roots, so the fan grows from behind the bird. Frozen time and reduced motion show the end pose.
@@ -73,7 +73,6 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
   const lastPose = PEACOCK.openPoses + STAGGER_POSES;
   let pose = 0;
   let shown = -1;
-  let lastTick = -1;
   let version = 0;
 
   /** Plume i in fan order: rank 0 is the centre pair, outward from there; side alternates left and right. */
@@ -176,17 +175,15 @@ export default function estanque(ctx: StreamBedCtx): BedBehaviour {
       const s = machine.state;
       const near = s.mode === 'garden' && s.bed === scene.id && s.phase !== 'travel';
       const target = near ? lastPose : 0;
-      const tick = Math.floor(c.t * STEP_FPS);
-      if (boss?.run.phase === 'play') pose = Math.round(boss.run.pose.display * lastPose);
+      if (boss?.run.phase === 'play') pose = boss.run.pose.display * lastPose;
       else if (c.frozen || s.reduced) pose = target;
       // A first visit holds the fan shut until the boss opens it on its own timeline.
       else if (boss?.run.phase === 'wait') pose = 0;
-      else if (lastTick >= 0 && tick > lastTick) {
-        const steps = tick - lastTick;
+      else {
+        const steps = Math.min(c.dt, 0.1) * STEP_FPS;
         const closeStep = Math.ceil(lastPose / PEACOCK.closePoses);
         pose = pose < target ? Math.min(target, pose + steps) : Math.max(target, pose - steps * closeStep);
       }
-      lastTick = tick;
       if (pose !== shown || (boss !== null && boss.run.version !== version)) write();
     },
     dispose() {

@@ -107,7 +107,7 @@ test('plays once per visit, after the visitor has settled in the bed, then rests
   }
   expect(run.phase).toBe('idle');
   expect(peak, 'camera moment').toBeGreaterThan(0.9);
-  expect(versions.size, 'stepped on the 12 fps clock').toBeLessThanOrEqual(trap.seconds * 12 + 3);
+  expect(versions.size, 'a new pose every frame of the show').toBeGreaterThanOrEqual(Math.floor(trap.seconds * 60));
   for (let i = 0; i < 60; i++) frame(true);
   expect(run.moment).toBe(0);
   const again = createBossRun({ id: 'fixture-trap', motion: trap, fixed: false, played });

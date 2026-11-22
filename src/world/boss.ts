@@ -3,7 +3,7 @@
  * content/bosses/<id>.json (checked at build by world/boss.schema.ts; the browser only casts). Parts are hinged cutout
  * quads: each hangs from its parent's pivot by an offset in the parent's frame (metres, scaled with the parent's seen
  * size), turns by its rest hinge plus the motion's angle (degrees, counter-clockwise as seen from the front), and the
- * root stands at `at`; the chain is solved on the stepped 12 fps clock. The first time per visit the visitor settles in
+ * root stands at `at`; the chain is solved every frame on the running clock. The first time per visit the visitor settles in
  * the boss's bed it plays its motion once (any key, click or tap lands the end pose) with a camera moment
  * (world/boss.camera.ts), then rests in its idle loop. Reduced motion and frozen time land the end pose with no camera
  * moment; the low tier shows the end pose, still. A boss whose sprites the atlas lacks is quietly left out.
@@ -11,7 +11,6 @@
 import { LessEqualDepth, type Material } from 'three';
 import type { BedId, Clock, CutoutBatch, InstanceWriter, Machine, QuadParams, SpriteId, SpriteRect } from '../types.ts';
 import { channelsSettled } from '../core/loop.ts';
-import { STEP_FPS } from '../core/motion.ts';
 import { bossCamera } from './boss.camera.ts';
 import { MOTIONS, clamp01, createPose, type BossPose, type Motion } from './boss.motions.ts';
 import { QUAD_FLAG, packPhase } from './quadflags.ts';
@@ -47,9 +46,9 @@ const PLAYED = new Set<string>();
 export interface BossRun {
   readonly phase: BossPhase;
   readonly pose: BossPose;
-  /** Bumped whenever the stepped pose changes. */
+  /** Bumped whenever the pose changes. */
   readonly version: number;
-  /** The camera moment's share, 0 to 1 (continuous, not stepped). */
+  /** The camera moment's share, 0 to 1. */
   readonly moment: number;
   readonly busy: boolean;
   /** One frame: `here` the visitor is settled in the bed, `still` reduced motion or frozen time. */
@@ -75,9 +74,9 @@ export function createBossRun(o: RunOptions): BossRun {
   if (phase === 'idle') motion.idle(pose, 0);
   else motion.play(pose, 0);
 
-  function rest(tick: number): void {
+  function rest(now: number): void {
     phase = 'idle';
-    from = tick;
+    from = now;
     shown = -1;
   }
 
@@ -91,32 +90,32 @@ export function createBossRun(o: RunOptions): BossRun {
       if (phase === 'play') skipped = true;
     },
     step(c, here, stillNow) {
-      const tick = Math.floor(c.t * STEP_FPS);
+      const now = c.t;
       still = o.fixed || stillNow;
       if (phase === 'wait') {
         settled = here ? settled + c.dt : 0;
         if (here && (still || settled >= BOSS.settleS)) {
           played.add(o.id);
-          if (still) rest(tick);
+          if (still) rest(now);
           else {
             phase = 'play';
-            from = tick;
+            from = now;
             shown = -1;
           }
         }
       }
-      const t = (tick - from) / STEP_FPS;
-      if (phase === 'play' && (skipped || still || t >= motion.seconds)) rest(tick);
+      const t = now - from;
+      if (phase === 'play' && (skipped || still || t >= motion.seconds)) rest(now);
       if (phase === 'play' && !still) {
         moment = Math.min(clamp01(t / BOSS.inS), clamp01((motion.seconds - t) / BOSS.outS));
       } else {
         moment = still ? 0 : Math.max(0, moment - c.dt / BOSS.backS);
       }
-      const at = phase === 'idle' && still ? 0 : tick - from;
+      const at = phase === 'idle' && still ? 0 : now - from;
       if (phase === 'wait' || at === shown) return;
       shown = at;
-      if (phase === 'play') motion.play(pose, at / STEP_FPS);
-      else motion.idle(pose, at / STEP_FPS);
+      if (phase === 'play') motion.play(pose, at);
+      else motion.idle(pose, at);
       version++;
     },
   };

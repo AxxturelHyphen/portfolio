@@ -1,5 +1,5 @@
 /**
- * Salida behaviour: swallows on the stepped clock (cook/ART.md 2.6 "Other swallows"). Three birds fly loops from the
+ * Salida behaviour: swallows in smooth flight (cook/ART.md 2.6 "Other swallows"). Three birds fly loops from the
  * upper right over the low wall and back to the branch; each pose is a real drawing (dive, glide, up-wing) swapped on
  * twos of the 12 fps clock, never a scaled or squeezed sprite. Between loops a bird rests out of sight behind the
  * canopy, so the perched pair on the branch stays the still note. Frozen time freezes the loop where it stands.
@@ -50,14 +50,14 @@ function createSwallows(ctx: StreamBedCtx): { update(c: Clock): void; dispose():
   if (rects.length === 0) return { update() {}, dispose() {} };
   const tint = [0.72, 0.74, 0.8, 1];
   const q: QuadParams = { x: 0, y: 0, z: 0, rot: 0, w: 0, h: 0, px: 0.5, py: 0.5, uv: [0, 0, 0, 0], sway: 0, phase: packPhase(0, QUAD_FLAG.noLean | QUAD_FLAG.noShadow), lift: 0, facing: 0, tint };
-  let lastTick = -1;
+  let lastT = -1;
 
   return {
     update(c: Clock) {
-      const tick = Math.floor(c.t * STEP_FPS / HOLD);
-      if (tick === lastTick) return;
-      lastTick = tick;
-      const t = tick * HOLD / STEP_FPS;
+      const t = c.t;
+      if (t === lastT) return;
+      lastT = t;
+      const tick = Math.floor(t * STEP_FPS / HOLD);
       let n = 0;
       for (let b = 0; b < BIRDS.length; b++) {
         const bird = BIRDS[b];
